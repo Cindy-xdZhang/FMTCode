@@ -84,7 +84,7 @@
 | `FTLE_fitting_utils.py:896` | `temporal_downsamplePathlineCrossPrimitive` 不存在（只有 …Regular/…Random）→ `PointWiseFTLETrainDataset` 必崩 | 未修（属失败 SR 线） |
 | `FTLE_fitting_utils.py:126` | 对**带符号**的 dx0 用 `clamp_min(1e-12)`——若邻居次序颠倒，Jacobian 爆到 1e12 且无声 | 未修，重写时改 `.abs()` + 符号处理 |
 | `FTLE_fitting_utils.py:245` | 低分辨率 linspace 网格不是高分辨率网格子集（`flowmap_sr.py` 的 `hi[::k,::k]` 才是对的） | 未修 |
-| `debug_checks.py:29` | `_LEVEL=1` 硬编码，环境变量失效，且每个 train step 强制一次 GPU→CPU 同步 | 未修 |
+| `debug_checks.py:29` | `_LEVEL=1` 硬编码，`FMT_DEBUG` 环境变量失效。〔修正 2026-08-16：本行原写"且每个 train step 强制一次 GPU→CPU 同步"——该说法在本仓库不成立，`check_train_step` 在本仓库无调用点（原说法来自 PyflowVis 的 FTLE_experiment.py 训练循环，未复制）；实际代价在数据集生成路径的 `check_ftle_field`（每张 FTLE 切片约 6 遍全量扫描且无法关闭）。详见 docs/code_review_2026-08-16.md §D〕 | 未修 |
 | `pnn/models/point_nn.py:111,135` | `torch.arange(...).cuda()` 硬编码，CPU 上崩；`embed_dim % 6 != 0` 时静默错维 | 未修 |
 | `FLowUtils/VectorField2d.py:250,545`、`VectorField3d.py:194,209` | `SteadyVectorField2D.get_vector`、`UnsteadyVectorField2DTrainable.__init__`、3D 两个构造/切片方法均为必崩代码（参数错位/公式错） | 未修，3D 重启前必须先修 |
 | `FLowUtils/KillingObserver2D.py` | 瞬时角速度符号疑与场定义相反（`0.5(du/dy−dv/dx)` vs +c 逆时针），做不变性测试前需先用 `constant_rotation` 解析场校准符号 | 待验证 |
