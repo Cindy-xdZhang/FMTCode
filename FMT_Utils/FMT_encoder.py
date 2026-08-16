@@ -1,138 +1,45 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import math
-from FMT_Utils.FlowlinePostProcessing import AngleAwareSampling
-def _tiling_starts(length: int, k: int):
-    if k >= length:
-        return [0]
-    s = int(k)
-    starts = list(range(0, length - k + 1, s))
-    last = length - k
-    if starts[-1] != last:
-        starts.append(last)
-    return starts
 
 
-def square_distance(src, dst):
+def group_same_timestep(xyz: torch.Tensor, x: torch.Tensor, LSteps: int):
     """
-    Calculate Euclid distance between each two points.
-    src^T * dst = xn * xm + yn * ym + zn * zm；
-    sum(src^2, dim=-1) = xn*xn + yn*yn + zn*zn;
-    sum(dst^2, dim=-1) = xm*xm + ym*ym + zm*zm;
-    dist = (xn - xm)^2 + (yn - ym)^2 + (zn - zm)^2
-         = sum(src**2,dim=-1)+sum(dst**2,dim=-1)-2*src^T*dst
-    Input:
-        src: source points, [B, N, C]
-        dst: target points, [B, M, C]
-    Output:
-        dist: per-point square distance, [B, N, M]
+    Same-timestep cross-line grouping for pathline-cross primitives.
+
+    Our data is not an unordered point cloud, so generic KNN makes no sense here:
+    for every point (line i, timestep t) the neighbor set is the K points
+    {(line j, timestep t) : j = 0..K-1} (self included) -- the other lines of the
+    same primitive at the SAME timestep. Same-time differences cancel any
+    time-dependent translation of the reference frame, which is why this grouping
+    is the geometrically meaningful one (see docs/first_principles_analysis.md P0).
+
+    Flattening convention: N = K*L, flat index = line_id * L + t
+    (i.e. a reshape of [K, L, ...]).
+
+    Inputs:
+        xyz: [B, N, 3]
+        x:   [B, N, C]
+    Returns:
+        lc_xyz  [B, N, 3], lc_x [B, N, C]
+        knn_xyz [B, N, K, 3], knn_x [B, N, K, C]  (neighbors ordered by line id)
+
+    Implemented with pure reshape/expand (no index gather). Replaces the removed
+    `GeoLinePicker` class with numerically identical output.
     """
-    B, N, _ = src.shape
-    _, M, _ = dst.shape
-    dist = -2 * torch.matmul(src, dst.permute(0, 2, 1))
-    dist += torch.sum(src ** 2, -1).view(B, N, 1)
-    dist += torch.sum(dst ** 2, -1).view(B, 1, M)
-    return dist
+    B, N, _ = xyz.shape
+    L = int(LSteps)
+    assert N % L == 0, f"N must be divisible by L={L}, got N={N}"
+    K = N // L
 
-def index_points(points, idx):
-    """
-    Input:
-        points: input points data, [B, N, C]
-        idx: sample index data, [B, S]
-    Return:
-        new_points:, indexed points data, [B, S, C]
-    """
-    device = points.device
-    B = points.shape[0]
-    view_shape = list(idx.shape)
-    view_shape[1:] = [1] * (len(view_shape) - 1)
-    repeat_shape = list(idx.shape)
-    repeat_shape[0] = 1
-    batch_indices = torch.arange(B, dtype=torch.long).to(device).view(view_shape).repeat(repeat_shape)
-    new_points = points[batch_indices, idx, :]
-    return new_points
+    def gather_neighbors(t: torch.Tensor) -> torch.Tensor:
+        C = t.shape[-1]
+        # [B, K, L, C] -> [B, L, K, C]: for each timestep, the K points of all lines
+        per_t = t.view(B, K, L, C).permute(0, 2, 1, 3)
+        # every center point (i, t) shares the same K-line neighbor set of its timestep
+        out = per_t.unsqueeze(1).expand(B, K, L, K, C)  # [B, K_center, L, K_neighbor, C]
+        return out.reshape(B, N, K, C)
 
-def knn_point(nsample, xyz, new_xyz):
-    """
-    Input:
-        nsample: max sample number in local region
-        xyz: all points, [B, N, C]
-        new_xyz: query points, [B, S, C]
-    Return:
-        group_idx: grouped points index, [B, S, nsample]
-    """
-    sqrdists = square_distance(new_xyz, xyz)
-    _, group_idx = torch.topk(sqrdists, nsample, dim=-1, largest=False, sorted=False)
-    return group_idx
-
-
-
-class kNN(nn.Module):
-    def __init__(self,  k_neighbors):
-        super().__init__()
-        self.k_neighbors = k_neighbors
-    def forward(self, xyz, x):
-        # xyz: (B, N, 3)
-        # x: (B, N, C)
-        B, N, _ = xyz.shape
-        lc_xyz = xyz
-        lc_x = x
-        # kNN
-        knn_idx = knn_point(self.k_neighbors, xyz, lc_xyz)
-        knn_xyz = index_points(xyz, knn_idx)
-        knn_x = index_points(x, knn_idx)
-
-        return lc_xyz, lc_x, knn_xyz, knn_x
-
-
-
-"""
-Our data is not unordered points, KNN dosn't make sense. and it's also time consuming.
-how to describe shape of pathlineCluster in an objective way? 
-pathlines shape [B, N=neighbors*Ltimestep,3])->reshape as  [B, neighbors,Ltimestep,3]) and every point only pick nearby points at the same timestep as it's neighbor..
-"""
-class GeoLinePicker(nn.Module):
-    def __init__(self, LSteps:int):
-        super().__init__()
-        self.LSteps= int(LSteps)
-
-    def forward(self, xyz: torch.Tensor, x: torch.Tensor):
-        """
-        xyz: [B, N, 3]，x: [B, N, C]
-        N =  neighbors(K) * Ltimestep
-        重排为 [B, K, L=Ltimestep]，每个点仅选取同一时间步 t 的 另外k-1条线的点作为邻居。
-        返回：
-          - lc_xyz: [B, N, 3]
-          - lc_x:   [B, N, C]
-          - knn_xyz:[B, N, K, 3]
-          - knn_x:  [B, N, K, C]
-        """
-
-        B, N, _ = xyz.shape
-        L = int(self.LSteps)
-        assert N % ( L) == 0, f"N must be divisible by 5*Lstep (5*{L}), got N={N}"
-        P = N // ( L)
-        device = xyz.device
-        # 1. 每个点的 timestep 编号 (0..L-1)
-        falttern_one_idx = torch.arange(N, device=device) # [N]
-        every_point_timestep_idx = falttern_one_idx % L # [N]
-        # points share same timestep Li their flattern idx are:  (Pid=0,1,2....P-1)*L+Li
-        every_point_neigborPoints_idx = every_point_timestep_idx.unsqueeze(1)  + (torch.arange(P, device=device) * L).unsqueeze(0)
-
-        # 4. 扩展 batch
-        idx_batched = every_point_neigborPoints_idx.unsqueeze(0).expand(B, -1, -1)  # [B, N, P]
-
-        knn_xyz = index_points(xyz, idx_batched)  # [B, N, P, 3]
-        knn_x = index_points(x, idx_batched)      # [B, N, P, C]
-
-
-
-        lc_xyz = xyz
-        lc_x = x
-
-        return lc_xyz, lc_x, knn_xyz, knn_x
-
+    return xyz, x, gather_neighbors(xyz), gather_neighbors(x)
 
 
 # Pooling
@@ -151,7 +58,7 @@ class Pooling(nn.Module):
         return lc_x
 
 
-# PosE for Raw-point Embedding 
+# PosE for Raw-point Embedding
 class PosE_Initial(nn.Module):
     def __init__(self, in_dim, out_dim, alpha, beta):
         super().__init__()
@@ -161,9 +68,9 @@ class PosE_Initial(nn.Module):
 
     def forward(self, xyz):
         # xyz: (B,  3, N)
-        B, _, N = xyz.shape    
+        B, _, N = xyz.shape
         feat_dim = self.out_dim // (self.in_dim * 2)
-        
+
         feat_range = torch.arange(feat_dim, device=xyz.device, dtype=torch.float32)
         dim_embed = torch.pow(self.alpha, feat_range / feat_dim)
         div_embed = torch.div(self.beta * xyz.unsqueeze(-1), dim_embed)
@@ -172,7 +79,7 @@ class PosE_Initial(nn.Module):
         cos_embed = torch.cos(div_embed)
         position_embed = torch.stack([sin_embed, cos_embed], dim=4).flatten(3)
         position_embed = position_embed.permute(0, 1, 3, 2).reshape(B, self.out_dim, N)
-        
+
         return position_embed
 
 
@@ -183,7 +90,7 @@ class PosE_Geo(nn.Module):
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.alpha, self.beta = alpha, beta
-        
+
     def forward(self, knn_xyz, knn_x):
         B, _, G, K = knn_xyz.shape
         feat_dim = self.out_dim // (self.in_dim * 2)
@@ -241,6 +148,7 @@ class TemporalDFT(nn.Module):
       x --rfft--> X(f) --(learnable complex filter)--> Y(f) --irfft--> y
     设计目标：把“轨迹是有序序列”的归纳偏置放到 encoder 的 temporal head 里，
     避免把 N=K*L 当成无序点云直接做全局池化。
+    注意：本模块含可学习参数（复数滤波权重 + BatchNorm），启用它的 FMT 不是无参数编码器。
     """
     def __init__(self, channels: int, L: int, dropout: float = 0.0, residual: bool = True):
         super().__init__()
@@ -273,14 +181,29 @@ class TemporalDFT(nn.Module):
         W = torch.complex(self.weight_real, self.weight_imag).unsqueeze(0)  # [1, C, F]
         Y = X * W
         y = torch.fft.irfft(Y, n=self.L, dim=-1, norm='ortho')  # [B, C, L], real
-
         y = self.dropout(self.act(self.norm(y)))
         return (x + y) if self.residual else y
 
 
+class FMT(nn.Module):
+    """
+    Pathline-cross primitive encoder (per-primitive token).
 
-# Non-Parametric Encoder
-class FMT(nn.Module):  
+    Input convention (see `group_same_timestep`):
+        xyz: [B, N=K*L, 3]  flattened line-major (flat = line_id * L + t), 3 = (x, y, t)
+        x:   [B, 3, N]      same coordinates, channel-first (fed to PosE_Initial)
+    Output:
+        [B, out_dim], out_dim = embed_dim * 2**num_stages
+
+    Pipeline per stage: same-timestep cross-line grouping -> LGA (normalize + PosE_Geo
+    weighting) -> max+mean pooling (+ BatchNorm+GELU).
+    temporal_head="dft" appends the learnable TemporalDFT head; temporal_head=None
+    falls back to global max+mean pooling (the Task1 clustering configuration).
+
+    NOTE: Pooling contains BatchNorm (learnable affine + running stats), so this
+    encoder is NOT strictly parameter-free; behavior differs between train/eval
+    mode (see docs/first_principles_analysis.md P1).
+    """
     def __init__(self, PathlineLtimesteps:int, num_stages, embed_dim, alpha, beta, temporal_head: str = "dft"):
         super().__init__()
         self.PathlineLtimesteps = PathlineLtimesteps
@@ -289,22 +212,17 @@ class FMT(nn.Module):
         self.alpha, self.beta = alpha, beta
         self.temporal_head = str(temporal_head).lower()
 
-
         # Raw-point Embedding
         self.raw_point_embed = PosE_Initial(3, self.embed_dim, self.alpha, self.beta)
 
-        self.FPS_kNN_list = nn.ModuleList() # FPS, kNN
         self.LGA_list = nn.ModuleList() # Local Geometry Aggregation
         self.Pooling_list = nn.ModuleList() # Pooling
-        
+
         out_dim = self.embed_dim
 
         # Multi-stage Hierarchy
         for i in range(self.num_stages):
             out_dim = out_dim * 2
-            #disable FPS
-            # group_num = group_num // 2
-            self.FPS_kNN_list.append(GeoLinePicker(self.PathlineLtimesteps))
             self.LGA_list.append(LGA(out_dim, self.alpha, self.beta))
             self.Pooling_list.append(Pooling(out_dim))
 
@@ -317,15 +235,15 @@ class FMT(nn.Module):
 
 
     def forward(self, xyz, x):
-        # xyz: (B,  N=Lstep*Cross_n_neighbors, 3)
-        #x: (B, 3, N)
+        # xyz: (B, N=K*Ltimesteps, 3)
+        # x:   (B, 3, N)
         # Raw-point Embedding
         x = self.raw_point_embed(x)
         B, embed_dim, N = x.shape
         # Multi-stage Hierarchy
         for i in range(self.num_stages):
-            # FPS, kNN
-            xyz, lc_x, knn_xyz, knn_x = self.FPS_kNN_list[i](xyz, x.permute(0, 2, 1))
+            # Same-timestep cross-line grouping (replaces the removed GeoLinePicker)
+            xyz, lc_x, knn_xyz, knn_x = group_same_timestep(xyz, x.permute(0, 2, 1), self.PathlineLtimesteps)
             # Local Geometry Aggregation
             knn_x_w = self.LGA_list[i](xyz, lc_x, knn_xyz, knn_x)
             # Pooling
@@ -353,117 +271,3 @@ class FMT(nn.Module):
         # Fallback: old global pooling (treat as unordered points)
         every_cross_feature = x.max(-1)[0] + x.mean(-1)
         return every_cross_feature
-
-
-
-
-
-
-class HierachyFMT_encoder(nn.Module):  
-    def __init__(self, ReceptiveFieldList:list[int], base_num_stages:int, embed_dim:int, PathlineLtimesteps:int, alpha:float,  beta:float, temporal_head: str = "dft"):
-        super().__init__()
-        """
-        ReceptiveFieldList: 感受野窗口边长列表（单位：低分辨率网格格点数），例如 [4, 8, 16]
-        每个感受野对应一个 FMT 编码器：对该窗口内所有 cross-primitive 的点集进行编码，得到一个 token 向量，
-        将这些 token 填充到 coarse 特征图 [B, D_i, Hc_i, Wc_i]，再双线性插值到低分辨率大小 [B, D_i, X, Y]，最后在通道维拼接。
-
-        base_num_stages: FMT 的基础层数，实际层数 = base_num_stages + floor(log2(receptive_field))，并裁剪到 [0,4]
-        embed_dim: FMT 的基础通道数
-        k_neighbors, alpha, beta: FMT 内部使用的 KNN 和位置编码超参
-        """
-        assert isinstance(ReceptiveFieldList, (list, tuple)) and len(ReceptiveFieldList) > 0
-        self.receptive_fields = [int(max(1, k)) for k in ReceptiveFieldList]
-        self.FMT_num_stages = [min(4, max(0, int(base_num_stages +  math.floor(math.log2(k))))) for k in self.receptive_fields]
-
-        # self.k_neighbors = int(k_neighbors)
-        self.alpha = float(alpha)
-        self.beta = float(beta)
-        self.embed_dim = int(embed_dim)
-        self.PathlineLtimesteps = int(PathlineLtimesteps)
-        self.temporal_head = str(temporal_head).lower()
-
-        # 为每个感受野构建一个 FMT 编码器
-        self.fmts = nn.ModuleList()
-        self.out_dims: list[int] = []
-        for stages in self.FMT_num_stages:
-            # FMT 的输出维度约为 embed_dim * (2**stages)
-            out_dim = self.embed_dim * (2 ** max(0, stages))
-            self.out_dims.append(out_dim)
-            self.fmts.append(FMT(PathlineLtimesteps=self.PathlineLtimesteps, num_stages=stages, embed_dim=self.embed_dim, alpha=self.alpha, beta=self.beta, temporal_head=self.temporal_head))
-
-    def _normalize_input(self, pathlines: torch.Tensor):
-        """
-        接受以下形状之一并归一化为 [B, Y,  X,   K, L, 3], WHEN X and Y not not given, X=Y=int(math.isqrt(X*Y)):
-          - [X*Y, K, L, 3]
-          - [B, X*Y, K, L, 3]
-          - [B, Y, X, K, L, 3]
-        """
-        Dim = pathlines.shape[-1]
-        assert Dim == 3, f"last dim must be 3, got {Dim}"
-        if pathlines.dim() == 4:  # [X*Y, K, L, 3]
-            N, K, L, _ = pathlines.shape
-            X = int(math.isqrt(N))
-            assert X * X == N, f"Cannot infer square grid from N={N}. Provide [B,X,Y,...] shape."
-            Y = X
-            B = 1
-            pl = pathlines.unsqueeze(0).reshape(B, Y,X, K, L, 3)
-            return pl
-        if pathlines.dim() == 5:  # [B, N, K, L, 3]
-            B, N, K, L, _ = pathlines.shape
-            X = int(math.isqrt(N))
-            assert X * X == N, f"Cannot infer square grid from N={N}. Provide [B,X,Y,...] shape."
-            Y = X
-            pl = pathlines.reshape(B, Y, X, K, L, 3)
-            return pl
-        if pathlines.dim() == 6 :  #[B, X, Y, K, L, 3]
-            return pathlines
-        raise ValueError(f"Unsupported pathlines shape: {tuple(pathlines.shape)}")
-
-    def forward(self, pathlines: torch.Tensor):
-        """
-        输入 pathlines:
-          - [B, X*Y, K, L, 3] 或 [X*Y, K, L, 3] 或 [B, Y, X, K, L, 3]
-        输出:
-          - multi-scale 特征图拼接: [B, sum(D_i), X, Y]
-        """
-        pl = self._normalize_input(pathlines)
-        B, Y, X, K, Ls, Dim = pl.shape
-        device = pl.device
-        outputs: list[torch.Tensor] = []
-
-        for fmt, receptive_field, out_dim in zip(self.fmts, self.receptive_fields, self.out_dims):
-            row_starts = _tiling_starts(int(Y), receptive_field)
-            col_starts = _tiling_starts(int(X), receptive_field)
-            Hc, Wc = len(row_starts), len(col_starts)
-            feat_coarse = torch.zeros((B, out_dim, Hc, Wc), device=device, dtype=pl.dtype)
-
-            for ri, i0 in enumerate(row_starts):
-                i1 = min(i0 + receptive_field, int(Y))
-                for ci, j0 in enumerate(col_starts):
-                    j1 = min(j0 + receptive_field, int(X))
-                    # 收集窗口内的线性索引
-                    idx_list = []
-                    for rr in range(i0, i1):
-                        base = rr * int(X)
-                        idx_list.extend(range(base + j0, base + j1))
-                    if len(idx_list) == 0:
-                        continue
-                    idx_tensor = torch.as_tensor(idx_list, dtype=torch.long, device=device)
-                    # 选择窗口内的 pathlines: [B, M, K, L, 3]
-                    pl_win = pl.reshape(B, Y * X, K, Ls, Dim)[:, idx_tensor, ...]
-                    B2, M, _, _, _ = pl_win.shape
-                    P = pl_win.reshape(B2, M * K * Ls, Dim).contiguous()  # [B, M*K*L, 3]
-                    points_N3 = P
-                    points_3N = P.permute(0, 2, 1).contiguous()
-                    feat_win = fmt(points_N3, points_3N)  # [B, out_dim]
-                    feat_coarse[:, :, ri, ci] = feat_win
-
-            # 上采样到 [X, Y]
-            feat_map = F.interpolate(feat_coarse, size=(int(Y), int(X)), mode='bilinear', align_corners=False)
-            outputs.append(feat_map)
-
-        # 通道拼接
-        fused = torch.cat(outputs, dim=1) if len(outputs) > 0 else torch.zeros((B, 0, Y, X), device=device, dtype=pl.dtype)
-        return fused
-
-

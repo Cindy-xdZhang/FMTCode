@@ -127,15 +127,6 @@ class FMTClusteringDataset(Dataset):
         return self.pathlines[idx]
 
 
-def DBSCAN_clustering(point_features:np.ndarray,eps:float,min_samples:int):
-    pass
-
-
-def buld_FMT_encoder(config):
-    encoderConfig=config.encoder
-    PathlineLtimesteps = int(config.pathlines.sampled_points_per_line)
-    return HierachyFMT_encoder(encoderConfig.receptive_fields, encoderConfig.base_num_stages, encoderConfig.embed_dim, PathlineLtimesteps, encoderConfig.alpha, encoderConfig.beta)
-
 def DBSCAN_clustering(features, eps=0.5, min_samples=5):
     clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(features)
     labels = clustering.labels_

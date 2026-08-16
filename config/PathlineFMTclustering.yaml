@@ -27,7 +27,6 @@ dataset:
 # test_vectorfield: [doublegyre2d,cylinder2d]
 
 encoder:
-  receptive_fields: [1]
   base_num_stages: 2
   embed_dim: 24
   alpha: 1000
