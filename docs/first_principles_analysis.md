@@ -13,7 +13,7 @@
 | `normalizeLines`（domain min-max 归一化） | 域框本身不随观察者变，但轨线形状已变 | ✗ |
 | `LocLines`（减种子点） | 只消掉**常数**平移；时变 c(t) 会改变轨线形状本身 | ✗ |
 | PosE 正弦嵌入 sin/cos(β·x/α^k) | 对坐标的任何等距变换都改变输出 | ✗ |
-| `GeoLinePicker` 同时刻跨线取差 d_ij(t) = x_i(t) − x_j(t) | c(t) 被消掉，d* = Q(t)·d，**范数‖d‖不变** | 差向量协变；**‖d‖ 严格客观** ✓ |
+| 同时刻跨线取差 d_ij(t) = x_i(t) − x_j(t)（原 GeoLinePicker，现 `group_same_timestep`） | c(t) 被消掉，d* = Q(t)·d，**范数‖d‖不变** | 差向量协变；**‖d‖ 严格客观** ✓ |
 | LGA 里 diff/std 归一化后的差向量 | 仍随 Q(t) 旋转 | ✗ |
 | `DCT_FMT` 的 \|FFT(x+iy)\| | 对**常数**旋转/平移/时移不变；对时变 Q(t) 不变 ✗ | 部分（比 PosE 强得多） |
 | cross primitive 的有限差分 Jacobian ∇Φ 的奇异值（Cauchy-Green 特征值 → FTLE） | σ_i(∇Φ) 在两端各乘正交阵下不变 | **✓ 严格客观** |
@@ -44,6 +44,8 @@
 另外：类名叫 DCT 实为 FFT，`dct_1d/idct_1d` 是死代码；`neighbor_diff_scale=100.0` 与 `dct_weight=0.5` 是无物理依据的魔数（应改用 `2·offset_dist` 归一化）；`dct_k` 超过 L−1 时被静默 clamp（L=4 时特征从 30 维悄悄变 15 维）。
 **建议**：同时取正负频率末端 `|Z[1..k]|` 与 `|Z[N−k..N−1]|`（保旋向可分性），或报告 |Z[+k]|±|Z[−k]| 的对称/反对称组合（反对称部分就是净旋向强度）。3D 推广时此构造（z=x+iy）失效，需另行设计——暂按用户指示不展开。
 
+**状态（2026-08-16）：已修复**（commit bd55d45）。`dft_complex_lowfreq_mag` 按 `[|Z[0]|, |Z[+1]|, |Z[−1]|, …]` 成对保留正负频率；修复前顺/逆时针刚体旋转 primitive 的特征范数为 9.64 vs 116.93（比值 0.082），修复后两者相等（117.09），旋向仍可区分。测试见 `tests/test_dct_fmt.py`（含常数旋转/平移不变性）。命名问题（名为 DCT 实为 FFT）保留未改，已在 docstring 注明。
+
 ## P3. Task1 的"成功"没有定量地基
 
 - `FMT_Clustering.py` 的评估 = 4 种输入视图 KMeans(k=2) 的并排可视化，人眼判断。无 ARI（Adjusted Rand Index，调整兰德指数）、无 NMI（Normalized Mutual Information，归一化互信息）、无对客观判据标签的 F1/IoU。
@@ -69,6 +71,8 @@
 
 `GeoLinePicker` 把"邻居"定义为窗口内**全部** P=M·5 条线的同时刻点，构造 `[B, N, P, C]`（N=M·5·L）的邻接张量——内存 O(M²·L·C)，对 M 二次爆炸。receptive_field=16（M=256, L=30, C=96 一档）单窗口就要 ~10¹⁰ 级别元素。这就是 config 里 `receptive_fields:[1]` 的真实原因：**层级设计存在但被内存锁死在"1 个 primitive"档**，等价于没有层级。
 **建议**：跨 primitive 的空间聚合不要在点级做全连接邻接；先做 per-primitive token（5 条线内 O(25·L)），再在 token 网格上做卷积/池化——复杂度回到线性。
+
+**状态（2026-08-16）：`HierachyFMT_encoder` 与 `GeoLinePicker` 已按用户决定移除**（commit ca653fd）。FMT 改为内联的 `group_same_timestep`（纯 reshape/expand），与旧实现在 eval/train × 有/无 DFT head 四种模式下**逐位一致**（max|diff|=0，等价性脚本 + `tests/test_fmt_encoder.py`）。同时清理了 `buld_FMT_encoder`、`kNN`/`knn_point` 等死代码与 yaml 里的 `receptive_fields` 残留。未来若需要多感受野，按上面建议在 token 网格层面重新设计。
 
 ## P7. 工程腐化清单（会直接浪费下一次实验时间的）
 

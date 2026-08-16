@@ -17,9 +17,13 @@
 
 ## 代码来源与修改声明
 
-全部代码复制自 `C:\Users\xingdi\sources\PyflowVis`（main @ 3040ace，2026-07-23）。除以下两处外未做任何修改：
-1. `FMT_Clustering.py`：`generate_FLowMap_SLICE` → `generate_Flowmap_SLICE`（上游改名导致的 ImportError，2 行）；
-2. `requirements_fmt.txt`：UTF-16LE → UTF-8（原文件 pip 无法读取）。
+全部代码复制自 `C:\Users\xingdi\sources\PyflowVis`（main @ 3040ace，2026-07-23）。相对原仓库的全部改动（各有 commit 与测试）：
+
+| commit | 改动 |
+|---|---|
+| a3fd97d | `FMT_Clustering.py` 修复断裂导入（`generate_FLowMap_SLICE` → `generate_Flowmap_SLICE`）；`requirements_fmt.txt` 转 UTF-8 |
+| bd55d45 | **修复 DCT_FMT 自旋盲区 bug**：DFT 幅值成对保留正负频率（旧版顺时针涡特征范数仅为逆时针的 8%）。测试 `tests/test_dct_fmt.py` |
+| ca653fd | **移除 `HierachyFMT_encoder` / `GeoLinePicker`**，FMT 内联等价分组 `group_same_timestep`（与旧实现逐位一致，四种模式 max\|diff\|=0）。测试 `tests/test_fmt_encoder.py` |
 
 已知仍处于"带病"状态、使用前需修复的文件见 first_principles_analysis.md 的 P7 表（如 `vortexExtraction_utiles.py` 无 import 语句、`pnn/models/point_nn.py` 硬编码 `.cuda()` 等）。
 
@@ -35,6 +39,7 @@ assets/cuda_kernal/          PathlineIntegration2D.cu（flowlineIntegral 按相�
 config/                      PathlineFMTclustering.yaml（Task1）、FittingVatistas / VatistasDataset（合成 GT）
 FittingVatistasParam.py      Vatistas 参数拟合（定量评测的合成标签来源）
 VatistasFlowDatasetGenerator.py
+tests/                       单元测试（DCT_FMT 不变性/旋向、FMT 分组语义），python tests/test_*.py 直接运行
 docs/                        表1、问题分析、实验记录
 ```
 
