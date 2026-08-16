@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+outputs/
+outputModels/
+wandb/
+.vscode/
+.idea/
+*.npz
+*.nc
+*.am
+*.pth
+*.pth.tar
+*.7z*
+.DS_Store
+Thumbs.db
