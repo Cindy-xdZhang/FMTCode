@@ -53,6 +53,43 @@ def idct_1d(X: torch.Tensor):
     return x
 
 
+def dft_complex_lowfreq_mag(x: torch.Tensor, k_pairs: int) -> torch.Tensor:
+    """
+    Low-frequency DFT magnitudes of a complex pathline signal z[n] = x[n] + i*y[n],
+    keeping BOTH spin directions.
+
+    Why both signs: for a complex signal the spectrum is NOT conjugate-symmetric.
+    Counter-clockwise rotation (z ~ e^{+i w t}) puts its energy in POSITIVE
+    frequency bins, clockwise rotation (z ~ e^{-i w t}) in NEGATIVE bins.
+    Keeping only Z[0..k] (as the old code did) makes clockwise vortices nearly
+    invisible to the descriptor. Here we return, per signal:
+
+        [ |Z[0]|, |Z[+1]|, |Z[-1]|, |Z[+2]|, |Z[-2]|, ..., |Z[+k]|, |Z[-k]| ]
+
+    shape [..., 1 + 2*k_pairs]. All entries are invariant to a constant rotation
+    of the trajectory (global phase e^{i*theta}); the +m/-m pair encodes spin
+    direction. (Their symmetric/antisymmetric combinations are an orthogonal
+    change of basis up to a uniform sqrt(2) factor, so KMeans assignments are
+    identical under either representation.)
+
+    Args:
+        x:       [..., N, 2] with x[...,0]=x-coord, x[...,1]=y-coord.
+        k_pairs: number of +/- frequency pairs to keep; requires
+                 0 <= k_pairs <= (N-1)//2 so that +m and -m are distinct bins.
+    """
+    z = x[..., 0].to(torch.float32) + 1j * x[..., 1].to(torch.float32)  # [..., N]
+    Z = torch.fft.fft(z, dim=-1)  # bin order: [0, +1, ..., +floor(N/2), ..., -2, -1]
+    N = Z.shape[-1]
+    k = int(k_pairs)
+    assert 0 <= k <= (N - 1) // 2, \
+        f"k_pairs={k} out of range for N={N}; need k_pairs <= (N-1)//2 = {(N - 1) // 2}"
+    bins = [0]
+    for m in range(1, k + 1):
+        bins.extend([m, N - m])  # +m, then -m
+    index = torch.as_tensor(bins, dtype=torch.long, device=Z.device)
+    return Z.abs().index_select(-1, index)  # [..., 1 + 2k]
+
+
 def dft_complex_1d(x: torch.Tensor, return_mag: bool = True):
     """
     DFT on a complex pathline signal z[n] = x[n] + i*y[n].
