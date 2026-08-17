@@ -8,7 +8,7 @@ import os,logging,hashlib
 import numpy as np
 import matplotlib.pyplot as plt  # used by the visualize_* helpers below
 from DeepUtils.utils.stable_hash import stable_hash
-from FLowUtils.ScalarField2d import ScalarField2D,ScalarFieldManager
+from FLowUtils.ScalarField2d import ScalarField2D,ScalarFieldManager,compute_ivd_2D
 from FMT_Utils.FlowlinePostProcessing import AngleAwareSampling, LocLines, temporal_downsamplePathlineCrossPrimitiveRegular
 from FLowUtils.flowlineIntegral import batch_pathlineCross_integration_2D_auto
 from FLowUtils.flowDatasetUtils.NetCDF_AmiraLoader import load_UnsteadyVectorFields_general
@@ -56,11 +56,12 @@ def load_FTLE_npz_as_scalar_fields(path: str) -> list[ScalarField2D]:
     if os.path.isdir(path):
         for file in os.listdir(path):
             if file.lower().endswith(".npz"):
-                sf = mgr.load_scalar_field_from_file(os.path.join(path, file))
+                # load_scalar_field_from_file returns (ScalarField2D, field_name)
+                sf, _name = mgr.load_scalar_field_from_file(os.path.join(path, file))
                 result.append(sf)
     else:
         if path.lower().endswith(".npz") and os.path.exists(path):
-            sf = mgr.load_scalar_field_from_file(path)
+            sf, _name = mgr.load_scalar_field_from_file(path)
             result.append(sf)
     return result
 
@@ -122,9 +123,16 @@ def computeFTLEFromPathlineCrossPrimitive(points_grouped: torch.Tensor,
     pStart= points_grouped[:, :, 0, :2]  # [N,5,2]
     pEnd = points_grouped[:, :, -1, :2]  # [N,5,2]
 
-    # Initial offsets (scalars, axis-aligned)
-    dx0 = (pStart[:, 1, 0] - pStart[:, 2, 0]).clamp_min(1e-12)  # [N]
-    dy0 = (pStart[:, 3, 1] - pStart[:, 4, 1]).clamp_min(1e-12)  # [N]
+    # Initial offsets (scalars, axis-aligned). Sign-preserving magnitude guard:
+    # clamp_min on the SIGNED difference silently turned any negative baseline into
+    # 1e-12 (fake ~1e12 Jacobians). C = J^T J is invariant to the baseline sign, so
+    # preserving it keeps swapped x+/x- (or y+/y-) orders exact (code review B).
+    dx0_raw = pStart[:, 1, 0] - pStart[:, 2, 0]  # [N]
+    dy0_raw = pStart[:, 3, 1] - pStart[:, 4, 1]  # [N]
+    sign_x = torch.where(dx0_raw < 0, torch.full_like(dx0_raw, -1.0), torch.full_like(dx0_raw, 1.0))
+    sign_y = torch.where(dy0_raw < 0, torch.full_like(dy0_raw, -1.0), torch.full_like(dy0_raw, 1.0))
+    dx0 = sign_x * dx0_raw.abs().clamp_min(1e-12)
+    dy0 = sign_y * dy0_raw.abs().clamp_min(1e-12)
 
     # Flow map Jacobian J = [dPhi/dx0, dPhi/dy0] (as column vectors)
     dPhi_dx = (pEnd[:, 1, :2] - pEnd[:, 2, :2]) / dx0.unsqueeze(-1)

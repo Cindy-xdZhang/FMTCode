@@ -22,12 +22,24 @@ def _to_serializable(obj: Any):
 
     if _np is not None and isinstance(obj, _np.generic):
         obj = obj.item()
+    if _np is not None and isinstance(obj, _np.ndarray):
+        # ndarray used to fall through to repr(), which numpy TRUNCATES for large
+        # arrays ("[0, 1, ..., 9999]") -> distinct arrays hashed identically. Digest
+        # the raw bytes instead (dtype.str includes byte order).
+        arr = _np.ascontiguousarray(obj)
+        return {"__ndarray__": [list(arr.shape), arr.dtype.str,
+                                hashlib.sha256(arr.tobytes()).hexdigest()]}
     if _torch is not None and hasattr(_torch, 'Tensor') and isinstance(obj, _torch.Tensor):
         obj = obj.detach().cpu().tolist()
 
     if isinstance(obj, dict):
         return {str(k): _to_serializable(v) for k, v in sorted(obj.items(), key=lambda kv: str(kv[0]))}
-    if isinstance(obj, (list, tuple, set)):
+    if isinstance(obj, set):
+        # set iteration order depends on PYTHONHASHSEED for str elements; sort the
+        # serialized forms so the hash is stable across processes.
+        items = [_to_serializable(v) for v in obj]
+        return sorted(items, key=lambda v: json.dumps(v, sort_keys=True, ensure_ascii=False))
+    if isinstance(obj, (list, tuple)):
         return [_to_serializable(v) for v in obj]
     if isinstance(obj, float):
         # 使用 repr 确保跨平台一致性，并避免 -0.0 与 0.0 差异

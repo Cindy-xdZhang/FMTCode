@@ -97,10 +97,11 @@ __global__ void integrate_pathlines_2d_kernel(
     out_positions[base + 1] = (float)(p.y + y_min_phys);
     out_positions[base + 2] = (float)(t + t_min_phys);
 
-    // Early stop if velocity ~ 0 at start
-    double2 v0 = Interpolate2DUnsteadyField_device(field_u, field_v, p, v_width, v_height, TotalTimeSteps, v_dx, v_dy, v_dt, t);
-
-    if (fabs(v0.x) < 1e-9 && fabs(v0.y) < 1e-9 || !valid_space_time_check_device(p, t, t_target, dt_local, v_width, v_height, v_dx, v_dy)){
+    // NOTE(code review A6a): the former "early stop if velocity ~ 0 at t0" check was
+    // removed. In an unsteady field, v(x, t0) == 0 does not mean the particle never
+    // moves, and the check systematically discarded vortex-core / critical-point
+    // primitives on the GPU while the CPU backend kept them.
+    if (!valid_space_time_check_device(p, t, t_target, dt_local, v_width, v_height, v_dx, v_dy)){
         out_valid_steps[i] = 1;
         return;
     }

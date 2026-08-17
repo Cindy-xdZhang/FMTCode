@@ -115,8 +115,11 @@ def vatistas_mixture_velocity(coords, params, shape_idx, bounds, profile_mask=No
     # evaluated in log-space for numerical stability (no divide-by-r, no overflow).
     log_ratio = torch.log(r) - torch.log(e(rc))
     p2n = (2.0 * e(n)) * log_ratio
-    p2n = p2n.clamp(max=30.0)
-    log_bracket = torch.log1p(torch.exp(p2n))                 # log(1 + (r/rc)^{2n})
+    # Stable softplus = log(1 + exp(p2n)) for any p2n (returns ~p2n when large).
+    # The previous clamp(max=30) froze log_bracket beyond 2n*ln(r/rc) > 30, which made
+    # the far field grow LINEARLY with r instead of decaying ~1/(2*pi*r)
+    # (docs/code_review_2026-08-16.md A9; reachable inside [-1,1]^2 for boundary params).
+    log_bracket = torch.nn.functional.softplus(p2n)           # log(1 + (r/rc)^{2n})
     g = torch.exp(-(1.0 / e(n)) * log_bracket) / (TWO_PI * e(rc) * e(rc))
 
     # Base velocity vb = g * (S . x)   (Eq. 2)
@@ -176,12 +179,18 @@ def extract_patches(cfg, device):
     names = [str(f["name"]) for f in field_specs]
     logging.info(f"[patches] loading real flows: {names}")
     fields = load_UnsteadyVectorFields_general(dcfg.dat_dir, names)
+    # load_UnsteadyVectorFields_general silently SKIPS failed loads (it never returns
+    # None), and an .am directory expands one name into N fields -- either case would
+    # misalign spec<->field in the zip below and silently mislabel every patch
+    # (docs/code_review_2026-08-16.md A8). Fail fast instead.
+    if len(fields) != len(field_specs):
+        raise RuntimeError(
+            f"[patches] requested {len(field_specs)} fields {names} but loader returned "
+            f"{len(fields)}; a dataset failed to load (or a name expanded to a directory "
+            f"of multiple fields). Check dataset.dat_dir and the field list.")
 
     patches, scales, meta = [], [], []
     for spec, vf in zip(field_specs, fields):
-        if vf is None:
-            logging.warning(f"[patches] field '{spec['name']}' failed to load; skip.")
-            continue
         field = vf.field
         field = field.cpu().numpy() if isinstance(field, torch.Tensor) else np.asarray(field)
         field = field.astype(np.float32)                      # [T, Y, X, 2]
@@ -601,6 +610,13 @@ def generate_steady_fields(dist, cfg, bounds, device):
     gen_mask = np.zeros((num_fields, m_max), np.float32)
     gen_m = np.zeros(num_fields, np.int64)
 
+    def _core_radius(prm):
+        # The deformed core ellipse has semi-axes (sx*rc, sy*rc); use the larger one so
+        # "dist > sum of radii" actually guarantees non-overlap. The undeformed rc
+        # under-estimates by up to 5x (s upper bound), which let deformed cores overlap
+        # in 10-70% of two-vortex fields (docs/code_review_2026-08-16.md B).
+        return float(prm[RC]) * max(float(prm[SX]), float(prm[SY]))
+
     for k in range(num_fields):
         m = int(rng.integers(m_min, m_max + 1))
         profiles = []
@@ -610,9 +626,15 @@ def generate_steady_fields(dist, cfg, bounds, device):
                 p, s = sample_profile()
                 if not enforce_spacing or not profiles:
                     break
-                ok = all(np.hypot(p[TX] - q[TX], p[TY] - q[TY]) > (p[RC] + q[RC]) for q, _ in profiles)
+                ok = all(np.hypot(p[TX] - q[TX], p[TY] - q[TY]) > (_core_radius(p) + _core_radius(q))
+                         for q, _ in profiles)
                 if ok:
                     break
+            else:
+                # 50 tries exhausted: keep the last candidate but say so loudly instead of
+                # silently violating the documented spacing constraint.
+                logging.warning("[generate] enforce_spacing: 50 tries exhausted for field %d; "
+                                "accepting a profile whose deformed core may overlap.", k)
             profiles.append((p, s))
         for j, (p, s) in enumerate(profiles):
             gen_params[k, j] = p

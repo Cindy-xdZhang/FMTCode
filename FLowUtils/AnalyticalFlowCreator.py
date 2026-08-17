@@ -45,20 +45,20 @@ class AnalyticalFlowCreator:
         data = np.zeros((time_steps, Ydim, Xdim, 2))
         
         for i, t_val in enumerate(t):
+            # Rebuild per timestep: the old `if 'local_dict' not in locals()` reuse
+            # froze t at the first frame whenever expression_x was callable but
+            # expression_y was a string. Coordinates/time are placed AFTER the user
+            # parameters so a parameter accidentally named x/y/t can never shadow the
+            # actual grid (code review B).
+            local_dict = {**self.parameters, 'x': x, 'y': y, 't': t_val}
             if callable(self.expression_x):
                 vx_time_slice_i = self.expression_x(x, y, t_val, **self.parameters)
             else:
-                local_dict = {'x': x, 'y': y, 't': t_val}
-                local_dict.update(self.parameters)
                 vx_time_slice_i = ne.evaluate(self.expression_x, local_dict=local_dict)
 
             if callable(self.expression_y):
                 vy_time_slice_i = self.expression_y(x, y, t_val, **self.parameters)
             else:
-                # reuse the local_dict with current t
-                if 'local_dict' not in locals():
-                    local_dict = {'x': x, 'y': y, 't': t_val}
-                    local_dict.update(self.parameters)
                 vy_time_slice_i = ne.evaluate(self.expression_y, local_dict=local_dict)
             data[i, :, :, 0] = vx_time_slice_i
             data[i, :, :, 1] = vy_time_slice_i

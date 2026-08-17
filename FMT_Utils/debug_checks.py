@@ -25,8 +25,9 @@ def _env_level() -> int:
         return 0
 
 
-# _LEVEL = _env_level()
-_LEVEL = 1
+# Honor the FMT_DEBUG environment variable as documented (was hardcoded to 1,
+# which made the checks impossible to disable; default is now off).
+_LEVEL = _env_level()
 
 
 

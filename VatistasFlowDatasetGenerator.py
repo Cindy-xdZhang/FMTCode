@@ -252,7 +252,8 @@ def integrate_observer_pathline(abc_func, start_pos, center, tmin, tmax, timeste
 
 def killing_abc_transform(vel_eval, abc_func, ocfg, coords_np):
     """Observe a steady field (vel_eval: coords->vel) with one Killing observer -> [T,G,G,2].
-    Faithful port of transformation.cpp::killingABCtransformation (analytic branch)."""
+    Port of transformation.cpp::killingABCtransformation (analytic branch), with the
+    translation-rate term corrected relative to the C++ (see comment at Tdot below)."""
     T = int(ocfg["timesteps"]); G = coords_np.shape[0]
     tmin, tmax = float(ocfg["tmin"]), float(ocfg["tmax"])
     center = np.asarray(ocfg["center"], np.float64)
@@ -278,7 +279,14 @@ def killing_abc_transform(vel_eval, abc_func, ocfg, coords_np):
         a_now, b_now, c_now = abc_func(ti)
         Q_all[i] = Q_i
         Qdot_all[i] = Q_i @ np.array([[0.0, c_now], [-c_now, 0.0]])
-        Tdot_all[i] = np.array([-a_now, -b_now])
+        # Tdot must be the exact derivative of c(t) = Os - Q(t) p(t):
+        #     Tdot = -Qdot @ p - Q @ pdot,   pdot = observer Killing velocity at p.
+        # The legacy constant (-a, -b) (also present in transformation.cpp and
+        # docs/from_pyflowvis/vatistas_profile.md) is only valid at t0 where Q=I;
+        # numerically verified wrong for t>t0 (docs/code_review_2026-08-16.md A1:
+        # error = |(Q-I)(a,b)|, typically ~10% of unit-RMS field, worst 74%).
+        p_dot = _killing_velocity(abc_func, center, path[i], ti)
+        Tdot_all[i] = -(Qdot_all[i] @ path[i]) - (Q_all[i] @ p_dot)
 
     v = vel_eval(finv.reshape(T * G, G, 2)).astype(np.float64).reshape(T, G, G, 2)
     field = np.zeros((T, G, G, 2), np.float32)

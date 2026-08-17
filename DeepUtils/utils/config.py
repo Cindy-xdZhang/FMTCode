@@ -46,7 +46,11 @@ class EasyConfig(dict):
         for fpath in reversed(fpaths):
             if os.path.exists(fpath):
                 with open(fpath) as f:
-                    self.update(yaml.safe_load(f))
+                    data = yaml.safe_load(f)
+                # empty yaml file -> None; update(None) used to raise a cryptic
+                # multimethod DispatchError
+                if data is not None:
+                    self.update(data)
 
     def reload(self, fpath: str, *, recursive: bool = False) -> None:
         self.clear()

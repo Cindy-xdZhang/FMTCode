@@ -78,10 +78,13 @@ class NetCDFLoader:
             # Create UnsteadyVectorField2D instance
             vector_field = UnsteadyVectorField2D(Xdim, Ydim, time_steps, domainMinBoundary, domainMaxBoundary)
 
-            # Try different naming conventions for vector components
+            # Try different naming conventions for vector components.
+            # NOTE(code review A7): ['x','y'] was removed from the candidates -- any
+            # file reaching this point necessarily HAS 1-D coordinate variables named
+            # x/y (spatial_dims check above), so that candidate could only ever match
+            # the coordinate axes and broadcast them into the velocity field silently.
             component_names = [
                 ['u', 'v'],
-                ['x', 'y'],
                 ['a', 'b'],
                 ['Component1', 'Component2'],
                 ['velocity_x', 'velocity_y']
@@ -94,6 +97,12 @@ class NetCDFLoader:
                     for i, var_name in enumerate(names):
                         field_data[:, :, :, i] =dataset.variables[var_name][timestep_begin:timestep_end]
                     break
+            if field_data is None:
+                # The 3D loader raises here; the 2D version used to return a field=None
+                # object silently (code review A7).
+                raise ValueError(
+                    f"NetCDFLoader: could not find velocity components in {file_path}; "
+                    f"tried {component_names}, variables present: {list(dataset.variables.keys())}")
             # field_data is numpy array shape [t,x,y,w] ->permute axis to [t,y,x ,w]
             # vector_field.field = np.transpose(field_data, (0, 2, 1, 3))
             vector_field.field =field_data
@@ -321,7 +330,12 @@ class AmiraLoader:
         with open(file_path, 'rb') as f:
             raw = f.read()
 
-        marker = re.search(br'(?m)^#\s*Data section follows\r?\n?', raw)
+        # Real AmiraMesh files put the data-stream tag line "@1" between the
+        # "# Data section follows" line and the binary payload. The old pattern did
+        # not consume it, so np.frombuffer started 3 ASCII bytes early and the whole
+        # field was reinterpreted garbage -- while our own saved files (fallback
+        # format below) round-tripped fine, hiding the bug (code review A3).
+        marker = re.search(br'(?m)^#\s*Data section follows\r?\n(?:@\d+\r?\n)?', raw)
         if not marker:
             #privous I write bug code generated  file with this header:
             # header_lines = [

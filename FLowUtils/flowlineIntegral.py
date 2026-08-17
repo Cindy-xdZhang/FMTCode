@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import torch
 from numba import njit, prange
@@ -273,7 +274,7 @@ def pathline_integration_one_direction_2D(
     """
     Integrate a pathline in one direction through an unsteady vector field.
     Args:
-        vectorField: UnsteadyVectorField2D 
+        vectorField: UnsteadyVectorField2D
         start_pos: [x, y,z=0] initial position
         timeStart: float, start time
         timeEnd: float, end time
@@ -283,7 +284,13 @@ def pathline_integration_one_direction_2D(
     Returns:
         List of (position, time) tuples
     """
-    pos_3d = np.array(start_pos, dtype=np.float32)
+    # float64 throughout: the CUDA kernel integrates in double, and float32
+    # accumulation destroys the tiny cross offsets FTLE differencing relies on
+    # (docs/code_review_2026-08-16.md A6d).
+    pos_3d = np.array(start_pos, dtype=np.float64)
+    # Case-insensitive method name: the batch CPU fallback passes method.upper(),
+    # which used to fall through to raise ValueError for "euler" (A6e).
+    NumericalMethod = str(NumericalMethod).upper()
     t = timeStart
     path = [(pos_3d.copy(), t)]
     direction = 1 if timeEnd > timeStart else -1
@@ -310,15 +317,24 @@ def pathline_integration_one_direction_2D(
             p6 = pos_3d[:2] + stepSize * (-8/27 * k1 + 2 * k2 - 3544/2565 * k3 + 1859/4104 * k4 - 11/40 * k5)
             k6 = vectorField.get_vector(p6[0], p6[1], t + 1/2 * stepSize)
             delta = stepSize * (16/135 * k1 + 6656/12825 * k3 + 28561/56430 * k4 - 9/50 * k5 + 2/55 * k6)
-        elif NumericalMethod == "Euler":
+        elif NumericalMethod == "EULER":
             v = vectorField.get_vector(pos_3d[0], pos_3d[1], t)
             delta = stepSize * v
         else:
             raise ValueError(f"Unknown NumericalMethod: {NumericalMethod}")
-    
-        delta_pos_3d = np.array([delta[0], delta[1], 0.0], dtype=np.float32)
-        pos_3d = pos_3d + delta_pos_3d
-        t = t + stepSize
+
+        new_pos_3d = pos_3d + np.array([delta[0], delta[1], 0.0], dtype=np.float64)
+        new_t = t + stepSize
+        # Record a step only if the NEW point is still inside the domain and time
+        # window, matching the CUDA kernel ("check new point, break without writing").
+        # The old unconditional append left one out-of-domain / past-timeEnd point on
+        # every truncated line (docs/code_review_2026-08-16.md A6b).
+        if not vectorField.IsInside(new_pos_3d):
+            break
+        if (direction > 0 and new_t > timeEnd) or (direction < 0 and new_t < timeEnd):
+            break
+        pos_3d = new_pos_3d
+        t = new_t
         path.append((pos_3d.copy(), t))
     return path
     
@@ -724,7 +740,12 @@ def _get_or_compile_pathline2d_cuda_kernel(device_index: int | None = None):
         device_index = int(torch.cuda.current_device()) if torch.cuda.is_available() else 0
     if device_index in _PATHLINE2D_CUDA_MODULES:
         return _PATHLINE2D_CUDA_MODULES[device_index]
-    with open("assets/cuda_kernal/PathlineIntegration2D.cu", "r") as f:
+    # Resolve relative to this module, not the process CWD: running from any other
+    # directory used to fail the open() and silently switch to the CPU backend,
+    # which has different semantics (docs/code_review_2026-08-16.md A6).
+    _kernel_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "..", "assets", "cuda_kernal", "PathlineIntegration2D.cu")
+    with open(_kernel_path, "r") as f:
         src = f.read()
     try:
         cuda = importlib.import_module('pycuda.driver')
@@ -800,6 +821,18 @@ def batch_pathlineCross_integration_2D_auto(points:np.ndarray,vectorfield:Unstea
     # Expand seeds to cross (center, x±, y±)
     if points.size == 0:
         return torch.empty(0, max_steps, 3), torch.empty(0, dtype=torch.int32)
+
+    # Clip the integration end time to the field's range for BOTH backends, loudly.
+    # The CUDA path used to clip silently while the CPU fallback integrated past tmax
+    # in a frozen last frame -- same config, different datasets (code review A6c).
+    t_target_requested = float(t_target)
+    t_target = float(np.clip(t_target_requested, float(vectorfield.tmin), float(vectorfield.tmax)))
+    if t_target != t_target_requested:
+        logging.warning(
+            "[batch_pathlineCross_integration_2D_auto] t_target=%.6g is outside the field "
+            "time range [%.6g, %.6g]; clipped to %.6g. Lines will stop early and "
+            "full-length filters may drop every primitive.",
+            t_target_requested, float(vectorfield.tmin), float(vectorfield.tmax), t_target)
     offs = np.array([[0.0, 0.0], [offsets_size, 0.0], [-offsets_size, 0.0], [0.0, offsets_size], [0.0, -offsets_size]], dtype=np.float64)
     seeds = (points[:, None, :] + offs[None, :, :]).reshape(-1, 2)
     seeds = np.concatenate([seeds, np.ones((seeds.shape[0], 1)) * t_start], axis=1)
@@ -837,7 +870,7 @@ def batch_pathlineCross_integration_2D_auto(points:np.ndarray,vectorfield:Unstea
 
     # Per-line CPU computation (forward only here)
     for i in range(M):
-        pos3d = np.array([float(seeds[i,0]), float(seeds[i,1]), 0.0], dtype=np.float32)
+        pos3d = np.array([float(seeds[i,0]), float(seeds[i,1]), 0.0], dtype=np.float64)
         forward = pathline_integration_one_direction_2D(vectorfield, pos3d, float(t_start), float(t_target), float(dt), int(max_steps), method.upper())
         # backward = pathline_integration_one_direction_2D(vectorfield, pos3d, float(t_start), float(t_target), float(dt), int(max_steps), method.upper())
         # backward = backward[::-1]

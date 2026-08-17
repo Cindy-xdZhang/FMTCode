@@ -105,10 +105,11 @@ class PosE_Initial(nn.Module):
 
     def forward(self, xyz):
         # xyz: (B,  3, N)
-        B, _, N = xyz.shape    
+        B, _, N = xyz.shape
         feat_dim = self.out_dim // (self.in_dim * 2)
-        
-        feat_range = torch.arange(feat_dim).float().cuda()     
+        # device-agnostic (was hardcoded .cuda(); crashed on CPU / non-default GPU,
+        # and had drifted from the already-fixed copy in FMT_Utils/FMT_encoder.py)
+        feat_range = torch.arange(feat_dim, device=xyz.device, dtype=torch.float32)
         dim_embed = torch.pow(self.alpha, feat_range / feat_dim)
         div_embed = torch.div(self.beta * xyz.unsqueeze(-1), dim_embed)
 
@@ -131,8 +132,8 @@ class PosE_Geo(nn.Module):
     def forward(self, knn_xyz, knn_x):
         B, _, G, K = knn_xyz.shape
         feat_dim = self.out_dim // (self.in_dim * 2)
-
-        feat_range = torch.arange(feat_dim).float().cuda()     
+        # device-agnostic (see PosE_Initial above)
+        feat_range = torch.arange(feat_dim, device=knn_xyz.device, dtype=torch.float32)
         dim_embed = torch.pow(self.alpha, feat_range / feat_dim)
         div_embed = torch.div(self.beta * knn_xyz.unsqueeze(-1), dim_embed)
 

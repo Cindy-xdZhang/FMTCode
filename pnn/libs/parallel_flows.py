@@ -150,8 +150,10 @@ def batched_pathlines(
     return P, valid_steps
 
 def gen_starts(vectorfield, interval_scale, device="cuda", dtype=torch.float32, include_end=True):
-    xmin, ymin = vectorfield.domainMinBoundary
-    xmax, ymax = vectorfield.domainMaxBoundary
+    # domainMin/MaxBoundary are length-3 (x, y, t); unpacking 2 values raised
+    # ValueError on every call (sibling iter_starts_batches already did this right).
+    xmin, ymin, _ = vectorfield.domainMinBoundary
+    xmax, ymax, _ = vectorfield.domainMaxBoundary
     gx, gy     = vectorfield.gridInterval
     step_x = float(gx) * interval_scale
     step_y = float(gy) * interval_scale

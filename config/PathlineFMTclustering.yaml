@@ -3,10 +3,6 @@ epochs: 3
 train_points_count: 72000
 batch_size: 12
 
-model:
-  NAME: FTLEUpsamplingFMT_UnetV2
-
-
 cluster_classes: 2
 
 wandb: False 

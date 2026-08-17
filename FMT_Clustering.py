@@ -86,15 +86,16 @@ class FMTClusteringDataset(Dataset):
                 # PathlineLength_g : (ny*nx, 5)
 
                 keep_full   = (PathlineLength_g == max_steps).all(dim=1)
-                linear_idx  = np.arange(nx * ny)
-                valid_index = linear_idx[keep_full]
-                if valid_index.size == 0:
+                if not bool(keep_full.any()):
                     logging.warning(f"[FMTClusteringDataset] vf={vf_idx} t={physical_time:.4f}: no valid primitives, skipped.")
                     continue
 
-                # (ny*nx, 5, L, 3); only keep primitives that fully integrated.
-                temporal_sampled = AngleAwareSampling(Pathline_g, LstepsPerline)
-                valid_primitives = temporal_sampled[valid_index].detach().cpu().float()
+                # Filter to fully-integrated primitives BEFORE temporal resampling:
+                # AngleAwareSampling aggregates turning-angle saliency over the whole
+                # batch, and zero-padded dead lines inject constant fake angles that
+                # corrupt the shared time indices (docs/code_review_2026-08-16.md A4).
+                temporal_sampled = AngleAwareSampling(Pathline_g[keep_full], LstepsPerline)
+                valid_primitives = temporal_sampled.detach().cpu().float()
                 n = valid_primitives.shape[0]
 
                 primitives_per_slice.append(valid_primitives)

@@ -38,7 +38,8 @@ def compute_velocity_magnitude_2D(vector_field, **kwargs):
     # NumPy本身已SIMD
     return np.linalg.norm(data, axis=-1)  # (T, Y, X)
 
-def compute_curl_magnitude_2D(vector_field, **kwargs):
+def compute_vorticity_2D(vector_field, **kwargs):
+    """Signed vorticity omega = dv/dx - du/dy, shape (T, Y, X)."""
     data = vector_field.getDataAsNumpy()  # (T, Y, X, 2)
     dx = vector_field.gridInterval[0]
     dy = vector_field.gridInterval[1]
@@ -47,8 +48,10 @@ def compute_curl_magnitude_2D(vector_field, **kwargs):
     # np.gradient支持多维并行
     du_dy = np.gradient(u, dy, axis=1)  # (T, Y, X)
     dv_dx = np.gradient(v, dx, axis=2)
-    curl = dv_dx - du_dy
-    return np.abs(curl)
+    return dv_dx - du_dy
+
+def compute_curl_magnitude_2D(vector_field, **kwargs):
+    return np.abs(compute_vorticity_2D(vector_field))
 
 def compute_q_criterion_2D(vector_field, **kwargs):
     data = vector_field.getDataAsNumpy()  # (T, Y, X, 2)
@@ -98,10 +101,13 @@ def compute_lambda2_criterion_2D(vector_field, **kwargs):
     return _lambda2_kernel(du_dx, du_dy, dv_dx, dv_dy, out)
 
 def compute_ivd_2D(vector_field, **kwargs):
-    curl = compute_curl_magnitude_2D(vector_field)
-    mean_curl = np.mean(curl, axis=(1, 2), keepdims=True)  # (T, 1, 1)
-    ivd = np.abs(curl - mean_curl)
-    return ivd
+    # IVD = |omega - <omega>| with SIGNED vorticity, matching the definition and the
+    # 3D implementation (ScalarField3d). The old version built on |omega|, which folds
+    # counter-rotating vortices together and shifts the threshold zero point
+    # (docs/code_review_2026-08-16.md A2).
+    vort = compute_vorticity_2D(vector_field)
+    mean_vort = np.mean(vort, axis=(1, 2), keepdims=True)  # (T, 1, 1)
+    return np.abs(vort - mean_vort)
 
 def compute_ivd_minus_mean_2D(vector_field, **kwargs):
     ivd = compute_ivd_2D(vector_field)
@@ -351,7 +357,9 @@ class ScalarFieldManager:
         ]
         if extra_tags:
             for k in extra_tags:
-                fname.append(f"{self._sanitize_name(k)}")
+                # _sanitize_name is a module-level function, not a method; the old
+                # self._sanitize_name raised AttributeError whenever extra_tags was used.
+                fname.append(f"{_sanitize_name(str(k))}")
         return "__".join(fname) + ext
 
     # ---------------------- NPZ Compressed IO ----------------------
@@ -432,7 +440,7 @@ class ScalarFieldManager:
         logging.getLogger().info(f"Saved scalar field {field_name} to {file_path}")
         return file_path
 
-    def load_scalar_field_from_file(self, file_path: str) -> 'ScalarField2D':
+    def load_scalar_field_from_file(self, file_path: str) -> "tuple[ScalarField2D, str | None]":
         """
         加载标量场：
           1) 优先按照本工程保存的 .npz 规范（含 'data' 与 'meta' 键）读取；
@@ -572,7 +580,7 @@ class ScalarFieldManager:
                 continue
             path = os.path.join(dir_path, name)
             try:
-                sf = self.load_scalar_field_from_file(path)
+                sf, _field_name = self.load_scalar_field_from_file(path)
                 loaded.append((name, sf))
             except Exception:
                 # 忽略不兼容文件

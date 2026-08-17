@@ -71,7 +71,6 @@ parso==0.8.4
 pillow==11.1.0
 platformdirs==4.3.6
 plotly==6.2.0
-pointnet2_ops @ file:///C:/Users/xingdi/sources/PyflowVis/pnn/pointnet2_ops_lib
 prompt_toolkit==3.0.51
 protobuf==5.29.3
 psutil==6.1.1
