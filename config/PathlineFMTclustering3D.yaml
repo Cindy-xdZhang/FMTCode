@@ -28,6 +28,7 @@ clustering:
 
 visualization:
   max_pathlines: 32
+  ivd_percentiles: [90.0, 95.0, 97.5]
 
 output:
   dir: outputs

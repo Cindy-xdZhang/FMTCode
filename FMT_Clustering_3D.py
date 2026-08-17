@@ -9,15 +9,18 @@ import random
 import numpy as np
 import torch
 from sklearn.cluster import KMeans
+from sklearn.metrics import f1_score, jaccard_score, precision_score, recall_score
 from sklearn.preprocessing import StandardScaler
 
 from DeepUtils.utils import EasyConfig
 from FMT_Utils.DFT_FMT_3D import pathline_dft_features_3d
 from FMT_Utils.FMT_3D_pipeline import (
     generate_seeding_grid_3d,
+    compute_ivd_reference_3d,
     integrate_cross_primitives_3d,
     load_vector_field_3d,
     visualize_3d_clustering,
+    visualize_ivd_reference_3d,
     write_run_metadata,
 )
 
@@ -107,6 +110,29 @@ def run(config, input_override=None, output_override=None):
     )
     labels = kmeans.fit_predict(standardized)
 
+    ivd_volume, ivd_at_seeds, ivd_axes = compute_ivd_reference_3d(field, seed_time, seeds_valid)
+    ivd_percentiles = tuple(float(value) for value in config.visualization.ivd_percentiles)
+    ivd_metrics = {}
+    for percentile in ivd_percentiles:
+        threshold = float(np.percentile(ivd_volume, percentile))
+        reference = ivd_at_seeds >= threshold
+        candidates = []
+        for cluster in range(int(config.clustering.classes)):
+            prediction = labels == cluster
+            candidates.append({
+                "cluster_as_vortex": cluster,
+                "f1": float(f1_score(reference, prediction, zero_division=0)),
+                "precision": float(precision_score(reference, prediction, zero_division=0)),
+                "recall": float(recall_score(reference, prediction, zero_division=0)),
+                "iou": float(jaccard_score(reference, prediction, zero_division=0)),
+            })
+        best = max(candidates, key=lambda item: item["f1"])
+        ivd_metrics[str(percentile)] = {
+            "threshold": threshold,
+            "positive_seed_count": int(reference.sum()),
+            **best,
+        }
+
     all_labels = np.full(len(seeds), -1, dtype=np.int8)
     all_labels[valid_mask] = labels.astype(np.int8)
     np.savez_compressed(
@@ -120,12 +146,18 @@ def run(config, input_override=None, output_override=None):
         features=features,
         standardized_features=standardized,
         cluster_centers=kmeans.cluster_centers_,
+        ivd_volume=ivd_volume,
+        ivd_at_seeds=ivd_at_seeds,
         x=axes[0], y=axes[1], z=axes[2],
         line_lengths=lengths,
     )
     visualize_3d_clustering(
         seeds_valid, labels, primitives, output_dir,
         max_lines=int(config.visualization.max_pathlines),
+    )
+    ivd_levels = visualize_ivd_reference_3d(
+        ivd_volume, ivd_axes, field.domainMinBoundary, field.gridInterval,
+        seeds_valid, labels, output_dir, percentiles=ivd_percentiles,
     )
     counts = np.bincount(labels, minlength=int(config.clustering.classes))
     metadata = {
@@ -140,6 +172,8 @@ def run(config, input_override=None, output_override=None):
         "valid_primitives": int(len(seeds_valid)),
         "feature_width": int(features.shape[1]),
         "cluster_counts": counts.tolist(),
+        "ivd_isosurface_levels": ivd_levels,
+        "ivd_cluster_metrics": ivd_metrics,
         "config": config.dict(),
         "note": "KMeans cluster IDs are arbitrary; this run does not name either cluster vortex.",
     }
@@ -147,6 +181,12 @@ def run(config, input_override=None, output_override=None):
     print(f"[{EXPERIMENT_VERSION}] output: {output_dir}")
     print(f"valid primitives: {len(seeds_valid)}/{len(seeds)}")
     print(f"feature shape: {features.shape}; cluster counts: {counts.tolist()}")
+    for percentile, values in ivd_metrics.items():
+        print(
+            f"IVD p{percentile}: best cluster={values['cluster_as_vortex']}, "
+            f"F1={values['f1']:.3f}, IoU={values['iou']:.3f}, "
+            f"precision={values['precision']:.3f}, recall={values['recall']:.3f}"
+        )
     return output_dir
 
 

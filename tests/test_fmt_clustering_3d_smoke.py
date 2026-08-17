@@ -67,7 +67,7 @@ def smoke_test():
                         "neighbor_pool": "sort",
                         "neighbor_weight": 0.5},
             "clustering": {"classes": 2, "n_init": 5},
-            "visualization": {"max_pathlines": 8},
+            "visualization": {"max_pathlines": 8, "ivd_percentiles": [90.0, 95.0, 97.5]},
             "output": {"dir": str(tmp / "outputs")},
         })
         output = run(cfg)
@@ -75,7 +75,8 @@ def smoke_test():
             assert data["features"].shape[0] == data["labels"].shape[0] > 10
             assert np.unique(data["labels"]).size == 2
         for name in ("clusters_3d.png", "clusters_projections.png", "clusters_xy_slices.png",
-                     "cluster_pathlines.png"):
+                     "cluster_pathlines.png", "ivd_isosurfaces.png",
+                     "ivd_xy_slices_with_clusters.png", "cluster_ivd_overlay.png"):
             assert (output / name).stat().st_size > 1000
 
 
