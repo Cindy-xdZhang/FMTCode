@@ -1,0 +1,29 @@
+experiment: mainExp_3DFMTVAE_1.1
+seed: 7068
+
+input:
+  run_dir: outputs/mainExp_3DFMT_1.1/halfcylinderRe160Resampled_t7
+  field_path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe160Resampled.nc
+  physical_time: 7.0
+  ivd_averaging_size: 11
+  ivd_threshold: 0.9136650586699149
+
+split:
+  train_fraction: 0.8
+
+vae:
+  hidden_dims: [256, 128]
+  latent_dim: 16
+  beta: 0.001
+  epochs: 200
+  batch_size: 256
+  learning_rate: 0.001
+  weight_decay: 0.00001
+  training_seeds: [7068, 7069, 7070, 7071, 7072]
+
+evaluation:
+  kmeans_n_init: 20
+  kmeans_seed: 7068
+
+output:
+  dir: outputs/mainExp_3DFMTVAE_1.1
