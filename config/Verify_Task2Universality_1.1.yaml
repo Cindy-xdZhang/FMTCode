@@ -1,0 +1,69 @@
+experiment: Verify_Task2Universality_1.1
+seed: 7068
+
+datasets:
+  - id: cylinder3d
+    path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe160Resampled.nc
+    enabled: true
+  - id: tangaroa
+    path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/tangaroa.nc
+    enabled: true
+  - id: deltaWing_resampled
+    path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/deltaWing_mag0_3reesampled.nc
+    enabled: true
+  - id: f22raptor
+    path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/f22raptor_re400000.nc
+    enabled: true
+  - id: channel
+    path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel.vtk
+    enabled: false
+    reason: single steady VTK snapshot; no time dimension
+  - id: deltaWing_LBM_requested
+    path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/deltaWing_mag0_3reesampled.nc
+    enabled: false
+    reason: requested path does not exist; nearby deltaWing_mag0_3.nc is not silently substituted
+
+sampling:
+  timeslices: 10
+  begin_fraction: 0.20
+  end_fraction: 0.90
+  max_spatial_dim: 96
+  seed_grid_shape: [16, 16, 16]
+  boundary_fraction: 0.08
+
+pathlines:
+  method: RK4
+  dt_scale: 0.25
+  integration_steps: 48
+  sampled_steps: 32
+  offset_grid_scale: 0.5
+  chunk_size: 2048
+
+encoder:
+  num_freq: 6
+  mode: gram
+  include_chirality: true
+  neighbor_pool: sort
+  neighbor_weight: 0.5
+
+reference:
+  definition: standard_global_ivd
+  percentile: 95.0
+
+task2:
+  train_slice_count: 8
+  fmt_neighbor_weight: 0.5
+  hidden_dims: [256, 128]
+  latent_dim: 16
+  beta: 0.001
+  target_optimizer_steps: 4600
+  batch_size: 256
+  learning_rate: 0.001
+  weight_decay: 0.00001
+  training_seeds: [7068, 7069, 7070]
+  kmeans_n_init: 20
+  kmeans_seed: 7068
+
+output:
+  cache_dir: outputs/Verify_Task2Universality_1.1/cache
+  result_dir: outputs/Verify_Task2Universality_1.1/results
