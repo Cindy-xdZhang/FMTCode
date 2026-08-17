@@ -80,16 +80,16 @@
 |---|---|---|
 | `FMT_Clustering.py:9` | import 的 `generate_FLowMap_SLICE` 已被改名 → ImportError | **本仓库已修** |
 | `FMT_Utils/vortexExtraction_utiles.py` | 整个文件**没有任何 import 语句**，引用的 loader 函数也不存在；且其 IVD 标签用逐切片 50 分位阈值——每张切片恒有 50% 像素是"涡"，物理语义不成立 | 保留原样，仅作参考；重写前不可用 |
-| `FTLE_fitting_utils.py:435` | `compute_ivd_2D` 未 import → `generate_IVD_SLICE` 必崩 | 未修（IVD 评测将另写） |
+| `FTLE_fitting_utils.py:435` | `compute_ivd_2D` 未 import → `generate_IVD_SLICE` 必崩 | **已修**（944d206；且 IVD 本体已改为有号涡量，见 code_review §F） |
 | `FTLE_fitting_utils.py:896` | `temporal_downsamplePathlineCrossPrimitive` 不存在（只有 …Regular/…Random）→ `PointWiseFTLETrainDataset` 必崩 | 未修（属失败 SR 线） |
-| `FTLE_fitting_utils.py:126` | 对**带符号**的 dx0 用 `clamp_min(1e-12)`——若邻居次序颠倒，Jacobian 爆到 1e12 且无声 | 未修，重写时改 `.abs()` + 符号处理 |
+| `FTLE_fitting_utils.py:126` | 对**带符号**的 dx0 用 `clamp_min(1e-12)`——若邻居次序颠倒，Jacobian 爆到 1e12 且无声 | **已修**（944d206，符号保持；交换 x± 后 FTLE 精确不变，有测试） |
 | `FTLE_fitting_utils.py:245` | 低分辨率 linspace 网格不是高分辨率网格子集（`flowmap_sr.py` 的 `hi[::k,::k]` 才是对的） | 未修 |
-| `debug_checks.py:29` | `_LEVEL=1` 硬编码，`FMT_DEBUG` 环境变量失效。〔修正 2026-08-16：本行原写"且每个 train step 强制一次 GPU→CPU 同步"——该说法在本仓库不成立，`check_train_step` 在本仓库无调用点（原说法来自 PyflowVis 的 FTLE_experiment.py 训练循环，未复制）；实际代价在数据集生成路径的 `check_ftle_field`（每张 FTLE 切片约 6 遍全量扫描且无法关闭）。详见 docs/code_review_2026-08-16.md §D〕 | 未修 |
-| `pnn/models/point_nn.py:111,135` | `torch.arange(...).cuda()` 硬编码，CPU 上崩；`embed_dim % 6 != 0` 时静默错维 | 未修 |
+| `debug_checks.py:29` | `_LEVEL=1` 硬编码，`FMT_DEBUG` 环境变量失效。〔修正 2026-08-16：本行原写"且每个 train step 强制一次 GPU→CPU 同步"——该说法在本仓库不成立，`check_train_step` 在本仓库无调用点（原说法来自 PyflowVis 的 FTLE_experiment.py 训练循环，未复制）；实际代价在数据集生成路径的 `check_ftle_field`（每张 FTLE 切片约 6 遍全量扫描且无法关闭）。详见 docs/code_review_2026-08-16.md §D〕 | **已修**（944d206，恢复 `FMT_DEBUG` 环境变量，默认关闭） |
+| `pnn/models/point_nn.py:111,135` | `torch.arange(...).cuda()` 硬编码，CPU 上崩；`embed_dim % 6 != 0` 时静默错维 | `.cuda()` **已修**（944d206，设备无关，有 CPU 测试）；整除假设仍在 |
 | `FLowUtils/VectorField2d.py:250,545`、`VectorField3d.py:194,209` | `SteadyVectorField2D.get_vector`、`UnsteadyVectorField2DTrainable.__init__`、3D 两个构造/切片方法均为必崩代码（参数错位/公式错） | 未修，3D 重启前必须先修 |
 | `FLowUtils/KillingObserver2D.py` | 瞬时角速度符号疑与场定义相反（`0.5(du/dy−dv/dx)` vs +c 逆时针），做不变性测试前需先用 `constant_rotation` 解析场校准符号 | 待验证 |
 | requirements_fmt.txt | 原为 UTF-16LE，pip 读不了 | **本仓库已转 UTF-8** |
-| `pointnet2_ops` 本地路径安装 | 换机器必断；实际上当前代码已不需要它（import 被注释） | 从依赖里可去除 |
+| `pointnet2_ops` 本地路径安装 | 换机器必断；实际上当前代码已不需要它（import 被注释） | **已修**（944d206，已从 requirements_fmt.txt 移除） |
 
 ## P8. 方法论问题：结论没有载体
 

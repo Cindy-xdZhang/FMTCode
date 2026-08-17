@@ -10,7 +10,7 @@
 
 | 版本 | 日期 | 任务 | 技术要点 | 主要代码路径 | config | 指标（协议见下） | 结论 |
 |---|---|---|---|---|---|---|---|
-| （待跑）mainExp_1.1 | — | Task1 | 旧法冻结复跑：FMT(PosE+同时刻跨线分组+LGA+Pool, stages=2, embed24, alpha1000, beta19, temporal_head=None) + KMeans(k=2)，4 输入视图；补定量协议与确定性设置。注：分组已从 GeoLinePicker 重构为 `group_same_timestep`，经测试与旧实现逐位一致（commit ca653fd），故仍视为"旧法冻结" | `FMT_Clustering.py`, `FMT_Utils/FMT_encoder.py` | `config/PathlineFMTclustering.yaml` | ARI / NMI / F1(vs IVD阈值) / F1(vs Vatistas解析标签) | — |
+| （待跑）mainExp_1.1 | — | Task1 | 旧法冻结复跑：FMT(PosE+同时刻跨线分组+LGA+Pool, stages=2, embed24, alpha1000, beta19, temporal_head=None) + KMeans(k=2)，4 输入视图；补定量协议与确定性设置。注：分组已从 GeoLinePicker 重构为 `group_same_timestep`，经测试与旧实现逐位一致（commit ca653fd），故仍视为"旧法冻结"。复跑前已修复两处数据侧 bug（commit 944d206）：时间重采样改为先过滤无效 primitive；积分后端 CPU/CUDA 语义统一——它们改变的是"数据正确性"而非方法本身。eval/train 模式两臂均测（协议要求） | `FMT_Clustering.py`, `FMT_Utils/FMT_encoder.py` | `config/PathlineFMTclustering.yaml` | ARI / NMI / F1(vs IVD阈值) / F1(vs Vatistas解析标签) | — |
 | （待跑）Verify_objectivity_1.1 | — | Task1 | Killing 观察者不变性测试：随机时变刚体观察者变换场 → 重积分 → 重编码 → 特征漂移量化 | `FLowUtils/KillingObserver2D.py`（符号先校准，见问题分析 P7） | — | 特征相对漂移 / 聚类标签翻转率 | — |
 
 ## 定量协议（v1，改动需升版本并注明）

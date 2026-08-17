@@ -62,6 +62,25 @@
 
 `first_principles_analysis.md` P7 原写"`debug_checks._LEVEL=1` 硬编码……**且每个 train step 强制一次 GPU→CPU 同步**"。修正：后半句在本仓库不成立——`check_train_step` 在本仓库无调用点（该说法源自 PyflowVis 的 FTLE_experiment.py 训练循环，未复制）；实际代价位于数据集生成路径的 `check_ftle_field`（每张 FTLE 切片 ~6 遍全量扫描且无法用环境变量关闭）。P7 表已同步更新。
 
+## F. 修复状态（2026-08-17，commit 944d206）
+
+按"只修有实锤且修法无歧义"的原则，以下发现已修复并带回归测试（全部通过）：
+
+| 发现 | 修复与证据 |
+|---|---|
+| A1 观察者平移速率项 | 改为对 c(t)=Os−Q·p 的精确链式求导（任意 center 成立）。测试：观察者看自身 Killing 场残差 0.56 → **6.7e-16**；pathline 等变性终点误差 0.2+ → **0.0012**（tests/test_observer_transform.py） |
+| A2 IVD 用 \|ω\| | 新增 `compute_vorticity_2D`（有号），IVD 改用之；curl_magnitude 语义不变。测试：反向旋转双半平面 IVD 中位数 ~0 → **1.000**；刚体旋转 IVD=0（tests/test_labels_and_loaders.py） |
+| A3 Amira 3 字节错位 | 正则消费 `@N` 行；真实格式与自写格式均逐位往返（同上测试） |
+| A4 采样先于过滤 | FMT_Clustering 改为先 `keep_full` 过滤再 AngleAwareSampling |
+| A6 CPU/CUDA 五处分歧 | kernel 移除 t0 零速度早退（GPU 涡心 primitive 不再被丢，valid 1 → 100）；CPU 先验新点再记录、float64、方法名大小写不敏感；t_target 双后端统一裁剪+响亮警告；.cu 路径改为模块相对。冒烟：GPU/CPU **valid_steps 完全一致，端点差 6e-8**（tests/test_integrator_and_utils.py + parity smoke） |
+| A7 NetCDF ['x','y'] 回退 | 移除该候选（在本 loader 中必然只会命中坐标轴）；全不匹配改为 raise |
+| A8 zip 错位 | extract_patches 对 loader/spec 长度不一致 fail fast |
+| A9 p2n clamp | 改稳定 softplus。测试：远场衰减比 1/(2πr) 的比值 **1.000**（此前线性增长） |
+| A10 requirements 本地路径 | 已删除该行（运行期已不需要 pointnet2_ops） |
+| B 组已修 | FTLE 基线符号保持（交换 x± 后 FTLE 仍= ln2，此前 ~1e12 垃圾）；`compute_ivd_2D` 导入；间距判据椭圆化+耗尽告警；AnalyticalFlowCreator 逐帧重建 eval 字典；pnn PosE 设备无关；gen_starts 解包；stable_hash ndarray/set；EasyConfig 空 yaml；debug_checks 恢复 FMT_DEBUG；ScalarField2d `_sanitize_name`/tuple 消费点；yaml 残留 model 块删除 |
+
+**刻意未修**（非"百分百无歧义"）：A5 缺 `.eval()`（eval vs train 模式是 mainExp_1.1 协议要两臂实测的科学决策）；B 组的 normalize∘LocLines 组合、整片 batch 显存、θ 圆统计、涡核出域构成、缓存键弱化（零调用）、multi_lines_vis 第 5 线、死代码/效率项；C 组 C++ 侧问题（另行验证）。
+
 ## E. 建议修复顺序
 
 1. **先修标签与数据正确性**（否则 mainExp_1.1 的定量协议无地基）：A2 IVD 有号化（对齐 3D 版）+ `compute_ivd_2D` 导入；A1 观察者平移项 `−Q(a,b)`；A9 p2n softplus；A8 zip 长度断言；B 组的 enforce_spacing 椭圆化判据。

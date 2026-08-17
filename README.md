@@ -24,6 +24,7 @@
 | a3fd97d | `FMT_Clustering.py` 修复断裂导入（`generate_FLowMap_SLICE` → `generate_Flowmap_SLICE`）；`requirements_fmt.txt` 转 UTF-8 |
 | bd55d45 | **修复 DCT_FMT 自旋盲区 bug**：DFT 幅值成对保留正负频率（旧版顺时针涡特征范数仅为逆时针的 8%）。测试 `tests/test_dct_fmt.py` |
 | ca653fd | **移除 `HierachyFMT_encoder` / `GeoLinePicker`**，FMT 内联等价分组 `group_same_timestep`（与旧实现逐位一致，四种模式 max\|diff\|=0）。测试 `tests/test_fmt_encoder.py` |
+| 944d206 | **修复全部"有实锤且修法无歧义"的 code review 发现**：观察者变换平移项、IVD 有号化、Amira 3 字节错位、采样先过滤、CPU/CUDA 后端语义统一（含 kernel 零速度早退移除）、NetCDF 候选表、Vatistas softplus/间距/zip 断言、FTLE 基线符号、各工具卫生。测试 `tests/test_observer_transform.py`、`test_labels_and_loaders.py`、`test_integrator_and_utils.py`；状态明细见 `docs/code_review_2026-08-16.md` §F |
 
 已知仍处于"带病"状态、使用前需修复的文件见 first_principles_analysis.md 的 P7 表（如 `vortexExtraction_utiles.py` 无 import 语句、`pnn/models/point_nn.py` 硬编码 `.cuda()` 等）。
 
