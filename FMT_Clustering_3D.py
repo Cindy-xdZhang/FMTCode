@@ -23,6 +23,7 @@ from FMT_Utils.FMT_3D_pipeline import (
     visualize_ivd_reference_3d,
     write_run_metadata,
 )
+from FMT_Utils.IVD_parameter_search_3D import search_local_ivd_parameters_3d
 
 
 EXPERIMENT_VERSION = "mainExp_3DFMT_1.1"
@@ -167,6 +168,10 @@ def run(config, input_override=None, output_override=None, seed_time_override=No
         ivd_volume, ivd_axes, field.domainMinBoundary, field.gridInterval,
         seeds_valid, labels, output_dir, percentiles=ivd_percentiles,
     )
+    ivd_search, _ = search_local_ivd_parameters_3d(
+        field, seed_time, seeds_valid, labels,
+        config.visualization.ivd_search_averaging_sizes, output_dir,
+    )
     counts = np.bincount(labels, minlength=int(config.clustering.classes))
     metadata = {
         "experiment": EXPERIMENT_VERSION,
@@ -182,6 +187,7 @@ def run(config, input_override=None, output_override=None, seed_time_override=No
         "cluster_counts": counts.tolist(),
         "ivd_isosurface_levels": ivd_levels,
         "ivd_cluster_metrics": ivd_metrics,
+        "ivd_parameter_search": ivd_search,
         "config": config.dict(),
         "note": "KMeans cluster IDs are arbitrary; this run does not name either cluster vortex.",
     }
@@ -194,6 +200,21 @@ def run(config, input_override=None, output_override=None, seed_time_override=No
             f"IVD p{percentile}: best cluster={values['cluster_as_vortex']}, "
             f"F1={values['f1']:.3f}, IoU={values['iou']:.3f}, "
             f"precision={values['precision']:.3f}, recall={values['recall']:.3f}"
+        )
+    ivd_search_best = ivd_search["vortex_candidate_best"]
+    print(
+        "best post-hoc local IVD: "
+        f"a={ivd_search_best['averaging_size']}, "
+        f"level={ivd_search_best['threshold']:.6g}, "
+        f"cluster={ivd_search_best['cluster_as_vortex']}, "
+        f"F1={ivd_search_best['f1']:.3f}"
+    )
+    unconstrained = ivd_search["unconstrained_best"]
+    if unconstrained != ivd_search_best:
+        print(
+            "unconstrained optimum (reported but rejected as a majority-region solution): "
+            f"a={unconstrained['averaging_size']}, level={unconstrained['threshold']:.6g}, "
+            f"cluster={unconstrained['cluster_as_vortex']}, F1={unconstrained['f1']:.3f}"
         )
     return output_dir
 

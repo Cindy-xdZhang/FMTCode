@@ -8,6 +8,7 @@ Phase 3 of the 3D-flow-vis effort (see docs/flow3dvis.md). Provides:
 """
 import numpy as np
 from numba import njit, prange
+from scipy.ndimage import uniform_filter
 
 
 # --------------------------------------------------------------------------------------
@@ -81,6 +82,30 @@ def compute_ivd_3D(data, dx, dy, dz):
     wx, wy, wz = _vorticity_components(data, dx, dy, dz)
     wx = wx - wx.mean(); wy = wy - wy.mean(); wz = wz - wz.mean()
     return np.sqrt(wx * wx + wy * wy + wz * wz).astype(np.float32)
+
+
+def compute_local_ivd_3D(data, dx, dy, dz, averaging_size):
+    """Return ||omega-local_mean_a(omega)|| for an odd a-by-a-by-a voxel box.
+
+    ``averaging_size=None`` is the standard, whole-slice spatial mean used by IVD.
+    Finite windows use nearest-value boundary extension so the output retains the
+    input volume shape.  The finite-window quantity is a diagnostic generalization,
+    not the standard global-domain IVD definition.
+    """
+    wx, wy, wz = _vorticity_components(data, dx, dy, dz)
+    if averaging_size is None:
+        means = (wx.mean(), wy.mean(), wz.mean())
+    else:
+        size = int(averaging_size)
+        if size < 1 or size % 2 == 0:
+            raise ValueError("averaging_size must be a positive odd integer or None")
+        means = tuple(
+            uniform_filter(component, size=size, mode="nearest")
+            for component in (wx, wy, wz)
+        )
+    return np.sqrt(
+        (wx - means[0]) ** 2 + (wy - means[1]) ** 2 + (wz - means[2]) ** 2
+    ).astype(np.float32)
 
 
 SCALAR_OPS_3D = {

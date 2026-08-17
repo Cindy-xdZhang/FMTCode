@@ -29,6 +29,9 @@ clustering:
 visualization:
   max_pathlines: 32
   ivd_percentiles: [90.0, 95.0, 97.5]
+  # Post-hoc diagnostic search. Odd integers are local a-by-a-by-a voxel boxes;
+  # global preserves the standard whole-domain IVD definition.
+  ivd_search_averaging_sizes: [3, 5, 7, 9, 11, 15, global]
 
 output:
   dir: outputs
