@@ -194,20 +194,49 @@ def visualize_3d_clustering(seeds, labels, primitives, output_dir, max_lines=32)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     labels = np.asarray(labels)
-    colors = np.where(labels == 0, "#277da1", "#f94144")
+    palette = ("#277da1", "#f94144", "#43aa8b", "#f8961e")
+    counts = {int(cluster): int((labels == cluster).sum()) for cluster in np.unique(labels)}
+    # Draw the largest cluster first, so a small coherent cluster remains visible
+    # instead of being hidden by projection overlap.
+    draw_order = sorted(counts, key=counts.get, reverse=True)
+
+    def scatter_clusters(ax, axis_indices, size=6):
+        for cluster in draw_order:
+            mask = labels == cluster
+            color = palette[cluster % len(palette)]
+            coordinates = [seeds[mask, index] for index in axis_indices]
+            ax.scatter(*coordinates, color=color, s=size, alpha=0.72,
+                       label=f"cluster {cluster} (n={counts[cluster]})")
 
     fig = plt.figure(figsize=(9, 7))
     ax = fig.add_subplot(111, projection="3d")
-    ax.scatter(seeds[:, 0], seeds[:, 1], seeds[:, 2], c=colors, s=6, alpha=0.75)
+    scatter_clusters(ax, (0, 1, 2))
     ax.set(xlabel="x", ylabel="y", zlabel="z", title="3D FMT KMeans clusters (IDs are arbitrary)")
+    ax.legend(loc="upper right", fontsize=8)
     fig.tight_layout(); fig.savefig(output_dir / "clusters_3d.png", dpi=220); plt.close(fig)
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
     for ax, (a, b, names) in zip(axes, ((0, 1, "xy"), (0, 2, "xz"), (1, 2, "yz"))):
-        ax.scatter(seeds[:, a], seeds[:, b], c=colors, s=5, alpha=0.7)
+        scatter_clusters(ax, (a, b), size=5)
         ax.set(xlabel=names[0], ylabel=names[1], title=f"{names} projection")
         ax.set_aspect("equal", adjustable="box")
     fig.tight_layout(); fig.savefig(output_dir / "clusters_projections.png", dpi=220); plt.close(fig)
+
+    unique_z = np.unique(seeds[:, 2])
+    selected_z = unique_z[np.linspace(0, len(unique_z) - 1, min(6, len(unique_z))).round().astype(int)]
+    fig, axes = plt.subplots(2, 3, figsize=(14, 8), squeeze=False)
+    for ax, z_value in zip(axes.ravel(), selected_z):
+        plane = np.isclose(seeds[:, 2], z_value)
+        for cluster in draw_order:
+            mask = plane & (labels == cluster)
+            ax.scatter(seeds[mask, 0], seeds[mask, 1], color=palette[cluster % len(palette)],
+                       s=15, alpha=0.82)
+        ax.set(title=f"z={z_value:.3g}", xlabel="x", ylabel="y")
+        ax.set_aspect("equal", adjustable="box")
+    for ax in axes.ravel()[len(selected_z):]:
+        ax.axis("off")
+    fig.suptitle("XY cluster slices at selected z planes")
+    fig.tight_layout(); fig.savefig(output_dir / "clusters_xy_slices.png", dpi=220); plt.close(fig)
 
     fig = plt.figure(figsize=(9, 7)); ax = fig.add_subplot(111, projection="3d")
     rng = np.random.default_rng(0)

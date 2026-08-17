@@ -74,7 +74,8 @@ def smoke_test():
         with np.load(output / "clustering_result.npz") as data:
             assert data["features"].shape[0] == data["labels"].shape[0] > 10
             assert np.unique(data["labels"]).size == 2
-        for name in ("clusters_3d.png", "clusters_projections.png", "cluster_pathlines.png"):
+        for name in ("clusters_3d.png", "clusters_projections.png", "clusters_xy_slices.png",
+                     "cluster_pathlines.png"):
             assert (output / name).stat().st_size > 1000
 
 
