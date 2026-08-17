@@ -1,0 +1,24 @@
+experiment: Verify_3DFMTHyperparam_1.1
+seed: 7068
+
+# Frozen inputs from mainExp_3DFMT_1.1 at physical time t=7.
+input:
+  run_dir: outputs/mainExp_3DFMT_1.1/halfcylinderRe160Resampled_t7
+  field_path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe160Resampled.nc
+  physical_time: 7.0
+  ivd_averaging_size: 11
+  ivd_threshold: 0.9136650586699149
+
+search:
+  num_freq: [2, 3, 4, 6, 8, 12, 16]
+  mode: [magnitude, gram]
+  include_chirality: [false, true]
+  neighbor_pool: [sort, mean, max]
+  neighbor_weight: [0.0, 0.25, 0.5, 1.0, 2.0]
+  coarse_kmeans_n_init: 1
+  stability_kmeans_n_init: 10
+  top_k_for_stability: 10
+  stability_seeds: [7068, 7069, 7070, 7071, 7072]
+
+output:
+  dir: outputs/Verify_3DFMTHyperparam_1.1
