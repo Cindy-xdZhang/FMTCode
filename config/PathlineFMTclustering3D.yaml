@@ -1,0 +1,33 @@
+seed: 7068
+
+dataset:
+  # Supported: NetCDF (.nc) or NPZ with field[T,Z,Y,X,3]. Override with --input.
+  path: C:/path/to/unsteady_3d_field.nc
+  grid_shape: [20, 20, 20]       # [nx, ny, nz] = 8000 primitives before filtering
+  boundary_fraction: 0.08
+  seed_time_ratio: 0.20          # physical time = tmin + ratio*(tmax-tmin)
+
+pathlines:
+  method: RK4
+  dt_scale: 0.25                 # integration dt / source field time interval
+  integration_steps: 48
+  sampled_steps: 32
+  offset_grid_scale: 0.5         # cross offset / smallest spatial grid interval
+  chunk_size: 2048               # expanded pathline seeds per Numba batch
+
+encoder:
+  num_freq: 6
+  mode: gram                     # magnitude or gram
+  include_chirality: true
+  neighbor_pool: sort            # sort is invariant to the six-neighbour ordering
+  neighbor_weight: 0.5           # applied after StandardScaler; therefore not cancelled
+
+clustering:
+  classes: 2
+  n_init: 20
+
+visualization:
+  max_pathlines: 32
+
+output:
+  dir: outputs

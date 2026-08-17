@@ -2,7 +2,7 @@
 
 本仓库是 FMT 研究（对 pathline cross primitive 做无参数几何编码）从 PyflowVis 拆出的重启工作区，只承载三个任务：
 
-- **Task1**：FMT encoder + KMeans 聚类区分 2D 非定常流的涡/非涡区域（入口 `FMT_Clustering.py`）。
+- **Task1**：FMT encoder + KMeans 聚类区分涡/非涡区域。2D 入口为 `FMT_Clustering.py`；首个 3D Fourier 基线入口为 `FMT_Clustering_3D.py`。
 - **Task2**：FMT 插入无监督 VAE 提升特征质量（**尚无实现**，PyflowVis 中也从不存在，需新写）。
 - **Task3**：FMT 用于 3D 涡分类（spanwise / streamwise / hairpin；3D encoder 设计未定，暂不动）。
 
@@ -17,7 +17,7 @@
 
 ## 代码来源与修改声明
 
-全部代码复制自 `C:\Users\xingdi\sources\PyflowVis`（main @ 3040ace，2026-07-23）。相对原仓库的全部改动（各有 commit 与测试）：
+初始代码复制自 `C:\Users\xingdi\sources\PyflowVis`（main @ 3040ace，2026-07-23）；后续新方法直接在本仓库开发。关键改动如下（各有 commit 与测试）：
 
 | commit | 改动 |
 |---|---|
@@ -32,12 +32,13 @@
 
 ```
 FMT_Clustering.py            Task1 入口（已修复可 import）
+FMT_Clustering_3D.py         Task1 的首个 3D Fourier + KMeans 入口
 FMT_Utils/                   encoder 家族（FMT_encoder / DCT_FMT / model_zoo）+ primitive 生成与 FTLE 工具
 FLowUtils/                   2D/3D 场结构、pathline 积分（CUDA+CPU）、涡判据、Killing observer、NetCDF/Amira IO
 DeepUtils/utils/             EasyConfig 等配置工具
 pnn/                         Point-NN 改造版（EncNPNew）+ pathline 可视化（multi_points_vis_fast）
 assets/cuda_kernal/          PathlineIntegration2D.cu（flowlineIntegral 按相对路径加载 → 必须从仓库根目录运行）
-config/                      PathlineFMTclustering.yaml（Task1）、FittingVatistas / VatistasDataset（合成 GT）
+config/                      2D/3D Task1 配置、FittingVatistas / VatistasDataset（合成 GT）
 FittingVatistasParam.py      Vatistas 参数拟合（定量评测的合成标签来源）
 VatistasFlowDatasetGenerator.py
 tests/                       单元测试（DCT_FMT 不变性/旋向、FMT 分组语义），python tests/test_*.py 直接运行
@@ -51,3 +52,13 @@ python FMT_Clustering.py
 ```
 
 前置：`requirements_fmt.txt` 环境；数据路径在 `config/PathlineFMTclustering.yaml` 的 `dataset.dat_dir`（当前指向 OneDrive 的 flowData2d；beads2d / doublegyre2d / rfc2d 无数据文件时会走解析场生成）。CUDA 不可用时积分自动回落 CPU（慢几个数量级）。注意：跑任何实验前先读 `docs/experiment_log.md` 的协议。
+
+## 运行 3D Fourier 聚类基线（mainExp_3DFMT_1.1）
+
+先在 `config/PathlineFMTclustering3D.yaml` 设置 3D 非定常 NetCDF/NPZ 路径，或直接覆盖：
+
+```bash
+python FMT_Clustering_3D.py --input D:/data/field3d.nc
+```
+
+输出在 `outputs/mainExp_3DFMT_1.1/<field>/`：3D 散点、三个正交投影、代表性中心 pathline，以及含完整特征和标签的 `clustering_result.npz`。KMeans 的簇编号 0/1 没有物理语义，需要通过图像判断哪一簇对应涡区。
