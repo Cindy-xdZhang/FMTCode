@@ -33,10 +33,12 @@ def parse_args():
     parser.add_argument("--config", default="config/PathlineFMTclustering3D.yaml")
     parser.add_argument("--input", help="override dataset.path with a .nc or .npz file")
     parser.add_argument("--output", help="override output directory")
+    parser.add_argument("--seed-time", type=float,
+                        help="override dataset.seed_time_ratio with an exact physical time")
     return parser.parse_args()
 
 
-def run(config, input_override=None, output_override=None):
+def run(config, input_override=None, output_override=None, seed_time_override=None):
     seed = int(config.seed)
     random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)
     if torch.cuda.is_available():
@@ -47,11 +49,17 @@ def run(config, input_override=None, output_override=None):
         raise FileNotFoundError(
             f"3D vector field not found: {input_path}. Set dataset.path or pass --input."
         )
-    output_dir = Path(output_override or config.output.dir) / EXPERIMENT_VERSION / input_path.stem
+    run_name = input_path.stem
+    if seed_time_override is not None:
+        run_name += f"_t{float(seed_time_override):g}"
+    output_dir = Path(output_override or config.output.dir) / EXPERIMENT_VERSION / run_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
     field = load_vector_field_3d(input_path)
-    seed_time = field.tmin + float(config.dataset.seed_time_ratio) * (field.tmax - field.tmin)
+    seed_time = (
+        float(seed_time_override) if seed_time_override is not None
+        else field.tmin + float(config.dataset.seed_time_ratio) * (field.tmax - field.tmin)
+    )
     dt = float(field.timeInterval) * float(config.pathlines.dt_scale)
     if dt <= 0:
         raise ValueError("unsteady 3D data with at least two distinct time samples is required")
@@ -192,4 +200,4 @@ def run(config, input_override=None, output_override=None):
 
 if __name__ == "__main__":
     args = parse_args()
-    run(EasyConfig(args.config), args.input, args.output)
+    run(EasyConfig(args.config), args.input, args.output, args.seed_time)

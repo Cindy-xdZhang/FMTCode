@@ -70,7 +70,8 @@ def smoke_test():
             "visualization": {"max_pathlines": 8, "ivd_percentiles": [90.0, 95.0, 97.5]},
             "output": {"dir": str(tmp / "outputs")},
         })
-        output = run(cfg)
+        output = run(cfg, seed_time_override=0.1)
+        assert output.name.endswith("_t0.1")
         with np.load(output / "clustering_result.npz") as data:
             assert data["features"].shape[0] == data["labels"].shape[0] > 10
             assert np.unique(data["labels"]).size == 2
