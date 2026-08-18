@@ -1,0 +1,6 @@
+experiment: Verify_VAEFailureHighRe_1.1
+source_config: config/Verify_Task2Universality_1.1.yaml
+datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400]
+latent_dims: [4, 8, 16, 32, 64]
+training_seeds: [7068, 7069, 7070]
+output_dir: outputs/Verify_VAEFailureHighRe_1.1
