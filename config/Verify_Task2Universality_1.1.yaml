@@ -16,12 +16,12 @@ datasets:
     enabled: true
   - id: channel
     path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel.vtk
-    enabled: false
-    reason: single steady VTK snapshot; no time dimension
-  - id: deltaWing_LBM_requested
-    path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/deltaWing_mag0_3reesampled.nc
-    enabled: false
-    reason: requested path does not exist; nearby deltaWing_mag0_3.nc is not silently substituted
+    enabled: true
+    generated_unsteady: killing_observer_pushforward
+  - id: deltaWing_LBM
+    path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/deltaWing_mag0_3.nc
+    enabled: true
+    substitution_for: LBM_3D/deltaWing_mag0_3reesampled.nc
 
 sampling:
   timeslices: 10
@@ -30,6 +30,11 @@ sampling:
   max_spatial_dim: 96
   seed_grid_shape: [16, 16, 16]
   boundary_fraction: 0.08
+
+channel_observer:
+  total_frames: 159
+  duration: 1.0
+  output_crop_fraction: 0.10
 
 pathlines:
   method: RK4
