@@ -49,17 +49,26 @@ def summarize(result_root, output_dir):
         })
     improvements = np.asarray([row["improvement"] for row in flow_rows])
     by_name = {row["dataset"]: row["improvement"] for row in flow_rows}
-    required = {"cylinder3d", "tangaroa", "deltaWing_LBM", "deltaWing_resampled", "f22raptor"}
+    required = {
+        "cylinder3d", "halfcylinderRe640", "halfcylinderRe6400", "tangaroa",
+        "deltaWing_LBM", "deltaWing_resampled", "f22raptor",
+    }
     missing = required.difference(by_name)
     if missing:
         raise RuntimeError(f"missing physical-flow results: {sorted(missing)}")
-    # The two deltaWing files are related variants of one physical family.  The
-    # channel entry is a synthetic objectivity control generated from one steady
-    # field, not an independent unsteady flow.  Collapse/exclude them accordingly.
+    # Reynolds-number variants of half-cylinder and the two deltaWing files are
+    # related members of one physical family.  The channel entry is a synthetic
+    # objectivity control, not an independent unsteady flow.  Collapse/exclude
+    # them accordingly instead of inflating the independent sample count.
+    cylinder_improvement = np.mean([
+        by_name["cylinder3d"], by_name["halfcylinderRe640"],
+        by_name["halfcylinderRe6400"],
+    ])
+    delta_improvement = np.mean([
+        by_name["deltaWing_LBM"], by_name["deltaWing_resampled"]
+    ])
     family_improvements = np.asarray([
-        by_name["cylinder3d"],
-        by_name["tangaroa"],
-        np.mean([by_name["deltaWing_LBM"], by_name["deltaWing_resampled"]]),
+        cylinder_improvement, by_name["tangaroa"], delta_improvement,
         by_name["f22raptor"],
     ])
     statistic, pvalue = wilcoxon(
@@ -78,17 +87,19 @@ def summarize(result_root, output_dir):
         "bootstrap_95_ci_for_mean": [float(v) for v in np.percentile(bootstrap, [2.5, 97.5])],
         "conservative_physical_family_test": {
             "independent_unit": "physical flow family",
-            "families": ["cylinder3d", "tangaroa", "deltaWing", "f22raptor"],
-            "deltaWing_improvement": float(family_improvements[2]),
+            "families": ["halfcylinder", "tangaroa", "deltaWing", "f22raptor"],
+            "halfcylinder_improvement": float(cylinder_improvement),
+            "deltaWing_improvement": float(delta_improvement),
             "wilcoxon_one_sided_greater": {
                 "statistic": float(statistic), "pvalue": float(pvalue)
             },
         },
         "warning": (
-            "Six dataset entries are descriptive, not six independent physical flows. "
+            "Dataset entries are descriptive, not independent physical flows. "
             "channel is a synthetic unsteady objectivity control generated from a steady VTK field; "
-            "the two deltaWing entries are related resolutions/sources and are collapsed into one "
-            "family for the conservative Wilcoxon test. Seeds are paired repeats, not independent units."
+            "three half-cylinder Reynolds numbers and two deltaWing variants are each collapsed "
+            "into one family for the conservative Wilcoxon test. Seeds are paired repeats, not "
+            "independent units."
         ),
         "flows": flow_rows,
     }

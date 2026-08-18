@@ -5,6 +5,12 @@ datasets:
   - id: cylinder3d
     path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe160Resampled.nc
     enabled: true
+  - id: halfcylinderRe640
+    path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe640resampled.nc
+    enabled: true
+  - id: halfcylinderRe6400
+    path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe6400.nc
+    enabled: true
   - id: tangaroa
     path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/tangaroa.nc
     enabled: true
