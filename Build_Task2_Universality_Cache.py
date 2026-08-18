@@ -16,7 +16,7 @@ from FMT_Utils.FMT_3D_pipeline import (
     compute_ivd_reference_3d, generate_seeding_grid_3d, integrate_cross_primitives_3d,
 )
 from FMT_Utils.NetCDF_window_3D import (
-    inspect_netcdf_3d, interior_time_indices, load_netcdf_window_3d,
+    inspect_netcdf_3d, load_netcdf_window_3d, resolve_time_indices,
 )
 
 
@@ -53,10 +53,11 @@ def build_dataset(config, dataset_id, overwrite=False):
         float(config.pathlines.dt_scale) * int(config.pathlines.integration_steps)
     ))
     frame_count = future_intervals + 2
-    indices = interior_time_indices(
+    indices = resolve_time_indices(
         info["shape"]["t"], int(config.sampling.timeslices),
         float(config.sampling.begin_fraction), float(config.sampling.end_fraction),
         required_future_frames=frame_count - 1,
+        fixed_indices=getattr(config.sampling, "fixed_time_indices", None),
     )
     output_dir = Path(config.output.cache_dir) / str(item.id)
     output_dir.mkdir(parents=True, exist_ok=True)

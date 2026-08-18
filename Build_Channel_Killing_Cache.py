@@ -20,7 +20,7 @@ from FMT_Utils.FMT_3D_pipeline import (
 from FMT_Utils.KillingObserver3D import (
     compose_steady_to_unsteady, integrate_killing_frame, smooth_channel_observer,
 )
-from FMT_Utils.NetCDF_window_3D import interior_time_indices
+from FMT_Utils.NetCDF_window_3D import resolve_time_indices
 
 
 def load_channel_vtk(path, max_spatial_dim, crop_fraction):
@@ -83,9 +83,10 @@ def build(config, overwrite=False):
         float(config.pathlines.dt_scale) * int(config.pathlines.integration_steps)
     ))
     frame_count = future_intervals + 2
-    indices = interior_time_indices(
+    indices = resolve_time_indices(
         total_frames, int(config.sampling.timeslices), float(config.sampling.begin_fraction),
         float(config.sampling.end_fraction), required_future_frames=frame_count - 1,
+        fixed_indices=getattr(config.sampling, "fixed_time_indices", None),
     )
     ox, oy, oz = axes; shape_zyx = (len(oz), len(oy), len(ox))
     dmin = np.array([ox[0], oy[0], oz[0]], dtype=np.float32)

@@ -1,0 +1,30 @@
+experiment: Verify_PathlineHyperparams3D_1.1
+source_config: config/Verify_Task2Universality_1.1.yaml
+datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400, tangaroa,
+  deltaWing_resampled, deltaWing_LBM, f22raptor, channel]
+screening_seed: 7068
+confirmation_seeds: [7069, 7070]
+
+# Every variant uses the same ten source indices. Training/evaluation keeps only
+# seeds whose seven pathlines are valid under all seven variants.
+comparison:
+  population: all_variants_common_valid_seeds
+  physical_families:
+    halfcylinder: [cylinder3d, halfcylinderRe640, halfcylinderRe6400]
+    deltaWing: [deltaWing_resampled, deltaWing_LBM]
+    tangaroa: [tangaroa]
+    f22raptor: [f22raptor]
+  synthetic_control: channel
+
+variants:
+  # Integration-step-size axis: physical horizon is fixed at 12 source intervals.
+  - {id: dt_small, dt_scale: 0.125, integration_steps: 96, sampled_steps: 32}
+  - {id: baseline, dt_scale: 0.25, integration_steps: 48, sampled_steps: 32}
+  - {id: dt_large, dt_scale: 0.375, integration_steps: 32, sampled_steps: 32}
+  # Total-step axis: dt is fixed, so this also changes the observation horizon.
+  - {id: steps_short, dt_scale: 0.25, integration_steps: 32, sampled_steps: 32}
+  - {id: steps_long, dt_scale: 0.25, integration_steps: 96, sampled_steps: 32}
+  # Post-integration sampling axis: the integrated pathlines are identical.
+  - {id: samples_16, dt_scale: 0.25, integration_steps: 48, sampled_steps: 16}
+  - {id: samples_48, dt_scale: 0.25, integration_steps: 48, sampled_steps: 48}
+output_dir: outputs/Verify_PathlineHyperparams3D_1.1

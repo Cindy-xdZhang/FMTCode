@@ -8,7 +8,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from FMT_Utils.NetCDF_window_3D import (
-    inspect_netcdf_3d, interior_time_indices, load_netcdf_window_3d,
+    inspect_netcdf_3d, interior_time_indices, load_netcdf_window_3d, resolve_time_indices,
 )
 
 
@@ -47,6 +47,22 @@ def test_window_and_schedule():
         assert field.tmin == 0 and field.tmax == 3
 
 
+def test_frozen_time_schedule_validation():
+    expected = np.array([20, 28, 35, 43, 51, 58, 66, 74, 81, 89])
+    np.testing.assert_array_equal(
+        resolve_time_indices(100, 10, 0.2, 0.9, 5, fixed_indices=expected), expected
+    )
+    for invalid in ([20] * 10, [20, 28, 35, 43, 51, 58, 66, 74, 81, 96],
+                    [20, 28, 35, 43, 51, 58, 66, 74, 81, 89.5]):
+        try:
+            resolve_time_indices(100, 10, 0.2, 0.9, 5, fixed_indices=invalid)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"invalid fixed schedule was accepted: {invalid}")
+
+
 if __name__ == "__main__":
     test_window_and_schedule()
+    test_frozen_time_schedule_validation()
     print("NETCDF 3D WINDOW TEST PASSED")

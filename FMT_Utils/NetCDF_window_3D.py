@@ -64,6 +64,26 @@ def interior_time_indices(time_count, count=10, begin_fraction=0.20, end_fractio
     return indices
 
 
+def resolve_time_indices(time_count, count, begin_fraction, end_fraction,
+                         required_future_frames=0, fixed_indices=None):
+    """Select time indices or validate a caller-supplied frozen schedule."""
+    if fixed_indices is None:
+        return interior_time_indices(
+            time_count, count, begin_fraction, end_fraction, required_future_frames
+        )
+    raw = np.asarray(fixed_indices)
+    if raw.ndim != 1 or len(raw) != int(count):
+        raise ValueError("fixed_time_indices count does not match sampling.timeslices")
+    if not np.isfinite(raw).all() or not np.equal(raw, np.rint(raw)).all():
+        raise ValueError("fixed_time_indices must contain finite integers")
+    indices = raw.astype(np.int64)
+    if len(np.unique(indices)) != len(indices) or np.any(np.diff(indices) <= 0):
+        raise ValueError("fixed_time_indices must be unique and strictly increasing")
+    if indices[0] < 0 or indices[-1] + int(required_future_frames) >= int(time_count):
+        raise ValueError("fixed_time_indices do not leave enough future frames")
+    return indices
+
+
 def load_netcdf_window_3d(path, start_index, frame_count, max_spatial_dim=96):
     """Read a temporal window and strided spatial grid into UnsteadyVectorField3D."""
     path = Path(path)
