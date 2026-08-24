@@ -136,3 +136,16 @@ def test_raw_pca_residual_training_smoke(tmp_path):
     assert row["validation_alpha"] == 1.0
     saved = torch.load(row["checkpoint"], map_location="cpu", weights_only=False)
     assert saved["auxiliary_transform"]["components"].shape == (8, 84)
+
+
+if __name__ == "__main__":
+    import tempfile
+    from pathlib import Path
+
+    test_raw_pca_is_train_only_and_reproducible()
+    test_fixed_nonzero_alpha_is_allowed_for_ap_selection()
+    with tempfile.TemporaryDirectory() as directory:
+        test_raw_method_selection_uses_family_validation_ap(Path(directory))
+    with tempfile.TemporaryDirectory() as directory:
+        test_raw_pca_residual_training_smoke(Path(directory))
+    print("TASK3 MAIN TABLE TEST PASSED")
