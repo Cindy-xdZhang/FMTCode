@@ -1,7 +1,11 @@
 import csv
+import sys
+from pathlib import Path
 
 import numpy as np
 import torch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from Evaluate_Task3_MainTable import _select_raw_by_validation
 from FMT_Utils.PathlineClassifier_3D import PathlineBinaryClassifier3D
