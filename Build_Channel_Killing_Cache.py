@@ -83,10 +83,17 @@ def build(config, overwrite=False):
         float(config.pathlines.dt_scale) * int(config.pathlines.integration_steps)
     ))
     frame_count = future_intervals + 2
+    fixed_by_dataset = getattr(
+        config.sampling, "fixed_time_indices_by_dataset", None
+    )
+    fixed_indices = (
+        fixed_by_dataset.get("channel") if fixed_by_dataset is not None
+        else getattr(config.sampling, "fixed_time_indices", None)
+    )
     indices = resolve_time_indices(
         total_frames, int(config.sampling.timeslices), float(config.sampling.begin_fraction),
         float(config.sampling.end_fraction), required_future_frames=frame_count - 1,
-        fixed_indices=getattr(config.sampling, "fixed_time_indices", None),
+        fixed_indices=fixed_indices,
     )
     ox, oy, oz = axes; shape_zyx = (len(oz), len(oy), len(ox))
     dmin = np.array([ox[0], oy[0], oz[0]], dtype=np.float32)
@@ -150,7 +157,7 @@ def build(config, overwrite=False):
                             valid_mask=valid_mask, line_lengths=lengths,
                             metadata_json=np.asarray(json.dumps(metadata, sort_keys=True)))
         manifest["slices"].append(metadata)
-        print(f"[channel] {ordinal + 1}/10 index={source_index}: "
+        print(f"[channel] {ordinal + 1}/{len(indices)} index={source_index}: "
               f"valid={len(seeds_valid)}/{len(seeds)}, positives={reference.sum()}, "
               f"elapsed={metadata['elapsed_seconds']:.1f}s")
     (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")

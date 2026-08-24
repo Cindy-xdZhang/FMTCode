@@ -1,0 +1,43 @@
+experiment: Confirm_Task3UniversalityKinematic_2.1
+seed: 7068
+
+datasets:
+  - {id: cylinder3d, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe160Resampled.nc", enabled: true}
+  - {id: halfcylinderRe640, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe640resampled.nc", enabled: true}
+  - {id: halfcylinderRe6400, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe6400.nc", enabled: true}
+  - {id: tangaroa, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/tangaroa.nc", enabled: true}
+  - {id: deltaWing_resampled, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/deltaWing_mag0_3reesampled.nc", enabled: true}
+  - {id: f22raptor, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/f22raptor_re400000.nc", enabled: true}
+  - {id: channel, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel.vtk", enabled: true, generated_unsteady: killing_observer_pushforward}
+  - {id: deltaWing_LBM, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/deltaWing_mag0_3.nc", enabled: true}
+
+sampling:
+  timeslices: 4
+  begin_fraction: 0.20
+  end_fraction: 0.90
+  fixed_time_indices_by_dataset:
+    cylinder3d: [48, 71, 94, 117]
+    halfcylinderRe640: [24, 34, 44, 54]
+    halfcylinderRe6400: [48, 71, 94, 117]
+    tangaroa: [64, 94, 125, 156]
+    deltaWing_resampled: [42, 68, 106, 145]
+    deltaWing_LBM: [56, 92, 146, 200]
+    f22raptor: [38, 62, 99, 124]
+    channel: [38, 62, 99, 124]
+  max_spatial_dim: 96
+  seed_grid_shape: [16, 16, 16]
+  boundary_fraction: 0.08
+
+channel_observer: {total_frames: 159, duration: 1.0, output_crop_fraction: 0.10}
+pathlines:
+  method: RK4
+  dt_scale: 0.25
+  integration_steps: 48
+  sampled_steps: 32
+  offset_grid_scale: 0.5
+  chunk_size: 2048
+encoder: {num_freq: 6, mode: gram, include_chirality: true, neighbor_pool: sort, neighbor_weight: 0.5}
+reference: {definition: standard_global_ivd, percentile: 95.0}
+output:
+  cache_dir: outputs/Confirm_Task3UniversalityKinematic_2.1/cache
+  result_dir: outputs/Confirm_Task3UniversalityKinematic_2.1/results

@@ -1,0 +1,24 @@
+experiment: mainExp_Task3_3D_3.1_baselines_new2
+source_cache_root: outputs/mainExp_Task123NewFlows_1.1/development_cache
+label_cache_root: outputs/mainExp_Task3NewFlows_2.3/development_labels/labels
+output_dir: outputs/mainExp_Task3_3D_3.1/development_new2/baselines
+datasets: [boeing747, smokeBuoyancy]
+sampled_steps: 32
+fmt_subset: all_plus_gram_kinematic
+fmt_gram_num_freq: 2
+variants: [raw, raw_wide]
+split:
+  train_ordinals: [0, 1, 2, 3, 4, 5]
+  validation_ordinals: [6, 7]
+  test_ordinals: [8, 9]
+evaluation: {test_enabled: false}
+model: {temporal_width: 64, embedding_dim: 128, auxiliary_dim: 64}
+training:
+  device: auto
+  seeds: [30, 31, 32, 33, 34]
+  batch_size: 512
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  max_epochs: 100
+  patience: 20
+  min_delta: 0.0001

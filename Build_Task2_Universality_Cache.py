@@ -20,6 +20,25 @@ from FMT_Utils.NetCDF_window_3D import (
 )
 
 
+def resolve_primitive_offset(grid_interval, scale, mode="min"):
+    spacing = np.asarray(grid_interval, dtype=np.float64)
+    spacing = spacing[np.isfinite(spacing) & (spacing > 0)]
+    if len(spacing) != 3:
+        raise ValueError(f"expected three positive spatial intervals, got {grid_interval}")
+    if mode == "min":
+        base = spacing.min()
+    elif mode == "geometric_mean":
+        base = float(np.prod(spacing) ** (1.0 / len(spacing)))
+    elif mode == "max":
+        base = spacing.max()
+    else:
+        raise ValueError("pathlines.offset_mode must be min, geometric_mean, or max")
+    offset = float(base) * float(scale)
+    if not np.isfinite(offset) or offset <= 0:
+        raise ValueError("primitive offset must be finite and positive")
+    return offset
+
+
 def _dataset(config, dataset_id):
     entries = []
     for item in config.datasets:
@@ -53,11 +72,18 @@ def build_dataset(config, dataset_id, overwrite=False):
         float(config.pathlines.dt_scale) * int(config.pathlines.integration_steps)
     ))
     frame_count = future_intervals + 2
+    fixed_by_dataset = getattr(
+        config.sampling, "fixed_time_indices_by_dataset", None
+    )
+    fixed_indices = (
+        fixed_by_dataset.get(str(item.id)) if fixed_by_dataset is not None
+        else getattr(config.sampling, "fixed_time_indices", None)
+    )
     indices = resolve_time_indices(
         info["shape"]["t"], int(config.sampling.timeslices),
         float(config.sampling.begin_fraction), float(config.sampling.end_fraction),
         required_future_frames=frame_count - 1,
-        fixed_indices=getattr(config.sampling, "fixed_time_indices", None),
+        fixed_indices=fixed_indices,
     )
     output_dir = Path(config.output.cache_dir) / str(item.id)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -70,14 +96,18 @@ def build_dataset(config, dataset_id, overwrite=False):
             with np.load(output_path) as cached:
                 metadata = json.loads(str(cached["metadata_json"]))
             manifest["slices"].append(metadata)
-            print(f"[{item.id}] {ordinal + 1}/10 cached: {output_path.name}")
+            print(
+                f"[{item.id}] {ordinal + 1}/{len(indices)} cached: "
+                f"{output_path.name}"
+            )
             continue
         started = time.time()
         field, load_metadata = load_netcdf_window_3d(
             path, int(source_index), frame_count, int(config.sampling.max_spatial_dim)
         )
-        offset = float(np.min(field.gridInterval[field.gridInterval > 0])) * float(
-            config.pathlines.offset_grid_scale
+        offset = resolve_primitive_offset(
+            field.gridInterval, float(config.pathlines.offset_grid_scale),
+            str(getattr(config.pathlines, "offset_mode", "min")),
         )
         seeds, _ = generate_seeding_grid_3d(
             field, config.sampling.seed_grid_shape,
@@ -110,6 +140,8 @@ def build_dataset(config, dataset_id, overwrite=False):
             "total_primitives": int(len(seeds)), "ivd_threshold": threshold,
             "ivd_positive_count": int(reference.sum()),
             "ivd_positive_fraction": float(reference.mean()),
+            "primitive_offset": offset,
+            "primitive_offset_mode": str(getattr(config.pathlines, "offset_mode", "min")),
             "elapsed_seconds": time.time() - started,
         }
         np.savez_compressed(
@@ -119,7 +151,7 @@ def build_dataset(config, dataset_id, overwrite=False):
             metadata_json=np.asarray(json.dumps(metadata, sort_keys=True)),
         )
         manifest["slices"].append(metadata)
-        print(f"[{item.id}] {ordinal + 1}/10 index={source_index}: "
+        print(f"[{item.id}] {ordinal + 1}/{len(indices)} index={source_index}: "
               f"valid={len(seeds_valid)}/{len(seeds)}, positives={reference.sum()}, "
               f"elapsed={metadata['elapsed_seconds']:.1f}s")
         del field, primitives, raw_features, fmt_features, ivd_volume

@@ -1,0 +1,34 @@
+experiment: Confirm_Task3UniversalityBaselines_1.1
+source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+label_cache_root: outputs/Verify_Task3Universality_1.1/labels
+output_dir: outputs/Confirm_Task3Universality_1.1/baselines_seed21_22
+datasets:
+  - cylinder3d
+  - halfcylinderRe640
+  - halfcylinderRe6400
+  - tangaroa
+  - deltaWing_resampled
+  - deltaWing_LBM
+  - f22raptor
+  - channel
+sampled_steps: 32
+fmt_subset: all
+variants: [raw, raw_wide]
+split:
+  train_ordinals: [0, 1, 2, 3, 4, 5]
+  validation_ordinals: [6, 7]
+  test_ordinals: [8, 9]
+model:
+  temporal_width: 64
+  embedding_dim: 128
+  auxiliary_dim: 64
+training:
+  device: auto
+  seeds: [21, 22]
+  batch_size: 512
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  max_epochs: 60
+  patience: 10
+  min_delta: 0.0001
+

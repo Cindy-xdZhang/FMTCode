@@ -1,0 +1,30 @@
+experiment: mainExp_Task3_3D_3.1_confirmation_new2
+seed: 7068
+
+datasets:
+  - {id: boeing747, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/boeing747_808_2392.nc", enabled: true}
+  - {id: smokeBuoyancy, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/SmokeBuoyancy80_239.nc", enabled: true}
+
+sampling:
+  timeslices: 8
+  begin_fraction: 0.20
+  end_fraction: 0.90
+  fixed_time_indices_by_dataset:
+    boeing747: [49, 66, 83, 100, 118, 135, 152, 169]
+    smokeBuoyancy: [39, 53, 67, 80, 95, 108, 122, 136]
+  max_spatial_dim: 96
+  seed_grid_shape: [16, 16, 16]
+  boundary_fraction: 0.08
+
+pathlines:
+  method: RK4
+  dt_scale: 0.25
+  integration_steps: 48
+  sampled_steps: 32
+  offset_grid_scale: 0.5
+  chunk_size: 2048
+encoder: {num_freq: 6, mode: gram, include_chirality: true, neighbor_pool: sort, neighbor_weight: 0.5}
+reference: {definition: standard_global_ivd, percentile: 95.0}
+output:
+  cache_dir: outputs/mainExp_Task3_3D_3.1/confirmation_cache_new2
+  result_dir: outputs/mainExp_Task3_3D_3.1/unused_reference_new2

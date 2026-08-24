@@ -10,6 +10,168 @@ from __future__ import annotations
 import torch
 
 
+def time_local_gram_dft_features_3d(
+    pathlines: torch.Tensor,
+    num_freq: int = 6,
+    subtract_initial: bool = True,
+    normalize_initial_scale: bool = True,
+    eps: float = 1e-8,
+    return_numpy: bool = True,
+):
+    """Encode frame-indifferent neighbour deformation before temporal DFT.
+
+    For every time sample, the six neighbour offsets relative to the centre
+    line form a ``6 x 3`` matrix ``D(t)``.  Its Gram matrix
+    ``G(t) = D(t) D(t)^T`` is unchanged by an arbitrary time-dependent rigid
+    observer transformation because translation cancels and
+    ``D(t) Q(t)^T Q(t) D(t)^T = G(t)``.  The upper-triangular 21 scalar time
+    series are then encoded by their real Fourier coefficients.
+
+    The output contains ``num_freq`` real and ``num_freq - 1`` imaginary
+    coefficients for every Gram entry; the identically-zero imaginary DC
+    coefficient is omitted.  With six frequencies this gives 231 features.
+    Neighbour order is semantic and must remain
+    ``x+, x-, y+, y-, z+, z-``.
+    """
+    pathlines = torch.as_tensor(pathlines)
+    if pathlines.ndim != 4 or pathlines.shape[1] != 7 or pathlines.shape[-1] < 3:
+        raise ValueError(
+            "pathlines must be [N,7,L,C>=3] with centre then x+/x-/y+/y-/z+/z-"
+        )
+    if pathlines.shape[2] < 2:
+        raise ValueError("pathlines must contain at least two time samples")
+    independent_bins = pathlines.shape[2] // 2 + 1
+    if not 1 <= int(num_freq) <= independent_bins:
+        raise ValueError(
+            f"num_freq={num_freq} must be in [1,{independent_bins}] "
+            f"for L={pathlines.shape[2]}"
+        )
+
+    xyz = pathlines[..., :3]
+    if not xyz.is_floating_point():
+        xyz = xyz.float()
+    relative = xyz[:, 1:] - xyz[:, :1]
+    relative_t = relative.permute(0, 2, 1, 3)
+    gram = torch.einsum("ntic,ntjc->ntij", relative_t, relative_t)
+    upper = torch.triu_indices(6, 6, device=gram.device)
+    series = gram[:, :, upper[0], upper[1]]
+
+    if normalize_initial_scale:
+        initial = gram[:, 0]
+        scale = initial.diagonal(dim1=-2, dim2=-1).mean(dim=-1)
+        series = series / scale.clamp_min(float(eps))[:, None, None]
+    if subtract_initial:
+        series = series - series[:, :1]
+
+    spectrum = torch.fft.rfft(series, dim=1)[:, :int(num_freq)]
+    real = spectrum.real.transpose(1, 2).flatten(1)
+    imag = spectrum.imag[:, 1:].transpose(1, 2).flatten(1)
+    features = torch.cat((real, imag), dim=1)
+    return features.detach().cpu().numpy() if return_numpy else features
+
+
+def pathline_velocity_gradient_dft_features_3d(
+    pathlines: torch.Tensor,
+    num_freq: int = 6,
+    eps: float = 1e-6,
+    return_numpy: bool = True,
+):
+    """Estimate objective kinematic scalar sequences from a pathline cross.
+
+    Opposite neighbour pairs estimate the local flow-map differential ``D``.
+    ``L = D_dot D^+`` approximates the velocity gradient.  A spatially
+    uniform observer angular velocity adds the same skew term to every seed;
+    subtracting the per-timeslice mean vorticity therefore yields an
+    objective vorticity-deviation magnitude in the continuous limit.
+
+    Four scalar sequences are Fourier encoded: vorticity-deviation norm,
+    strain Frobenius norm, absolute divergence, and a signed Q-like balance
+    between rotation deviation and strain.  Time derivatives use the sampled
+    pathline index as time; a constant physical sample interval only rescales
+    columns and is removed by train-only standardisation downstream.
+    """
+    pathlines = torch.as_tensor(pathlines)
+    if pathlines.ndim != 4 or pathlines.shape[1] != 7 or pathlines.shape[-1] < 3:
+        raise ValueError(
+            "pathlines must be [N,7,L,C>=3] with centre then x+/x-/y+/y-/z+/z-"
+        )
+    length = int(pathlines.shape[2])
+    independent_bins = length // 2 + 1
+    if length < 3:
+        raise ValueError("velocity-gradient features require at least three samples")
+    if not 1 <= int(num_freq) <= independent_bins:
+        raise ValueError(
+            f"num_freq={num_freq} must be in [1,{independent_bins}] for L={length}"
+        )
+    xyz = pathlines[..., :3]
+    if not xyz.is_floating_point():
+        xyz = xyz.float()
+
+    # Columns are the three opposite-pair separation vectors.
+    pair_vectors = torch.stack(
+        (xyz[:, 1] - xyz[:, 2], xyz[:, 3] - xyz[:, 4],
+         xyz[:, 5] - xyz[:, 6]),
+        dim=-1,
+    )
+    derivative = torch.empty_like(pair_vectors)
+    derivative[:, 0] = pair_vectors[:, 1] - pair_vectors[:, 0]
+    derivative[:, -1] = pair_vectors[:, -1] - pair_vectors[:, -2]
+    derivative[:, 1:-1] = 0.5 * (
+        pair_vectors[:, 2:] - pair_vectors[:, :-2]
+    )
+    inverse = torch.linalg.pinv(pair_vectors, rtol=float(eps))
+    gradient = derivative @ inverse
+
+    vorticity = torch.stack(
+        (gradient[..., 2, 1] - gradient[..., 1, 2],
+         gradient[..., 0, 2] - gradient[..., 2, 0],
+         gradient[..., 1, 0] - gradient[..., 0, 1]),
+        dim=-1,
+    )
+    vorticity_deviation = vorticity - vorticity.mean(dim=0, keepdim=True)
+    ivd_like = torch.linalg.vector_norm(vorticity_deviation, dim=-1)
+    strain = 0.5 * (gradient + gradient.transpose(-1, -2))
+    strain_norm = torch.linalg.matrix_norm(strain, ord="fro")
+    divergence = gradient.diagonal(dim1=-2, dim2=-1).sum(dim=-1).abs()
+    q_like = 0.25 * ivd_like.square() - 0.5 * strain_norm.square()
+    series = torch.stack((ivd_like, strain_norm, divergence, q_like), dim=-1)
+
+    spectrum = torch.fft.rfft(series, dim=1)[:, :int(num_freq)]
+    real = spectrum.real.transpose(1, 2).flatten(1)
+    imag = spectrum.imag[:, 1:].transpose(1, 2).flatten(1)
+    features = torch.cat((real, imag), dim=1)
+    if not torch.isfinite(features).all():
+        raise ValueError("non-finite pathline velocity-gradient features")
+    return features.detach().cpu().numpy() if return_numpy else features
+
+
+def fmt_feature_indices_3d(name="all", num_freq=6, line_count=7,
+                           include_chirality=True):
+    """Return semantic FMT feature indices for label-free block ablations."""
+    gram_width = int(num_freq) * 3
+    block_width = gram_width + (int(num_freq) - 1 if include_chirality else 0)
+    slots = torch.arange(int(line_count) * block_width).reshape(line_count, block_width)
+    semantic = {
+        "real": torch.arange(0, gram_width, 3),
+        "imag": torch.arange(1, gram_width, 3),
+        "cosine": torch.arange(2, gram_width, 3),
+        "chirality": torch.arange(gram_width, block_width),
+    }
+    if name == "all":
+        return slots.flatten().numpy()
+    parts = str(name).split("_")
+    if parts[-1] in {"center", "neighbor", "all"}:
+        scope = parts.pop()
+    else:
+        scope = "all"
+    if not parts or any(part not in semantic for part in parts):
+        raise ValueError(f"unknown FMT feature subset: {name!r}")
+    lines = {"center": [0], "neighbor": range(1, line_count),
+             "all": range(line_count)}[scope]
+    local = torch.cat([semantic[part] for part in parts])
+    return torch.cat([slots[line, local] for line in lines]).numpy()
+
+
 def dft_rotation_invariants_3d(
     seq: torch.Tensor,
     num_freq: int,
@@ -128,4 +290,3 @@ def pathline_dft_features_3d(
 
     result = torch.cat((center_features, neighbor_weight * pooled), dim=-1)
     return result.detach().cpu().numpy() if return_numpy else result
-

@@ -1,0 +1,6 @@
+experiment: mainExp_Task3_3D_3.1_labels_new2
+source_config: config/mainExp_Task3_3D_3.1_confirmation_new2.yaml
+source_cache_root: outputs/mainExp_Task3_3D_3.1/confirmation_cache_new2
+datasets: [boeing747, smokeBuoyancy]
+label: {mode: mean_fraction, value: 0.9, neighborhood_size: 11}
+output_dir: outputs/mainExp_Task3_3D_3.1/confirmation_labels_new2

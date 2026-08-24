@@ -1,0 +1,43 @@
+experiment: mainExp_Task3_3D_3.1_confirmation_old8
+seed: 7068
+
+datasets:
+  - {id: cylinder3d, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe160Resampled.nc", enabled: true}
+  - {id: halfcylinderRe640, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe640resampled.nc", enabled: true}
+  - {id: halfcylinderRe6400, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe6400.nc", enabled: true}
+  - {id: tangaroa, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/tangaroa.nc", enabled: true}
+  - {id: deltaWing_resampled, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/deltaWing_mag0_3reesampled.nc", enabled: true}
+  - {id: deltaWing_LBM, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/deltaWing_mag0_3.nc", enabled: true}
+  - {id: f22raptor, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/f22raptor_re400000.nc", enabled: true}
+  - {id: channel, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel.vtk", enabled: true, generated_unsteady: killing_observer_pushforward}
+
+sampling:
+  timeslices: 8
+  begin_fraction: 0.20
+  end_fraction: 0.90
+  fixed_time_indices_by_dataset:
+    cylinder3d: [37, 50, 63, 76, 89, 102, 115, 128]
+    halfcylinderRe640: [17, 23, 30, 35, 41, 48, 53, 58]
+    halfcylinderRe6400: [37, 50, 63, 76, 89, 102, 115, 128]
+    tangaroa: [49, 66, 84, 101, 119, 136, 154, 171]
+    deltaWing_resampled: [41, 56, 71, 86, 101, 115, 131, 146]
+    deltaWing_LBM: [57, 77, 98, 118, 138, 158, 179, 199]
+    f22raptor: [39, 53, 66, 80, 94, 108, 121, 135]
+    channel: [39, 53, 66, 80, 94, 108, 121, 135]
+  max_spatial_dim: 96
+  seed_grid_shape: [16, 16, 16]
+  boundary_fraction: 0.08
+
+channel_observer: {total_frames: 159, duration: 1.0, output_crop_fraction: 0.10}
+pathlines:
+  method: RK4
+  dt_scale: 0.25
+  integration_steps: 48
+  sampled_steps: 32
+  offset_grid_scale: 0.5
+  chunk_size: 2048
+encoder: {num_freq: 6, mode: gram, include_chirality: true, neighbor_pool: sort, neighbor_weight: 0.5}
+reference: {definition: standard_global_ivd, percentile: 95.0}
+output:
+  cache_dir: outputs/mainExp_Task3_3D_3.1/confirmation_cache_old8
+  result_dir: outputs/mainExp_Task3_3D_3.1/unused_reference_old8
