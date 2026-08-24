@@ -479,8 +479,20 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
     return result
 
 
-def run(config_path):
+def run(config_path, datasets=None, output_dir_override=None):
     spec = yaml.safe_load(Path(config_path).read_text(encoding="utf-8"))
+    if datasets is not None:
+        requested = list(datasets)
+        unknown = sorted(set(requested) - set(spec["datasets"]))
+        if unknown:
+            raise ValueError(
+                f"dataset override contains entries absent from config: {unknown}"
+            )
+        if not requested:
+            raise ValueError("dataset override must not be empty")
+        spec["datasets"] = requested
+    if output_dir_override is not None:
+        spec["output_dir"] = str(output_dir_override)
     output_dir = Path(spec["output_dir"])
     output_dir.mkdir(parents=True, exist_ok=True)
     snapshot_path = output_dir / "config_snapshot.yaml"
@@ -556,5 +568,13 @@ def run(config_path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True)
+    parser.add_argument(
+        "--dataset", action="append", dest="datasets",
+        help="Run only this configured dataset; repeat to select several.",
+    )
+    parser.add_argument(
+        "--output-dir", dest="output_dir_override",
+        help="Write this shard to an isolated output directory.",
+    )
     args = parser.parse_args()
-    run(args.config)
+    run(args.config, args.datasets, args.output_dir_override)

@@ -65,6 +65,15 @@ source frames，新窗口不可避免与历史窗口在 source-frame 层面部�
 - `config/mainExp_Task3_3D_3.1_*.yaml`
 - `ibex_bash/mainexp_task3_3d_3.1_*.sh`
 
+## Ibex 执行方式
+
+经用户允许，论文主表统一改在 32 GB V100 上运行并记录实际型号。baseline 保持两个
+独立 group child；residual 按 `10 datasets × {FMT, Raw-PCA}` 拆成 20 个互不共享输出
+文件的 array shard。每个 shard 独立写 CSV/checkpoint，全部完成后
+`Merge_Task3_ResidualShards.py` 校验每个 `(dataset, method)` 恰有 5 个 seed、无重复且
+checkpoint/history 数量完整，再原子生成 evaluator 读取的合并目录。该并行化只改变
+调度和文件组织，不改变数据、训练、选择或评估协议。
+
 ## 结果
 
-等待 Ibex A100 实验完成后填写；不得用旧 confirmation 数字预填。
+等待 Ibex V100 实验完成后填写；不得用旧 confirmation 数字预填。
