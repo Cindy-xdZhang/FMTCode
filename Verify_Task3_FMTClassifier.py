@@ -329,6 +329,18 @@ def _train_one(spec, dataset, variant, seed, splits, stats, device, output_dir):
     return result
 
 
+def _completion_message(key, row):
+    if "test_f1" in row:
+        return (
+            f"DONE {key}: test F1={row['test_f1']:.5f}, "
+            f"AP={row['test_average_precision']:.5f}"
+        )
+    return (
+        f"DONE {key}: validation F1={row['validation_f1']:.5f}, "
+        f"AP={row['validation_average_precision']:.5f}; test disabled"
+    )
+
+
 def run(config_path):
     spec = yaml.safe_load(Path(config_path).read_text(encoding="utf-8"))
     output_dir = Path(spec["output_dir"])
@@ -383,10 +395,7 @@ def run(config_path):
                 )
                 _append_csv(results_path, row)
                 completed.add(key)
-                print(
-                    f"DONE {key}: test F1={row['test_f1']:.5f}, "
-                    f"AP={row['test_average_precision']:.5f}", flush=True,
-                )
+                print(_completion_message(key, row), flush=True)
     return results_path
 
 
