@@ -44,3 +44,26 @@ def test_confirmation_uses_new_seeds_and_same_family_vae(tmp_path):
     assert config["selection_provenance"]["confirmation_labels_used_for_selection"] is False
     assert len(config["groups"]) == 7
     assert all("fixed_architecture" in group for group in config["groups"].values())
+
+
+def test_confirmation_can_use_fresh_eight_slice_cache(tmp_path):
+    selection = tmp_path / "selection.json"
+    selection.write_text(json.dumps(_selection(True)), encoding="utf-8")
+    output = build_confirmation_config(
+        SWEEP,
+        selection,
+        tmp_path / "final33.yaml",
+        experiment="mainExp_Task2_3D_3.3",
+        output_dir="outputs/mainExp_Task2_3D_3.3",
+        confirmation_cache="outputs/mainExp_Task3_3D_3.1/confirmation_cache_old8",
+        newflow_confirmation_cache=(
+            "outputs/mainExp_Task3_3D_3.1/confirmation_cache_new2"
+        ),
+        confirmation_count=8,
+        final_training_seeds=[9068, 9069, 9070, 9071, 9072],
+    )
+    config = yaml.safe_load(output.read_text(encoding="utf-8"))
+    assert config["experiment"] == "mainExp_Task2_3D_3.3"
+    assert config["splits"]["confirmation_count"] == 8
+    assert config["final_training_seeds"] == [9068, 9069, 9070, 9071, 9072]
+    assert "Task3_3D_3.1" in config["cache_roots"]["confirmation"]

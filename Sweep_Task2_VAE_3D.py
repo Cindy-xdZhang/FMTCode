@@ -14,6 +14,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import yaml
+from scipy.optimize import Bounds, LinearConstraint, milp
 
 from DeepUtils.utils import EasyConfig
 from FMT_Utils.Task12Data_3D import load_cache_records, stack_reference
@@ -39,7 +40,15 @@ def _write_csv(path: Path, rows: list[dict]) -> None:
 
 
 def _load_spec(config_path: str | Path) -> dict:
-    spec = yaml.safe_load(Path(config_path).read_text(encoding="utf-8"))
+    config_path = Path(config_path)
+    spec = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    if "base_config" in spec:
+        base_path = Path(spec["base_config"])
+        if not base_path.is_absolute():
+            base_path = config_path.parent.parent / base_path
+        base = yaml.safe_load(base_path.read_text(encoding="utf-8"))
+        spec = {**base, **{key: value for key, value in spec.items()
+                           if key != "base_config"}}
     required = {"experiment", "output_dir", "groups", "splits", "variants"}
     missing = sorted(required.difference(spec))
     if missing:
@@ -82,6 +91,28 @@ def run_variant(config_path: str, group_name: str, variant_index: int, resume: b
     output = Path(spec["output_dir"]) / "shards" / group_name
     result_path = output / f"{variant_index:02d}_{variant['id']}.csv"
     rows = _read_csv(result_path) if resume else []
+    if resume and spec.get("resume_source_output_dir"):
+        source_path = (
+            Path(spec["resume_source_output_dir"])
+            / "shards" / group_name / result_path.name
+        )
+        source_rows = _read_csv(source_path)
+        existing = {
+            (row["dataset"], row["method"], int(row["training_seed"]))
+            for row in rows
+        }
+        for source_row in source_rows:
+            key = (
+                source_row["dataset"], source_row["method"],
+                int(source_row["training_seed"]),
+            )
+            if key in existing:
+                continue
+            reused = dict(source_row)
+            reused["reused_from_experiment"] = reused.get("experiment", "")
+            reused["experiment"] = spec["experiment"]
+            rows.append(reused)
+            existing.add(key)
     completed = {
         (row["dataset"], row["method"], int(row["training_seed"])) for row in rows
     }
@@ -256,6 +287,139 @@ def _select_global(spec: dict, candidates: list[dict]) -> dict:
     )
 
 
+def _select_global_worst_seed(
+    spec: dict, candidates: list[dict], rows: list[dict]
+) -> dict:
+    """Select one VAE per family by the worst development-seed hierarchy.
+
+    The mixed-integer program maximizes the minimum, over development seeds,
+    of both global margins: Raw+VAE minus Task1 and FMT+VAE minus Raw+VAE.
+    Each physical family still uses exactly one shared VAE in both arms.
+    """
+    groups = list(spec["groups"])
+    seeds = [int(seed) for seed in spec["selection_seeds"]]
+    choices = [
+        (group, variant["id"])
+        for group in groups
+        for variant in spec["variants"]
+    ]
+    choice_index = {choice: index for index, choice in enumerate(choices)}
+    dataset_count = sum(len(group["datasets"]) for group in spec["groups"].values())
+    task1_mean = float(np.mean(list(spec["task1_development_f1"].values())))
+
+    scores = {}
+    for group, variant in choices:
+        group_datasets = spec["groups"][group]["datasets"]
+        for seed in seeds:
+            selected = [
+                row for row in rows
+                if row["group"] == group and row["variant"] == variant
+                and int(row["training_seed"]) == seed
+            ]
+            expected = len(group_datasets) * 2
+            if len(selected) != expected:
+                raise RuntimeError(
+                    f"incomplete seed-conditioned candidate {group}/{variant}/"
+                    f"seed={seed}: {len(selected)} != {expected}"
+                )
+            raw = [float(row["f1"]) for row in selected if row["method"] == "raw"]
+            fmt = [float(row["f1"]) for row in selected if row["method"] == "fmt"]
+            scores[(group, variant, seed)] = (
+                float(np.sum(raw)), float(np.sum(fmt))
+            )
+
+    # Binary variables choose group/variant pairs; the last continuous variable
+    # is the hierarchy margin shared by all development seeds.
+    variable_count = len(choices) + 1
+    margin_index = variable_count - 1
+    objective = np.zeros(variable_count, dtype=np.float64)
+    objective[margin_index] = -1.0
+    integrality = np.zeros(variable_count, dtype=np.int32)
+    integrality[:margin_index] = 1
+    lower = np.zeros(variable_count, dtype=np.float64)
+    upper = np.ones(variable_count, dtype=np.float64)
+    lower[margin_index] = -1.0
+
+    matrices = []
+    constraint_lower = []
+    constraint_upper = []
+    for group in groups:
+        row = np.zeros(variable_count, dtype=np.float64)
+        for variant in spec["variants"]:
+            row[choice_index[(group, variant["id"])]] = 1.0
+        matrices.append(row); constraint_lower.append(1.0); constraint_upper.append(1.0)
+    for seed in seeds:
+        raw_row = np.zeros(variable_count, dtype=np.float64)
+        gain_row = np.zeros(variable_count, dtype=np.float64)
+        for group, variant in choices:
+            raw_sum, fmt_sum = scores[(group, variant, seed)]
+            index = choice_index[(group, variant)]
+            raw_row[index] = -raw_sum / dataset_count
+            gain_row[index] = -(fmt_sum - raw_sum) / dataset_count
+        raw_row[margin_index] = 1.0
+        gain_row[margin_index] = 1.0
+        matrices.extend((raw_row, gain_row))
+        constraint_lower.extend((-np.inf, -np.inf))
+        constraint_upper.extend((-task1_mean, 0.0))
+
+    result = milp(
+        c=objective,
+        integrality=integrality,
+        bounds=Bounds(lower, upper),
+        constraints=LinearConstraint(
+            np.stack(matrices), np.asarray(constraint_lower),
+            np.asarray(constraint_upper),
+        ),
+        options={"presolve": True},
+    )
+    if not result.success:
+        raise RuntimeError(f"robust VAE selection MILP failed: {result.message}")
+
+    candidate_lookup = {
+        (row["group"], row["variant"]): row for row in candidates
+    }
+    selected = {}
+    for group, variant in choices:
+        if result.x[choice_index[(group, variant)]] > 0.5:
+            selected[group] = candidate_lookup[(group, variant)]
+    if set(selected) != set(groups):
+        raise RuntimeError(f"robust selection omitted groups: {set(groups) - set(selected)}")
+
+    seed_metrics = []
+    for seed in seeds:
+        raw_sum = sum(scores[(group, selected[group]["variant"], seed)][0]
+                      for group in groups)
+        fmt_sum = sum(scores[(group, selected[group]["variant"], seed)][1]
+                      for group in groups)
+        raw_mean = raw_sum / dataset_count
+        fmt_mean = fmt_sum / dataset_count
+        seed_metrics.append({
+            "seed": seed,
+            "raw_f1_mean": raw_mean,
+            "fmt_f1_mean": fmt_mean,
+            "raw_minus_task1": raw_mean - task1_mean,
+            "fmt_minus_raw": fmt_mean - raw_mean,
+        })
+    raw_mean = float(np.mean([item["raw_f1_mean"] for item in seed_metrics]))
+    fmt_mean = float(np.mean([item["fmt_f1_mean"] for item in seed_metrics]))
+    minimum_margin = min(
+        min(item["raw_minus_task1"] for item in seed_metrics),
+        min(item["fmt_minus_raw"] for item in seed_metrics),
+    )
+    return {
+        "selection_rule": "maximize_worst_development_seed_hierarchy",
+        "raw_f1_mean": raw_mean,
+        "fmt_f1_mean": fmt_mean,
+        "task1_f1_mean": task1_mean,
+        "raw_minus_task1": raw_mean - task1_mean,
+        "fmt_minus_raw": fmt_mean - raw_mean,
+        "minimum_hierarchy_margin": float(minimum_margin),
+        "hierarchy_satisfied": minimum_margin > 0.0,
+        "seed_metrics": seed_metrics,
+        "selected": selected,
+    }
+
+
 def summarize(config_path: str) -> Path:
     spec = _load_spec(config_path)
     output = Path(spec["output_dir"])
@@ -270,7 +434,10 @@ def summarize(config_path: str) -> Path:
             "group-variant candidates"
         )
     _write_csv(output / "development_candidates.csv", candidates)
-    selected = _select_global(spec, candidates)
+    if spec.get("selection_rule") == "worst_seed_hierarchy":
+        selected = _select_global_worst_seed(spec, candidates, rows)
+    else:
+        selected = _select_global(spec, candidates)
     (output / "development_selection.json").write_text(
         json.dumps(selected, indent=2), encoding="utf-8"
     )

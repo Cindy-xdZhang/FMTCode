@@ -1,0 +1,26 @@
+experiment: mainExp_Task1_3D_3.3_reference_new2
+development_cache: outputs/mainExp_Task123NewFlows_1.1/development_cache
+confirmation_cache: outputs/mainExp_Task3_3D_3.1/confirmation_cache_new2
+confirmation_count: 8
+output_dir: outputs/mainExp_Task1_3D_3.3_reference_new2
+
+datasets: [boeing747, smokeBuoyancy]
+families:
+  boeing747: boeing747
+  smokeBuoyancy: smokeBuoyancy
+
+splits:
+  selection_train: [0, 1, 2, 3, 4, 5]
+  selection_validation: [6, 7]
+  final_train: [0, 1, 2, 3, 4, 5, 6, 7]
+  cluster_calibration: [8, 9]
+
+fmt_candidates:
+  [fmt_all, fmt_real_all, fmt_real_neighbor, fmt_chirality_all,
+   gram2, gram4, kin2, kin4, gram2+kin2, fmt_real_neighbor+kin2,
+   fmt_all+kin4]
+pca_dims: [null, 2, 8, 16]
+selection_seed: 7068
+final_kmeans_seeds: [7068, 7069, 7070, 7071, 7072]
+selection_kmeans_n_init: 10
+kmeans_n_init: 20

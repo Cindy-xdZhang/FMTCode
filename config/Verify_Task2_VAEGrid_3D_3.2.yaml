@@ -1,0 +1,9 @@
+base_config: config/Verify_Task2_VAEGrid_3D_3.1.yaml
+experiment: Verify_Task2_VAEGrid_3D_3.2
+output_dir: outputs/Verify_Task2_VAEGrid_3D_3.2
+resume_source_output_dir: outputs/Verify_Task2_VAEGrid_3D_3.1
+
+# Add five development-only training seeds. Confirmation caches remain
+# inaccessible to Sweep_Task2_VAE_3D.py.
+selection_seeds: [7068, 7069, 7070, 7071, 7072, 7073, 7074]
+selection_rule: worst_seed_hierarchy

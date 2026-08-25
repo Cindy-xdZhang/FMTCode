@@ -8,13 +8,26 @@ from pathlib import Path
 
 import yaml
 
+from Sweep_Task2_VAE_3D import _load_spec
+
 
 def build_confirmation_config(
     sweep_config_path: str | Path,
     selection_path: str | Path,
     output_path: str | Path,
+    *,
+    experiment: str = "mainExp_Task2_3D_3.2",
+    output_dir: str = "outputs/mainExp_Task2_3D_3.2",
+    confirmation_cache: str = (
+        "outputs/mainExp_Task3Universality_2.2/confirmation_cache"
+    ),
+    newflow_confirmation_cache: str = (
+        "outputs/mainExp_Task123NewFlows_1.1/confirmation_cache"
+    ),
+    confirmation_count: int = 4,
+    final_training_seeds: list[int] | None = None,
 ) -> Path:
-    sweep = yaml.safe_load(Path(sweep_config_path).read_text(encoding="utf-8"))
+    sweep = _load_spec(sweep_config_path)
     selection = json.loads(Path(selection_path).read_text(encoding="utf-8"))
     if not selection.get("hierarchy_satisfied", False):
         raise RuntimeError(
@@ -47,17 +60,17 @@ def build_confirmation_config(
         for group, values in sweep["groups"].items()
     }
     config = {
-        "experiment": "mainExp_Task2_3D_3.2",
+        "experiment": experiment,
         "source_config": "config/Verify_Task2Universality_1.1.yaml",
-        "output_dir": "outputs/mainExp_Task2_3D_3.2",
+        "output_dir": output_dir,
         "cache_roots": {
             "development": "outputs/Verify_Task2Universality_1.1/cache",
-            "confirmation": "outputs/mainExp_Task3Universality_2.2/confirmation_cache",
+            "confirmation": confirmation_cache,
         },
         "cache_overrides": {
             dataset: {
                 "development": "outputs/mainExp_Task123NewFlows_1.1/development_cache",
-                "confirmation": "outputs/mainExp_Task123NewFlows_1.1/confirmation_cache",
+                "confirmation": newflow_confirmation_cache,
             }
             for dataset in ("boeing747", "smokeBuoyancy")
         },
@@ -65,10 +78,11 @@ def build_confirmation_config(
         "splits": {
             "final_train": list(range(8)),
             "cluster_calibration": [8, 9],
+            "confirmation_count": int(confirmation_count),
         },
         "architectures": selected_variants,
         # New seeds are disjoint from development-selection seeds 7068/7069.
-        "final_training_seeds": [8068, 8069, 8070, 8071, 8072],
+        "final_training_seeds": final_training_seeds or [8068, 8069, 8070, 8071, 8072],
         "kmeans_seed": 7068,
         "kmeans_n_init": 20,
         "selection_provenance": {
@@ -102,5 +116,25 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output", default="config/mainExp_Task2_3D_3.2.yaml"
     )
+    parser.add_argument("--experiment", default="mainExp_Task2_3D_3.2")
+    parser.add_argument("--output-dir", default="outputs/mainExp_Task2_3D_3.2")
+    parser.add_argument(
+        "--confirmation-cache",
+        default="outputs/mainExp_Task3Universality_2.2/confirmation_cache",
+    )
+    parser.add_argument(
+        "--newflow-confirmation-cache",
+        default="outputs/mainExp_Task123NewFlows_1.1/confirmation_cache",
+    )
+    parser.add_argument("--confirmation-count", type=int, default=4)
+    parser.add_argument("--final-training-seeds", type=int, nargs="+")
     args = parser.parse_args()
-    build_confirmation_config(args.sweep_config, args.selection, args.output)
+    build_confirmation_config(
+        args.sweep_config, args.selection, args.output,
+        experiment=args.experiment,
+        output_dir=args.output_dir,
+        confirmation_cache=args.confirmation_cache,
+        newflow_confirmation_cache=args.newflow_confirmation_cache,
+        confirmation_count=args.confirmation_count,
+        final_training_seeds=args.final_training_seeds,
+    )
