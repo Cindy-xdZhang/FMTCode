@@ -5,7 +5,7 @@
 #SBATCH -o slurm_logs/%x.%A_%a.out
 #SBATCH -e slurm_logs/%x.%A_%a.err
 #SBATCH --time=2:00:00
-#SBATCH -p debug
+#SBATCH -p gpu4
 #SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=6
 #SBATCH --constraint=v100
