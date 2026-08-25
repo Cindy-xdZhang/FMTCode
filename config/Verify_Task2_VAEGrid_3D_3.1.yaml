@@ -1,0 +1,100 @@
+experiment: Verify_Task2_VAEGrid_3D_3.1
+output_dir: outputs/Verify_Task2_VAEGrid_3D_3.1
+
+# Development caches only. This sweep cannot load confirmation/test records.
+groups:
+  channel:
+    datasets: [channel]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+    fmt_feature: fmt_chirality_all
+  halfcylinder:
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+    fmt_feature: fmt_all+kin4
+  tangaroa:
+    datasets: [tangaroa]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+    fmt_feature: fmt_all+kin4
+  deltaWing:
+    datasets: [deltaWing_resampled, deltaWing_LBM]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+    fmt_feature: fmt_real_neighbor
+  f22raptor:
+    datasets: [f22raptor]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+    fmt_feature: fmt_all+kin4
+  boeing747:
+    datasets: [boeing747]
+    development_cache: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    source_config: config/mainExp_Task123NewFlows_1.1_development_cache.yaml
+    fmt_feature: kin2
+  smokeBuoyancy:
+    datasets: [smokeBuoyancy]
+    development_cache: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    source_config: config/mainExp_Task123NewFlows_1.1_development_cache.yaml
+    fmt_feature: fmt_all
+
+splits:
+  selection_train: [0, 1, 2, 3, 4, 5]
+  selection_validation: [6, 7]
+
+# Frozen Task1 direct FMT development-validation results on these same caches/slices.
+task1_development_f1:
+  channel: 0.23809523809523808
+  cylinder3d: 0.5285714285714286
+  halfcylinderRe640: 0.5187165775401069
+  halfcylinderRe6400: 0.4472361809045226
+  tangaroa: 0.7623862487360971
+  deltaWing_resampled: 0.7635869565217391
+  deltaWing_LBM: 0.7858880778588808
+  f22raptor: 0.35514018691588783
+  boeing747: 0.8347978910369068
+  smokeBuoyancy: 0.7745535714285714
+
+selection_seeds: [7068, 7069]
+kmeans_seed: 7068
+kmeans_n_init: 20
+
+# Same entry is used unchanged for Raw and FMT inside a physical family.
+variants:
+  - {id: lin2_b1e-6, hidden_dims: [], latent_dim: 2, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: lin4_b1e-6, hidden_dims: [], latent_dim: 4, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: lin8_b1e-6, hidden_dims: [], latent_dim: 8, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: lin16_b1e-6, hidden_dims: [], latent_dim: 16, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: lin32_b1e-6, hidden_dims: [], latent_dim: 32, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: lin64_b1e-6, hidden_dims: [], latent_dim: 64, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: lin8_b1e-5, hidden_dims: [], latent_dim: 8, beta: 0.00001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: lin16_b1e-5, hidden_dims: [], latent_dim: 16, beta: 0.00001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: lin32_b1e-5, hidden_dims: [], latent_dim: 32, beta: 0.00001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: lin8_b1e-4, hidden_dims: [], latent_dim: 8, beta: 0.0001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: lin16_b1e-4, hidden_dims: [], latent_dim: 16, beta: 0.0001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: lin32_b1e-4, hidden_dims: [], latent_dim: 32, beta: 0.0001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: pca2_anchor1e-2, hidden_dims: [], latent_dim: 2, beta: 0.000001, learning_rate: 0.0003, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048, pca_init: true, pca_anchor_weight: 0.01}
+  - {id: pca2_anchor1e-1, hidden_dims: [], latent_dim: 2, beta: 0.000001, learning_rate: 0.0003, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048, pca_init: true, pca_anchor_weight: 0.1}
+  - {id: pca8_anchor1e-2, hidden_dims: [], latent_dim: 8, beta: 0.000001, learning_rate: 0.0003, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048, pca_init: true, pca_anchor_weight: 0.01}
+  - {id: pca8_anchor1e-1, hidden_dims: [], latent_dim: 8, beta: 0.000001, learning_rate: 0.0003, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048, pca_init: true, pca_anchor_weight: 0.1}
+  - {id: s128_l4_b1e-6, hidden_dims: [128, 64], latent_dim: 4, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: s128_l8_b1e-6, hidden_dims: [128, 64], latent_dim: 8, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: s128_l16_b1e-6, hidden_dims: [128, 64], latent_dim: 16, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: s128_l32_b1e-6, hidden_dims: [128, 64], latent_dim: 32, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: s128_l8_b1e-4, hidden_dims: [128, 64], latent_dim: 8, beta: 0.0001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: s128_l16_b1e-4, hidden_dims: [128, 64], latent_dim: 16, beta: 0.0001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: m256_l8_b1e-6, hidden_dims: [256, 128], latent_dim: 8, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: m256_l16_b1e-6, hidden_dims: [256, 128], latent_dim: 16, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: m256_l32_b1e-6, hidden_dims: [256, 128], latent_dim: 32, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: m256_l64_b1e-6, hidden_dims: [256, 128], latent_dim: 64, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: m256_l16_b1e-4, hidden_dims: [256, 128], latent_dim: 16, beta: 0.0001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: m256_l32_b1e-4, hidden_dims: [256, 128], latent_dim: 32, beta: 0.0001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: m256_l16_lr3e-4, hidden_dims: [256, 128], latent_dim: 16, beta: 0.000001, learning_rate: 0.0003, optimizer_steps: 7000, relational_weight: 0.0, pair_count: 2048}
+  - {id: m256_l32_lr3e-4, hidden_dims: [256, 128], latent_dim: 32, beta: 0.000001, learning_rate: 0.0003, optimizer_steps: 7000, relational_weight: 0.0, pair_count: 2048}
+  - {id: l512_l16_b1e-6, hidden_dims: [512, 256], latent_dim: 16, beta: 0.000001, learning_rate: 0.0003, optimizer_steps: 7000, relational_weight: 0.0, pair_count: 2048}
+  - {id: l512_l32_b1e-6, hidden_dims: [512, 256], latent_dim: 32, beta: 0.000001, learning_rate: 0.0003, optimizer_steps: 7000, relational_weight: 0.0, pair_count: 2048}
+  - {id: l512_l64_b1e-6, hidden_dims: [512, 256], latent_dim: 64, beta: 0.000001, learning_rate: 0.0003, optimizer_steps: 7000, relational_weight: 0.0, pair_count: 2048}
+  - {id: m256_l16_rel1e-2, hidden_dims: [256, 128], latent_dim: 16, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.01, pair_count: 2048}
+  - {id: m256_l32_rel1e-2, hidden_dims: [256, 128], latent_dim: 32, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.01, pair_count: 2048}
+  - {id: m256_l32_rel1e-1, hidden_dims: [256, 128], latent_dim: 32, beta: 0.000001, learning_rate: 0.001, optimizer_steps: 4600, relational_weight: 0.1, pair_count: 4096}
