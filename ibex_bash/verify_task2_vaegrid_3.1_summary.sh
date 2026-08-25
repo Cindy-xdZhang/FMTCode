@@ -14,3 +14,7 @@ source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
 python Sweep_Task2_VAE_3D.py \
   --config config/Verify_Task2_VAEGrid_3D_3.1.yaml --summarize
+python Build_Task2_VAE_Confirmation.py \
+  --sweep-config config/Verify_Task2_VAEGrid_3D_3.1.yaml \
+  --selection outputs/Verify_Task2_VAEGrid_3D_3.1/development_selection.json \
+  --output config/mainExp_Task2_3D_3.2.yaml
