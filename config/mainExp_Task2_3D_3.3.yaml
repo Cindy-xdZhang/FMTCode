@@ -1,0 +1,133 @@
+experiment: mainExp_Task2_3D_3.3
+source_config: config/Verify_Task2Universality_1.1.yaml
+output_dir: outputs/mainExp_Task2_3D_3.3
+cache_roots:
+  development: outputs/Verify_Task2Universality_1.1/cache
+  confirmation: outputs/mainExp_Task3_3D_3.1/confirmation_cache_old8
+cache_overrides:
+  boeing747:
+    development: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    confirmation: outputs/mainExp_Task3_3D_3.1/confirmation_cache_new2
+  smokeBuoyancy:
+    development: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    confirmation: outputs/mainExp_Task3_3D_3.1/confirmation_cache_new2
+groups:
+  channel:
+    datasets:
+    - channel
+    fmt_feature: fmt_chirality_all
+    fixed_architecture: m256_l16_lr3e-4
+  halfcylinder:
+    datasets:
+    - cylinder3d
+    - halfcylinderRe640
+    - halfcylinderRe6400
+    fmt_feature: fmt_all+kin4
+    fixed_architecture: pca8_anchor1e-2
+  tangaroa:
+    datasets:
+    - tangaroa
+    fmt_feature: fmt_all+kin4
+    fixed_architecture: l512_l64_b1e-6
+  deltaWing:
+    datasets:
+    - deltaWing_resampled
+    - deltaWing_LBM
+    fmt_feature: fmt_real_neighbor
+    fixed_architecture: m256_l16_lr3e-4
+  f22raptor:
+    datasets:
+    - f22raptor
+    fmt_feature: fmt_all+kin4
+    fixed_architecture: m256_l16_b1e-6
+  boeing747:
+    datasets:
+    - boeing747
+    fmt_feature: kin2
+    fixed_architecture: l512_l64_b1e-6
+  smokeBuoyancy:
+    datasets:
+    - smokeBuoyancy
+    fmt_feature: fmt_all
+    fixed_architecture: pca2_anchor1e-2
+splits:
+  final_train:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  cluster_calibration:
+  - 8
+  - 9
+  confirmation_count: 8
+architectures:
+- id: m256_l16_lr3e-4
+  hidden_dims:
+  - 256
+  - 128
+  latent_dim: 16
+  beta: 1.0e-06
+  learning_rate: 0.0003
+  optimizer_steps: 7000
+  relational_weight: 0.0
+  pair_count: 2048
+- id: pca8_anchor1e-2
+  hidden_dims: []
+  latent_dim: 8
+  beta: 1.0e-06
+  learning_rate: 0.0003
+  optimizer_steps: 4600
+  relational_weight: 0.0
+  pair_count: 2048
+  pca_init: true
+  pca_anchor_weight: 0.01
+- id: l512_l64_b1e-6
+  hidden_dims:
+  - 512
+  - 256
+  latent_dim: 64
+  beta: 1.0e-06
+  learning_rate: 0.0003
+  optimizer_steps: 7000
+  relational_weight: 0.0
+  pair_count: 2048
+- id: m256_l16_b1e-6
+  hidden_dims:
+  - 256
+  - 128
+  latent_dim: 16
+  beta: 1.0e-06
+  learning_rate: 0.001
+  optimizer_steps: 4600
+  relational_weight: 0.0
+  pair_count: 2048
+- id: pca2_anchor1e-2
+  hidden_dims: []
+  latent_dim: 2
+  beta: 1.0e-06
+  learning_rate: 0.0003
+  optimizer_steps: 4600
+  relational_weight: 0.0
+  pair_count: 2048
+  pca_init: true
+  pca_anchor_weight: 0.01
+final_training_seeds:
+- 9068
+- 9069
+- 9070
+- 9071
+- 9072
+kmeans_seed: 7068
+kmeans_n_init: 20
+selection_provenance:
+  sweep_experiment: Verify_Task2_VAEGrid_3D_3.2
+  selection_file: outputs/Verify_Task2_VAEGrid_3D_3.2/development_selection.json
+  development_task1_f1_mean: 0.6008972357609379
+  development_raw_f1_mean: 0.6130547079266521
+  development_fmt_f1_mean: 0.6280463876383994
+  development_minimum_hierarchy_margin: 0.010635367110176097
+  confirmation_labels_used_for_selection: false
