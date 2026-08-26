@@ -159,7 +159,7 @@ def _physical_bounds(metadata, seeds):
             ],
             dtype=np.float64,
         )
-    except (FileNotFoundError, OSError, KeyError):
+    except (FileNotFoundError, OSError, KeyError, ValueError):
         lower = np.asarray(seeds, dtype=np.float64).min(axis=0)
         upper = np.asarray(seeds, dtype=np.float64).max(axis=0)
         pad = np.maximum((upper - lower) * 0.04, 1e-6)
