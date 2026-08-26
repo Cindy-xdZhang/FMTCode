@@ -127,6 +127,24 @@ def _workflow_spec(config_path):
     return _load_spec(config_path)
 
 
+def _feature_signature(candidate):
+    """Identify candidates that produce exactly the same FMT input."""
+    keys = (
+        "fmt_recipe", "gram_num_freq", "kinematic_num_freq",
+        "gram_subtract_initial", "gram_normalize_initial_scale",
+        "kinematic_log_compress", "kinematic_pinv_rtol",
+    )
+    defaults = {
+        "gram_num_freq": 2,
+        "kinematic_num_freq": 6,
+        "gram_subtract_initial": True,
+        "gram_normalize_initial_scale": True,
+        "kinematic_log_compress": False,
+        "kinematic_pinv_rtol": 1e-6,
+    }
+    return tuple((key, candidate.get(key, defaults.get(key))) for key in keys)
+
+
 def _fresh_source_paths(spec):
     return sorted(
         (Path(spec["fresh"]["source_cache_root"]) / spec["dataset"])
@@ -183,9 +201,14 @@ def adaptive_select(config_path):
     rows = []
 
     # Raw and Raw-wide are candidate-independent and are evaluated once.
-    reference_candidate = _candidate(search, 0)
+    reference_index = next(
+        index for index, row in enumerate(search["candidates"])
+        if row["fmt_recipe"] == "all"
+    )
+    reference_candidate = _candidate(search, reference_index)
     reference_records = _load_records(
-        search, dataset, reference_candidate, ordinals
+        search, dataset, reference_candidate, ordinals,
+        feature_device=device,
     )
     for ordinal in ordinals:
         split = _stack_split(reference_records, [ordinal])
@@ -206,10 +229,19 @@ def adaptive_select(config_path):
                 })
 
     candidate_ids = []
+    records_by_signature = {
+        _feature_signature(reference_candidate): reference_records
+    }
     for index in range(len(search["candidates"])):
         candidate = _candidate(search, index)
         candidate_ids.append(candidate["id"])
-        records = _load_records(search, dataset, candidate, ordinals)
+        signature = _feature_signature(candidate)
+        if signature not in records_by_signature:
+            records_by_signature[signature] = _load_records(
+                search, dataset, candidate, ordinals,
+                feature_device=device,
+            )
+        records = records_by_signature[signature]
         for ordinal in ordinals:
             split = _stack_split(records, [ordinal])
             for seed in seeds:

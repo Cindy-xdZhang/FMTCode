@@ -56,7 +56,7 @@ def _candidate(spec, index):
     return row
 
 
-def _load_records(spec, dataset, candidate, ordinals):
+def _load_records(spec, dataset, candidate, ordinals, feature_device=None):
     source_dir = Path(spec["source_cache_root"]) / dataset
     label_dir = Path(spec["label_cache_root"]) / dataset
     source_paths = sorted(source_dir.glob("slice_*.npz"))
@@ -93,6 +93,7 @@ def _load_records(spec, dataset, candidate, ordinals):
                 kinematic_pinv_rtol=float(
                     candidate.get("kinematic_pinv_rtol", 1e-6)
                 ),
+                device=feature_device,
             )
             target = np.asarray(labels["labels"], dtype=np.float32)
             metadata = json.loads(str(labels["metadata_json"]))

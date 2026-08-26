@@ -9,6 +9,7 @@ from Search_Task5_CylinderHyperparams import _candidate_checkpoint_path
 from FMT_Utils.DFT_FMT_3D import pathline_velocity_gradient_dft_features_3d
 from FMT_Utils.Task5FeatureRecipes_3D import (
     parse_task5_feature_recipe,
+    task5_fmt_features_from_cache,
     task5_sample_times,
 )
 
@@ -77,3 +78,22 @@ def test_outer_checkpoint_paths_match_residual_trainer_names():
         candidate_root / "raw_pca" / "checkpoints"
         / "cylinder3d_raw_pca_residual_seed60.pt"
     )
+
+
+def test_recipe_device_argument_preserves_cpu_result():
+    primitive = _isotropic_expansion().float().numpy()
+    cached = np.zeros((len(primitive), 161), dtype=np.float32)
+    source = {
+        "raw_features": primitive.reshape(len(primitive), -1),
+        "fmt_features": cached,
+        "integration_steps": np.full(len(primitive), 32),
+        "physical_dt": np.full(len(primitive), 0.1),
+    }
+    implicit = task5_fmt_features_from_cache(
+        source, 9, "physical_kinematic", kinematic_num_freq=1
+    )
+    explicit = task5_fmt_features_from_cache(
+        source, 9, "physical_kinematic", kinematic_num_freq=1,
+        device="cpu",
+    )
+    np.testing.assert_allclose(explicit, implicit, rtol=1e-6, atol=1e-6)

@@ -79,6 +79,7 @@ def task5_fmt_features_from_cache(
     gram_normalize_initial_scale: bool = True,
     kinematic_log_compress: bool = False,
     kinematic_pinv_rtol: float = 1e-6,
+    device: torch.device | str | None = None,
 ) -> np.ndarray:
     """Build one Task5 FMT recipe from an open ``numpy.load`` cache."""
     raw = np.asarray(source["raw_features"], dtype=np.float32)
@@ -92,9 +93,13 @@ def task5_fmt_features_from_cache(
         cached = np.asarray(source["fmt_features"], dtype=np.float32)
         indices = fmt_feature_indices_3d(base)
         parts.append(cached[:, indices])
+    tensor_device = None if device is None else torch.device(device)
     if include_gram:
+        gram_input = torch.from_numpy(primitives)
+        if tensor_device is not None:
+            gram_input = gram_input.to(tensor_device)
         parts.append(time_local_gram_dft_features_3d(
-            torch.from_numpy(primitives),
+            gram_input,
             num_freq=int(gram_num_freq),
             subtract_initial=bool(gram_subtract_initial),
             normalize_initial_scale=bool(gram_normalize_initial_scale),
@@ -108,6 +113,8 @@ def task5_fmt_features_from_cache(
         kinematic_input = torch.from_numpy(primitives)
         if time_basis == "physical":
             kinematic_input = kinematic_input.double()
+        if tensor_device is not None:
+            kinematic_input = kinematic_input.to(tensor_device)
         parts.append(pathline_velocity_gradient_dft_features_3d(
             kinematic_input,
             num_freq=int(kinematic_num_freq),
