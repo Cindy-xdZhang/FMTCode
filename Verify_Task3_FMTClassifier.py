@@ -376,6 +376,7 @@ def run(config_path):
             Path(spec["label_cache_root"]) / dataset,
             spec["sampled_steps"], spec["fmt_subset"], required_ordinals,
             gram_num_freq=spec.get("fmt_gram_num_freq", 6),
+            expected_slices=spec.get("expected_slices", 10),
         )
         train = _stack_split(records, spec["split"]["train_ordinals"])
         validation = _stack_split(records, spec["split"]["validation_ordinals"])

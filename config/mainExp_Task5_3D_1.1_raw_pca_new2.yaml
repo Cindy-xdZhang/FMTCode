@@ -1,0 +1,21 @@
+experiment: mainExp_Task5_3D_1.1_raw_pca_new2
+source_cache_root: outputs/mainExp_Task5_3D_1.1/development_cache
+label_cache_root: outputs/mainExp_Task5_3D_1.1/development_labels_new2/labels
+raw_checkpoint_dir: outputs/mainExp_Task5_3D_1.1/development_new2/baselines/checkpoints
+output_dir: outputs/mainExp_Task5_3D_1.1/development_new2/raw_pca_residual
+datasets: [boeing747, smokeBuoyancy]
+expected_slices: 6
+sampled_steps: 32
+fmt_subset: all_plus_gram_kinematic
+fmt_gram_num_freq: 2
+auxiliary_source: raw_pca
+raw_pca_components: 268
+raw_pca_random_state: 7068
+raw_wide_parameter_count: 148225
+split: {train_ordinals: [0, 1, 2, 3], validation_ordinals: [4, 5], test_ordinals: []}
+evaluation: {test_enabled: false}
+model: {embedding_dim: 128, auxiliary_dim: 64, residual_input: geometry_fmt}
+fusion: {fixed_alpha: 1.0, selection_metric: average_precision}
+training: {device: auto, seeds: [40, 41, 42, 43, 44], batch_size: 512,
+           learning_rate: 0.001, weight_decay: 0.0001, max_epochs: 100,
+           patience: 20, min_delta: 0.0001}

@@ -1,0 +1,17 @@
+experiment: mainExp_Task5_3D_1.1_baselines_old8
+source_cache_root: outputs/mainExp_Task5_3D_1.1/development_cache
+label_cache_root: outputs/mainExp_Task5_3D_1.1/development_labels_old8/labels
+output_dir: outputs/mainExp_Task5_3D_1.1/development_old8/baselines
+datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400, tangaroa,
+           deltaWing_resampled, deltaWing_LBM, f22raptor, channel]
+expected_slices: 6
+sampled_steps: 32
+fmt_subset: all_plus_gram_kinematic
+fmt_gram_num_freq: 2
+variants: [raw, raw_wide]
+split: {train_ordinals: [0, 1, 2, 3], validation_ordinals: [4, 5], test_ordinals: []}
+evaluation: {test_enabled: false}
+model: {temporal_width: 64, embedding_dim: 128, auxiliary_dim: 64}
+training: {device: auto, seeds: [40, 41, 42, 43, 44], batch_size: 512,
+           learning_rate: 0.001, weight_decay: 0.0001, max_epochs: 100,
+           patience: 20, min_delta: 0.0001}

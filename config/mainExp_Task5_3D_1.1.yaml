@@ -1,0 +1,113 @@
+experiment: mainExp_Task5_3D_1.1
+seed: 15068
+
+datasets:
+  - id: cylinder3d
+    paths: ["C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe160Resampled.nc", "/home/zhanx0o/DeepVortex/FLowDataFolder/halfcylinderRe160Resampled.nc"]
+  - id: halfcylinderRe640
+    paths: ["C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe640resampled.nc", "/home/zhanx0o/DeepVortex/FLowDataFolder/halfcylinderRe640resampled.nc"]
+  - id: halfcylinderRe6400
+    paths: ["C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe6400.nc"]
+  - id: tangaroa
+    paths: ["C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/tangaroa.nc", "/home/zhanx0o/DeepVortex/FLowDataFolder/tangaroa.nc"]
+  - id: deltaWing_resampled
+    paths: ["C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/deltaWing_mag0_3reesampled.nc", "/home/zhanx0o/DeepVortex/FLowDataFolder/deltaWing_mag0_3reesampled.nc"]
+  - id: deltaWing_LBM
+    paths: ["C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/deltaWing_mag0_3.nc"]
+  - id: f22raptor
+    paths: ["C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/f22raptor_re400000.nc"]
+  - id: channel
+    kind: channel_vtk
+    paths: ["C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel.vtk", "/home/zhanx0o/DeepVortex/FLowDataFolder/channel.vtk"]
+  - id: boeing747
+    paths: ["C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/boeing747_808_2392.nc"]
+  - id: smokeBuoyancy
+    paths: ["C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/SmokeBuoyancy80_239.nc", "/home/zhanx0o/DeepVortex/FLowDataFolder/SmokeBuoyancy80_239.nc"]
+
+sampling:
+  max_spatial_dim: 96
+  seed_grid_shape: [16, 16, 16]
+  boundary_fraction: 0.08
+
+channel_observer: {total_frames: 159, duration: 1.0, output_crop_fraction: 0.10}
+
+pathlines:
+  method: RK4
+  sampled_steps: 32
+  offset_mode: min
+  chunk_size: 2048
+
+# Training, validation, and confirmation use disjoint scale tuples.  The
+# product dt_scale*integration_steps is the horizon in source-frame units.
+scale_sets:
+  train:
+    - {name: tr_o025_d0125_n32, offset_grid_scale: 0.25, dt_scale: 0.125, integration_steps: 32}
+    - {name: tr_o025_d0125_n48, offset_grid_scale: 0.25, dt_scale: 0.125, integration_steps: 48}
+    - {name: tr_o025_d0250_n32, offset_grid_scale: 0.25, dt_scale: 0.250, integration_steps: 32}
+    - {name: tr_o025_d0125_n64, offset_grid_scale: 0.25, dt_scale: 0.125, integration_steps: 64}
+    - {name: tr_o025_d0250_n40, offset_grid_scale: 0.25, dt_scale: 0.250, integration_steps: 40}
+    - {name: tr_o025_d0250_n48, offset_grid_scale: 0.25, dt_scale: 0.250, integration_steps: 48}
+    - {name: tr_o050_d0125_n32, offset_grid_scale: 0.50, dt_scale: 0.125, integration_steps: 32}
+    - {name: tr_o050_d0125_n48, offset_grid_scale: 0.50, dt_scale: 0.125, integration_steps: 48}
+    - {name: tr_o050_d0250_n32, offset_grid_scale: 0.50, dt_scale: 0.250, integration_steps: 32}
+    - {name: tr_o050_d0125_n64, offset_grid_scale: 0.50, dt_scale: 0.125, integration_steps: 64}
+    - {name: tr_o050_d0250_n40, offset_grid_scale: 0.50, dt_scale: 0.250, integration_steps: 40}
+    - {name: tr_o050_d0250_n48, offset_grid_scale: 0.50, dt_scale: 0.250, integration_steps: 48}
+    - {name: tr_o100_d0125_n32, offset_grid_scale: 1.00, dt_scale: 0.125, integration_steps: 32}
+    - {name: tr_o100_d0125_n48, offset_grid_scale: 1.00, dt_scale: 0.125, integration_steps: 48}
+    - {name: tr_o100_d0250_n32, offset_grid_scale: 1.00, dt_scale: 0.250, integration_steps: 32}
+    - {name: tr_o100_d0125_n64, offset_grid_scale: 1.00, dt_scale: 0.125, integration_steps: 64}
+    - {name: tr_o100_d0250_n40, offset_grid_scale: 1.00, dt_scale: 0.250, integration_steps: 40}
+    - {name: tr_o100_d0250_n48, offset_grid_scale: 1.00, dt_scale: 0.250, integration_steps: 48}
+  validation:
+    - {name: va_o0375_d020_n40, offset_grid_scale: 0.375, dt_scale: 0.20, integration_steps: 40}
+    - {name: va_o0375_d020_n50, offset_grid_scale: 0.375, dt_scale: 0.20, integration_steps: 50}
+    - {name: va_o0375_d030_n40, offset_grid_scale: 0.375, dt_scale: 0.30, integration_steps: 40}
+    - {name: va_o0750_d020_n40, offset_grid_scale: 0.750, dt_scale: 0.20, integration_steps: 40}
+    - {name: va_o0750_d020_n50, offset_grid_scale: 0.750, dt_scale: 0.20, integration_steps: 50}
+    - {name: va_o0750_d030_n40, offset_grid_scale: 0.750, dt_scale: 0.30, integration_steps: 40}
+  confirmation:
+    - {name: cf_o033_d015_n40, offset_grid_scale: 0.33, dt_scale: 0.15, integration_steps: 40}
+    - {name: cf_o033_d020_n45, offset_grid_scale: 0.33, dt_scale: 0.20, integration_steps: 45}
+    - {name: cf_o033_d030_n40, offset_grid_scale: 0.33, dt_scale: 0.30, integration_steps: 40}
+    - {name: cf_o067_d015_n40, offset_grid_scale: 0.67, dt_scale: 0.15, integration_steps: 40}
+    - {name: cf_o067_d020_n45, offset_grid_scale: 0.67, dt_scale: 0.20, integration_steps: 45}
+    - {name: cf_o067_d030_n40, offset_grid_scale: 0.67, dt_scale: 0.30, integration_steps: 40}
+    - {name: cf_o125_d015_n40, offset_grid_scale: 1.25, dt_scale: 0.15, integration_steps: 40}
+    - {name: cf_o125_d020_n45, offset_grid_scale: 1.25, dt_scale: 0.20, integration_steps: 45}
+    - {name: cf_o125_d030_n40, offset_grid_scale: 1.25, dt_scale: 0.30, integration_steps: 40}
+
+phases:
+  development:
+    ordinal_scale_sets: {train: [0, 1, 2, 3], validation: [4, 5]}
+    time_indices_by_dataset:
+      cylinder3d: [31, 39, 47, 55, 63, 71]
+      halfcylinderRe640: [16, 20, 24, 28, 32, 36]
+      halfcylinderRe6400: [31, 39, 47, 55, 63, 71]
+      tangaroa: [41, 51, 61, 71, 81, 91]
+      deltaWing_resampled: [35, 44, 53, 62, 71, 80]
+      deltaWing_LBM: [47, 59, 71, 83, 95, 107]
+      f22raptor: [32, 40, 48, 56, 64, 72]
+      channel: [32, 40, 48, 56, 64, 72]
+      boeing747: [40, 50, 60, 70, 80, 90]
+      smokeBuoyancy: [32, 40, 48, 56, 64, 72]
+  confirmation:
+    ordinal_scale_sets: {confirmation: [0, 1, 2, 3]}
+    time_indices_by_dataset:
+      cylinder3d: [106, 113, 121, 129]
+      halfcylinderRe640: [52, 56, 60, 62]
+      halfcylinderRe6400: [106, 113, 121, 129]
+      tangaroa: [141, 151, 161, 171]
+      deltaWing_resampled: [120, 128, 137, 145]
+      deltaWing_LBM: [164, 176, 188, 200]
+      f22raptor: [111, 119, 127, 135]
+      channel: [111, 119, 127, 135]
+      boeing747: [139, 149, 159, 169]
+      smokeBuoyancy: [112, 120, 128, 136]
+
+encoder: {num_freq: 6, mode: gram, include_chirality: true, neighbor_pool: sort}
+reference: {definition: whole_field_ivd_percentile, percentile: 95.0}
+cache_generation: {device: auto, minimum_valid_per_scale: 20}
+cache_roots:
+  development: outputs/mainExp_Task5_3D_1.1/development_cache
+  confirmation: outputs/mainExp_Task5_3D_1.1/confirmation_cache

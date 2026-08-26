@@ -1,15 +1,15 @@
 # FMT 研究任务与统一协议
 
-本文件是 Task1–Task4 的唯一任务定义。旧文档若与本文件冲突，以本文件为准。协议自 2026-08-23 起生效；历史实验 ID 和输出目录不追溯改名。
+本文件是 Task1–Task5 的唯一任务定义。旧文档若与本文件冲突，以本文件为准。协议自 2026-08-23 起生效；Task5 自 2026-08-26 起加入；历史实验 ID 和输出目录不追溯改名。
 
 ## 1. 总体研究命题
 
 研究对象是 pathline cross primitive。2D primitive 通常为中心线和 `x±、y±` 共 5 条线；3D primitive 为中心线和 `x±、y±、z±` 共 7 条线。
 
 FMT 是由 Fourier 变换、`sin/cos`、几何不变量和 aggregation 构成的 **training-free encoder**。这里“training-free”只描述 encoder 本身没有通过标签或重构损失更新的参数；KMeans、VAE 和监督分类器仍然需要训练拟合。
-当前只研究 **3D Task1、Task2、Task3**。Task1–Task3 在 2D 和 3D 都有定义，但 2D 扩展暂不进入当前实验计划。Task4 只在 3D 中成立。
+当前研究 **3D Task1、Task2、Task3、Task5**。Task1–Task3 和 Task5 在 2D、3D 都有定义，但 2D 扩展暂不进入当前实验计划。Task4 只在 3D 中成立。
 
-## 2. 四项任务的固定定义
+## 2. 五项任务的固定定义
 
 | 任务 | 维度 | 输入与方法 | 核心比较 | 主要输出 | 允许的核心结论 |
 |---|---|---|---|---|---|
@@ -17,6 +17,7 @@ FMT 是由 Fourier 变换、`sin/cos`、几何不变量和 aggregation 构成的
 | **Task2：FMT 作为 VAE 输入** | 2D、3D | 无监督 VAE 编码后，对 latent feature 做 KMeans 二类聚类 | **主比较：Raw+VAE vs FMT+VAE**；FMT direct 只作诊断 | held-out ARI、NMI、F1/IoU；多 VAE seed 分布 | FMT 是否是比 Raw pathline 更好的 VAE 输入 |
 | **Task3：有监督 IVD 涡识别** | 2D、3D | IVD 标签监督的涡/非涡二分类网络 | Raw、参数量控制 Raw、Raw+FMT | F1、Average Precision、AUROC、precision、recall；多训练 seed | 加入 FMT 是否提高有监督涡区域识别 |
 | **Task4：有监督涡类型分类** | **仅 3D** | 对已定义的 3D 涡型标签做多分类 | 不使用 FMT vs 加入 FMT | macro-F1、每类 F1、balanced accuracy、confusion matrix | 加入 FMT 是否提高 streamwise、spanwise、hairpin 等涡型分类 |
+| **Task5：不同尺度几何学习** | 2D、3D | 每个 primitive 的邻居距离、积分步长和积分步数可变；积分后统一重采样为固定 `K×L×C`，再做 IVD 监督二分类 | 固定尺度 Task3 迁移、variable-scale Raw、结构匹配 Raw-PCA residual、variable-scale Raw+FMT | unseen-scale confirmation 的 F1、Average Precision；逐尺度、逐流场及 family macro | 模型能否学习跨尺度 primitive；FMT 是否提高 variable-scale IVD 涡识别 |
 
 Task4 的背景类处理必须在首个实验前冻结：可以是预先分割涡区内的三类分类，也可以把 non-vortex 作为第四类；两种协议不得混在同一结果表中。
 
@@ -25,7 +26,7 @@ Task4 的背景类处理必须在首个实验前冻结：可以是预先分割�
 - Task2 的正确主命题是 `FMT+VAE > Raw+VAE`。`FMT+VAE < FMT direct` 不会否定这个主命题，但说明 VAE 没有进一步改善 FMT 本身。因此不能把 Task2 写成“VAE 提高 FMT feature”。
 - Task3 是 IVD 监督的**二分类识别**，不是 streamwise/spanwise/hairpin 多分类。后者统一属于 Task4。
 
-## 4. 所有 Task1–Task3 实验共享的最低协议
+## 4. 所有 Task1–Task3、Task5 实验共享的最低协议
 
 1. **数据拆分**：按时间片拆 train/validation/test；不得随机拆空间 seed。pathline source window 必须一起计入时间泄漏检查。
 2. **test 冻结**：test/confirmation 标签不得参与 feature 选择、cluster-to-class 映射、checkpoint、threshold、alpha 或超参数选择。
@@ -63,3 +64,12 @@ Task4 的背景类处理必须在首个实验前冻结：可以是预先分割�
 - 只允许 3D 数据；必须报告每类样本数和 class-balanced 指标。
 - 涡区域定位误差与涡型分类误差应分开统计。
 - Task4 开始前必须单独建立标签来源、类别定义和跨数据集名称映射文档。
+
+### Task5
+
+- Task5 是 Task3 的尺度扩展，监督目标仍是冻结的 IVD 涡/非涡二分类；不得同时改变标签定义后把差异归因于尺度学习。
+- “尺度”至少完整记录三项：中心到邻居种子的距离、数值积分步长、积分步数；总积分时间由后两者的乘积给出。最终送入网络的线数 `K` 和每线采样数 `L` 必须固定。当前 3D 主协议使用 7 条线，2D 使用 5 条线。
+- 空间尺度、时间步长和积分步数的组合必须在 train、validation、confirmation 间按 tuple 拆分。主 confirmation 至少包含训练中未出现的组合，并明确区分尺度插值与尺度外推。
+- 尺度 tuple 的分配必须与空间 seed 和 IVD 标签独立，且每个时间片中各 tuple 数量近似均衡；不得把大尺度主要分给涡区、小尺度主要分给背景。
+- 主表至少包含 variable-scale Raw、同结构同维度 Raw-PCA residual、variable-scale Raw+FMT；同时报告固定尺度 Task3 模型直接迁移到 variable-scale confirmation 的结果。
+- 除总体 F1 和 Average Precision 外，必须输出逐尺度 tuple 的指标，避免总体平均掩盖某一尺度范围的系统失败。
