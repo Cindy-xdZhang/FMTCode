@@ -1,0 +1,127 @@
+experiment: Verify_Task5_CylinderHyperparams_1.1
+source_cache_root: outputs/mainExp_Task5_3D_1.1/development_cache
+label_cache_root: outputs/mainExp_Task5_3D_1.1/development_labels_old8/labels
+output_root: outputs/Verify_Task5_CylinderHyperparams_1.1
+datasets: [cylinder3d, halfcylinderRe640]
+expected_slices: 6
+sampled_steps: 32
+raw_pca_random_state: 7068
+raw_wide_parameter_count: 148225
+screen_seeds: [60, 61]
+screen_split:
+  train_ordinals: [0, 1, 2]
+  validation_ordinals: [3]
+  test_ordinals: []
+outer_ordinals: [4, 5]
+training: &training
+  device: auto
+  batch_size: 512
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  max_epochs: 100
+  patience: 20
+  min_delta: 0.0001
+
+# Candidate selection maximizes the worst development-validation gain across
+# both Reynolds numbers, both metrics, matched Raw-PCA, and stronger Raw.
+# No candidate may read ordinals 4--5 during selection.
+candidates:
+  - {id: c00_legacy_fixed, fmt_recipe: all_plus_gram_kinematic,
+     gram_num_freq: 2, residual_input: geometry_fmt, auxiliary_dim: 64,
+     fixed_alpha: 1.0, selection_metric: average_precision}
+  - {id: c01_legacy_min_gain, fmt_recipe: all_plus_gram_kinematic,
+     gram_num_freq: 2, residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c02_legacy_constrained, fmt_recipe: all_plus_gram_kinematic,
+     gram_num_freq: 2, residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: constrained_average_precision, minimum_f1_gain: 0.03}
+  - {id: c03_physical_min_gain, fmt_recipe: all_plus_gram_physical_kinematic,
+     gram_num_freq: 2, residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c04_physical_constrained, fmt_recipe: all_plus_gram_physical_kinematic,
+     gram_num_freq: 2, residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: constrained_average_precision, minimum_f1_gain: 0.03}
+  - {id: c05_physical_fmt_only, fmt_recipe: all_plus_gram_physical_kinematic,
+     gram_num_freq: 2, residual_input: fmt_only, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c06_physical_dual, fmt_recipe: all_plus_gram_physical_kinematic,
+     gram_num_freq: 2, residual_input: dual, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c07_cached_all, fmt_recipe: all, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: c08_neighbor_real, fmt_recipe: real_neighbor,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c09_neighbor_real_dual, fmt_recipe: real_neighbor,
+     residual_input: dual, auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: c10_neighbor_real_imag, fmt_recipe: real_imag_neighbor,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c11_neighbor_chirality, fmt_recipe: chirality_neighbor,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c12_gram_only, fmt_recipe: time_local_gram, gram_num_freq: 2,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c13_physical_kinematic_only, fmt_recipe: physical_kinematic,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c14_gram_physical_kinematic, fmt_recipe: gram_physical_kinematic,
+     gram_num_freq: 2, residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c15_real_physical, fmt_recipe: real_neighbor_plus_physical_kinematic,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c16_real_gram_physical,
+     fmt_recipe: real_neighbor_plus_gram_physical_kinematic,
+     gram_num_freq: 2, residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c17_all_physical, fmt_recipe: all_plus_physical_kinematic,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c18_physical_gram_freq4,
+     fmt_recipe: all_plus_gram_physical_kinematic, gram_num_freq: 4,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c19_physical_aux32, fmt_recipe: all_plus_gram_physical_kinematic,
+     gram_num_freq: 2, residual_input: geometry_fmt, auxiliary_dim: 32,
+     selection_metric: minimum_gain}
+  - {id: c20_physical_aux96, fmt_recipe: all_plus_gram_physical_kinematic,
+     gram_num_freq: 2, residual_input: geometry_fmt, auxiliary_dim: 96,
+     selection_metric: minimum_gain}
+  - {id: c21_physical_lr3e4, fmt_recipe: all_plus_gram_physical_kinematic,
+     gram_num_freq: 2, residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain, training: {learning_rate: 0.0003}}
+  - {id: c22_physical_lr3e3, fmt_recipe: all_plus_gram_physical_kinematic,
+     gram_num_freq: 2, residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain, training: {learning_rate: 0.003}}
+  - {id: c23_physical_kfreq4, fmt_recipe: all_plus_gram_physical_kinematic,
+     gram_num_freq: 2, kinematic_num_freq: 4,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c24_physical_log, fmt_recipe: all_plus_gram_physical_kinematic,
+     gram_num_freq: 2, kinematic_log_compress: true,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c25_gram_physical_log, fmt_recipe: gram_physical_kinematic,
+     gram_num_freq: 2, kinematic_log_compress: true,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c26_real_physical_log,
+     fmt_recipe: real_neighbor_plus_physical_kinematic,
+     kinematic_log_compress: true, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: c27_physical_log_dual,
+     fmt_recipe: all_plus_gram_physical_kinematic, gram_num_freq: 2,
+     kinematic_log_compress: true, residual_input: dual,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: c28_physical_log_rtol1e4,
+     fmt_recipe: all_plus_gram_physical_kinematic, gram_num_freq: 2,
+     kinematic_log_compress: true, kinematic_pinv_rtol: 0.0001,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c29_physical_log_rtol1e3,
+     fmt_recipe: all_plus_gram_physical_kinematic, gram_num_freq: 2,
+     kinematic_log_compress: true, kinematic_pinv_rtol: 0.001,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}

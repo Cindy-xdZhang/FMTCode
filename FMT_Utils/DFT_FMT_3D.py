@@ -75,6 +75,9 @@ def pathline_velocity_gradient_dft_features_3d(
     num_freq: int = 6,
     eps: float = 1e-6,
     return_numpy: bool = True,
+    *,
+    sample_times: torch.Tensor | None = None,
+    log_compress: bool = False,
 ):
     """Estimate objective kinematic scalar sequences from a pathline cross.
 
@@ -87,8 +90,10 @@ def pathline_velocity_gradient_dft_features_3d(
     Four scalar sequences are Fourier encoded: vorticity-deviation norm,
     strain Frobenius norm, absolute divergence, and a signed Q-like balance
     between rotation deviation and strain.  Time derivatives use the sampled
-    pathline index as time; a constant physical sample interval only rescales
-    columns and is removed by train-only standardisation downstream.
+    pathline index by default for backward compatibility.  Variable-scale
+    Task5 callers should provide exact ``sample_times``.  ``log_compress``
+    applies a signed ``log1p`` before the Fourier transform to prevent rare
+    nearly singular neighbour crosses from dominating train statistics.
     """
     pathlines = torch.as_tensor(pathlines)
     if pathlines.ndim != 4 or pathlines.shape[1] != 7 or pathlines.shape[-1] < 3:
@@ -114,11 +119,36 @@ def pathline_velocity_gradient_dft_features_3d(
         dim=-1,
     )
     derivative = torch.empty_like(pair_vectors)
-    derivative[:, 0] = pair_vectors[:, 1] - pair_vectors[:, 0]
-    derivative[:, -1] = pair_vectors[:, -1] - pair_vectors[:, -2]
-    derivative[:, 1:-1] = 0.5 * (
-        pair_vectors[:, 2:] - pair_vectors[:, :-2]
-    )
+    if sample_times is None:
+        # Backward-compatible fixed-scale behaviour: sampled index is time.
+        derivative[:, 0] = pair_vectors[:, 1] - pair_vectors[:, 0]
+        derivative[:, -1] = pair_vectors[:, -1] - pair_vectors[:, -2]
+        derivative[:, 1:-1] = 0.5 * (
+            pair_vectors[:, 2:] - pair_vectors[:, :-2]
+        )
+    else:
+        times = torch.as_tensor(
+            sample_times, device=pair_vectors.device, dtype=pair_vectors.dtype
+        )
+        if times.ndim == 1:
+            times = times.unsqueeze(0).expand(len(pair_vectors), -1)
+        if times.shape != pair_vectors.shape[:2]:
+            raise ValueError(
+                "sample_times must have shape [L] or [N,L], got "
+                f"{tuple(times.shape)} for pathlines {tuple(pathlines.shape)}"
+            )
+        intervals = times[:, 1:] - times[:, :-1]
+        if not torch.isfinite(times).all() or torch.any(intervals <= 0):
+            raise ValueError("sample_times must be finite and strictly increasing")
+        derivative[:, 0] = (
+            pair_vectors[:, 1] - pair_vectors[:, 0]
+        ) / intervals[:, 0, None, None]
+        derivative[:, -1] = (
+            pair_vectors[:, -1] - pair_vectors[:, -2]
+        ) / intervals[:, -1, None, None]
+        derivative[:, 1:-1] = (
+            pair_vectors[:, 2:] - pair_vectors[:, :-2]
+        ) / (times[:, 2:] - times[:, :-2])[:, :, None, None]
     inverse = torch.linalg.pinv(pair_vectors, rtol=float(eps))
     gradient = derivative @ inverse
 
@@ -135,6 +165,12 @@ def pathline_velocity_gradient_dft_features_3d(
     divergence = gradient.diagonal(dim1=-2, dim2=-1).sum(dim=-1).abs()
     q_like = 0.25 * ivd_like.square() - 0.5 * strain_norm.square()
     series = torch.stack((ivd_like, strain_norm, divergence, q_like), dim=-1)
+    if log_compress:
+        unsigned = torch.log1p(series[..., :3].clamp_min(0.0))
+        signed_q = torch.sign(series[..., 3:]) * torch.log1p(
+            series[..., 3:].abs()
+        )
+        series = torch.cat((unsigned, signed_q), dim=-1)
 
     spectrum = torch.fft.rfft(series, dim=1)[:, :int(num_freq)]
     real = spectrum.real.transpose(1, 2).flatten(1)

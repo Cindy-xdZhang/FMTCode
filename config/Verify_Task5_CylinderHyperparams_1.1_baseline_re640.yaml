@@ -1,0 +1,15 @@
+experiment: Verify_Task5_CylinderHyperparams_1.1_baseline_re640
+source_cache_root: outputs/mainExp_Task5_3D_1.1/development_cache
+label_cache_root: outputs/mainExp_Task5_3D_1.1/development_labels_old8/labels
+output_dir: outputs/Verify_Task5_CylinderHyperparams_1.1/baselines/halfcylinderRe640
+datasets: [halfcylinderRe640]
+expected_slices: 6
+sampled_steps: 32
+fmt_subset: all
+variants: [raw, raw_wide]
+split: {train_ordinals: [0, 1, 2], validation_ordinals: [3], test_ordinals: []}
+evaluation: {test_enabled: false}
+model: {temporal_width: 64, embedding_dim: 128, auxiliary_dim: 64}
+training: {device: auto, seeds: [60, 61], batch_size: 512,
+           learning_rate: 0.001, weight_decay: 0.0001, max_epochs: 100,
+           patience: 20, min_delta: 0.0001}
