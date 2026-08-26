@@ -21,4 +21,3 @@ nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
 python Verify_Task3_FMTClassifier.py \
   --config config/Verify_Task5_Re160FreshTimes_1.1_baseline.yaml
-

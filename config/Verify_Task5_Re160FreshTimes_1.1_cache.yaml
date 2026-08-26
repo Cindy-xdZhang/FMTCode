@@ -41,4 +41,3 @@ reference: {definition: whole_field_ivd_percentile, percentile: 95.0}
 cache_generation: {device: auto, minimum_valid_per_scale: 20}
 cache_roots:
   confirmation: outputs/Verify_Task5_Re160FreshTimes_1.1/fresh_cache
-

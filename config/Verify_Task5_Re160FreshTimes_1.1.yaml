@@ -25,4 +25,3 @@ gates:
   minimum_matched_gain: 0.03
   minimum_strong_raw_gain: 0.0
   minimum_positive_seed_count: 4
-

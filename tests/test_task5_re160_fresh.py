@@ -88,4 +88,3 @@ def test_fresh_times_and_scale_tuples_are_disjoint():
     # Ten loaded frames: old development ends at 84, fresh windows are
     # [85,95) and [96,106), and old confirmation starts at 106.
     assert fresh["phases"]["confirmation"]["time_indices_by_dataset"]["cylinder3d"] == [85, 96]
-

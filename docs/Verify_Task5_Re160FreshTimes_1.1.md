@@ -53,4 +53,3 @@ residual、FMT residual。主判据为五 seed 平均：
   `selected_re160_candidate.json`
 - fresh 输出：`fresh_test/per_run.csv`、`per_scale.csv`、
   `per_scale_summary.csv`、`audit.json`
-

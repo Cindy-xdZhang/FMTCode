@@ -24,4 +24,3 @@ hostname
 python Verify_Task5_Re160FreshTimes.py \
   --config config/Verify_Task5_Re160FreshTimes_1.1.yaml \
   --mode train-candidate --seed "${seeds[$SLURM_ARRAY_TASK_ID]}"
-

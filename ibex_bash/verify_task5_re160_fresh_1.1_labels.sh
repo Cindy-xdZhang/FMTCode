@@ -15,4 +15,3 @@ source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
 python Build_Task3_GlobalIVD_Labels.py \
   --config config/Verify_Task5_Re160FreshTimes_1.1_labels.yaml
-
