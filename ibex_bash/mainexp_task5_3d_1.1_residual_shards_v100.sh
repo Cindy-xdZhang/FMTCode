@@ -4,8 +4,8 @@
 #SBATCH -J FMTT5m11res
 #SBATCH -o slurm_logs/%x.%A_%a.out
 #SBATCH -e slurm_logs/%x.%A_%a.err
-#SBATCH --time=4:00:00
-#SBATCH -p gpu4
+#SBATCH --time=2:00:00
+#SBATCH -p debug
 #SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=8
 #SBATCH --constraint=v100
