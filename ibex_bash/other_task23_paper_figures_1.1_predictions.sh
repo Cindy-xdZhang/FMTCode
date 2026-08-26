@@ -5,10 +5,10 @@
 #SBATCH -o slurm_logs/%x.%A_%a.out
 #SBATCH -e slurm_logs/%x.%A_%a.err
 #SBATCH --time=1:00:00
-#SBATCH -p gpu4
+#SBATCH -p debug
 #SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=6
-#SBATCH --constraint="a100|v100"
+#SBATCH --constraint=v100
 #SBATCH --mem=48G
 
 set -euo pipefail
