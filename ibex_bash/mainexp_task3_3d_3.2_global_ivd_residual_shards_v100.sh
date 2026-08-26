@@ -39,7 +39,7 @@ if [[ "${TASK3_SHARD_DRY_RUN:-0}" == "1" ]]; then
   exit 0
 fi
 
-module load cuda/11.8
+module load cuda/11.8 2>/dev/null || true
 source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
 export PYTHONUNBUFFERED=1

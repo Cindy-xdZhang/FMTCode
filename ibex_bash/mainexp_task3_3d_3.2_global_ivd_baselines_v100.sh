@@ -15,7 +15,9 @@ set -euo pipefail
 repo_root=${TASK3_REPO_ROOT:-/home/zhanx0o/FMT_Task12_3D_20260823}
 cd "$repo_root"
 mkdir -p slurm_logs
-module load cuda/11.8
+# Some Ibex V100 nodes expose no CUDA modulefile; the deepvortex conda
+# environment already carries a compatible PyTorch CUDA runtime.
+module load cuda/11.8 2>/dev/null || true
 source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
 export PYTHONUNBUFFERED=1
