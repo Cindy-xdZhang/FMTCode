@@ -351,6 +351,22 @@ def _normalize_with_checkpoint(split, stats):
     return raw, fmt, labels.astype(np.float32)
 
 
+def _candidate_checkpoint_path(candidate_root, source, dataset, seed):
+    """Return the checkpoint path written by the residual trainers."""
+    checkpoint_methods = {
+        "raw_pca": "raw_pca_residual",
+        "fmt": "raw_fmt_residual",
+    }
+    try:
+        checkpoint_method = checkpoint_methods[source]
+    except KeyError as exc:
+        raise ValueError(f"unknown residual source: {source}") from exc
+    return (
+        Path(candidate_root) / source / "checkpoints"
+        / f"{dataset}_{checkpoint_method}_seed{int(seed)}.pt"
+    )
+
+
 def _evaluate_residual(checkpoint_path, split, batch_size, device):
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     normalized = _normalize_with_checkpoint(split, checkpoint["normalization"])
@@ -438,9 +454,8 @@ def evaluate_outer(config_path):
             )
             for source, method in (("raw_pca", "raw_pca_residual"),
                                    ("fmt", "fmt_residual")):
-                checkpoint = (
-                    candidate_root / source / "checkpoints"
-                    / f"{dataset}_{method}_seed{int(seed)}.pt"
+                checkpoint = _candidate_checkpoint_path(
+                    candidate_root, source, dataset, seed
                 )
                 metrics = _evaluate_residual(
                     checkpoint, split, spec["training"]["batch_size"], device

@@ -5,6 +5,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from Search_Task5_CylinderHyperparams import _candidate_checkpoint_path
 from FMT_Utils.DFT_FMT_3D import pathline_velocity_gradient_dft_features_3d
 from FMT_Utils.Task5FeatureRecipes_3D import (
     parse_task5_feature_recipe,
@@ -59,4 +60,20 @@ def test_recipe_parser_preserves_legacy_and_physical_names():
     ) == ("real_neighbor", True, "physical")
     assert parse_task5_feature_recipe("physical_kinematic") == (
         None, False, "physical"
+    )
+
+
+def test_outer_checkpoint_paths_match_residual_trainer_names():
+    candidate_root = Path("candidate") / "cylinder3d" / "seed60"
+    assert _candidate_checkpoint_path(
+        candidate_root, "fmt", "cylinder3d", 60
+    ) == (
+        candidate_root / "fmt" / "checkpoints"
+        / "cylinder3d_raw_fmt_residual_seed60.pt"
+    )
+    assert _candidate_checkpoint_path(
+        candidate_root, "raw_pca", "cylinder3d", 60
+    ) == (
+        candidate_root / "raw_pca" / "checkpoints"
+        / "cylinder3d_raw_pca_residual_seed60.pt"
     )
