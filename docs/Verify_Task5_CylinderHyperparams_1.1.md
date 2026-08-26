@@ -46,3 +46,32 @@ Raw-PCA 仅在 ordinal 0--2 拟合。所有 residual 总参数必须小于 Raw-w
 相对 matched Raw-PCA 均至少 `+.03`，并且相对 stronger Raw 均为正。若未达到，
 ordinal 4--5 不能被循环用于继续选参；该轮只能作为诊断，后续必须新增数据或改用新的
 外层划分并明确标注适应性分析。
+
+## 运行结果（2026-08-27）
+
+30 个候选、2 个数据集、2 个训练 seed 的 120 个配对子作业全部成功，生成 240 个
+candidate `per_run.csv`。selector 只读取 ordinal 3，冻结
+`c24_physical_log`：268D `all_plus_gram_physical_kinematic`、physical kinematic
+signed-log、`geometry_fmt` residual、auxiliary width 64、minimum-gain 选择。选择时
+`outer_ordinals_were_read=false`；development 上的全局最差增益为 `+.09202`。
+
+冻结后只打开一次 ordinal 4--5，结果为：
+
+| Dataset | Raw-PCA F1 | FMT F1 | gain | Raw-PCA AP | FMT AP | gain | FMT−strong Raw F1/AP |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Re160 | .63100 | .64516 | +.01416 | .59564 | .63193 | +.03629 | +.02468 / −.03520 |
+| Re640 | .67543 | .77380 | +.09838 | .73977 | .86138 | +.12161 | +.15269 / +.20305 |
+
+因此预注册目标失败：Re640 获得明显且一致的增益；Re160 的 matched F1 增益低于
+`+.03`，且 AP 未超过 stronger Raw。ordinal 4--5 自此属于已暴露 development
+诊断，后续不得重复用作独立确认。
+
+第一次 outer job `50907672` 因 checkpoint 文件名契约错误失败：评测器寻找
+`fmt_residual`，训练器实际写入 `raw_fmt_residual`。它没有写出任何指标或 audit，
+冻结候选也未改变。commit `aff6ce3` 将结果方法名与 checkpoint 文件名分开并增加
+回归测试；同一冻结选择的重试 job `50909056` 成功。证据 SHA-256：
+
+- `selected_candidate.json`: `ad7e26fcba5e52929080458d05be02c1603fa908c79b7f8cd1163ec82c0ec598`
+- `validation_leaderboard.csv`: `d897162832b04aaa92d2a2f795c841ef9b766c6f07a6f8dc14451302396456e9`
+- `outer_development_holdout/audit.json`: `c5807a356bf9cbb0683c7fea225a70a092bd3076f1b262c534c98c54d9418b5e`
+- `outer_development_holdout/per_run.csv`: `5e5930faaaf501e5ec329cee2a5fa9acdf9eb91a6c2732e3be690b99d1c2e3cc`
