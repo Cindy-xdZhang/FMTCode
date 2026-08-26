@@ -77,6 +77,27 @@ Raw baseline，dataset-macro F1/AP 增益为 `+.0849/+.1026`，数据条目方�
 FMT 的 dataset-macro F1 提高 `+.1515`，8/10 数据条目提高；Re160 和 Smoke 是
 两个 transfer 反例。
 
+## Half-cylinder family-specific refinement（补充表）
+
+原主表的统一 268D 配方保留不改。针对原表增益较小的 Re160/Re640，后续验证允许
+half-cylinder physical family 使用 development-only 选择的独立 FMT 配方；标签、
+网络、尺度分配原则和 Raw-PCA 匹配规则不变。两行使用不同的独立评测集，因此不与
+原 10 条目表重新计算 macro：
+
+| Flow | 冻结 FMT 配方 | 独立评测 | Raw-PCA F1 | FMT F1 | gain | Raw-PCA AP | FMT AP | gain |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| Re160 | 44D physical-kinematic | fresh starts 85/96，6个全新尺度，5 seeds | .3984 | **.7400** | **+.3416** | .3222 | **.8906** | **+.5684** |
+| Re640 | 268D physical-log | frozen development outer ordinals 4--5，2 seeds | .6754 | **.7738** | **+.0984** | .7398 | **.8614** | **+.1216** |
+
+Re160 同时超过 strong Raw `+.3372/+.5315`，5/5 seed 和 6/6 全新尺度的 matched
+F1/AP 增益均为正。Re640 同时超过 strong Raw `+.1527/+.2031`。这张补充表支持
+“允许 physical-family 配方后，两种 Reynolds number 均有明显增益”，但不证明一个
+统一超参数对二者都最优；Re640 数据长度不足以再构造与所有既有 source window
+不重叠的新时间片，故其证据等级仍是首次冻结 outer，而非 Re160 式新时间检验。
+
+完整协议、负结果和哈希见 `docs/Verify_Task5_CylinderHyperparams_1.1.md` 与
+`docs/Verify_Task5_Re160FreshTimes_1.1.md`。
+
 ## 未见尺度分解
 
 `o` 是邻居距离相对最小网格间距的倍数，`d` 是 source-frame 间隔的积分步长
