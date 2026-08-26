@@ -1,7 +1,9 @@
-# 3D Task1–Task3 论文性能表
+# 3D Task1–Task3 与 Task5 论文性能表
 
 本页只合并已冻结 confirmation 结果，不重新选择任何 feature、VAE、checkpoint、
-cluster 映射或阈值。原始机器表位于 `outputs/paper_tables_task123_3d/`。
+cluster 映射或阈值。Task1–Task3 原始机器表位于
+`outputs/paper_tables_task123_3d/`；Task5 机器表位于
+`outputs/mainExp_Task5_3D_1.1_ibex_v100/outputs/mainExp_Task5_3D_1.1/final_confirmation/`。
 
 ## Task1：training-free FMT + KMeans
 
@@ -63,8 +65,39 @@ Precision 在 8/10 条目、6/7 family 为正。F-22 是稳定负例；Re640 的
 增益置信区间跨 0，且 Average Precision 略降。因此证据支持多数当前 3D flow
 及 macro-average 上的提升，不支持“每个 flow 都提高”。
 
+## Task5：不同尺度监督 IVD 二分类
+
+Task5 在每个 primitive 中改变邻居距离、RK4 积分步长和积分步数，但固定输出
+`7×32×3`。训练、validation 和 confirmation 的尺度 tuple 分别为 18、6、9 个，
+彼此不重合；confirmation 的 4 个晚期时间片不参与模型或阈值选择。`strongest Raw`
+由 physical-family development-validation Average Precision 冻结；Raw-PCA residual
+与 FMT residual 均增加 268D 输入，网络结构和可训练参数量相同。
+
+| Flow | fixed Task3 FMT transfer F1 | strongest Raw F1 | Task5 Raw-PCA F1 | Task5 FMT F1 | FMT−Raw-PCA F1 | Raw-PCA AP | FMT AP | FMT−Raw-PCA AP |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Boeing 747 | .7230 | .7148 | .7148 | .8065 | **+.0917** | .7822 | .8919 | **+.1097** |
+| Channel observer | .2668 | .1303 | .1303 | .5538 | **+.4235** | .0893 | .6147 | **+.5254** |
+| Half-cylinder Re160 | .4326 | .2419 | .2146 | .2389 | **+.0243** | .1298 | .1659 | **+.0361** |
+| Delta-wing original LBM | .8298 | .7972 | .7972 | .8714 | **+.0741** | .8947 | .9503 | **+.0555** |
+| Delta-wing resampled | .7345 | .8126 | .8126 | .8838 | **+.0713** | .8988 | .9560 | **+.0572** |
+| F-22 | .3349 | .7402 | .7402 | .7578 | **+.0176** | .7789 | .7973 | **+.0184** |
+| Half-cylinder Re640 | .4599 | .6552 | .6900 | .6930 | **+.0030** | .7717 | .7653 | **−.0063** |
+| Half-cylinder Re6400 | .4134 | .4738 | .4861 | .5213 | **+.0352** | .4874 | .5346 | **+.0472** |
+| Smoke buoyancy | .6871 | .6323 | .5802 | .6677 | **+.0875** | .5744 | .7392 | **+.1649** |
+| Tangaroa | .3300 | .6795 | .6695 | .7325 | **+.0630** | .6561 | .7645 | **+.1084** |
+| **Dataset macro** | **.5212** | **.5878** | **.5835** | **.6727** | **+.0891** | **.6063** | **.7180** | **+.1116** |
+| **Family macro** | — | **.5941** | **.5862** | **.6972** | **+.1110** | **.6058** | **.7499** | **+.1441** |
+
+相对同维度 Raw-PCA residual，FMT 的 F1 在 10/10 条目为正，Average Precision
+在 9/10 条目为正；相对 development 冻结的 strongest Raw，F1/AP 均为 9/10
+条目、7/7 family 为正。9/9 未见尺度 tuple 的宏平均 F1/AP 增益均为正，F1
+增益范围 `+.0421` 到 `+.1242`。相对 fixed-scale Task3 FMT 直接迁移，Task5 FMT
+的 dataset-macro F1 提高 `+.1515`，8/10 条目提高。限制是 Re640 的 AP 略降，
+Re160 未超过 strongest Raw，Re160/Smoke 未超过 fixed-scale FMT transfer。
+
 ## 结果来源
 
 - Task1：`mainExp_Task1_3D_2.1` + `mainExp_Task1_3D_2.2_newflows`。
 - Task2：`mainExp_Task2_3D_2.3` + `mainExp_Task2_3D_2.4_newflows`。
 - Task3：`mainExp_Task3_3D_3.2_global_ivd`（Ibex V100；10条目×5训练seed×8 held-out confirmation时间片）。
+- Task5：`mainExp_Task5_3D_1.1`（Ibex V100；10条目×5训练seed×4 held-out confirmation时间片×9个未见尺度tuple；归档SHA-256 `6053ed15…c58ec`）。
