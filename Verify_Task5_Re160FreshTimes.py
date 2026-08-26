@@ -329,6 +329,33 @@ def train_candidate(config_path, seed):
     return run_candidate(training_path, workflow["dataset"], 0, seed)
 
 
+def train_all_candidates(config_path):
+    """Train all frozen seeds while sharing one expensive FMT materialization."""
+    workflow = _workflow_spec(config_path)
+    output_root = Path(workflow["output_root"])
+    selection_path = output_root / "selected_re160_candidate.json"
+    training_path = output_root / "frozen_candidate_training.yaml"
+    if not selection_path.exists() or not training_path.exists():
+        raise FileNotFoundError("adaptive selection must finish before training")
+    frozen = _load_spec(training_path)
+    if frozen["adaptive_selection_sha256"] != _sha256(selection_path):
+        raise RuntimeError("frozen training config disagrees with selection")
+    candidate = _candidate(frozen, 0)
+    split = frozen["screen_split"]
+    required = set(split["train_ordinals"]) | set(split["validation_ordinals"])
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    records = _load_records(
+        frozen, workflow["dataset"], candidate, required,
+        feature_device=device,
+    )
+    for seed in workflow["final_seeds"]:
+        run_candidate(
+            training_path, workflow["dataset"], 0, int(seed),
+            preloaded_records=records, device=device,
+        )
+    return output_root / "candidates" / candidate["id"]
+
+
 def _scale_splits(source_paths, records):
     scale_ids = []
     scale_names = None
@@ -570,7 +597,10 @@ if __name__ == "__main__":
         "--config", default="config/Verify_Task5_Re160FreshTimes_1.1.yaml"
     )
     parser.add_argument(
-        "--mode", choices=("adaptive-select", "train-candidate", "evaluate-fresh"),
+        "--mode", choices=(
+            "adaptive-select", "train-candidate", "train-all-candidates",
+            "evaluate-fresh",
+        ),
         required=True,
     )
     parser.add_argument("--seed", type=int)
@@ -581,5 +611,7 @@ if __name__ == "__main__":
         if args.seed is None:
             parser.error("train-candidate requires --seed")
         train_candidate(args.config, args.seed)
+    elif args.mode == "train-all-candidates":
+        train_all_candidates(args.config)
     else:
         evaluate_fresh(args.config)

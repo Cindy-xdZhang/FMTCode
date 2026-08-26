@@ -173,7 +173,8 @@ def _existing_result(path, dataset, seed):
     return rows[0] if rows else None
 
 
-def run_candidate(config_path, dataset, candidate_index, seed):
+def run_candidate(config_path, dataset, candidate_index, seed,
+                  preloaded_records=None, device=None):
     spec = _load_spec(config_path)
     if dataset not in spec["datasets"]:
         raise ValueError(f"unknown dataset {dataset!r}")
@@ -182,7 +183,13 @@ def run_candidate(config_path, dataset, candidate_index, seed):
     candidate = _candidate(spec, candidate_index)
     split = spec["screen_split"]
     required = set(split["train_ordinals"]) | set(split["validation_ordinals"])
-    records = _load_records(spec, dataset, candidate, required)
+    if device is None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    records = preloaded_records
+    if records is None:
+        records = _load_records(
+            spec, dataset, candidate, required, feature_device=device
+        )
     train = _stack_split(records, split["train_ordinals"])
     validation = _stack_split(records, split["validation_ordinals"])
     train, validation, _, stats = _normalize_train_only(train, validation)
@@ -210,7 +217,7 @@ def run_candidate(config_path, dataset, candidate_index, seed):
         row = _train_one(
             candidate_spec, dataset, int(seed),
             (train, validation, None), stats,
-            torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+            device,
             output_dir,
         )
         row["candidate_id"] = candidate["id"]
