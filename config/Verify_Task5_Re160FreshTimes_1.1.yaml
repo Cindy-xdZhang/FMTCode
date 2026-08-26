@@ -1,0 +1,28 @@
+experiment: Verify_Task5_Re160FreshTimes_1.1
+previous_search_config: config/Verify_Task5_CylinderHyperparams_1.1.yaml
+output_root: outputs/Verify_Task5_Re160FreshTimes_1.1
+dataset: cylinder3d
+sampled_steps: 32
+
+# These ordinals have already been exposed and are development data from now on.
+adaptive_ordinals: [3, 4, 5]
+final_split:
+  train_ordinals: [0, 1, 2, 3, 4]
+  validation_ordinals: [5]
+  test_ordinals: []
+final_seeds: [70, 71, 72, 73, 74]
+evaluation_batch_size: 512
+
+fresh:
+  cache_config: config/Verify_Task5_Re160FreshTimes_1.1_cache.yaml
+  label_config: config/Verify_Task5_Re160FreshTimes_1.1_labels.yaml
+  source_cache_root: outputs/Verify_Task5_Re160FreshTimes_1.1/fresh_cache
+  label_cache_root: outputs/Verify_Task5_Re160FreshTimes_1.1/fresh_labels/labels
+  expected_slices: 2
+  source_indices: [85, 96]
+
+gates:
+  minimum_matched_gain: 0.03
+  minimum_strong_raw_gain: 0.0
+  minimum_positive_seed_count: 4
+

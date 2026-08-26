@@ -1,0 +1,44 @@
+experiment: Verify_Task5_Re160FreshTimes_1.1
+seed: 25168
+
+datasets:
+  - id: cylinder3d
+    paths:
+      - "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe160Resampled.nc"
+      - "/home/zhanx0o/DeepVortex/FLowDataFolder/halfcylinderRe160Resampled.nc"
+
+sampling:
+  max_spatial_dim: 96
+  seed_grid_shape: [16, 16, 16]
+  boundary_fraction: 0.08
+
+pathlines:
+  method: RK4
+  sampled_steps: 32
+  offset_mode: min
+  chunk_size: 2048
+
+# None of these six tuples appeared in the original train, validation, or
+# confirmation scale tables.  Their maximum source-frame horizon is 8, so
+# each source window reads 10 frames including interpolation guard frames.
+scale_sets:
+  fresh_confirmation:
+    - {name: fr_o042_d018_n36, offset_grid_scale: 0.42, dt_scale: 0.18, integration_steps: 36}
+    - {name: fr_o042_d022_n32, offset_grid_scale: 0.42, dt_scale: 0.22, integration_steps: 32}
+    - {name: fr_o058_d016_n40, offset_grid_scale: 0.58, dt_scale: 0.16, integration_steps: 40}
+    - {name: fr_o058_d020_n40, offset_grid_scale: 0.58, dt_scale: 0.20, integration_steps: 40}
+    - {name: fr_o090_d014_n48, offset_grid_scale: 0.90, dt_scale: 0.14, integration_steps: 48}
+    - {name: fr_o090_d025_n32, offset_grid_scale: 0.90, dt_scale: 0.25, integration_steps: 32}
+
+phases:
+  confirmation:
+    ordinal_scale_sets: {fresh_confirmation: [0, 1]}
+    time_indices_by_dataset:
+      cylinder3d: [85, 96]
+
+encoder: {num_freq: 6, mode: gram, include_chirality: true, neighbor_pool: sort}
+reference: {definition: whole_field_ivd_percentile, percentile: 95.0}
+cache_generation: {device: auto, minimum_valid_per_scale: 20}
+cache_roots:
+  confirmation: outputs/Verify_Task5_Re160FreshTimes_1.1/fresh_cache
+

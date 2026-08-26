@@ -1,0 +1,7 @@
+experiment: Verify_Task5_Re160FreshTimes_1.1_fresh_labels
+source_cache_root: outputs/Verify_Task5_Re160FreshTimes_1.1/fresh_cache
+output_dir: outputs/Verify_Task5_Re160FreshTimes_1.1/fresh_labels
+datasets: [cylinder3d]
+expected_slices: 2
+label: {mode: standard_global_ivd_percentile, percentile: 95.0}
+
