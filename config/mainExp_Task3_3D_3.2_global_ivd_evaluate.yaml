@@ -1,0 +1,43 @@
+experiment: mainExp_Task3_3D_3.2_global_ivd_evaluate
+output_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/final_confirmation
+sampled_steps: 32
+fmt_subset: all_plus_gram_kinematic
+fmt_gram_num_freq: 2
+seeds: [40, 41, 42, 43, 44]
+batch_size: 1024
+device: auto
+bootstrap_seed: 7068
+
+families:
+  channel: [channel]
+  half-cylinder: [cylinder3d, halfcylinderRe640, halfcylinderRe6400]
+  Tangaroa: [tangaroa]
+  delta-wing: [deltaWing_resampled, deltaWing_LBM]
+  F-22: [f22raptor]
+  Boeing-747: [boeing747]
+  smoke-buoyancy: [smokeBuoyancy]
+
+groups:
+  - name: old8
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400, tangaroa,
+               deltaWing_resampled, deltaWing_LBM, f22raptor, channel]
+    source_cache_root: outputs/mainExp_Task3_3D_3.1/confirmation_cache_old8
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/confirmation_labels_old8/labels
+    expected_slices: 8
+    baseline_checkpoint_roots: [outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints]
+    raw_pca_checkpoint_roots: [outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/raw_pca_residual/checkpoints]
+    fmt_checkpoint_roots: [outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/fmt_residual/checkpoints]
+    development_result_csvs:
+      - outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/per_run.csv
+      - outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/raw_pca_residual/per_run.csv
+  - name: new2
+    datasets: [boeing747, smokeBuoyancy]
+    source_cache_root: outputs/mainExp_Task3_3D_3.1/confirmation_cache_new2
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/confirmation_labels_new2/labels
+    expected_slices: 8
+    baseline_checkpoint_roots: [outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/baselines/checkpoints]
+    raw_pca_checkpoint_roots: [outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/raw_pca_residual/checkpoints]
+    fmt_checkpoint_roots: [outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/fmt_residual/checkpoints]
+    development_result_csvs:
+      - outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/baselines/per_run.csv
+      - outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/raw_pca_residual/per_run.csv

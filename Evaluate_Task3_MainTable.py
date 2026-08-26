@@ -221,6 +221,22 @@ def _summarise(pooled, per_slice, selected_raw, families, bootstrap_seed):
             ]
             item[f"slice_macro_raw_fmt_{metric}"] = float(np.mean(slice_fmt))
             item[f"slice_macro_gain_{metric}"] = float(np.mean(slice_gains))
+            raw_pca_gains = np.asarray([
+                float(by_key[(dataset, seed, "raw_fmt_residual")][metric])
+                - float(by_key[(dataset, seed, "raw_pca_residual")][metric])
+                for seed in seeds
+            ])
+            raw_pca_low, raw_pca_high = _bootstrap_ci(
+                raw_pca_gains, int(bootstrap_seed) + datasets.index(dataset) * 17
+                + (2 if metric == "f1" else 3),
+            )
+            item[f"mean_fmt_minus_raw_pca_{metric}"] = float(raw_pca_gains.mean())
+            item[f"std_fmt_minus_raw_pca_{metric}"] = float(raw_pca_gains.std(ddof=1))
+            item[f"fmt_minus_raw_pca_{metric}_ci95_low"] = raw_pca_low
+            item[f"fmt_minus_raw_pca_{metric}_ci95_high"] = raw_pca_high
+            item[f"positive_seed_count_fmt_minus_raw_pca_{metric}"] = int(
+                (raw_pca_gains > 0).sum()
+            )
         summary.append(item)
     return summary
 
@@ -240,6 +256,12 @@ def _family_summary(dataset_summary):
             "mean_gain_average_precision": float(np.mean([
                 row["mean_gain_average_precision"] for row in selected
             ])),
+            "mean_fmt_minus_raw_pca_f1": float(np.mean([
+                row["mean_fmt_minus_raw_pca_f1"] for row in selected
+            ])),
+            "mean_fmt_minus_raw_pca_average_precision": float(np.mean([
+                row["mean_fmt_minus_raw_pca_average_precision"] for row in selected
+            ])),
         })
     return rows
 
@@ -252,7 +274,7 @@ def _paper_markdown(summary, family_summary, path):
         "Average Precision 冻结。Raw+FMT residual 的 epoch 只按自身 validation "
         "Average Precision 选择；residual alpha 固定为 1.0。",
         "",
-        "| Flow | 冻结Raw基线 | Raw基线 F1 | Raw+Raw-PCA F1 | Raw+FMT F1 | F1增益 | Raw基线 AP | Raw+Raw-PCA AP | Raw+FMT AP | AP增益 |",
+        "| Flow | 冻结Raw基线 | Raw基线 F1 | Raw+Raw-PCA F1 | Raw+FMT F1 | FMT−Raw-PCA F1 | Raw基线 AP | Raw+Raw-PCA AP | Raw+FMT AP | FMT−Raw-PCA AP |",
         "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in summary:
@@ -262,21 +284,29 @@ def _paper_markdown(summary, family_summary, path):
             f'{row[f"mean_{baseline}_f1"]:.4f}±{row[f"std_{baseline}_f1"]:.4f} | '
             f'{row["mean_raw_pca_residual_f1"]:.4f}±{row["std_raw_pca_residual_f1"]:.4f} | '
             f'{row["mean_raw_fmt_residual_f1"]:.4f}±{row["std_raw_fmt_residual_f1"]:.4f} | '
-            f'**{row["mean_gain_f1"]:+.4f}** | '
+            f'**{row["mean_fmt_minus_raw_pca_f1"]:+.4f}** | '
             f'{row[f"mean_{baseline}_average_precision"]:.4f}±{row[f"std_{baseline}_average_precision"]:.4f} | '
             f'{row["mean_raw_pca_residual_average_precision"]:.4f}±{row["std_raw_pca_residual_average_precision"]:.4f} | '
             f'{row["mean_raw_fmt_residual_average_precision"]:.4f}±{row["std_raw_fmt_residual_average_precision"]:.4f} | '
-            f'**{row["mean_gain_average_precision"]:+.4f}** |'
+            f'**{row["mean_fmt_minus_raw_pca_average_precision"]:+.4f}** |'
         )
     positive_f1 = sum(row["mean_gain_f1"] > 0 for row in summary)
     positive_ap = sum(row["mean_gain_average_precision"] > 0 for row in summary)
     family_f1 = sum(row["mean_gain_f1"] > 0 for row in family_summary)
     family_ap = sum(row["mean_gain_average_precision"] > 0 for row in family_summary)
+    raw_pca_positive_f1 = sum(
+        row["mean_fmt_minus_raw_pca_f1"] > 0 for row in summary
+    )
+    raw_pca_positive_ap = sum(
+        row["mean_fmt_minus_raw_pca_average_precision"] > 0 for row in summary
+    )
     lines.extend([
         "",
         f"条目方向：F1 `{positive_f1}/{len(summary)}`，AP `{positive_ap}/{len(summary)}`；"
         f"physical-family 方向：F1 `{family_f1}/{len(family_summary)}`，"
         f"AP `{family_ap}/{len(family_summary)}`。",
+        f"相对 Raw-PCA residual：F1 `{raw_pca_positive_f1}/{len(summary)}`，"
+        f"AP `{raw_pca_positive_ap}/{len(summary)}`。",
         "",
         "误差为 5 个训练随机种子的 sample standard deviation。95% confidence "
         "interval 与逐时间片结果见同目录机器表。",
@@ -371,6 +401,12 @@ def run(config_path):
         "positive_f1_datasets": sum(row["mean_gain_f1"] > 0 for row in summary),
         "positive_ap_datasets": sum(
             row["mean_gain_average_precision"] > 0 for row in summary
+        ),
+        "positive_f1_datasets_vs_raw_pca": sum(
+            row["mean_fmt_minus_raw_pca_f1"] > 0 for row in summary
+        ),
+        "positive_ap_datasets_vs_raw_pca": sum(
+            row["mean_fmt_minus_raw_pca_average_precision"] > 0 for row in summary
         ),
     }
     (output_dir / "audit.json").write_text(

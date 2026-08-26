@@ -1,0 +1,20 @@
+experiment: mainExp_Task3_3D_3.2_global_ivd_raw_pca_new2
+source_cache_root: outputs/mainExp_Task123NewFlows_1.1/development_cache
+label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_new2/labels
+raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/baselines/checkpoints
+output_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/raw_pca_residual
+datasets: [boeing747, smokeBuoyancy]
+sampled_steps: 32
+fmt_subset: all_plus_gram_kinematic
+fmt_gram_num_freq: 2
+auxiliary_source: raw_pca
+raw_pca_components: 268
+raw_pca_random_state: 7068
+raw_wide_parameter_count: 148225
+split: {train_ordinals: [0, 1, 2, 3, 4, 5], validation_ordinals: [6, 7], test_ordinals: [8, 9]}
+evaluation: {test_enabled: false}
+model: {embedding_dim: 128, auxiliary_dim: 64, residual_input: geometry_fmt}
+fusion: {fixed_alpha: 1.0, selection_metric: average_precision}
+training: {device: auto, seeds: [40, 41, 42, 43, 44], batch_size: 512,
+           learning_rate: 0.001, weight_decay: 0.0001, max_epochs: 100,
+           patience: 20, min_delta: 0.0001}
