@@ -1,8 +1,9 @@
 # 3D Task1–Task3 与 Task5 论文性能表
 
 本页只合并已冻结 confirmation 结果，不重新选择任何 feature、VAE、checkpoint、
-cluster 映射或阈值。Task1–Task3 原始机器表位于
-`outputs/paper_tables_task123_3d/`；Task5 机器表位于
+cluster 映射或阈值。Task2/Task3 当前机器结果分别位于
+`outputs/mainExp_Task2_3D_4.1/` 和 `outputs/mainExp_Task3_3D_4.1/`，冻结协议与
+文件哈希见 `docs/mainExp_Task23_3D_4.1.md`；Task5 机器表位于
 `outputs/mainExp_Task5_3D_1.1_ibex_v100/outputs/mainExp_Task5_3D_1.1/final_confirmation/`。
 
 ## Task1：training-free FMT + KMeans
@@ -24,46 +25,55 @@ FMT 的条目平均 F1 为 `0.6130`；9/10 条目高于 Raw。
 
 ## Task2：Raw+VAE 与 FMT+同一 VAE
 
-| Flow | 同一 VAE | Raw+VAE F1 | FMT+VAE F1 | 配对 F1 增益 | FMT ARI | FMT NMI |
-|---|---|---:|---:|---:|---:|---:|
-| Channel observer | linear8_b1e-5 | 0.0532±0.0003 | 0.2224±0.0570 | **+0.1693±0.0568** | 0.1773 | 0.0687 |
-| Half-cylinder Re160 | mlp8_b1e-4 | 0.5548±0.0398 | 0.5535±0.0165 | **-0.0013±0.0549** | 0.4232 | 0.2828 |
-| Half-cylinder Re640 | linear2_b1e-5 | 0.4725±0.0057 | 0.6709±0.0075 | **+0.1984±0.0034** | 0.6048 | 0.4273 |
-| Half-cylinder Re6400 | linear2_b1e-5 | 0.5636±0.0064 | 0.6897±0.0127 | **+0.1261±0.0178** | 0.6391 | 0.4327 |
-| Tangaroa | mlp16_b1e-3 | 0.7044±0.0135 | 0.7290±0.0095 | **+0.0246±0.0042** | 0.6713 | 0.4996 |
-| Delta-wing resampled | mlp16_b1e-3 | 0.3133±0.0156 | 0.8207±0.0142 | **+0.5074±0.0283** | 0.7993 | 0.6795 |
-| Delta-wing original LBM | mlp16_b1e-3 | 0.3030±0.1098 | 0.8306±0.0101 | **+0.5276±0.1139** | 0.8074 | 0.6801 |
-| F-22 | mlp16_b1e-3 | 0.6297±0.0124 | 0.4772±0.0434 | **-0.1525±0.0453** | 0.4062 | 0.2196 |
-| Boeing 747 | mlp16_b1e-3 | 0.6194±0.0425 | 0.8474±0.0120 | **+0.2280±0.0307** | 0.8181 | 0.6680 |
-| Smoke buoyancy | linear2_b1e-5 | 0.8090±0.0029 | 0.7437±0.0096 | **-0.0653±0.0100** | 0.7041 | 0.5172 |
+每个 physical family 用 development validation 为 FMT 冻结一个 VAE；同一 family
+的 Raw 与 FMT 两臂共用结构、latent dimension、KL 权重、学习率、训练步数和随机
+种子。Linear 表示无 hidden layer；MLP 是多层感知机（Multilayer Perceptron），
+方括号内为 hidden widths。全部 KL 权重为 `1e-6`。
 
-7/10 条目、5/7 family 为正；条目平均配对增益 `+0.1562`，family-macro `+0.1185`。
+| Flow | 冻结 VAE / FMT feature | Raw+VAE F1 | FMT+VAE F1 | 配对 F1 增益 |
+|---|---|---:|---:|---:|
+| Channel observer | MLP `[128,64]`, latent 8 / all+kin4 | .0548±.0102 | .2243±.0533 | **+.1695±.0498** |
+| Half-cylinder Re160 | MLP `[512,256]`, latent 64 / all+kin4 | .4523±.0040 | .4890±.0146 | **+.0367±.0183** |
+| Half-cylinder Re640 | MLP `[512,256]`, latent 64 / all+kin4 | .3305±.0012 | .4361±.0145 | **+.1056±.0146** |
+| Half-cylinder Re6400 | MLP `[512,256]`, latent 64 / all+kin4 | .4768±.0061 | .5868±.0111 | **+.1101±.0093** |
+| Tangaroa | MLP `[128,64]`, latent 8 / real-neighbor | .6474±.1764 | .7705±.0170 | **+.1231±.1809** |
+| Delta-wing resampled | Linear, latent 8 / all | .4274±.0274 | .8250±.0208 | **+.3976±.0269** |
+| Delta-wing original LBM | Linear, latent 8 / all | .4619±.0513 | .8524±.0031 | **+.3905±.0538** |
+| F-22 | MLP `[256,128]`, latent 16 / all+kin4 | .6670±.0152 | .5958±.0202 | **−.0712±.0297** |
+| Boeing 747 | Linear, latent 4 / kin2 | .5801±.0129 | .8114±.0300 | **+.2313±.0366** |
+| Smoke buoyancy | Linear, latent 16 / real+imag-neighbor | .5184±.1489 | .7163±.0055 | **+.1980±.1538** |
+| **Dataset macro** | — | **.4617** | **.6308** | **+.1691** |
+| **Family macro** | — | **.4760** | **.6373** | **+.1613** |
+
+新空间 primitive population 上，9/10 条目、6/7 family 为正；dataset-macro
+增益达到预注册 `+.15` 目标。F-22 是保留的反例。该 confirmation 改变空间采样
+相位，但时间切片在历史实验中出现过，因此不称 sealed temporal test。
 
 ## Task3：监督 IVD 二分类
 
-本表使用与 Task1/Task2 完全相同的 whole-field IVD p95 标签。Raw-PCA residual
-是同结构、同特征维度、同可训练参数量的强 Raw-only 对照；其选择只读取
-development-validation Average Precision，未读取 confirmation。
+本表使用与 Task1/Task2 相同的 whole-field IVD p95 标签。Raw-PCA residual 是
+训练集内主成分分析（Principal Component Analysis, PCA）得到的 Raw-only feature；
+其维度、residual 网络和训练设置均与对应 FMT residual 相同。Average Precision
+（AP）衡量按预测分数排序后的 precision-recall 性能。
 
-| Flow | Raw F1 | Raw-PCA F1 | Raw+FMT F1 | FMT−Raw-PCA F1 | Raw AP | Raw-PCA AP | Raw+FMT AP | FMT−Raw-PCA AP |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Boeing 747 | .8322 | .8744 | .9038 | **+.0294** | .9082 | .9397 | .9682 | **+.0285** |
-| Channel observer | .1241 | .5618 | .7974 | **+.2356** | .1036 | .6727 | .8746 | **+.2019** |
-| Half-cylinder Re160 | .6358 | .6877 | .7670 | **+.0793** | .6779 | .7574 | .8595 | **+.1020** |
-| Delta-wing original LBM | .8406 | .8722 | .9203 | **+.0481** | .9309 | .9487 | .9754 | **+.0267** |
-| Delta-wing resampled | .8435 | .9020 | .9335 | **+.0315** | .9306 | .9635 | .9816 | **+.0181** |
-| F-22 | .8460 | .9172 | .8903 | **−.0269** | .9083 | .9533 | .9404 | **−.0129** |
-| Half-cylinder Re640 | .6908 | .7549 | .7577 | **+.0028** | .7598 | .8470 | .8421 | **−.0049** |
-| Half-cylinder Re6400 | .5668 | .6714 | .7079 | **+.0364** | .5960 | .7553 | .7770 | **+.0218** |
-| Smoke buoyancy | .7631 | .7915 | .8239 | **+.0324** | .8449 | .8825 | .9124 | **+.0300** |
-| Tangaroa | .7442 | .7850 | .8187 | **+.0337** | .7840 | .8545 | .8884 | **+.0339** |
-| **Dataset macro** | **.6887** | **.7818** | **.8320** | **+.0502** | **.7444** | **.8575** | **.9020** | **+.0445** |
-| **Family macro** | **.6832** | **.7888** | **.8436** | **+.0548** | **.7368** | **.8636** | **.9127** | **+.0490** |
+| Flow | Raw-PCA F1 | Raw+FMT F1 | F1增益 | Raw-PCA AP | Raw+FMT AP | AP增益 |
+|---|---:|---:|---:|---:|---:|---:|
+| Channel observer | .3058±.0248 | .7554±.0148 | **+.4495±.0311** | .2725±.0359 | .8394±.0164 | **+.5669±.0520** |
+| Half-cylinder Re160 | .7146±.0092 | .7335±.0159 | **+.0189±.0150** | .7882±.0155 | .8454±.0133 | **+.0572±.0061** |
+| Half-cylinder Re640 | .6908±.0057 | .8130±.0104 | **+.1222±.0147** | .7776±.0112 | .9037±.0114 | **+.1261±.0079** |
+| Half-cylinder Re6400 | .6143±.0098 | .7267±.0140 | **+.1124±.0137** | .6682±.0111 | .8188±.0104 | **+.1507±.0120** |
+| Tangaroa | .7740±.0062 | .8289±.0067 | **+.0548±.0078** | .8522±.0063 | .9158±.0070 | **+.0636±.0015** |
+| Delta-wing resampled | .8423±.0090 | .8915±.0098 | **+.0492±.0117** | .9269±.0047 | .9668±.0027 | **+.0400±.0058** |
+| Delta-wing original LBM | .8313±.0043 | .8834±.0098 | **+.0521±.0106** | .9228±.0043 | .9642±.0020 | **+.0414±.0038** |
+| F-22 | .8196±.0059 | .8410±.0088 | **+.0214±.0118** | .8813±.0126 | .9120±.0054 | **+.0307±.0081** |
+| Boeing 747 | .7692±.0166 | .8519±.0148 | **+.0827±.0170** | .8632±.0133 | .9373±.0059 | **+.0741±.0118** |
+| Smoke buoyancy | .7785±.0215 | .8152±.0136 | **+.0367±.0323** | .8813±.0118 | .9202±.0103 | **+.0389±.0077** |
+| **Dataset macro** | **.7141** | **.8141** | **+.1000** | **.7834** | **.9024** | **+.1190** |
+| **Family-macro gain** | — | — | **+.1115** | — | — | **+.1323** |
 
-相对 Raw-PCA residual，FMT 的 F1 在 9/10 条目、6/7 family 为正；Average
-Precision 在 8/10 条目、6/7 family 为正。F-22 是稳定负例；Re640 的 F1
-增益置信区间跨 0，且 Average Precision 略降。因此证据支持多数当前 3D flow
-及 macro-average 上的提升，不支持“每个 flow 都提高”。
+相对 Raw-PCA residual，F1 与 AP 均在 10/10 条目、7/7 family 为正；但
+dataset-macro F1 增益没有达到预注册 `+.15`。相对标准 Raw/Raw-wide 的诊断性
+dataset-macro F1/AP 增益为 `+.1583/+.1948`，不能用它替代 Raw-PCA 主比较。
 
 ## Task5：不同尺度监督 IVD 二分类
 
@@ -98,6 +108,6 @@ Re160 未超过 strongest Raw，Re160/Smoke 未超过 fixed-scale FMT transfer�
 ## 结果来源
 
 - Task1：`mainExp_Task1_3D_2.1` + `mainExp_Task1_3D_2.2_newflows`。
-- Task2：`mainExp_Task2_3D_2.3` + `mainExp_Task2_3D_2.4_newflows`。
-- Task3：`mainExp_Task3_3D_3.2_global_ivd`（Ibex V100；10条目×5训练seed×8 held-out confirmation时间片）。
+- Task2：`mainExp_Task2_3D_4.1`（Ibex V100；10条目×4个新空间相位切片×5 paired seeds；summary SHA-256 `06c7de3e…be8122`）。
+- Task3：`mainExp_Task3_3D_4.1`（Ibex V100；与Task2相同的新空间primitive population×5 paired seeds；summary SHA-256 `44d37070…6c25c`）。
 - Task5：`mainExp_Task5_3D_1.1`（Ibex V100；10条目×5训练seed×4 held-out confirmation时间片×9个未见尺度tuple；归档SHA-256 `6053ed15…c58ec`）。
