@@ -116,8 +116,16 @@ def load_vector_field_3d(path: str | Path) -> UnsteadyVectorField3D:
     return vector_field
 
 
-def generate_seeding_grid_3d(vector_field, grid_shape, boundary_fraction, offset):
-    """Return flattened seeds and axis arrays, safely inset for the 7-line cross."""
+def generate_seeding_grid_3d(vector_field, grid_shape, boundary_fraction, offset,
+                             grid_phase=None):
+    """Return flattened seeds and axis arrays, safely inset for the 7-line cross.
+
+    The default reproduces the historical endpoint-inclusive grid exactly.
+    ``grid_phase=[px,py,pz]`` instead samples one point per equal-width cell at
+    fractional offsets ``p`` from each cell centre.  Requiring ``|p| < 0.5``
+    keeps every shifted point inside its cell and creates a deterministic,
+    disjoint spatial confirmation population without changing sample count.
+    """
     grid_shape = tuple(int(v) for v in grid_shape)
     if len(grid_shape) != 3 or min(grid_shape) < 2:
         raise ValueError("grid_shape must contain three integers >= 2")
@@ -127,10 +135,29 @@ def generate_seeding_grid_3d(vector_field, grid_shape, boundary_fraction, offset
     margin = np.maximum(float(boundary_fraction) * span, float(offset) * 1.01)
     if np.any(2 * margin >= span):
         raise ValueError("boundary margin leaves no seeding volume")
-    # grid_shape is [nx,ny,nz], while meshgrid output is [nz,ny,nx].
-    xs = np.linspace(dmin[0] + margin[0], dmax[0] - margin[0], grid_shape[0])
-    ys = np.linspace(dmin[1] + margin[1], dmax[1] - margin[1], grid_shape[1])
-    zs = np.linspace(dmin[2] + margin[2], dmax[2] - margin[2], grid_shape[2])
+    low = dmin + margin
+    high = dmax - margin
+    if grid_phase is None:
+        # grid_shape is [nx,ny,nz], while meshgrid output is [nz,ny,nx].
+        axes = [
+            np.linspace(low[axis], high[axis], grid_shape[axis])
+            for axis in range(3)
+        ]
+    else:
+        phase = np.asarray(grid_phase, dtype=np.float64)
+        if phase.shape != (3,) or not np.isfinite(phase).all():
+            raise ValueError("grid_phase must contain three finite values")
+        if np.any(np.abs(phase) >= 0.5):
+            raise ValueError("each grid_phase component must satisfy |phase| < 0.5")
+        axes = []
+        for axis, count in enumerate(grid_shape):
+            cell_width = (high[axis] - low[axis]) / float(count)
+            axes.append(
+                low[axis]
+                + (np.arange(count, dtype=np.float64) + 0.5 + phase[axis])
+                * cell_width
+            )
+    xs, ys, zs = axes
     zz, yy, xx = np.meshgrid(zs, ys, xs, indexing="ij")
     return np.stack((xx.ravel(), yy.ravel(), zz.ravel()), axis=-1), (xs, ys, zs)
 

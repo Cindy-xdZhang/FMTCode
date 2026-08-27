@@ -1,0 +1,20 @@
+experiment: mainExp_Task2_3D_4.1
+search_config: config/Verify_Task2_FMTVAEFamilySearch_4.1.yaml
+stage2_selection: outputs/Verify_Task2_FMTVAEFamilySearch_4.1/stage2_selection.json
+frozen_recipe_manifest: outputs/mainExp_Task23_3D_4.1/frozen_recipe_manifest.json
+output_root: outputs/mainExp_Task2_3D_4.1
+confirmation_roots:
+  old8:
+    datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+               tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor]
+    root: outputs/mainExp_Task23_3D_4.1/confirmation_cache_old8
+  new2:
+    datasets: [boeing747, smokeBuoyancy]
+    root: outputs/mainExp_Task23_3D_4.1/confirmation_cache_new2
+splits:
+  train: [0, 1, 2, 3, 4, 5, 6, 7]
+  cluster_calibration: [8, 9]
+  confirmation_count: 4
+final_training_seeds: [9080, 9081, 9082, 9083, 9084]
+target_dataset_macro_f1_gain: 0.15
+

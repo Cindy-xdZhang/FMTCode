@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from FMT_Utils.Task12Data_3D import load_cache_records
+from FMT_Utils.FMT_3D_pipeline import generate_seeding_grid_3d
 from Search_Task2_FMTVAE_3D import (
     _decode_job as decode_task2_job,
     _load_spec as load_task2_spec,
@@ -16,6 +17,7 @@ from Search_Task3_FMTResidual_3D import (
 from Search_Task3_FMTResidual_Stage2_3D import (
     _decode_job as decode_task3_stage2_job,
 )
+from Build_Task23_FamilySearch_Confirmation import SETTINGS, SEED_GRID_PHASE
 
 
 TASK2_CONFIG = "config/Verify_Task2_FMTVAEFamilySearch_4.1.yaml"
@@ -86,3 +88,39 @@ def test_stage2_arrays_expand_only_three_features_per_family():
     task3 = load_task3_spec(TASK3_CONFIG)
     assert len(task3["stage2_networks"]) == 10
     assert decode_task3_stage2_job(task3, 299) == ("smokeBuoyancy", 29)
+
+
+def test_phased_confirmation_grid_preserves_count_and_changes_every_axis():
+    field = type("Field", (), {
+        "domainMinBoundary": np.asarray([0.0, -1.0, 2.0]),
+        "domainMaxBoundary": np.asarray([4.0, 3.0, 8.0]),
+    })()
+    regular, regular_axes = generate_seeding_grid_3d(
+        field, [4, 3, 2], 0.1, 0.01
+    )
+    phased, phased_axes = generate_seeding_grid_3d(
+        field, [4, 3, 2], 0.1, 0.01, grid_phase=[0.31, -0.23, 0.17]
+    )
+    assert regular.shape == phased.shape == (24, 3)
+    assert all(not np.array_equal(a, b) for a, b in zip(regular_axes, phased_axes))
+    assert not np.any(np.all(regular[:, None, :] == phased[None, :, :], axis=-1))
+    with pytest.raises(ValueError, match="grid_phase"):
+        generate_seeding_grid_3d(field, [4, 3, 2], 0.1, 0.01,
+                                 grid_phase=[0.5, 0.0, 0.0])
+
+
+def test_confirmation_start_indices_leave_the_full_pathline_window_available():
+    source_frames = {
+        "cylinder3d": 151, "halfcylinderRe640": 76,
+        "halfcylinderRe6400": 151, "tangaroa": 201,
+        "deltaWing_resampled": 171, "deltaWing_LBM": 234,
+        "f22raptor": 159, "channel": 159, "boeing747": 199,
+        "smokeBuoyancy": 160,
+    }
+    frame_count = 14
+    assert all(abs(value) < 0.5 for value in SEED_GRID_PHASE)
+    for settings in SETTINGS.values():
+        for dataset, starts in settings["indices"].items():
+            assert len(starts) == len(set(starts)) == 4
+            assert min(starts) >= int(np.floor(0.2 * source_frames[dataset]))
+            assert max(starts) + frame_count <= source_frames[dataset]

@@ -109,9 +109,11 @@ def build_dataset(config, dataset_id, overwrite=False):
             field.gridInterval, float(config.pathlines.offset_grid_scale),
             str(getattr(config.pathlines, "offset_mode", "min")),
         )
+        grid_phase = getattr(config.sampling, "seed_grid_phase", None)
         seeds, _ = generate_seeding_grid_3d(
             field, config.sampling.seed_grid_shape,
             float(config.sampling.boundary_fraction), offset,
+            grid_phase=grid_phase,
         )
         dt = float(field.timeInterval) * float(config.pathlines.dt_scale)
         primitives, valid_mask, lengths = integrate_cross_primitives_3d(
@@ -142,6 +144,10 @@ def build_dataset(config, dataset_id, overwrite=False):
             "ivd_positive_fraction": float(reference.mean()),
             "primitive_offset": offset,
             "primitive_offset_mode": str(getattr(config.pathlines, "offset_mode", "min")),
+            "seed_grid_phase": (
+                None if grid_phase is None
+                else [float(value) for value in grid_phase]
+            ),
             "elapsed_seconds": time.time() - started,
         }
         np.savez_compressed(

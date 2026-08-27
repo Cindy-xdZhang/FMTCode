@@ -123,9 +123,11 @@ def build(config, overwrite=False):
         offset = float(np.min(field.gridInterval[field.gridInterval > 0])) * float(
             config.pathlines.offset_grid_scale
         )
+        grid_phase = getattr(config.sampling, "seed_grid_phase", None)
         seeds, _ = generate_seeding_grid_3d(
             field, config.sampling.seed_grid_shape,
             float(config.sampling.boundary_fraction), offset,
+            grid_phase=grid_phase,
         )
         primitives, valid_mask, lengths = integrate_cross_primitives_3d(
             field, seeds, 0.0, dt_source * float(config.pathlines.dt_scale),
@@ -147,6 +149,10 @@ def build(config, overwrite=False):
         metadata = {"dataset": "channel", "ordinal": ordinal,
                     "source_start_index": int(source_index), "source_time": float(times[source_index]),
                     "source_time_step": dt_source, "frame_count": frame_count,
+                    "seed_grid_phase": (
+                        None if grid_phase is None
+                        else [float(value) for value in grid_phase]
+                    ),
                     "loaded_shape_TZYXC": list(field_data.shape),
                     "valid_primitives": int(len(seeds_valid)), "total_primitives": int(len(seeds)),
                     "ivd_threshold": threshold, "ivd_positive_count": int(reference.sum()),
