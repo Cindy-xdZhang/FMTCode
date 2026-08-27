@@ -5,7 +5,6 @@
 #SBATCH -o slurm_logs/%x.%A_%a.out
 #SBATCH -e slurm_logs/%x.%A_%a.err
 #SBATCH --time=4:00:00
-#SBATCH -p gpu4
 #SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=8
 #SBATCH --constraint=v100
@@ -26,4 +25,3 @@ hostname
 python Search_Task3_FMTResidual_3D.py \
   --config config/Verify_Task3_FMTResidualFamilySearch_4.1.yaml \
   --mode candidate --job-index "$SLURM_ARRAY_TASK_ID"
-

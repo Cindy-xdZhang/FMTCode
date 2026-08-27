@@ -4,7 +4,6 @@
 #SBATCH -o slurm_logs/%x.%j.out
 #SBATCH -e slurm_logs/%x.%j.err
 #SBATCH --time=2:00:00
-#SBATCH -p gpu4
 #SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=8
 #SBATCH --constraint=v100
@@ -19,4 +18,3 @@ conda activate deepvortex
 export PYTHONUNBUFFERED=1
 python Search_Task3_FMTResidual_Stage2_3D.py \
   --config config/Verify_Task3_FMTResidualFamilySearch_4.1.yaml --mode outer
-

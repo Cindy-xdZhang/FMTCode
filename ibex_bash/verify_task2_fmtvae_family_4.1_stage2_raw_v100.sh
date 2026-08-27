@@ -5,7 +5,6 @@
 #SBATCH -o slurm_logs/%x.%A_%a.out
 #SBATCH -e slurm_logs/%x.%A_%a.err
 #SBATCH --time=4:00:00
-#SBATCH -p gpu4
 #SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=8
 #SBATCH --constraint=v100
@@ -21,4 +20,3 @@ export PYTHONUNBUFFERED=1
 python Search_Task2_FMTVAE_Stage2_3D.py \
   --config config/Verify_Task2_FMTVAEFamilySearch_4.1.yaml \
   --mode raw --job-index "$SLURM_ARRAY_TASK_ID"
-

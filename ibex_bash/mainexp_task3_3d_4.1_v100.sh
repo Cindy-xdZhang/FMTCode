@@ -5,7 +5,6 @@
 #SBATCH -o slurm_logs/%x.%A_%a.out
 #SBATCH -e slurm_logs/%x.%A_%a.err
 #SBATCH --time=5:00:00
-#SBATCH -p gpu4
 #SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=8
 #SBATCH --constraint=v100
@@ -22,4 +21,3 @@ conda activate deepvortex
 export PYTHONUNBUFFERED=1
 python Run_Task3_FMTResidual_Frozen_4_1.py \
   --config config/mainExp_Task3_3D_4.1.yaml --mode dataset --dataset "$dataset"
-
