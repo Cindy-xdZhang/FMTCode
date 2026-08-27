@@ -1,0 +1,52 @@
+experiment: Ablation_Task23IVDPercentile_1.1
+output_dir: outputs/Ablation_Task23IVDPercentile_1.1
+
+# p95 is recomputed only as a bitwise audit/reference. The requested sweep is
+# p80--p92.5; no percentile is hidden or selected before reporting.
+requested_percentiles: [80.0, 85.0, 87.5, 90.0, 92.5]
+audit_percentile: 95.0
+max_spatial_dim: 96
+
+channel:
+  path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel.vtk
+  total_frames: 159
+  duration: 1.0
+  output_crop_fraction: 0.10
+
+label_groups:
+  development_old8:
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400, tangaroa,
+               deltaWing_resampled, deltaWing_LBM, f22raptor, channel]
+    expected_slices: 10
+  development_new2:
+    source_cache_root: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    datasets: [boeing747, smokeBuoyancy]
+    expected_slices: 10
+  confirmation_old8:
+    source_cache_root: outputs/mainExp_Task3_3D_3.1/confirmation_cache_old8
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400, tangaroa,
+               deltaWing_resampled, deltaWing_LBM, f22raptor, channel]
+    expected_slices: 8
+  confirmation_new2:
+    source_cache_root: outputs/mainExp_Task3_3D_3.1/confirmation_cache_new2
+    datasets: [boeing747, smokeBuoyancy]
+    expected_slices: 8
+
+task2:
+  main_config: config/mainExp_Task2_3D_3.3.yaml
+  published_p95_runs: outputs/mainExp_Task2_3D_3.3/final_runs.csv
+  output_dir: outputs/Ablation_Task23IVDPercentile_1.1/task2
+
+task3:
+  output_root: outputs/Ablation_Task23IVDPercentile_1.1/task3
+  generated_config_dir: outputs/Ablation_Task23IVDPercentile_1.1/generated_configs
+  published_p95_evaluation: outputs/mainExp_Task3_3D_3.2_global_ivd/final_confirmation
+  templates:
+    baseline_old8: config/mainExp_Task3_3D_3.2_global_ivd_baselines_old8.yaml
+    baseline_new2: config/mainExp_Task3_3D_3.2_global_ivd_baselines_new2.yaml
+    fmt_old8: config/mainExp_Task3_3D_3.2_global_ivd_fmt_old8.yaml
+    fmt_new2: config/mainExp_Task3_3D_3.2_global_ivd_fmt_new2.yaml
+    raw_pca_old8: config/mainExp_Task3_3D_3.2_global_ivd_raw_pca_old8.yaml
+    raw_pca_new2: config/mainExp_Task3_3D_3.2_global_ivd_raw_pca_new2.yaml
+    evaluate: config/mainExp_Task3_3D_3.2_global_ivd_evaluate.yaml
