@@ -151,11 +151,30 @@ def _stack_split(records, ordinals):
                  for index in range(3))
 
 
-def _normalize_train_only(train, validation, test=None):
+def _normalize_train_only(train, validation, test=None, raw_stats=None):
     raw_train, fmt_train, _ = train
-    raw_mean = raw_train.mean(axis=(0, 1, 2), keepdims=True, dtype=np.float64).astype(np.float32)
-    raw_std = raw_train.std(axis=(0, 1, 2), keepdims=True, dtype=np.float64).astype(np.float32)
-    raw_std = np.maximum(raw_std, 1e-6)
+    if raw_stats is None:
+        raw_mean = raw_train.mean(
+            axis=(0, 1, 2), keepdims=True, dtype=np.float64
+        ).astype(np.float32)
+        raw_std = raw_train.std(
+            axis=(0, 1, 2), keepdims=True, dtype=np.float64
+        ).astype(np.float32)
+        raw_std = np.maximum(raw_std, 1e-6)
+    else:
+        raw_mean = np.asarray(raw_stats["raw_mean"], dtype=np.float32)
+        raw_std = np.asarray(raw_stats["raw_std"], dtype=np.float32)
+        expected_shape = (1, 1, 1, raw_train.shape[-1])
+        if raw_mean.shape != expected_shape or raw_std.shape != expected_shape:
+            raise ValueError(
+                "frozen Raw normalization has incompatible shape: "
+                f"mean={raw_mean.shape}, std={raw_std.shape}, "
+                f"expected={expected_shape}"
+            )
+        if not np.isfinite(raw_mean).all() or not np.isfinite(raw_std).all():
+            raise ValueError("frozen Raw normalization contains non-finite values")
+        if np.any(raw_std <= 0):
+            raise ValueError("frozen Raw normalization has non-positive std")
     fmt_mean = fmt_train.mean(axis=0, keepdims=True, dtype=np.float64).astype(np.float32)
     fmt_std = fmt_train.std(axis=0, keepdims=True, dtype=np.float64).astype(np.float32)
     fmt_std = np.maximum(fmt_std, 1e-6)

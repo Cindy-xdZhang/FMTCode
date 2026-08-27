@@ -91,5 +91,17 @@ Stage 0 SHA-256：
 - Config：`config/Verify_Task3_AnchoredRobust_5.1.yaml`
 - 小型结果：`docs/results/Verify_Task3_AnchoredRobust_5.1/`
 
-当前状态：Stage 0 完成；Ibex residual 搜索尚未产生结果，因此本文件此时不宣称
-Task3 已达到 `+.15`。
+## Ibex 搜索与最终状态
+
+Stage 1 的 180/180 jobs、Stage 2 的 300/300 jobs 均完成。Stage 2 development
+dataset-macro F1/Average Precision 增益为 `+.16025/+.17163`，selection SHA-256
+为 `8341272e5984008cb0d39059f6fb84dbeea4251989b0a37040e931481968a2ab`。
+
+冻结后生成空间相位 `[-.37,.29,-.11]` 的 40 个新切片，共 155,157 个有效
+primitive。最终 10 条目×4 方法×5 seeds 的 200/200 条记录完整，所有 stderr
+为空。相对同宽同结构 Raw-PCA residual，最终 dataset-macro F1/Average Precision
+增益为 `+.13591/+.14971`，两项均 10/10 条目、5/5 paired seeds 为正。
+
+因此 anchored FMT 明显改进了 4.1 的 `+.10000/+.11896`，但预注册的 F1
+`+.15` 目标仍未达到，不能按成功记载。完整逐流场表、机器、哈希和结论边界见
+`docs/mainExp_Task3_3D_5.1.md`。

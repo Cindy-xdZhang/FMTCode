@@ -1,0 +1,7 @@
+experiment: mainExp_Task3_3D_5.2_labels_old8
+source_cache_root: outputs/mainExp_Task3_3D_5.2/confirmation_cache_old8
+output_dir: outputs/mainExp_Task3_3D_5.2/confirmation_labels_old8
+datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400, tangaroa,
+           deltaWing_resampled, deltaWing_LBM, f22raptor, channel]
+expected_slices: 4
+label: {definition: standard_global_ivd, percentile: 95.0}

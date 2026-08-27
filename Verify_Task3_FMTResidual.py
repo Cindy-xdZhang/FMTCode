@@ -302,6 +302,14 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
     raw_model, raw_checkpoint = _load_raw_model(
         raw_checkpoint_path, train[1].shape[1], device
     )
+    for key in ("raw_mean", "raw_std"):
+        if not np.array_equal(
+            np.asarray(raw_checkpoint["normalization"][key]),
+            np.asarray(stats[key]),
+        ):
+            raise RuntimeError(
+                f"frozen Raw checkpoint disagrees with residual {key}"
+            )
     model = PathlineFMTResidualClassifier3D(
         raw_model, fmt_dim=train[1].shape[1],
         embedding_dim=spec["model"]["embedding_dim"],

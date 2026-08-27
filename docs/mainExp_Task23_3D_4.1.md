@@ -1,5 +1,9 @@
 # Task2 / Task3 3D family-specific search 与最终确认（4.1）
 
+> 状态：Task2-4.1 仍是当前 Task2 主结果；本页的 Task3-4.1 已被
+> `mainExp_Task3_3D_5.1` 的 anchored FMT 新空间确认取代。旧数值保留用于追踪，
+> 不再作为当前 Task3 论文主表。
+
 ## 结论
 
 - **Task2 达到预注册目标。**同一变分自编码器（Variational Autoencoder, VAE）内，`FMT+VAE − Raw+VAE` 的 dataset-macro F1 为 `+0.16912`，高于目标 `+0.15`；9/10 个数据条目、6/7 个物理 family 为正。

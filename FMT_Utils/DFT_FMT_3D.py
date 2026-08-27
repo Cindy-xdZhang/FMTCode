@@ -76,6 +76,7 @@ def pathline_velocity_gradient_scalar_sequences_3d(
     *,
     sample_times: torch.Tensor | None = None,
     log_compress: bool = False,
+    endpoint_order: int = 1,
 ):
     """Estimate four local kinematic scalar sequences from a pathline cross.
 
@@ -101,6 +102,9 @@ def pathline_velocity_gradient_scalar_sequences_3d(
     length = int(pathlines.shape[2])
     if length < 3:
         raise ValueError("velocity-gradient features require at least three samples")
+    endpoint_order = int(endpoint_order)
+    if endpoint_order not in (1, 2):
+        raise ValueError("endpoint_order must be 1 or 2")
     xyz = pathlines[..., :3]
     if not xyz.is_floating_point():
         xyz = xyz.float()
@@ -114,8 +118,20 @@ def pathline_velocity_gradient_scalar_sequences_3d(
     derivative = torch.empty_like(pair_vectors)
     if sample_times is None:
         # Backward-compatible fixed-scale behaviour: sampled index is time.
-        derivative[:, 0] = pair_vectors[:, 1] - pair_vectors[:, 0]
-        derivative[:, -1] = pair_vectors[:, -1] - pair_vectors[:, -2]
+        if endpoint_order == 1:
+            derivative[:, 0] = pair_vectors[:, 1] - pair_vectors[:, 0]
+            derivative[:, -1] = pair_vectors[:, -1] - pair_vectors[:, -2]
+        else:
+            derivative[:, 0] = 0.5 * (
+                -3.0 * pair_vectors[:, 0]
+                + 4.0 * pair_vectors[:, 1]
+                - pair_vectors[:, 2]
+            )
+            derivative[:, -1] = 0.5 * (
+                3.0 * pair_vectors[:, -1]
+                - 4.0 * pair_vectors[:, -2]
+                + pair_vectors[:, -3]
+            )
         derivative[:, 1:-1] = 0.5 * (
             pair_vectors[:, 2:] - pair_vectors[:, :-2]
         )
@@ -133,12 +149,36 @@ def pathline_velocity_gradient_scalar_sequences_3d(
         intervals = times[:, 1:] - times[:, :-1]
         if not torch.isfinite(times).all() or torch.any(intervals <= 0):
             raise ValueError("sample_times must be finite and strictly increasing")
-        derivative[:, 0] = (
-            pair_vectors[:, 1] - pair_vectors[:, 0]
-        ) / intervals[:, 0, None, None]
-        derivative[:, -1] = (
-            pair_vectors[:, -1] - pair_vectors[:, -2]
-        ) / intervals[:, -1, None, None]
+        if endpoint_order == 1:
+            derivative[:, 0] = (
+                pair_vectors[:, 1] - pair_vectors[:, 0]
+            ) / intervals[:, 0, None, None]
+            derivative[:, -1] = (
+                pair_vectors[:, -1] - pair_vectors[:, -2]
+            ) / intervals[:, -1, None, None]
+        else:
+            first_a, first_b = intervals[:, 0], intervals[:, 1]
+            c0 = -(2.0 * first_a + first_b) / (
+                first_a * (first_a + first_b)
+            )
+            c1 = (first_a + first_b) / (first_a * first_b)
+            c2 = -first_a / (first_b * (first_a + first_b))
+            derivative[:, 0] = (
+                c0[:, None, None] * pair_vectors[:, 0]
+                + c1[:, None, None] * pair_vectors[:, 1]
+                + c2[:, None, None] * pair_vectors[:, 2]
+            )
+            last_a, last_b = intervals[:, -1], intervals[:, -2]
+            cn = (2.0 * last_a + last_b) / (
+                last_a * (last_a + last_b)
+            )
+            cn1 = -(last_a + last_b) / (last_a * last_b)
+            cn2 = last_a / (last_b * (last_a + last_b))
+            derivative[:, -1] = (
+                cn[:, None, None] * pair_vectors[:, -1]
+                + cn1[:, None, None] * pair_vectors[:, -2]
+                + cn2[:, None, None] * pair_vectors[:, -3]
+            )
         derivative[:, 1:-1] = (
             pair_vectors[:, 2:] - pair_vectors[:, :-2]
         ) / (times[:, 2:] - times[:, :-2])[:, :, None, None]
@@ -178,6 +218,7 @@ def pathline_velocity_gradient_dft_features_3d(
     *,
     sample_times: torch.Tensor | None = None,
     log_compress: bool = False,
+    endpoint_order: int = 1,
 ):
     """Fourier encode local kinematic scalar sequences from a pathline cross."""
     series = pathline_velocity_gradient_scalar_sequences_3d(
@@ -185,6 +226,7 @@ def pathline_velocity_gradient_dft_features_3d(
         eps=eps,
         sample_times=sample_times,
         log_compress=log_compress,
+        endpoint_order=endpoint_order,
     )
     independent_bins = series.shape[1] // 2 + 1
     if not 1 <= int(num_freq) <= independent_bins:
@@ -212,6 +254,7 @@ def pathline_anchored_kinematic_dft_features_3d(
     *,
     sample_times: torch.Tensor | None = None,
     log_compress: bool = False,
+    endpoint_order: int = 1,
 ):
     """Combine early-window Fourier coefficients with time-domain anchors.
 
@@ -230,6 +273,7 @@ def pathline_anchored_kinematic_dft_features_3d(
         eps=eps,
         sample_times=sample_times,
         log_compress=log_compress,
+        endpoint_order=endpoint_order,
     )
     selected = tuple(int(value) for value in channels)
     if not selected or len(set(selected)) != len(selected):

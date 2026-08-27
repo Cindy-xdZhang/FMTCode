@@ -64,10 +64,10 @@ def load_cache_records(cache_dir, expected_count=None, ordinals=None):
 def _extended_feature(primitives, name, device):
     tensor = torch.from_numpy(primitives).to(device)
     anchored = re.fullmatch(
-        r"a(ivd|ivdq|kin)(\d+)w(\d+)(log)?", str(name)
+        r"a(ivd|ivdq|kin)(\d+)w(\d+)(log)?(d2)?", str(name)
     )
     if anchored:
-        channel_name, num_freq, window, log_suffix = anchored.groups()
+        channel_name, num_freq, window, log_suffix, d2_suffix = anchored.groups()
         channels = {
             "ivd": (0,),
             "ivdq": (0, 3),
@@ -79,6 +79,7 @@ def _extended_feature(primitives, name, device):
             window=int(window),
             channels=channels,
             log_compress=bool(log_suffix),
+            endpoint_order=2 if d2_suffix else 1,
         ).astype(np.float32)
     if name.startswith("gram"):
         return time_local_gram_dft_features_3d(
@@ -108,7 +109,9 @@ def feature_matrix(record, name, device="cpu"):
         indices = fmt_feature_indices_3d(name.removeprefix("fmt_"))
         value = record["fmt"][:, indices]
     elif (name.startswith("gram") or name.startswith("kin")
-          or re.fullmatch(r"a(ivd|ivdq|kin)\d+w\d+(log)?", str(name))):
+          or re.fullmatch(
+              r"a(ivd|ivdq|kin)\d+w\d+(log)?(d2)?", str(name)
+          )):
         length = record["raw"].shape[1] // (7 * 3)
         primitives = record["raw"].reshape(-1, 7, length, 3)
         value = _extended_feature(primitives, name, torch.device(device))

@@ -15,6 +15,7 @@ import yaml
 
 from Search_Task3_FMTResidual_3D import (
     _candidate_spec,
+    _frozen_raw_normalization,
     _group_for_dataset,
     _load_records,
     _load_search_splits,
@@ -158,7 +159,12 @@ def run_candidate(config_path: str, dataset: str,
     train, validation = _load_search_splits(
         spec, dataset, candidate, device
     )
-    train, validation, _, stats = _normalize_train_only(train, validation)
+    raw_stats = _frozen_raw_normalization(
+        group, dataset, int(spec["stage2_screen_seeds"][0])
+    )
+    train, validation, _, stats = _normalize_train_only(
+        train, validation, raw_stats=raw_stats
+    )
     fmt_dim = int(train[1].shape[1])
     if fmt_dim > train[0].reshape(len(train[0]), -1).shape[1]:
         raise ValueError(f"Raw-PCA cannot match {fmt_dim} FMT dimensions")
@@ -277,6 +283,14 @@ def _candidate_summary(spec: dict, group_name: str, candidate: dict) -> dict:
                         f"seed={seed}/{source}"
                     )
                 rows[source] = values[0]
+            if {
+                int(rows[source]["trainable_residual_parameter_count"])
+                for source in ("fmt", "raw_pca")
+            } != {int(rows["fmt"]["trainable_residual_parameter_count"])}:
+                raise RuntimeError(
+                    f"FMT/Raw-PCA trainable parameter mismatch for "
+                    f"{candidate['id']}/{dataset}/seed={seed}"
+                )
             fmt = {metric: float(rows["fmt"][f"validation_{metric}"])
                    for metric in metrics}
             raw_pca = {
@@ -399,6 +413,7 @@ def select(config_path: str) -> Path:
             set(spec["screen_split"]["train_ordinals"])
             | set(spec["screen_split"]["validation_ordinals"])
         ),
+        "exposed_spatial_training": spec.get("exposed_training"),
         "exposed_spatial_validation": spec.get("robust_validation"),
         "outer_ordinals_opened": False,
         "confirmation_opened": False,

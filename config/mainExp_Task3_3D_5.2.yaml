@@ -1,0 +1,20 @@
+experiment: mainExp_Task3_3D_5.2
+search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+stage2_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+frozen_recipe_manifest: outputs/mainExp_Task3_3D_5.2/frozen_recipe_manifest.json
+output_root: outputs/mainExp_Task3_3D_5.2
+expected_ivd_percentile: 95.0
+require_confirmation_reference_match: true
+confirmation_roots:
+  old8:
+    datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+               tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor]
+    source_root: outputs/mainExp_Task3_3D_5.2/confirmation_cache_old8
+    label_root: outputs/mainExp_Task3_3D_5.2/confirmation_labels_old8/labels
+  new2:
+    datasets: [boeing747, smokeBuoyancy]
+    source_root: outputs/mainExp_Task3_3D_5.2/confirmation_cache_new2
+    label_root: outputs/mainExp_Task3_3D_5.2/confirmation_labels_new2/labels
+confirmation_count: 4
+final_training_seeds: [40, 41, 42, 43, 44]
+target_dataset_macro_f1_gain: 0.15

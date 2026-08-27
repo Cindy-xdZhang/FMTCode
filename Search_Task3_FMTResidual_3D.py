@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import ast
 import csv
+import hashlib
 import json
 from pathlib import Path
 
@@ -76,28 +77,64 @@ def _load_spec(path: str | Path) -> dict:
                 raise ValueError(
                     f"development search cannot read held-out {key}: {root}"
                 )
-    robust = spec.get("robust_validation")
-    if robust is not None:
-        if str(robust.get("status", "")) != "exposed_development":
+    exposed_populations = (
+        (
+            "exposed_training",
+            "exposed_training_source_cache_root",
+            "exposed_training_label_cache_root",
+        ),
+        (
+            "robust_validation",
+            "exposed_spatial_source_cache_root",
+            "exposed_spatial_label_cache_root",
+        ),
+    )
+    for population_name, source_key, label_key in exposed_populations:
+        population = spec.get(population_name)
+        if population is None:
+            continue
+        if str(population.get("status", "")) != "exposed_development":
             raise ValueError(
-                "robust_validation must explicitly declare "
+                f"{population_name} must explicitly declare "
                 "status: exposed_development"
             )
-        robust_ordinals = [int(value) for value in robust.get("ordinals", [])]
-        if not robust_ordinals or len(robust_ordinals) != len(set(robust_ordinals)):
-            raise ValueError("robust_validation ordinals must be unique and non-empty")
-        expected = int(robust.get("expected_slices", 0))
-        if expected <= 0 or any(not 0 <= value < expected for value in robust_ordinals):
-            raise ValueError("robust_validation ordinals exceed expected_slices")
+        ordinals = [int(value) for value in population.get("ordinals", [])]
+        if not ordinals or len(ordinals) != len(set(ordinals)):
+            raise ValueError(
+                f"{population_name} ordinals must be unique and non-empty"
+            )
+        expected = int(population.get("expected_slices", 0))
+        if expected <= 0 or any(not 0 <= value < expected for value in ordinals):
+            raise ValueError(f"{population_name} ordinals exceed expected_slices")
+        manifest_path = population.get("source_manifest")
+        manifest_hash = str(population.get("source_manifest_sha256", ""))
+        if manifest_path is not None or manifest_hash:
+            if manifest_path is None or len(manifest_hash) != 64:
+                raise ValueError(
+                    f"{population_name} must provide a manifest path and full SHA-256"
+                )
+            manifest = Path(manifest_path)
+            if not manifest.exists():
+                raise FileNotFoundError(manifest)
+            actual_hash = hashlib.sha256(manifest.read_bytes()).hexdigest()
+            if actual_hash != manifest_hash.lower():
+                raise RuntimeError(f"{population_name} source manifest changed")
         for group_name, group in spec["groups"].items():
-            for key in (
-                "exposed_spatial_source_cache_root",
-                "exposed_spatial_label_cache_root",
-            ):
+            for key in (source_key, label_key):
                 if key not in group:
                     raise ValueError(
-                        f"robust_validation requires {key} for group {group_name}"
+                        f"{population_name} requires {key} for group {group_name}"
                     )
+    training_population = spec.get("exposed_training")
+    validation_population = spec.get("robust_validation")
+    if training_population is not None and validation_population is not None:
+        training_phase = tuple(training_population.get("seed_grid_phase", ()))
+        validation_phase = tuple(validation_population.get("seed_grid_phase", ()))
+        if training_phase and training_phase == validation_phase:
+            raise ValueError(
+                "exposed training and robust validation must use different "
+                "spatial populations"
+            )
     return spec
 
 
@@ -109,6 +146,19 @@ def _group_for_dataset(spec: dict, dataset: str) -> tuple[str, dict]:
     if len(matches) != 1:
         raise ValueError(f"dataset {dataset!r} matched {len(matches)} groups")
     return matches[0]
+
+
+def _frozen_raw_normalization(group: dict, dataset: str, seed: int) -> dict:
+    """Load Raw coordinate statistics without changing the frozen backbone."""
+    path = Path(group["raw_checkpoint_dir"]) / f"{dataset}_raw_seed{int(seed)}.pt"
+    checkpoint = torch.load(path, map_location="cpu", weights_only=False)
+    if checkpoint.get("variant") != "raw":
+        raise ValueError(f"expected frozen Raw checkpoint at {path}")
+    normalization = checkpoint.get("normalization", {})
+    return {
+        key: np.asarray(normalization[key], dtype=np.float32)
+        for key in ("raw_mean", "raw_std")
+    }
 
 
 def _candidate(spec: dict, index: int) -> dict:
@@ -214,10 +264,12 @@ def _concatenate_splits(*splits):
 def _load_search_splits(spec: dict, dataset: str, candidate: dict, device):
     """Load train and validation without opening current outer/final data.
 
-    An optional robust validation population may point to a confirmation set
-    from an earlier experiment only when the config explicitly reclassifies
-    it as exposed development data.  It is appended to validation and never
-    to training, preserving the frozen Raw backbone's training population.
+    Optional spatial populations may point to confirmation sets from earlier
+    experiments only when the config explicitly reclassifies them as exposed
+    development data.  ``exposed_training`` is appended to both residual
+    arms' common training population; ``robust_validation`` is appended to
+    their common validation population.  The frozen Raw backbone itself is
+    unchanged, so FMT and Raw-PCA retain the same trainable architecture.
     """
     base_records = _load_records(spec, dataset, candidate, device)
     train = _stack_split(
@@ -226,23 +278,40 @@ def _load_search_splits(spec: dict, dataset: str, candidate: dict, device):
     validation = _stack_split(
         base_records, spec["screen_split"]["validation_ordinals"]
     )
-    robust = spec.get("robust_validation")
-    if robust is None:
-        return train, validation
     _, group = _group_for_dataset(spec, dataset)
-    robust_ordinals = [int(value) for value in robust["ordinals"]]
-    robust_records = _load_records_from_roots(
-        spec,
-        dataset,
-        candidate,
-        device,
-        source_cache_root=group["exposed_spatial_source_cache_root"],
-        label_cache_root=group["exposed_spatial_label_cache_root"],
-        expected_slices=int(robust["expected_slices"]),
-        ordinals=robust_ordinals,
-    )
-    spatial_validation = _stack_split(robust_records, robust_ordinals)
-    return train, _concatenate_splits(validation, spatial_validation)
+    exposed_training = spec.get("exposed_training")
+    if exposed_training is not None:
+        training_ordinals = [
+            int(value) for value in exposed_training["ordinals"]
+        ]
+        training_records = _load_records_from_roots(
+            spec,
+            dataset,
+            candidate,
+            device,
+            source_cache_root=group["exposed_training_source_cache_root"],
+            label_cache_root=group["exposed_training_label_cache_root"],
+            expected_slices=int(exposed_training["expected_slices"]),
+            ordinals=training_ordinals,
+        )
+        spatial_training = _stack_split(training_records, training_ordinals)
+        train = _concatenate_splits(train, spatial_training)
+    robust = spec.get("robust_validation")
+    if robust is not None:
+        robust_ordinals = [int(value) for value in robust["ordinals"]]
+        robust_records = _load_records_from_roots(
+            spec,
+            dataset,
+            candidate,
+            device,
+            source_cache_root=group["exposed_spatial_source_cache_root"],
+            label_cache_root=group["exposed_spatial_label_cache_root"],
+            expected_slices=int(robust["expected_slices"]),
+            ordinals=robust_ordinals,
+        )
+        spatial_validation = _stack_split(robust_records, robust_ordinals)
+        validation = _concatenate_splits(validation, spatial_validation)
+    return train, validation
 
 
 def _fusion(candidate: dict) -> dict:
@@ -322,7 +391,12 @@ def run_candidate(config_path: str, dataset: str, candidate_index: int) -> Path:
     train, validation = _load_search_splits(
         spec, dataset, candidate, device
     )
-    train, validation, _, stats = _normalize_train_only(train, validation)
+    raw_stats = _frozen_raw_normalization(
+        group, dataset, int(spec["screen_seeds"][0])
+    )
+    train, validation, _, stats = _normalize_train_only(
+        train, validation, raw_stats=raw_stats
+    )
     fmt_dim = int(train[1].shape[1])
     if fmt_dim > train[0].reshape(len(train[0]), -1).shape[1]:
         raise ValueError(
@@ -421,6 +495,14 @@ def _candidate_summary(spec: dict, group_name: str, candidate: dict) -> dict:
                         f"seed={seed}/{source}: {len(values)}"
                     )
                 rows[source] = values[0]
+            if {
+                int(rows[source]["trainable_residual_parameter_count"])
+                for source in ("fmt", "raw_pca")
+            } != {int(rows["fmt"]["trainable_residual_parameter_count"])}:
+                raise RuntimeError(
+                    f"FMT/Raw-PCA trainable parameter mismatch for "
+                    f"{candidate['id']}/{dataset}/seed={seed}"
+                )
             strong = _baseline_from_row(rows["fmt"])
             fmt = {metric: float(rows["fmt"][f"validation_{metric}"])
                    for metric in metrics}
@@ -558,6 +640,7 @@ def select(config_path: str) -> Path:
             set(spec["screen_split"]["train_ordinals"])
             | set(spec["screen_split"]["validation_ordinals"])
         ),
+        "exposed_spatial_training": spec.get("exposed_training"),
         "exposed_spatial_validation": spec.get("robust_validation"),
         "outer_ordinals_opened": False,
         "confirmation_opened": False,

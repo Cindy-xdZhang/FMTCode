@@ -15,6 +15,7 @@ import yaml
 from FMT_Utils.Task12Data_3D import feature_matrix, load_cache_records
 from Search_Task3_FMTResidual_3D import (
     _candidate_spec,
+    _frozen_raw_normalization,
     _group_for_dataset,
     _load_records,
     _load_search_splits,
@@ -189,7 +190,12 @@ def run_dataset(config_path: str, dataset: str) -> Path:
     train, validation = _load_search_splits(
         search, dataset, candidate, device
     )
-    train, validation, _, stats = _normalize_train_only(train, validation)
+    raw_stats = _frozen_raw_normalization(
+        group, dataset, int(spec["final_training_seeds"][0])
+    )
+    train, validation, _, stats = _normalize_train_only(
+        train, validation, raw_stats=raw_stats
+    )
     splits = (train, validation, None)
     fmt_dim = int(train[1].shape[1])
     confirmation_records = _load_confirmation(

@@ -1,0 +1,207 @@
+experiment: Verify_Task3_SpatialRobust_5.2
+output_root: outputs/Verify_Task3_SpatialRobust_5.2
+expected_slices: 10
+sampled_steps: 32
+expected_ivd_percentile: 95.0
+require_source_reference_match: true
+raw_pca_random_state: 7068
+raw_wide_parameter_count: 148225
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+
+# Both populations below were final confirmation sets in completed, public
+# experiments.  They are therefore exposed development data in 5.2.  The
+# 4.1 spatial phase augments both residual arms' common training set; the
+# distinct 5.1 phase augments their common validation set.
+exposed_training:
+  status: exposed_development
+  source_experiment: mainExp_Task3_3D_4.1
+  source_manifest: outputs/mainExp_Task23_3D_4.1/frozen_recipe_manifest.json
+  source_manifest_sha256: 7735e2315a97a0c35bd97bdfb94d75dacc3421a501014b4362476258d74efeb4
+  seed_grid_phase: [0.31, -0.23, 0.17]
+  expected_slices: 4
+  ordinals: [0, 1, 2, 3]
+
+robust_validation:
+  status: exposed_development
+  source_experiment: mainExp_Task3_3D_5.1
+  source_manifest: outputs/mainExp_Task3_3D_5.1/frozen_recipe_manifest.json
+  source_manifest_sha256: 5e4d30c81f07e78dcfad240ac321f30bfe364be8e2589df57bc0a3cd7aa68d71
+  seed_grid_phase: [-0.37, 0.29, -0.11]
+  expected_slices: 4
+  ordinals: [0, 1, 2, 3]
+
+groups:
+  channel:
+    datasets: [channel]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    exposed_training_source_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_cache_old8
+    exposed_training_label_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_labels_old8/labels
+    exposed_spatial_source_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_cache_old8
+    exposed_spatial_label_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  halfcylinder:
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    exposed_training_source_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_cache_old8
+    exposed_training_label_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_labels_old8/labels
+    exposed_spatial_source_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_cache_old8
+    exposed_spatial_label_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  tangaroa:
+    datasets: [tangaroa]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    exposed_training_source_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_cache_old8
+    exposed_training_label_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_labels_old8/labels
+    exposed_spatial_source_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_cache_old8
+    exposed_spatial_label_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  deltaWing:
+    datasets: [deltaWing_resampled, deltaWing_LBM]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    exposed_training_source_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_cache_old8
+    exposed_training_label_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_labels_old8/labels
+    exposed_spatial_source_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_cache_old8
+    exposed_spatial_label_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  f22raptor:
+    datasets: [f22raptor]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    exposed_training_source_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_cache_old8
+    exposed_training_label_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_labels_old8/labels
+    exposed_spatial_source_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_cache_old8
+    exposed_spatial_label_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  boeing747:
+    datasets: [boeing747]
+    source_cache_root: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_new2/labels
+    exposed_training_source_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_cache_new2
+    exposed_training_label_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_labels_new2/labels
+    exposed_spatial_source_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_cache_new2
+    exposed_spatial_label_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_labels_new2/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/baselines/checkpoints
+  smokeBuoyancy:
+    datasets: [smokeBuoyancy]
+    source_cache_root: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_new2/labels
+    exposed_training_source_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_cache_new2
+    exposed_training_label_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_labels_new2/labels
+    exposed_spatial_source_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_cache_new2
+    exposed_spatial_label_cache_root: outputs/mainExp_Task3_3D_5.1/confirmation_labels_new2/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/baselines/checkpoints
+
+screen_split:
+  train_ordinals: [0, 1, 2, 3, 4, 5]
+  validation_ordinals: [6, 7, 8, 9]
+  test_ordinals: []
+outer_ordinals: []
+screen_seeds: [40, 41]
+stage2_screen_seeds: [40, 41, 42]
+
+# Deterministic, label-free pathline geometry blocks.  The first 18 preserve
+# the complete 5.1 screen; the last 12 test nearby early-window scales and
+# complementary concatenations without using IVD labels as input.
+candidates:
+  - {id: c00_kin2, fmt_feature: kin2}
+  - {id: c01_kin4, fmt_feature: kin4}
+  - {id: c02_kin6, fmt_feature: kin6}
+  - {id: c03_all_kin2, fmt_feature: fmt_all+kin2}
+  - {id: c04_all_kin4, fmt_feature: fmt_all+kin4}
+  - {id: c05_aivd1w3, fmt_feature: aivd1w3}
+  - {id: c06_aivd2w4, fmt_feature: aivd2w4}
+  - {id: c07_aivd2w8, fmt_feature: aivd2w8}
+  - {id: c08_aivd4w8, fmt_feature: aivd4w8}
+  - {id: c09_aivd4w16, fmt_feature: aivd4w16}
+  - {id: c10_aivd6w16, fmt_feature: aivd6w16}
+  - {id: c11_aivd6w32, fmt_feature: aivd6w32}
+  - {id: c12_aivd2w8log, fmt_feature: aivd2w8log}
+  - {id: c13_aivdq2w8, fmt_feature: aivdq2w8}
+  - {id: c14_aivdq4w16, fmt_feature: aivdq4w16}
+  - {id: c15_akin2w8, fmt_feature: akin2w8}
+  - {id: c16_akin4w16, fmt_feature: akin4w16}
+  - {id: c17_all_aivd2w8, fmt_feature: fmt_all+aivd2w8}
+  - {id: c18_aivd1w3d2, fmt_feature: aivd1w3d2}
+  - {id: c19_aivd2w8d2, fmt_feature: aivd2w8d2}
+  - {id: c20_aivd1w3d2_aivd2w8d2, fmt_feature: aivd1w3d2+aivd2w8d2}
+  - {id: c21_aivd1w3d2_kin2, fmt_feature: aivd1w3d2+kin2}
+  - {id: c22_aivd1w3log, fmt_feature: aivd1w3log}
+  - {id: c23_aivdq1w3, fmt_feature: aivdq1w3}
+  - {id: c24_aivd1w3_kin2, fmt_feature: aivd1w3+kin2}
+  - {id: c25_aivd1w3_kin4, fmt_feature: aivd1w3+kin4}
+  - {id: c26_aivd1w3_aivd2w8, fmt_feature: aivd1w3+aivd2w8}
+  - {id: c27_aivd1w3_aivdq2w8, fmt_feature: aivd1w3+aivdq2w8}
+  - {id: c28_all_aivd1w3, fmt_feature: fmt_all+aivd1w3}
+  - {id: c29_multiscale_kin2, fmt_feature: aivd1w3+aivd2w8+kin2}
+
+stage2_networks:
+  - {id: n00_geom_aux64_min, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: n01_fmt_only_aux64_min, residual_input: fmt_only,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: n02_dual_aux64_min, residual_input: dual,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: n03_geom_aux96_min, residual_input: geometry_fmt,
+     auxiliary_dim: 96, selection_metric: minimum_gain}
+  - {id: n04_fmt_only_aux96_min, residual_input: fmt_only,
+     auxiliary_dim: 96, selection_metric: minimum_gain}
+  - {id: n05_dual_aux96_min, residual_input: dual,
+     auxiliary_dim: 96, selection_metric: minimum_gain}
+  - {id: n06_dual_aux128_min, residual_input: dual,
+     auxiliary_dim: 128, selection_metric: minimum_gain}
+  - {id: n07_geom_lr3e4_min, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain,
+     training: {learning_rate: 0.0003}}
+  - {id: n08_fmt_only_lr3e4_min, residual_input: fmt_only,
+     auxiliary_dim: 64, selection_metric: minimum_gain,
+     training: {learning_rate: 0.0003}}
+  - {id: n09_dual_lr3e4_min, residual_input: dual,
+     auxiliary_dim: 64, selection_metric: minimum_gain,
+     training: {learning_rate: 0.0003}}
+  - {id: n10_geom_alpha6_min, residual_input: geometry_fmt,
+     auxiliary_dim: 64, alpha_max: 6.0, alpha_steps: 121,
+     selection_metric: minimum_gain}
+  - {id: n11_fmt_only_alpha6_min, residual_input: fmt_only,
+     auxiliary_dim: 64, alpha_max: 6.0, alpha_steps: 121,
+     selection_metric: minimum_gain}
+  - {id: n12_dual_alpha6_min, residual_input: dual,
+     auxiliary_dim: 64, alpha_max: 6.0, alpha_steps: 121,
+     selection_metric: minimum_gain}
+  - {id: n13_fmt_only_alpha6_f1, residual_input: fmt_only,
+     auxiliary_dim: 64, alpha_max: 6.0, alpha_steps: 121,
+     selection_metric: f1}
+  - {id: n14_dual_alpha6_f1, residual_input: dual,
+     auxiliary_dim: 64, alpha_max: 6.0, alpha_steps: 121,
+     selection_metric: f1}
+  - {id: n15_geom_fixed1, residual_input: geometry_fmt,
+     auxiliary_dim: 64, fixed_alpha: 1.0,
+     selection_metric: average_precision}
+  - {id: n16_fmt_only_fixed1, residual_input: fmt_only,
+     auxiliary_dim: 64, fixed_alpha: 1.0,
+     selection_metric: average_precision}
+  - {id: n17_dual_lr2e3_alpha6, residual_input: dual,
+     auxiliary_dim: 64, alpha_max: 6.0, alpha_steps: 121,
+     selection_metric: minimum_gain,
+     training: {learning_rate: 0.002}}
+
+training:
+  device: auto
+  batch_size: 512
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  max_epochs: 100
+  patience: 20
+  min_delta: 0.0001
+
+selection:
+  top_k: 4
+  stage2_top_k: 4
+  allowed_fmt_below_strong_raw: 0.005
+  target_dataset_macro_f1_gain: 0.15
+  stage1_selection_file: outputs/Verify_Task3_SpatialRobust_5.2/stage1_selection.json
