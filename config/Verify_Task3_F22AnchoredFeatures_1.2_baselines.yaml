@@ -1,0 +1,24 @@
+experiment: Verify_Task3_F22AnchoredFeatures_1.2_baselines_v2
+source_cache_root: outputs/Verify_Task3_F22AnchoredFeatures_1.2/development_cache
+label_cache_root: outputs/Verify_Task3_F22AnchoredFeatures_1.2/development_labels/labels
+output_dir: outputs/Verify_Task3_F22AnchoredFeatures_1.2/baselines_v2
+datasets: [f22raptor]
+expected_slices: 12
+sampled_steps: 32
+fmt_subset: all
+variants: [raw, raw_wide]
+split:
+  train_ordinals: [0, 2, 3, 5, 6, 8, 9, 11]
+  validation_ordinals: [1, 4, 7, 10]
+  test_ordinals: []
+evaluation: {test_enabled: false}
+model: {temporal_width: 64, embedding_dim: 128, auxiliary_dim: 64}
+training:
+  device: auto
+  seeds: [50, 51, 52, 53, 54]
+  batch_size: 512
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  max_epochs: 100
+  patience: 20
+  min_delta: 0.0001

@@ -1,0 +1,43 @@
+experiment: Verify_Task3_F22AnchoredFeatures_1.2_development
+seed: 7068
+
+datasets:
+  - id: f22raptor
+    path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/f22raptor_re400000.nc
+    enabled: true
+
+sampling:
+  timeslices: 12
+  begin_fraction: 0.20
+  end_fraction: 0.90
+  # All starts were unused by prior F22 cache manifests when this schedule was
+  # frozen.  The sorted order is required by the cache builder; split ordinals
+  # are registered in the Task3 configs.
+  fixed_time_indices_by_dataset:
+    f22raptor: [33, 42, 51, 67, 73, 83, 97, 103, 110, 125, 132, 139]
+  max_spatial_dim: 96
+  seed_grid_shape: [16, 16, 16]
+  boundary_fraction: 0.08
+
+pathlines:
+  method: RK4
+  dt_scale: 0.25
+  integration_steps: 48
+  sampled_steps: 32
+  offset_grid_scale: 0.5
+  chunk_size: 2048
+
+encoder:
+  num_freq: 6
+  mode: gram
+  include_chirality: true
+  neighbor_pool: sort
+  neighbor_weight: 0.5
+
+reference:
+  definition: standard_global_ivd
+  percentile: 95.0
+
+output:
+  cache_dir: outputs/Verify_Task3_F22AnchoredFeatures_1.2/development_cache
+  result_dir: outputs/Verify_Task3_F22AnchoredFeatures_1.2/unused_reference

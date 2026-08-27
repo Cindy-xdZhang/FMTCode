@@ -1,0 +1,60 @@
+experiment: Verify_Task3_F22AnchoredFeatures_1.2
+output_root: outputs/Verify_Task3_F22AnchoredFeatures_1.2
+confirmation_schedule: config/Confirm_Task3_F22AnchoredFeatures_1.2_cache.yaml
+expected_slices: 12
+sampled_steps: 32
+raw_pca_random_state: 7068
+raw_wide_parameter_count: 148225
+datasets: [f22raptor]
+
+groups:
+  f22raptor:
+    datasets: [f22raptor]
+    source_cache_root: outputs/Verify_Task3_F22AnchoredFeatures_1.2/development_cache
+    label_cache_root: outputs/Verify_Task3_F22AnchoredFeatures_1.2/development_labels/labels
+    raw_checkpoint_dir: outputs/Verify_Task3_F22AnchoredFeatures_1.2/baselines_v2/checkpoints
+
+screen_split:
+  train_ordinals: [0, 2, 3, 5, 6, 8, 9, 11]
+  validation_ordinals: [1, 4, 7, 10]
+  test_ordinals: []
+outer_ordinals: []
+screen_seeds: [50, 51, 52, 53, 54]
+
+# Every deterministic FMT block is paired with train-only Raw-PCA of exactly
+# the same feature dimension and the same residual network/training settings.
+candidates:
+  - {id: c00_kin6, fmt_feature: kin6}
+  - {id: c01_aivd2w8, fmt_feature: aivd2w8}
+  - {id: c02_aivd4w8, fmt_feature: aivd4w8}
+  - {id: c03_aivd4w16, fmt_feature: aivd4w16}
+  - {id: c04_aivd6w16, fmt_feature: aivd6w16}
+  - {id: c05_aivd6w32, fmt_feature: aivd6w32}
+  - {id: c06_aivd6w16log, fmt_feature: aivd6w16log}
+  - {id: c07_aivdq4w8, fmt_feature: aivdq4w8}
+  - {id: c08_aivdq4w16, fmt_feature: aivdq4w16}
+  - {id: c09_aivdq6w16, fmt_feature: aivdq6w16}
+  - {id: c10_aivdq6w32, fmt_feature: aivdq6w32}
+  - {id: c11_aivdq6w16log, fmt_feature: aivdq6w16log}
+  - {id: c12_akin4w8, fmt_feature: akin4w8}
+  - {id: c13_akin4w16, fmt_feature: akin4w16}
+  - {id: c14_akin6w16, fmt_feature: akin6w16}
+  - {id: c15_akin6w32, fmt_feature: akin6w32}
+  - {id: c16_akin6w16log, fmt_feature: akin6w16log}
+  - {id: c17_akin6w32log, fmt_feature: akin6w32log}
+  - {id: c18_akin8w16, fmt_feature: akin8w16}
+
+training:
+  device: auto
+  batch_size: 512
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  max_epochs: 100
+  patience: 20
+  min_delta: 0.0001
+
+selection:
+  top_k: 3
+  allowed_fmt_below_strong_raw: 0.0
+  target_dataset_macro_f1_gain: 0.02
+  target_worst_seed_metric_gain: 0.005

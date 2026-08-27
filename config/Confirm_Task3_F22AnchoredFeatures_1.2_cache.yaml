@@ -1,0 +1,42 @@
+experiment: Confirm_Task3_F22AnchoredFeatures_1.2
+seed: 7068
+
+# Frozen before any 1.2 model selection.  These eight starts are disjoint from
+# the 1.2 development schedule and all F22 cache manifests available at freeze.
+datasets:
+  - id: f22raptor
+    path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/f22raptor_re400000.nc
+    enabled: true
+
+sampling:
+  timeslices: 8
+  begin_fraction: 0.20
+  end_fraction: 0.90
+  fixed_time_indices_by_dataset:
+    f22raptor: [36, 55, 76, 91, 106, 120, 129, 140]
+  max_spatial_dim: 96
+  seed_grid_shape: [16, 16, 16]
+  boundary_fraction: 0.08
+
+pathlines:
+  method: RK4
+  dt_scale: 0.25
+  integration_steps: 48
+  sampled_steps: 32
+  offset_grid_scale: 0.5
+  chunk_size: 2048
+
+encoder:
+  num_freq: 6
+  mode: gram
+  include_chirality: true
+  neighbor_pool: sort
+  neighbor_weight: 0.5
+
+reference:
+  definition: standard_global_ivd
+  percentile: 95.0
+
+output:
+  cache_dir: outputs/Confirm_Task3_F22AnchoredFeatures_1.2/cache
+  result_dir: outputs/Confirm_Task3_F22AnchoredFeatures_1.2/unused_reference

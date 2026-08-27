@@ -70,16 +70,14 @@ def time_local_gram_dft_features_3d(
     return features.detach().cpu().numpy() if return_numpy else features
 
 
-def pathline_velocity_gradient_dft_features_3d(
+def pathline_velocity_gradient_scalar_sequences_3d(
     pathlines: torch.Tensor,
-    num_freq: int = 6,
     eps: float = 1e-6,
-    return_numpy: bool = True,
     *,
     sample_times: torch.Tensor | None = None,
     log_compress: bool = False,
 ):
-    """Estimate objective kinematic scalar sequences from a pathline cross.
+    """Estimate four local kinematic scalar sequences from a pathline cross.
 
     Opposite neighbour pairs estimate the local flow-map differential ``D``.
     ``L = D_dot D^+`` approximates the velocity gradient.  A spatially
@@ -87,13 +85,13 @@ def pathline_velocity_gradient_dft_features_3d(
     subtracting the per-timeslice mean vorticity therefore yields an
     objective vorticity-deviation magnitude in the continuous limit.
 
-    Four scalar sequences are Fourier encoded: vorticity-deviation norm,
-    strain Frobenius norm, absolute divergence, and a signed Q-like balance
-    between rotation deviation and strain.  Time derivatives use the sampled
-    pathline index by default for backward compatibility.  Variable-scale
-    Task5 callers should provide exact ``sample_times``.  ``log_compress``
-    applies a signed ``log1p`` before the Fourier transform to prevent rare
-    nearly singular neighbour crosses from dominating train statistics.
+    The returned channel order is vorticity-deviation norm, strain Frobenius
+    norm, absolute divergence, and a signed Q-like balance between rotation
+    deviation and strain.  Time derivatives use the sampled pathline index by
+    default for backward compatibility.  Variable-scale Task5 callers should
+    provide exact ``sample_times``.  ``log_compress`` applies a signed
+    ``log1p`` to prevent rare nearly singular neighbour crosses from
+    dominating train statistics.
     """
     pathlines = torch.as_tensor(pathlines)
     if pathlines.ndim != 4 or pathlines.shape[1] != 7 or pathlines.shape[-1] < 3:
@@ -101,13 +99,8 @@ def pathline_velocity_gradient_dft_features_3d(
             "pathlines must be [N,7,L,C>=3] with centre then x+/x-/y+/y-/z+/z-"
         )
     length = int(pathlines.shape[2])
-    independent_bins = length // 2 + 1
     if length < 3:
         raise ValueError("velocity-gradient features require at least three samples")
-    if not 1 <= int(num_freq) <= independent_bins:
-        raise ValueError(
-            f"num_freq={num_freq} must be in [1,{independent_bins}] for L={length}"
-        )
     xyz = pathlines[..., :3]
     if not xyz.is_floating_point():
         xyz = xyz.float()
@@ -172,12 +165,116 @@ def pathline_velocity_gradient_dft_features_3d(
         )
         series = torch.cat((unsigned, signed_q), dim=-1)
 
+    if not torch.isfinite(series).all():
+        raise ValueError("non-finite pathline velocity-gradient sequences")
+    return series
+
+
+def pathline_velocity_gradient_dft_features_3d(
+    pathlines: torch.Tensor,
+    num_freq: int = 6,
+    eps: float = 1e-6,
+    return_numpy: bool = True,
+    *,
+    sample_times: torch.Tensor | None = None,
+    log_compress: bool = False,
+):
+    """Fourier encode local kinematic scalar sequences from a pathline cross."""
+    series = pathline_velocity_gradient_scalar_sequences_3d(
+        pathlines,
+        eps=eps,
+        sample_times=sample_times,
+        log_compress=log_compress,
+    )
+    independent_bins = series.shape[1] // 2 + 1
+    if not 1 <= int(num_freq) <= independent_bins:
+        raise ValueError(
+            f"num_freq={num_freq} must be in [1,{independent_bins}] "
+            f"for L={series.shape[1]}"
+        )
+
     spectrum = torch.fft.rfft(series, dim=1)[:, :int(num_freq)]
     real = spectrum.real.transpose(1, 2).flatten(1)
     imag = spectrum.imag[:, 1:].transpose(1, 2).flatten(1)
     features = torch.cat((real, imag), dim=1)
     if not torch.isfinite(features).all():
         raise ValueError("non-finite pathline velocity-gradient features")
+    return features.detach().cpu().numpy() if return_numpy else features
+
+
+def pathline_anchored_kinematic_dft_features_3d(
+    pathlines: torch.Tensor,
+    num_freq: int = 6,
+    window: int | None = None,
+    channels: tuple[int, ...] = (0, 1, 2, 3),
+    eps: float = 1e-6,
+    return_numpy: bool = True,
+    *,
+    sample_times: torch.Tensor | None = None,
+    log_compress: bool = False,
+):
+    """Combine early-window Fourier coefficients with time-domain anchors.
+
+    Task3 labels describe the seed time, while a low-frequency temporal DFT
+    summarizes the complete integration window.  This parameter-free block
+    keeps the DFT and appends seven anchors per selected scalar sequence:
+    first value, early-quarter mean, full-window mean, standard deviation,
+    maximum, minimum, and last value.  It therefore preserves seed-local
+    evidence without discarding later pathline deformation.
+
+    Channel indices follow
+    :func:`pathline_velocity_gradient_scalar_sequences_3d`.
+    """
+    series = pathline_velocity_gradient_scalar_sequences_3d(
+        pathlines,
+        eps=eps,
+        sample_times=sample_times,
+        log_compress=log_compress,
+    )
+    selected = tuple(int(value) for value in channels)
+    if not selected or len(set(selected)) != len(selected):
+        raise ValueError("channels must contain unique kinematic channel indices")
+    if min(selected) < 0 or max(selected) >= series.shape[-1]:
+        raise ValueError(f"invalid kinematic channels: {selected}")
+    series = series[..., list(selected)]
+    if window is not None:
+        window = int(window)
+        if not 3 <= window <= series.shape[1]:
+            raise ValueError(
+                f"window={window} must be in [3,{series.shape[1]}]"
+            )
+        series = series[:, :window]
+
+    independent_bins = series.shape[1] // 2 + 1
+    if not 1 <= int(num_freq) <= independent_bins:
+        raise ValueError(
+            f"num_freq={num_freq} must be in [1,{independent_bins}] "
+            f"for window={series.shape[1]}"
+        )
+    spectrum = torch.fft.rfft(series, dim=1)[:, :int(num_freq)]
+    dft = torch.cat(
+        (
+            spectrum.real.transpose(1, 2).flatten(1),
+            spectrum.imag[:, 1:].transpose(1, 2).flatten(1),
+        ),
+        dim=1,
+    )
+    early_count = max(2, int(series.shape[1]) // 4)
+    anchors = torch.stack(
+        (
+            series[:, 0],
+            series[:, :early_count].mean(dim=1),
+            series.mean(dim=1),
+            series.std(dim=1, unbiased=False),
+            series.amax(dim=1),
+            series.amin(dim=1),
+            series[:, -1],
+        ),
+        dim=-1,
+    ).flatten(1)
+    features = torch.cat((dft, anchors), dim=1)
+    if not torch.isfinite(features).all():
+        raise ValueError("non-finite anchored kinematic Fourier features")
     return features.detach().cpu().numpy() if return_numpy else features
 
 
