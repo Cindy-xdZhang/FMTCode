@@ -17,6 +17,7 @@ from Search_Task3_FMTResidual_3D import (
     _candidate_spec,
     _group_for_dataset,
     _load_records,
+    _load_search_splits,
     _load_spec,
     _read_csv,
     _selection_key,
@@ -154,10 +155,8 @@ def run_candidate(config_path: str, dataset: str,
         "cuda" if device_name == "auto" and torch.cuda.is_available()
         else "cpu" if device_name == "auto" else device_name
     )
-    records = _load_records(spec, dataset, candidate, device)
-    train = _stack_split(records, spec["screen_split"]["train_ordinals"])
-    validation = _stack_split(
-        records, spec["screen_split"]["validation_ordinals"]
+    train, validation = _load_search_splits(
+        spec, dataset, candidate, device
     )
     train, validation, _, stats = _normalize_train_only(train, validation)
     fmt_dim = int(train[1].shape[1])
@@ -400,6 +399,7 @@ def select(config_path: str) -> Path:
             set(spec["screen_split"]["train_ordinals"])
             | set(spec["screen_split"]["validation_ordinals"])
         ),
+        "exposed_spatial_validation": spec.get("robust_validation"),
         "outer_ordinals_opened": False,
         "confirmation_opened": False,
         "primary_by_group": primary,

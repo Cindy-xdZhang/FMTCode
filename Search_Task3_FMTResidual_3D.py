@@ -76,6 +76,28 @@ def _load_spec(path: str | Path) -> dict:
                 raise ValueError(
                     f"development search cannot read held-out {key}: {root}"
                 )
+    robust = spec.get("robust_validation")
+    if robust is not None:
+        if str(robust.get("status", "")) != "exposed_development":
+            raise ValueError(
+                "robust_validation must explicitly declare "
+                "status: exposed_development"
+            )
+        robust_ordinals = [int(value) for value in robust.get("ordinals", [])]
+        if not robust_ordinals or len(robust_ordinals) != len(set(robust_ordinals)):
+            raise ValueError("robust_validation ordinals must be unique and non-empty")
+        expected = int(robust.get("expected_slices", 0))
+        if expected <= 0 or any(not 0 <= value < expected for value in robust_ordinals):
+            raise ValueError("robust_validation ordinals exceed expected_slices")
+        for group_name, group in spec["groups"].items():
+            for key in (
+                "exposed_spatial_source_cache_root",
+                "exposed_spatial_label_cache_root",
+            ):
+                if key not in group:
+                    raise ValueError(
+                        f"robust_validation requires {key} for group {group_name}"
+                    )
     return spec
 
 
@@ -100,22 +122,27 @@ def _candidate(spec: dict, index: int) -> dict:
     return row
 
 
-def _load_records(spec: dict, dataset: str, candidate: dict, device,
-                  ordinals=None) -> list[tuple]:
-    _, group = _group_for_dataset(spec, dataset)
-    required = sorted(
-        {int(value) for value in spec["screen_split"]["train_ordinals"]}
-        | {int(value) for value in spec["screen_split"]["validation_ordinals"]}
-    ) if ordinals is None else sorted({int(value) for value in ordinals})
-    source_dir = Path(group["source_cache_root"]) / dataset
+def _load_records_from_roots(
+    spec: dict,
+    dataset: str,
+    candidate: dict,
+    device,
+    *,
+    source_cache_root,
+    label_cache_root,
+    expected_slices: int,
+    ordinals,
+) -> list[tuple]:
+    required = sorted({int(value) for value in ordinals})
+    source_dir = Path(source_cache_root) / dataset
     records = load_cache_records(
         source_dir,
-        expected_count=int(spec.get("expected_slices", 10)),
+        expected_count=int(expected_slices),
         ordinals=required,
     )
     result = []
     for record in records:
-        label_path = Path(group["label_cache_root"]) / dataset / record["path"].name
+        label_path = Path(label_cache_root) / dataset / record["path"].name
         if not label_path.exists():
             raise FileNotFoundError(label_path)
         with np.load(label_path) as label_file:
@@ -136,6 +163,69 @@ def _load_records(spec: dict, dataset: str, candidate: dict, device,
             raw, fmt, labels, int(record["ordinal"]), metadata,
         ))
     return result
+
+
+def _load_records(spec: dict, dataset: str, candidate: dict, device,
+                  ordinals=None) -> list[tuple]:
+    _, group = _group_for_dataset(spec, dataset)
+    required = sorted(
+        {int(value) for value in spec["screen_split"]["train_ordinals"]}
+        | {int(value) for value in spec["screen_split"]["validation_ordinals"]}
+    ) if ordinals is None else sorted({int(value) for value in ordinals})
+    return _load_records_from_roots(
+        spec,
+        dataset,
+        candidate,
+        device,
+        source_cache_root=group["source_cache_root"],
+        label_cache_root=group["label_cache_root"],
+        expected_slices=int(spec.get("expected_slices", 10)),
+        ordinals=required,
+    )
+
+
+def _concatenate_splits(*splits):
+    """Concatenate compatible ``(raw, auxiliary, labels)`` populations."""
+    if not splits:
+        raise ValueError("at least one split is required")
+    return tuple(
+        np.concatenate([split[index] for split in splits], axis=0)
+        for index in range(3)
+    )
+
+
+def _load_search_splits(spec: dict, dataset: str, candidate: dict, device):
+    """Load train and validation without opening current outer/final data.
+
+    An optional robust validation population may point to a confirmation set
+    from an earlier experiment only when the config explicitly reclassifies
+    it as exposed development data.  It is appended to validation and never
+    to training, preserving the frozen Raw backbone's training population.
+    """
+    base_records = _load_records(spec, dataset, candidate, device)
+    train = _stack_split(
+        base_records, spec["screen_split"]["train_ordinals"]
+    )
+    validation = _stack_split(
+        base_records, spec["screen_split"]["validation_ordinals"]
+    )
+    robust = spec.get("robust_validation")
+    if robust is None:
+        return train, validation
+    _, group = _group_for_dataset(spec, dataset)
+    robust_ordinals = [int(value) for value in robust["ordinals"]]
+    robust_records = _load_records_from_roots(
+        spec,
+        dataset,
+        candidate,
+        device,
+        source_cache_root=group["exposed_spatial_source_cache_root"],
+        label_cache_root=group["exposed_spatial_label_cache_root"],
+        expected_slices=int(robust["expected_slices"]),
+        ordinals=robust_ordinals,
+    )
+    spatial_validation = _stack_split(robust_records, robust_ordinals)
+    return train, _concatenate_splits(validation, spatial_validation)
 
 
 def _fusion(candidate: dict) -> dict:
@@ -212,10 +302,8 @@ def run_candidate(config_path: str, dataset: str, candidate_index: int) -> Path:
         "cuda" if device_name == "auto" and torch.cuda.is_available()
         else "cpu" if device_name == "auto" else device_name
     )
-    records = _load_records(spec, dataset, candidate, device)
-    train = _stack_split(records, spec["screen_split"]["train_ordinals"])
-    validation = _stack_split(
-        records, spec["screen_split"]["validation_ordinals"]
+    train, validation = _load_search_splits(
+        spec, dataset, candidate, device
     )
     train, validation, _, stats = _normalize_train_only(train, validation)
     fmt_dim = int(train[1].shape[1])
@@ -453,6 +541,7 @@ def select(config_path: str) -> Path:
             set(spec["screen_split"]["train_ordinals"])
             | set(spec["screen_split"]["validation_ordinals"])
         ),
+        "exposed_spatial_validation": spec.get("robust_validation"),
         "outer_ordinals_opened": False,
         "confirmation_opened": False,
         "top_k_by_group": selected,

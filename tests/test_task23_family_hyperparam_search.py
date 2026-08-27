@@ -12,6 +12,7 @@ from Search_Task2_FMTVAE_3D import (
 )
 from Search_Task2_FMTVAE_Stage2_3D import _decode_job as decode_task2_stage2_job
 from Search_Task3_FMTResidual_3D import (
+    _concatenate_splits,
     _decode_job as decode_task3_job,
     _load_spec as load_task3_spec,
     _selection_key as task3_selection_key,
@@ -24,6 +25,7 @@ from Build_Task23_FamilySearch_Confirmation import SETTINGS, SEED_GRID_PHASE
 
 TASK2_CONFIG = "config/Verify_Task2_FMTVAEFamilySearch_4.1.yaml"
 TASK3_CONFIG = "config/Verify_Task3_FMTResidualFamilySearch_4.1.yaml"
+TASK3_ROBUST_CONFIG = "config/Verify_Task3_AnchoredRobust_5.1.yaml"
 
 
 def _write_cache(path, value):
@@ -76,6 +78,41 @@ def test_task3_stage1_array_mapping_and_split_are_frozen():
     assert spec["outer_ordinals"] == [8, 9]
     with pytest.raises(IndexError):
         decode_task3_job(spec, 140)
+
+
+def test_task3_robust_search_declares_exposed_spatial_development():
+    spec = load_task3_spec(TASK3_ROBUST_CONFIG)
+    assert len(spec["candidates"]) == 18
+    assert decode_task3_job(spec, 0) == ("channel", 0)
+    assert decode_task3_job(spec, 179) == ("smokeBuoyancy", 17)
+    assert spec["robust_validation"] == {
+        "status": "exposed_development",
+        "source_experiment": "mainExp_Task3_3D_4.1",
+        "seed_grid_phase": [0.31, -0.23, 0.17],
+        "expected_slices": 4,
+        "ordinals": [0, 1, 2, 3],
+    }
+    assert spec["screen_split"]["validation_ordinals"] == [6, 7, 8, 9]
+    assert spec["outer_ordinals"] == []
+    with pytest.raises(IndexError):
+        decode_task3_job(spec, 180)
+
+
+def test_task3_robust_validation_concatenates_without_changing_width():
+    left = (
+        np.zeros((2, 7, 4, 3), dtype=np.float32),
+        np.zeros((2, 10), dtype=np.float32),
+        np.asarray([0, 1], dtype=np.float32),
+    )
+    right = (
+        np.ones((3, 7, 4, 3), dtype=np.float32),
+        np.ones((3, 10), dtype=np.float32),
+        np.asarray([1, 0, 1], dtype=np.float32),
+    )
+    merged = _concatenate_splits(left, right)
+    assert merged[0].shape == (5, 7, 4, 3)
+    assert merged[1].shape == (5, 10)
+    assert merged[2].tolist() == [0, 1, 1, 0, 1]
 
 
 def test_stage2_arrays_expand_only_three_features_per_family():
