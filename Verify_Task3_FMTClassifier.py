@@ -72,7 +72,7 @@ def _validate_config_snapshot(spec, snapshot_path):
 
 def _load_dataset(source_dir, label_dir, sampled_steps, fmt_subset,
                   required_ordinals=None, gram_num_freq=6,
-                  expected_slices=10):
+                  expected_slices=10, expected_ivd_percentile=None):
     source_paths = sorted(Path(source_dir).glob("slice_*.npz"))
     if len(source_paths) != int(expected_slices):
         raise RuntimeError(
@@ -125,6 +125,17 @@ def _load_dataset(source_dir, label_dir, sampled_steps, fmt_subset,
         cached_source_name = _portable_basename(metadata["source_cache"])
         if cached_source_name != source_path.name:
             raise ValueError(f"label/source mismatch for {source_path}")
+        if expected_ivd_percentile is not None:
+            actual_percentile = metadata.get(
+                "label_value", metadata.get("ivd_percentile")
+            )
+            if actual_percentile is None or not np.isclose(
+                float(actual_percentile), float(expected_ivd_percentile)
+            ):
+                raise RuntimeError(
+                    f"label percentile mismatch in {label_path}: expected "
+                    f"{expected_ivd_percentile}, found {actual_percentile}"
+                )
         records.append((
             raw.reshape(-1, 7, int(sampled_steps), 3), fmt, target, ordinal,
             metadata,
@@ -377,6 +388,7 @@ def run(config_path):
             spec["sampled_steps"], spec["fmt_subset"], required_ordinals,
             gram_num_freq=spec.get("fmt_gram_num_freq", 6),
             expected_slices=spec.get("expected_slices", 10),
+            expected_ivd_percentile=spec.get("expected_ivd_percentile"),
         )
         train = _stack_split(records, spec["split"]["train_ordinals"])
         validation = _stack_split(records, spec["split"]["validation_ordinals"])

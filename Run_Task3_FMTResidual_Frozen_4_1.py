@@ -100,7 +100,24 @@ def _load_confirmation(spec: dict, search: dict, dataset: str,
             metadata = json.loads(str(labels_file["metadata_json"]))
         if _portable_basename(metadata["source_cache"]) != record["path"].name:
             raise ValueError(f"confirmation label/source mismatch: {label_path}")
-        if not np.array_equal(labels.astype(bool), record["reference"]):
+        expected_percentile = spec.get("expected_ivd_percentile")
+        if expected_percentile is not None:
+            actual_percentile = metadata.get(
+                "label_value", metadata.get("ivd_percentile")
+            )
+            if actual_percentile is None or not np.isclose(
+                float(actual_percentile), float(expected_percentile)
+            ):
+                raise RuntimeError(
+                    f"confirmation label percentile mismatch in {label_path}: "
+                    f"expected {expected_percentile}, found {actual_percentile}"
+                )
+        require_reference_match = bool(
+            spec.get("require_confirmation_reference_match", True)
+        )
+        if require_reference_match and not np.array_equal(
+            labels.astype(bool), record["reference"]
+        ):
             raise RuntimeError(f"confirmation global-IVD labels differ: {label_path}")
         sampled_steps = record["raw"].shape[1] // (7 * 3)
         raw = record["raw"].reshape(-1, 7, sampled_steps, 3)

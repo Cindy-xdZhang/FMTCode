@@ -1,0 +1,49 @@
+experiment: Ablation_Task23IVDPercentile_1.2
+output_dir: outputs/Ablation_Task23IVDPercentile_1.2
+
+# The five requested labels are all reported. p95 is an audit/reference row.
+requested_percentiles: [80.0, 85.0, 87.5, 90.0, 92.5]
+audit_percentile: 95.0
+max_spatial_dim: 96
+
+channel:
+  path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel.vtk
+  total_frames: 159
+  duration: 1.0
+  output_crop_fraction: 0.10
+
+# Only the new 4.1 spatial-confirmation population must be recomputed here.
+# Development labels were already recomputed and bitwise-audited in 1.1.
+label_groups:
+  confirmation4p1_old8:
+    source_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_cache_old8
+    datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+               tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor]
+    expected_slices: 4
+  confirmation4p1_new2:
+    source_cache_root: outputs/mainExp_Task23_3D_4.1/confirmation_cache_new2
+    datasets: [boeing747, smokeBuoyancy]
+    expected_slices: 4
+
+label_roots:
+  development:
+    old8: outputs/Ablation_Task23IVDPercentile_1.1/labels/{tag}/development_old8/labels
+    new2: outputs/Ablation_Task23IVDPercentile_1.1/labels/{tag}/development_new2/labels
+  confirmation:
+    old8: outputs/Ablation_Task23IVDPercentile_1.2/labels/{tag}/confirmation4p1_old8/labels
+    new2: outputs/Ablation_Task23IVDPercentile_1.2/labels/{tag}/confirmation4p1_new2/labels
+
+task2:
+  main_config: config/mainExp_Task2_3D_4.1.yaml
+  output_dir: outputs/Ablation_Task23IVDPercentile_1.2/task2
+  published_p95_runs: outputs/mainExp_Task2_3D_4.1/per_run.csv
+
+task3:
+  main_config: config/mainExp_Task3_3D_4.1.yaml
+  search_config: config/Verify_Task3_FMTResidualFamilySearch_4.1.yaml
+  baseline_templates:
+    old8: config/mainExp_Task3_3D_3.2_global_ivd_baselines_old8.yaml
+    new2: config/mainExp_Task3_3D_3.2_global_ivd_baselines_new2.yaml
+  generated_config_dir: outputs/Ablation_Task23IVDPercentile_1.2/generated_configs
+  output_root: outputs/Ablation_Task23IVDPercentile_1.2/task3
+  published_p95_root: outputs/mainExp_Task3_3D_4.1

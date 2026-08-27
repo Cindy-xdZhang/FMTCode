@@ -150,7 +150,24 @@ def _load_records_from_roots(
             metadata = json.loads(str(label_file["metadata_json"]))
         if _portable_basename(metadata["source_cache"]) != record["path"].name:
             raise ValueError(f"label/source mismatch for {record['path']}")
-        if not np.array_equal(labels.astype(bool), record["reference"]):
+        expected_percentile = spec.get("expected_ivd_percentile")
+        if expected_percentile is not None:
+            actual_percentile = metadata.get(
+                "label_value", metadata.get("ivd_percentile")
+            )
+            if actual_percentile is None or not np.isclose(
+                float(actual_percentile), float(expected_percentile)
+            ):
+                raise RuntimeError(
+                    f"Task3 label percentile mismatch in {label_path}: "
+                    f"expected {expected_percentile}, found {actual_percentile}"
+                )
+        require_reference_match = bool(
+            spec.get("require_source_reference_match", True)
+        )
+        if require_reference_match and not np.array_equal(
+            labels.astype(bool), record["reference"]
+        ):
             raise RuntimeError(
                 f"Task3 global-IVD labels differ from source reference: {label_path}"
             )

@@ -11,6 +11,7 @@ from Build_Task23_IVDPercentile_Labels import (
     percentile_tag,
 )
 from Prepare_Task3_IVDPercentile_Configs import prepare
+from Prepare_Task3_IVDPercentile_Frozen_4_1 import prepare as prepare_4p1
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -70,6 +71,68 @@ class IVDPercentileContractTests(unittest.TestCase):
             self.assertEqual(generated["fusion"], original["fusion"])
             for key in ("label_cache_root", "raw_checkpoint_dir", "output_dir"):
                 self.assertNotIn("\\", generated[key])
+
+    def test_4p1_sweep_keeps_frozen_recipe_and_retrains_percentile_models(self):
+        source = yaml.safe_load(
+            (ROOT / "config" / "Ablation_Task23IVDPercentile_1.2.yaml")
+            .read_text(encoding="utf-8")
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            temp = Path(temporary)
+            source["output_dir"] = (temp / "experiment").as_posix()
+            source["task3"]["output_root"] = (temp / "task3").as_posix()
+            source["task3"]["generated_config_dir"] = (temp / "configs").as_posix()
+            for key in ("main_config", "search_config"):
+                source["task3"][key] = (ROOT / source["task3"][key]).as_posix()
+            for key, value in source["task3"]["baseline_templates"].items():
+                source["task3"]["baseline_templates"][key] = (
+                    ROOT / value
+                ).as_posix()
+            config = temp / "master.yaml"
+            config.write_text(yaml.safe_dump(source, sort_keys=False), encoding="utf-8")
+            prepare_4p1(str(config))
+
+            search = yaml.safe_load(
+                (temp / "configs" / "task3_p87p5_search.yaml")
+                .read_text(encoding="utf-8")
+            )
+            original_search = yaml.safe_load(
+                (ROOT / "config" / "Verify_Task3_FMTResidualFamilySearch_4.1.yaml")
+                .read_text(encoding="utf-8")
+            )
+            self.assertEqual(search["candidates"], original_search["candidates"])
+            self.assertEqual(search["stage2_networks"], original_search["stage2_networks"])
+            self.assertEqual(search["training"], original_search["training"])
+            self.assertEqual(search["expected_ivd_percentile"], 87.5)
+            self.assertFalse(search["require_source_reference_match"])
+
+            final = yaml.safe_load(
+                (temp / "configs" / "task3_p87p5_final.yaml")
+                .read_text(encoding="utf-8")
+            )
+            original_main = yaml.safe_load(
+                (ROOT / "config" / "mainExp_Task3_3D_4.1.yaml")
+                .read_text(encoding="utf-8")
+            )
+            for key in (
+                "stage2_selection", "frozen_recipe_manifest",
+                "final_training_seeds",
+            ):
+                self.assertEqual(final[key], original_main[key])
+            self.assertEqual(final["expected_ivd_percentile"], 87.5)
+            self.assertFalse(final["require_confirmation_reference_match"])
+
+            baseline = yaml.safe_load(
+                (temp / "configs" / "task3_p87p5_baselines_old8.yaml")
+                .read_text(encoding="utf-8")
+            )
+            original_baseline = yaml.safe_load(
+                (ROOT / "config" / "mainExp_Task3_3D_3.2_global_ivd_baselines_old8.yaml")
+                .read_text(encoding="utf-8")
+            )
+            self.assertEqual(baseline["model"], original_baseline["model"])
+            self.assertEqual(baseline["training"], original_baseline["training"])
+            self.assertEqual(baseline["expected_ivd_percentile"], 87.5)
 
 
 if __name__ == "__main__":
