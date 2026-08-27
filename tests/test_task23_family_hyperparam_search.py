@@ -21,6 +21,11 @@ from Search_Task3_FMTResidual_Stage2_3D import (
     _decode_job as decode_task3_stage2_job,
 )
 from Build_Task23_FamilySearch_Confirmation import SETTINGS, SEED_GRID_PHASE
+from Build_Task3_AnchoredRobust_Confirmation_5_1 import (
+    SETTINGS as TASK3_5_1_SETTINGS,
+    SEED_GRID_PHASE as TASK3_5_1_PHASE,
+    _jobs as task3_5_1_jobs,
+)
 
 
 TASK2_CONFIG = "config/Verify_Task2_FMTVAEFamilySearch_4.1.yaml"
@@ -197,3 +202,15 @@ def test_confirmation_start_indices_leave_the_full_pathline_window_available():
             assert len(starts) == len(set(starts)) == 4
             assert min(starts) >= int(np.floor(0.2 * source_frames[dataset]))
             assert max(starts) + frame_count <= source_frames[dataset]
+
+
+def test_task3_5_1_confirmation_is_a_new_frozen_spatial_population():
+    assert TASK3_5_1_PHASE == [-0.37, 0.29, -0.11]
+    assert TASK3_5_1_PHASE != SEED_GRID_PHASE
+    assert all(abs(value) < 0.5 for value in TASK3_5_1_PHASE)
+    jobs = task3_5_1_jobs()
+    assert len(jobs) == len(set(jobs)) == 10
+    assert jobs[0] == ("old8", "cylinder3d")
+    assert jobs[-1] == ("new2", "smokeBuoyancy")
+    for group, settings in TASK3_5_1_SETTINGS.items():
+        assert settings["indices"] == SETTINGS[group]["indices"]

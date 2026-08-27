@@ -17,6 +17,7 @@ from Search_Task3_FMTResidual_3D import (
     _candidate_spec,
     _group_for_dataset,
     _load_records,
+    _load_search_splits,
     _load_spec as _load_search_spec,
     _read_csv,
     _write_csv,
@@ -165,10 +166,11 @@ def run_dataset(config_path: str, dataset: str) -> Path:
     group_name, group = _group_for_dataset(search, dataset)
     candidate = _selected_candidate(search, selection, group_name)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    development = _load_records(search, dataset, candidate, device)
-    train = _stack_split(development, search["screen_split"]["train_ordinals"])
-    validation = _stack_split(
-        development, search["screen_split"]["validation_ordinals"]
+    # Newer searches may append an explicitly exposed spatial population to
+    # development validation.  The helper is backward compatible with 4.1,
+    # where no robust_validation block exists.
+    train, validation = _load_search_splits(
+        search, dataset, candidate, device
     )
     train, validation, _, stats = _normalize_train_only(train, validation)
     splits = (train, validation, None)
@@ -313,4 +315,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

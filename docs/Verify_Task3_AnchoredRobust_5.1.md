@@ -16,7 +16,8 @@ p95 标签，也不以 IVD percentile 选择方法。
 - 4.1 的空间相位 `[.31,-.23,.17]`：结果已公开，归为 5.1 development
   validation；绝不再称为 confirmation。
 - 5.1 当前没有生成或打开最终 confirmation。Stage 2 配方冻结并写出 SHA-256
-  后，才允许生成另一组空间相位 primitive。
+  后，才允许生成预注册空间相位 `[-.37,.29,-.11]` 的 primitive。物理时间与
+  4.1 相同，从而只检验新的空间 primitive population。
 
 训练 population 与冻结 Raw backbone 保持不变；公开空间相位只加入 validation，
 不加入训练。每个 FMT 候选均配一个仅在训练集拟合、与 FMT 输入等宽的 Raw-PCA
@@ -74,7 +75,9 @@ Stage 0 SHA-256：
    设置组合，paired seeds 40--42；以同结构 Raw-PCA 的 validation F1 增益排序，
    AP、最差 seed 和绝对 FMT F1 依次作 tie-break。
 3. 写出冻结 Stage 2 selection 及 SHA-256；到此为止不生成 5.1 confirmation。
-4. 使用另一组空间相位生成全新 primitive population，以五个 paired seeds 最终评估。
+4. 使用预注册相位 `[-.37,.29,-.11]` 生成全新 primitive population，以五个
+   paired seeds 最终评估。生成器在 Stage 2 selection 不存在时会直接拒绝运行，
+   首次生成时把 selection SHA-256 原子写入冻结 manifest。
 
 主目标仍是十个数据条目的 dataset-macro `FMT residual - Raw-PCA residual` F1
 增益至少 `+.15`。Raw 与 Raw-wide 同时报告，但不能替代主对照。
