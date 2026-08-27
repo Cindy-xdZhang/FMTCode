@@ -1,0 +1,8 @@
+experiment: Confirm_Task3_F22AnchoredFeatures_1.2_evaluate
+search_config: config/Verify_Task3_F22AnchoredFeatures_1.2_search.yaml
+selection: outputs/Verify_Task3_F22AnchoredFeatures_1.2/anchored_selection.json
+confirmation_schedule: config/Confirm_Task3_F22AnchoredFeatures_1.2_cache.yaml
+source_cache_root: outputs/Confirm_Task3_F22AnchoredFeatures_1.2/cache
+label_cache_root: outputs/Confirm_Task3_F22AnchoredFeatures_1.2/labels/labels
+output_root: outputs/Confirm_Task3_F22AnchoredFeatures_1.2/final_confirmation
+expected_slices: 8

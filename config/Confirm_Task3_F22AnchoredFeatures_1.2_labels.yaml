@@ -1,0 +1,6 @@
+experiment: Confirm_Task3_F22AnchoredFeatures_1.2_labels
+source_cache_root: outputs/Confirm_Task3_F22AnchoredFeatures_1.2/cache
+output_dir: outputs/Confirm_Task3_F22AnchoredFeatures_1.2/labels
+datasets: [f22raptor]
+expected_slices: 8
+label: {definition: standard_global_ivd, percentile: 95.0}
