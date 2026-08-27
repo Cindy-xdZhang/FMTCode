@@ -1,0 +1,98 @@
+experiment: Verify_Task2_FMTVAEFamilySearch_4.1
+output_root: outputs/Verify_Task2_FMTVAEFamilySearch_4.1
+expected_slices: 10
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+
+# This file exposes development caches only. Ordinals 8--9 remain unopened
+# until stage-1 and stage-2 choices have both been frozen.
+groups:
+  channel:
+    datasets: [channel]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+  halfcylinder:
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+  tangaroa:
+    datasets: [tangaroa]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+  deltaWing:
+    datasets: [deltaWing_resampled, deltaWing_LBM]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+  f22raptor:
+    datasets: [f22raptor]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+  boeing747:
+    datasets: [boeing747]
+    development_cache: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    source_config: config/mainExp_Task123NewFlows_1.1_development_cache.yaml
+  smokeBuoyancy:
+    datasets: [smokeBuoyancy]
+    development_cache: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    source_config: config/mainExp_Task123NewFlows_1.1_development_cache.yaml
+
+splits:
+  selection_train: [0, 1, 2, 3, 4, 5]
+  selection_validation: [6, 7]
+  outer: [8, 9]
+
+# Stage 1 crosses these label-free FMT representations with four representative
+# VAE capacities. Stage 2 will expand only each family's top three recipes.
+features:
+  - {id: f00_all, name: fmt_all}
+  - {id: f01_real_neighbor, name: fmt_real_neighbor}
+  - {id: f02_real_imag_neighbor, name: fmt_real_imag_neighbor}
+  - {id: f03_chirality_neighbor, name: fmt_chirality_neighbor}
+  - {id: f04_chirality_all, name: fmt_chirality_all}
+  - {id: f05_gram2, name: gram2}
+  - {id: f06_kin2, name: kin2}
+  - {id: f07_kin4, name: kin4}
+  - {id: f08_kin6, name: kin6}
+  - {id: f09_all_kin2, name: fmt_all+kin2}
+  - {id: f10_all_kin4, name: fmt_all+kin4}
+  - {id: f11_real_kin4, name: fmt_real_neighbor+kin4}
+  - {id: f12_gram2_kin4, name: gram2+kin4}
+  - {id: f13_real_gram2_kin4, name: fmt_real_neighbor+gram2+kin4}
+
+architectures:
+  - {id: lin2_b1e-6, hidden_dims: [], latent_dim: 2, beta: 0.000001,
+     learning_rate: 0.001, optimizer_steps: 4600,
+     relational_weight: 0.0, pair_count: 2048}
+  - {id: pca8_anchor1e-2, hidden_dims: [], latent_dim: 8, beta: 0.000001,
+     learning_rate: 0.0003, optimizer_steps: 4600,
+     relational_weight: 0.0, pair_count: 2048,
+     pca_init: true, pca_anchor_weight: 0.01}
+  - {id: m256_l16_lr3e-4, hidden_dims: [256, 128], latent_dim: 16,
+     beta: 0.000001, learning_rate: 0.0003, optimizer_steps: 7000,
+     relational_weight: 0.0, pair_count: 2048}
+  - {id: l512_l64_b1e-6, hidden_dims: [512, 256], latent_dim: 64,
+     beta: 0.000001, learning_rate: 0.0003, optimizer_steps: 7000,
+     relational_weight: 0.0, pair_count: 2048}
+
+screen_seeds: [80, 81]
+kmeans_seed: 7068
+kmeans_n_init: 20
+
+task1_development_f1:
+  channel: 0.23809523809523808
+  cylinder3d: 0.5285714285714286
+  halfcylinderRe640: 0.5187165775401069
+  halfcylinderRe6400: 0.4472361809045226
+  tangaroa: 0.7623862487360971
+  deltaWing_resampled: 0.7635869565217391
+  deltaWing_LBM: 0.7858880778588808
+  f22raptor: 0.35514018691588783
+  boeing747: 0.8347978910369068
+  smokeBuoyancy: 0.7745535714285714
+
+selection:
+  top_k: 3
+  allowed_fmt_below_task1: 0.02
+  target_dataset_macro_f1_gain: 0.15
+

@@ -1,0 +1,111 @@
+experiment: Verify_Task3_FMTResidualFamilySearch_4.1
+output_root: outputs/Verify_Task3_FMTResidualFamilySearch_4.1
+expected_slices: 10
+sampled_steps: 32
+raw_pca_random_state: 7068
+raw_wide_parameter_count: 148225
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+
+groups:
+  channel:
+    datasets: [channel]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  halfcylinder:
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  tangaroa:
+    datasets: [tangaroa]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  deltaWing:
+    datasets: [deltaWing_resampled, deltaWing_LBM]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  f22raptor:
+    datasets: [f22raptor]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  boeing747:
+    datasets: [boeing747]
+    source_cache_root: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_new2/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/baselines/checkpoints
+  smokeBuoyancy:
+    datasets: [smokeBuoyancy]
+    source_cache_root: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_new2/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/baselines/checkpoints
+
+screen_split:
+  train_ordinals: [0, 1, 2, 3, 4, 5]
+  validation_ordinals: [6, 7]
+  test_ordinals: []
+outer_ordinals: [8, 9]
+screen_seeds: [40, 41]
+
+# Stage 1 isolates the feature-block choice. All candidates use the same
+# residual architecture and optimization; Stage 2 expands the top three per
+# family over residual width, input route, learning rate, and alpha selection.
+candidates:
+  - {id: c00_all, fmt_feature: fmt_all, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: c01_real_neighbor, fmt_feature: fmt_real_neighbor,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c02_real_imag_neighbor, fmt_feature: fmt_real_imag_neighbor,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c03_chirality_neighbor, fmt_feature: fmt_chirality_neighbor,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c04_chirality_all, fmt_feature: fmt_chirality_all,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c05_gram2, fmt_feature: gram2, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: c06_kin2, fmt_feature: kin2, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: c07_kin4, fmt_feature: kin4, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: c08_kin6, fmt_feature: kin6, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: c09_all_kin2, fmt_feature: fmt_all+kin2,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c10_all_kin4, fmt_feature: fmt_all+kin4,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c11_real_kin4, fmt_feature: fmt_real_neighbor+kin4,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c12_gram2_kin4, fmt_feature: gram2+kin4,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: c13_real_gram2_kin4,
+     fmt_feature: fmt_real_neighbor+gram2+kin4,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+
+training:
+  device: auto
+  batch_size: 512
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  max_epochs: 100
+  patience: 20
+  min_delta: 0.0001
+
+selection:
+  top_k: 3
+  allowed_fmt_below_strong_raw: 0.005
+  target_dataset_macro_f1_gain: 0.15
+

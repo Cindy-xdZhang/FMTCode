@@ -15,25 +15,45 @@ from FMT_Utils.DFT_FMT_3D import (
 )
 
 
-def load_cache_records(cache_dir, expected_count=None):
+def load_cache_records(cache_dir, expected_count=None, ordinals=None):
+    """Load selected cache records without opening held-out slices.
+
+    ``expected_count`` validates the complete directory before selection.
+    Supplying ``ordinals`` is therefore suitable for development-only search:
+    files outside the requested ordinal set are enumerated, but never opened.
+    """
     records = []
-    for path in sorted(Path(cache_dir).glob("slice_*.npz")):
+    paths = sorted(Path(cache_dir).glob("slice_*.npz"))
+    if expected_count is not None and len(paths) != int(expected_count):
+        raise RuntimeError(
+            f"expected {expected_count} slices in {cache_dir}, found {len(paths)}"
+        )
+    if ordinals is None:
+        selected = list(enumerate(paths))
+    else:
+        requested = [int(value) for value in ordinals]
+        if len(requested) != len(set(requested)):
+            raise ValueError(f"duplicate cache ordinals requested: {requested}")
+        invalid = [value for value in requested if not 0 <= value < len(paths)]
+        if invalid:
+            raise IndexError(
+                f"cache ordinals {invalid} outside [0, {len(paths)}) in {cache_dir}"
+            )
+        selected = [(ordinal, paths[ordinal]) for ordinal in requested]
+    for ordinal, path in selected:
         with np.load(path) as data:
             raw = np.asarray(data["raw_features"], dtype=np.float32)
             if raw.shape[1] % (7 * 3):
                 raise ValueError(f"unexpected raw feature width in {path}: {raw.shape}")
             records.append({
                 "path": path,
+                "ordinal": ordinal,
                 "raw": raw,
                 "fmt": np.asarray(data["fmt_features"], dtype=np.float32),
                 "reference": np.asarray(data["reference"], dtype=bool),
                 "metadata": json.loads(str(data["metadata_json"])),
                 "features": {},
             })
-    if expected_count is not None and len(records) != int(expected_count):
-        raise RuntimeError(
-            f"expected {expected_count} slices in {cache_dir}, found {len(records)}"
-        )
     if not records:
         raise RuntimeError(f"no cached slices found in {cache_dir}")
     return records
