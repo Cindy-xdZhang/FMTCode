@@ -136,6 +136,7 @@ task1_development_f1:
 
 selection:
   top_k: 3
+  # Diagnostic only. Task1 direct FMT never gates or ranks Task2 candidates.
   allowed_fmt_below_task1: 0.02
   target_dataset_macro_f1_gain: 0.15
   stage1_selection_file: outputs/Verify_Task2_FMTVAEFamilySearch_4.1/stage1_selection.json

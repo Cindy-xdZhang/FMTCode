@@ -289,6 +289,20 @@ def _paired_candidate(spec: dict, group_name: str, feature: dict,
     }
 
 
+def _selection_key(row: dict) -> tuple[float, float, float]:
+    """Rank Task2 recipes by the registered same-VAE comparison only.
+
+    ``absolute_fmt_guard_passed`` is retained in result tables as a diagnostic
+    against Task1 direct FMT, but Task1 is a different method and therefore
+    must not override the Task2 paired-gain objective.
+    """
+    return (
+        float(row["fmt_minus_raw_f1_macro"]),
+        float(row["worst_seed_f1_gain"]),
+        float(row["fmt_f1_macro"]),
+    )
+
+
 def select(config_path: str) -> Path:
     spec = _load_spec(config_path)
     rows = []
@@ -302,12 +316,7 @@ def select(config_path: str) -> Path:
         ]
         ranked = sorted(
             candidates,
-            key=lambda row: (
-                bool(row["absolute_fmt_guard_passed"]),
-                float(row["fmt_minus_raw_f1_macro"]),
-                float(row["worst_seed_f1_gain"]),
-                float(row["fmt_f1_macro"]),
-            ),
+            key=_selection_key,
             reverse=True,
         )
         for rank, row in enumerate(ranked, 1):
@@ -342,8 +351,9 @@ def select(config_path: str) -> Path:
     payload = {
         "experiment": spec["experiment"],
         "selection_rule": (
-            "family-specific: pass FMT absolute Task1 guard, then maximize paired "
-            "same-VAE development F1 gain; tie-break by worst seed and FMT F1"
+            "family-specific: maximize paired same-VAE development F1 gain; "
+            "tie-break by worst seed and FMT F1. Task1 direct FMT is reported "
+            "only as a cross-task diagnostic and does not select Task2 recipes"
         ),
         "opened_ordinals": sorted(
             set(spec["splits"]["selection_train"])

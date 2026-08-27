@@ -8,11 +8,13 @@ from FMT_Utils.FMT_3D_pipeline import generate_seeding_grid_3d
 from Search_Task2_FMTVAE_3D import (
     _decode_job as decode_task2_job,
     _load_spec as load_task2_spec,
+    _selection_key as task2_selection_key,
 )
 from Search_Task2_FMTVAE_Stage2_3D import _decode_job as decode_task2_stage2_job
 from Search_Task3_FMTResidual_3D import (
     _decode_job as decode_task3_job,
     _load_spec as load_task3_spec,
+    _selection_key as task3_selection_key,
 )
 from Search_Task3_FMTResidual_Stage2_3D import (
     _decode_job as decode_task3_stage2_job,
@@ -88,6 +90,40 @@ def test_stage2_arrays_expand_only_three_features_per_family():
     task3 = load_task3_spec(TASK3_CONFIG)
     assert len(task3["stage2_networks"]) == 10
     assert decode_task3_stage2_job(task3, 299) == ("smokeBuoyancy", 29)
+
+
+def test_task2_selection_maximizes_same_vae_gain_not_task1_diagnostic():
+    high_gain = {
+        "fmt_minus_raw_f1_macro": 0.16,
+        "worst_seed_f1_gain": 0.12,
+        "fmt_f1_macro": 0.60,
+        "absolute_fmt_guard_passed": False,
+    }
+    low_gain = {
+        "fmt_minus_raw_f1_macro": 0.03,
+        "worst_seed_f1_gain": 0.02,
+        "fmt_f1_macro": 0.80,
+        "absolute_fmt_guard_passed": True,
+    }
+    assert task2_selection_key(high_gain) > task2_selection_key(low_gain)
+
+
+def test_task3_selection_maximizes_same_structure_raw_pca_gain():
+    high_gain = {
+        "fmt_minus_raw_pca_f1_macro": 0.17,
+        "fmt_minus_raw_pca_ap_macro": 0.11,
+        "worst_seed_f1_gain": 0.10,
+        "fmt_f1_macro": 0.65,
+        "strong_raw_guard_passed": False,
+    }
+    low_gain = {
+        "fmt_minus_raw_pca_f1_macro": 0.04,
+        "fmt_minus_raw_pca_ap_macro": 0.03,
+        "worst_seed_f1_gain": 0.02,
+        "fmt_f1_macro": 0.82,
+        "strong_raw_guard_passed": True,
+    }
+    assert task3_selection_key(high_gain) > task3_selection_key(low_gain)
 
 
 def test_phased_confirmation_grid_preserves_count_and_changes_every_axis():

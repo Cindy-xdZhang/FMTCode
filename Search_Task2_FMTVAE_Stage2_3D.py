@@ -28,6 +28,7 @@ from Search_Task2_FMTVAE_3D import (
     _load_spec,
     _read_csv,
     _result_path as _stage1_result_path,
+    _selection_key,
     _split_records,
     _write_csv,
 )
@@ -296,12 +297,7 @@ def select(config_path: str) -> Path:
         ]
         ranked = sorted(
             rows,
-            key=lambda row: (
-                bool(row["absolute_fmt_guard_passed"]),
-                float(row["fmt_minus_raw_f1_macro"]),
-                float(row["worst_seed_f1_gain"]),
-                float(row["fmt_f1_macro"]),
-            ),
+            key=_selection_key,
             reverse=True,
         )
         for rank, row in enumerate(ranked, 1):
@@ -326,8 +322,8 @@ def select(config_path: str) -> Path:
         "stage1_selection_sha256": stage1_hash,
         "stage1_experiment": stage1["experiment"],
         "selection_rule": (
-            "family-specific maximum paired same-VAE development F1 gain "
-            "subject to the absolute Task1 FMT guard"
+            "family-specific maximum paired same-VAE development F1 gain; "
+            "Task1 direct FMT is a reported diagnostic, not a selection guard"
         ),
         "opened_ordinals": sorted(
             set(spec["splits"]["selection_train"])

@@ -391,6 +391,21 @@ def _candidate_summary(spec: dict, group_name: str, candidate: dict) -> dict:
     }
 
 
+def _selection_key(row: dict) -> tuple[float, float, float, float]:
+    """Rank by the registered Task3 FMT versus Raw-PCA residual comparison.
+
+    Strong Raw and Raw-wide remain important reported baselines, but they are
+    different model routes and do not replace the same-structure Raw-PCA arm
+    used to isolate the contribution of FMT.
+    """
+    return (
+        float(row["fmt_minus_raw_pca_f1_macro"]),
+        float(row["fmt_minus_raw_pca_ap_macro"]),
+        float(row["worst_seed_f1_gain"]),
+        float(row["fmt_f1_macro"]),
+    )
+
+
 def select(config_path: str) -> Path:
     spec = _load_spec(config_path)
     top_k = int(spec.get("selection", {}).get("top_k", 3))
@@ -403,13 +418,7 @@ def select(config_path: str) -> Path:
         ]
         ranked = sorted(
             rows,
-            key=lambda row: (
-                bool(row["strong_raw_guard_passed"]),
-                float(row["fmt_minus_raw_pca_f1_macro"]),
-                float(row["fmt_minus_raw_pca_ap_macro"]),
-                float(row["worst_seed_f1_gain"]),
-                float(row["fmt_f1_macro"]),
-            ),
+            key=_selection_key,
             reverse=True,
         )
         for rank, row in enumerate(ranked, 1):
@@ -436,9 +445,9 @@ def select(config_path: str) -> Path:
     payload = {
         "experiment": spec["experiment"],
         "selection_rule": (
-            "family-specific: retain FMT performance versus strong Raw, then "
-            "maximize validation F1 gain over the same-width Raw-PCA residual; "
-            "tie-break by AP gain, worst seed, and absolute FMT F1"
+            "family-specific: maximize validation F1 gain over the same-width "
+            "Raw-PCA residual; tie-break by AP gain, worst seed, and absolute "
+            "FMT F1. Strong Raw is reported but does not select the recipe"
         ),
         "opened_ordinals": sorted(
             set(spec["screen_split"]["train_ordinals"])

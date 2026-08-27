@@ -19,6 +19,7 @@ from Search_Task3_FMTResidual_3D import (
     _load_records,
     _load_spec,
     _read_csv,
+    _selection_key,
     _write_csv,
 )
 from Search_Task5_CylinderHyperparams import (
@@ -364,13 +365,8 @@ def select(config_path: str) -> Path:
         ]
         ranked = sorted(
             rows,
-            key=lambda row: (
-                bool(row["strong_raw_guard_passed"]),
-                float(row["fmt_minus_raw_pca_f1_macro"]),
-                float(row["fmt_minus_raw_pca_ap_macro"]),
-                float(row["worst_seed_f1_gain"]),
-                float(row["fmt_f1_macro"]),
-            ), reverse=True,
+            key=_selection_key,
+            reverse=True,
         )
         for rank, row in enumerate(ranked, 1):
             row["rank_within_group"] = rank
@@ -397,8 +393,8 @@ def select(config_path: str) -> Path:
         "stage1_selection_sha256": stage1_hash,
         "stage1_experiment": stage1["experiment"],
         "selection_rule": (
-            "family-specific: preserve FMT versus strong Raw, then maximize "
-            "same-width Raw-PCA F1 gain; tie-break by AP and worst seed"
+            "family-specific: maximize same-width Raw-PCA F1 gain; tie-break "
+            "by AP and worst seed. Strong Raw remains a reported diagnostic"
         ),
         "opened_ordinals": sorted(
             set(spec["screen_split"]["train_ordinals"])

@@ -135,6 +135,8 @@ training:
 
 selection:
   top_k: 3
+  # Diagnostic only. The registered Task3 selector ranks FMT against the
+  # same-structure Raw-PCA residual arm, not against this separate baseline.
   allowed_fmt_below_strong_raw: 0.005
   target_dataset_macro_f1_gain: 0.15
   stage1_selection_file: outputs/Verify_Task3_FMTResidualFamilySearch_4.1/stage1_selection.json
