@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 from pathlib import Path
@@ -79,7 +80,34 @@ def _key(row: dict) -> tuple[float, float, float, float]:
     )
 
 
-def select(config_path: str | Path) -> Path:
+def _fast_screen_shortlist(path: Path, top_k: int) -> list[str]:
+    """Select candidates by the weaker of the two fast-screen gains."""
+    if top_k <= 0:
+        raise ValueError("fast_screen_top_k must be positive")
+    if not path.exists():
+        raise FileNotFoundError(path)
+    with path.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    if len(rows) < top_k:
+        raise RuntimeError(
+            f"fast screen has {len(rows)} rows, fewer than top_k={top_k}"
+        )
+    ranked = sorted(
+        rows,
+        key=lambda row: (
+            min(float(row["f1_gain"]), float(row["average_precision_gain"])),
+            float(row["f1_gain"]),
+            float(row["average_precision_gain"]),
+        ),
+        reverse=True,
+    )
+    return [str(row["candidate_id"]) for row in ranked[:top_k]]
+
+
+def select(
+    config_path: str | Path,
+    fast_screen_top_k: int | None = None,
+) -> Path:
     config_path = Path(config_path)
     spec = _load_spec(config_path)
     if spec["datasets"] != ["f22raptor"]:
@@ -93,8 +121,22 @@ def select(config_path: str | Path) -> Path:
         raise FileExistsError(
             f"selection is already frozen: {target}; use a new experiment version"
         )
+    candidates = list(spec["candidates"])
+    fast_screen_path = output / "fast_screen.csv"
+    shortlisted_ids = None
+    if fast_screen_top_k is not None:
+        shortlisted_ids = _fast_screen_shortlist(
+            fast_screen_path, int(fast_screen_top_k)
+        )
+        by_id = {str(candidate["id"]): candidate for candidate in candidates}
+        missing = [value for value in shortlisted_ids if value not in by_id]
+        if missing:
+            raise RuntimeError(
+                f"fast-screen candidates missing from search config: {missing}"
+            )
+        candidates = [by_id[value] for value in shortlisted_ids]
     rows = sorted(
-        [_rank_row(spec, candidate) for candidate in spec["candidates"]],
+        [_rank_row(spec, candidate) for candidate in candidates],
         key=_key,
         reverse=True,
     )
@@ -118,9 +160,16 @@ def select(config_path: str | Path) -> Path:
         ),
         "confirmation_opened": False,
         "selection_rule": (
-            "maximize the worst paired FMT-minus-Raw-PCA F1/AP gain across "
-            "five seeds; tie-break by mean minimum gain, F1 gain, then FMT AP"
+            "optional stage 0: rank the fixed logistic-regression fast screen "
+            "by min(F1 gain, AP gain) and retain top-k; stage 1: maximize the "
+            "worst paired FMT-minus-Raw-PCA F1/AP gain across five seeds; "
+            "tie-break by mean minimum gain, F1 gain, then FMT AP"
         ),
+        "fast_screen_top_k": fast_screen_top_k,
+        "fast_screen_sha256": (
+            _sha256(fast_screen_path) if fast_screen_top_k is not None else None
+        ),
+        "shortlisted_candidate_ids": shortlisted_ids,
         "search_config_sha256": _sha256(config_path),
         "confirmation_schedule_sha256": _sha256(confirmation),
         "selected_candidate": winner,
@@ -141,5 +190,6 @@ def select(config_path: str | Path) -> Path:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True)
+    parser.add_argument("--fast-screen-top-k", type=int)
     args = parser.parse_args()
-    select(args.config)
+    select(args.config, fast_screen_top_k=args.fast_screen_top_k)
