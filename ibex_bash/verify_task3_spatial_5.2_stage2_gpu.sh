@@ -7,7 +7,7 @@
 #SBATCH --time=4:00:00
 #SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=8
-#SBATCH --mem=24G
+#SBATCH --mem=8G
 
 set -euo pipefail
 cd "${TASK23_REPO_ROOT:-/home/zhanx0o/FMT_Task12_3D_20260823}"
