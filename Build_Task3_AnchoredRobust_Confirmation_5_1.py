@@ -52,6 +52,11 @@ SELECTION_FILE = (
 MANIFEST = "outputs/mainExp_Task3_3D_5.1/frozen_recipe_manifest.json"
 
 
+def _portable_manifest_path(path: Path) -> str:
+    """Serialize repository-relative paths identically on Windows and Linux."""
+    return path.as_posix()
+
+
 def _assert_recipe_frozen() -> dict:
     selection_path = Path(SELECTION_FILE)
     if not selection_path.exists():
@@ -62,17 +67,18 @@ def _assert_recipe_frozen() -> dict:
     if bool(selection.get("confirmation_opened", False)):
         raise RuntimeError("selection unexpectedly claims current confirmation access")
     selection_hash = hashlib.sha256(selection_path.read_bytes()).hexdigest()
+    portable_selection_path = _portable_manifest_path(selection_path)
     frozen = {
         "experiment": "mainExp_Task3_3D_5.1",
         "selection": {
-            "path": str(selection_path),
+            "path": portable_selection_path,
             "sha256": selection_hash,
             "experiment": selection["experiment"],
         },
         # Compatibility with the frozen evaluator shared with 4.1.
         "selections": {
             "task3": {
-                "path": str(selection_path),
+                "path": portable_selection_path,
                 "sha256": selection_hash,
                 "experiment": selection["experiment"],
             }

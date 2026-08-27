@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -25,6 +26,7 @@ from Build_Task3_AnchoredRobust_Confirmation_5_1 import (
     SETTINGS as TASK3_5_1_SETTINGS,
     SEED_GRID_PHASE as TASK3_5_1_PHASE,
     _jobs as task3_5_1_jobs,
+    _portable_manifest_path,
 )
 
 
@@ -214,3 +216,8 @@ def test_task3_5_1_confirmation_is_a_new_frozen_spatial_population():
     assert jobs[-1] == ("new2", "smokeBuoyancy")
     for group, settings in TASK3_5_1_SETTINGS.items():
         assert settings["indices"] == SETTINGS[group]["indices"]
+
+
+def test_task3_5_1_manifest_paths_are_platform_independent():
+    path = Path("outputs") / "selection" / "stage2.json"
+    assert _portable_manifest_path(path) == "outputs/selection/stage2.json"
