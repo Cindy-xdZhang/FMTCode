@@ -8,9 +8,13 @@ from Search_Task2_FMTVAE_3D import (
     _decode_job as decode_task2_job,
     _load_spec as load_task2_spec,
 )
+from Search_Task2_FMTVAE_Stage2_3D import _decode_job as decode_task2_stage2_job
 from Search_Task3_FMTResidual_3D import (
     _decode_job as decode_task3_job,
     _load_spec as load_task3_spec,
+)
+from Search_Task3_FMTResidual_Stage2_3D import (
+    _decode_job as decode_task3_stage2_job,
 )
 
 
@@ -69,3 +73,16 @@ def test_task3_stage1_array_mapping_and_split_are_frozen():
     with pytest.raises(IndexError):
         decode_task3_job(spec, 140)
 
+
+def test_stage2_arrays_expand_only_three_features_per_family():
+    task2 = load_task2_spec(TASK2_CONFIG)
+    assert len(task2["stage2_architectures"]) == 12
+    assert decode_task2_stage2_job(task2, "raw", 119) == (
+        "smokeBuoyancy", 11, None
+    )
+    assert decode_task2_stage2_job(task2, "fmt", 359) == (
+        "smokeBuoyancy", 11, 2
+    )
+    task3 = load_task3_spec(TASK3_CONFIG)
+    assert len(task3["stage2_networks"]) == 10
+    assert decode_task3_stage2_job(task3, 299) == ("smokeBuoyancy", 29)

@@ -51,6 +51,7 @@ screen_split:
   test_ordinals: []
 outer_ordinals: [8, 9]
 screen_seeds: [40, 41]
+stage2_screen_seeds: [40, 41, 42]
 
 # Stage 1 isolates the feature-block choice. All candidates use the same
 # residual architecture and optimization; Stage 2 expands the top three per
@@ -95,6 +96,34 @@ candidates:
      residual_input: geometry_fmt, auxiliary_dim: 64,
      selection_metric: minimum_gain}
 
+# Stage 2 combines each family's three retained feature blocks with these
+# residual-network and fusion choices.
+stage2_networks:
+  - {id: n00_geom_aux64_min, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: n01_fmt_only_aux64_min, residual_input: fmt_only,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: n02_dual_aux64_min, residual_input: dual,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: n03_geom_aux32_min, residual_input: geometry_fmt,
+     auxiliary_dim: 32, selection_metric: minimum_gain}
+  - {id: n04_geom_aux96_min, residual_input: geometry_fmt,
+     auxiliary_dim: 96, selection_metric: minimum_gain}
+  - {id: n05_geom_lr3e4_min, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain,
+     training: {learning_rate: 0.0003}}
+  - {id: n06_geom_lr3e3_min, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain,
+     training: {learning_rate: 0.003}}
+  - {id: n07_geom_constrained, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: constrained_average_precision,
+     minimum_f1_gain: 0.03}
+  - {id: n08_geom_f1, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: f1}
+  - {id: n09_geom_fixed1, residual_input: geometry_fmt,
+     auxiliary_dim: 64, fixed_alpha: 1.0,
+     selection_metric: average_precision}
+
 training:
   device: auto
   batch_size: 512
@@ -108,4 +137,5 @@ selection:
   top_k: 3
   allowed_fmt_below_strong_raw: 0.005
   target_dataset_macro_f1_gain: 0.15
-
+  stage1_selection_file: outputs/Verify_Task3_FMTResidualFamilySearch_4.1/stage1_selection.json
+  stage2_top_k: 3

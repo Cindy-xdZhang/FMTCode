@@ -100,12 +100,13 @@ def _candidate(spec: dict, index: int) -> dict:
     return row
 
 
-def _load_records(spec: dict, dataset: str, candidate: dict, device) -> list[tuple]:
+def _load_records(spec: dict, dataset: str, candidate: dict, device,
+                  ordinals=None) -> list[tuple]:
     _, group = _group_for_dataset(spec, dataset)
     required = sorted(
         {int(value) for value in spec["screen_split"]["train_ordinals"]}
         | {int(value) for value in spec["screen_split"]["validation_ordinals"]}
-    )
+    ) if ordinals is None else sorted({int(value) for value in ordinals})
     source_dir = Path(group["source_cache_root"]) / dataset
     records = load_cache_records(
         source_dir,

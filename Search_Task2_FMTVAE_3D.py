@@ -313,7 +313,21 @@ def select(config_path: str) -> Path:
         for rank, row in enumerate(ranked, 1):
             row["rank_within_group"] = rank
             rows.append(row)
-        selected[group_name] = ranked[:top_k]
+        unique_features = []
+        seen_features = set()
+        for row in ranked:
+            if row["feature_id"] in seen_features:
+                continue
+            unique_features.append(row)
+            seen_features.add(row["feature_id"])
+            if len(unique_features) == top_k:
+                break
+        if len(unique_features) != top_k:
+            raise RuntimeError(
+                f"group {group_name} produced only {len(unique_features)} "
+                f"unique feature recipes for top_k={top_k}"
+            )
+        selected[group_name] = unique_features
     output = Path(spec["output_root"])
     _write_csv(output / "stage1_leaderboard.csv", rows)
     primary = {group: values[0] for group, values in selected.items()}
