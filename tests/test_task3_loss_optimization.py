@@ -11,6 +11,7 @@ from Search_Task3_LossOptimization_7_1 import (
     _is_numerical_instability,
     _load_numerical_instability,
     _load_optimization_spec,
+    _merge_combination_recipe,
     _optimization_candidate,
     _write_numerical_instability,
 )
@@ -30,6 +31,9 @@ RESIDUAL_CORRECTION_CONFIG = (
 )
 PAIRWISE_RANKING_CONFIG = (
     ROOT / "config" / "Verify_Task3_PairwiseRanking_10.1.yaml"
+)
+COMBINED_CONFIG = (
+    ROOT / "config" / "Verify_Task3_CombinedOptimization_11.1.yaml"
 )
 
 
@@ -315,6 +319,47 @@ def test_pairwise_ranking_search_is_paired_and_array_bounds_match():
     assert spec["paired_seeds"] == [40, 41, 42]
     assert spec["optimization_selection"]["confirmation_opened"] is False
     assert _decode_job(spec, 139) == ("smokeBuoyancy", 13)
+
+
+def test_combined_search_declares_full_factorial_and_array_bounds():
+    spec = _load_optimization_spec(COMBINED_CONFIG)
+    assert len(spec["combination_sources"]) == 4
+    assert len(spec["optimization_candidates"]) == 16
+    assert spec["paired_seeds"] == [40, 41, 42]
+    assert _decode_job(spec, 159) == ("smokeBuoyancy", 15)
+
+
+def test_combination_merge_is_nested_traceable_and_rejects_conflicts():
+    rows = {
+        "loss": {
+            "optimization_id": "o02",
+            "optimization_recipe_json": json.dumps({
+                "id": "o02", "training": {"positive_weight_scale": 0.5}
+            }),
+        },
+        "ranking": {
+            "optimization_id": "q03",
+            "optimization_recipe_json": json.dumps({
+                "id": "q03",
+                "training": {"pairwise_ranking_loss_weight": 0.1},
+            }),
+        },
+    }
+    merged = _merge_combination_recipe(
+        "x", ["loss", "ranking"], rows
+    )
+    assert merged["training"] == {
+        "positive_weight_scale": 0.5,
+        "pairwise_ranking_loss_weight": 0.1,
+    }
+    assert merged["source_optimization_ids"] == {
+        "loss": "o02", "ranking": "q03"
+    }
+    rows["ranking"]["optimization_recipe_json"] = json.dumps({
+        "id": "q03", "training": {"positive_weight_scale": 2.0}
+    })
+    with pytest.raises(ValueError, match="conflicting training"):
+        _merge_combination_recipe("x", ["loss", "ranking"], rows)
 
 
 def test_base_config_hash_is_independent_of_newline_style(tmp_path):

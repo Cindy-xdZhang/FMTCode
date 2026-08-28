@@ -77,6 +77,29 @@ def _load_optimization_spec(path: str | Path) -> dict:
         raise ValueError("optimization candidate ids must be non-empty and unique")
     if bool(overlay["selection"].get("confirmation_opened", False)):
         raise RuntimeError("optimization search must not open confirmation")
+    combination_sources = {
+        str(name): dict(row)
+        for name, row in dict(overlay.get("combination_sources", {})).items()
+    }
+    for name, row in combination_sources.items():
+        if not row.get("selection") or not row.get("expected_experiment"):
+            raise ValueError(
+                f"combination source {name!r} requires selection and "
+                "expected_experiment"
+            )
+    if combination_sources:
+        for candidate in candidates:
+            sources = [str(value) for value in candidate.get("sources", [])]
+            unknown = sorted(set(sources) - set(combination_sources))
+            if unknown:
+                raise ValueError(
+                    f"unknown combination sources for {candidate['id']}: "
+                    f"{unknown}"
+                )
+            if len(sources) != len(set(sources)):
+                raise ValueError(
+                    f"duplicate combination source for {candidate['id']}"
+                )
     spec = dict(base)
     spec.update({
         "experiment": str(overlay["experiment"]),
@@ -94,8 +117,77 @@ def _load_optimization_spec(path: str | Path) -> dict:
         "model_override": dict(overlay["model_override"]),
         "optimization_candidates": candidates,
         "optimization_selection": dict(overlay["selection"]),
+        "combination_sources": combination_sources,
     })
     return spec
+
+
+def _merge_combination_recipe(candidate_id: str, source_names: list[str],
+                              source_rows: dict[str, dict]) -> dict:
+    """Merge frozen source winners, rejecting hidden hyperparameter conflicts."""
+    merged = {
+        "id": str(candidate_id),
+        "sources": [str(value) for value in source_names],
+        "source_optimization_ids": {},
+    }
+    for source_name in source_names:
+        row = source_rows[str(source_name)]
+        recipe = json.loads(str(row["optimization_recipe_json"]))
+        merged["source_optimization_ids"][str(source_name)] = str(
+            row["optimization_id"]
+        )
+        unsupported = sorted(set(recipe) - {"id", "training", "model"})
+        if unsupported:
+            raise ValueError(
+                f"unsupported keys from {source_name}: {unsupported}"
+            )
+        for section in ("training", "model"):
+            values = dict(recipe.get(section, {}))
+            target = merged.setdefault(section, {})
+            for key, value in values.items():
+                if key in target and target[key] != value:
+                    raise ValueError(
+                        f"conflicting {section}.{key} while combining "
+                        f"{source_names}: {target[key]!r} vs {value!r}"
+                    )
+                target[key] = value
+    for section in ("training", "model"):
+        if not merged.get(section):
+            merged.pop(section, None)
+    return merged
+
+
+def _resolve_combination_candidates(spec: dict) -> tuple[dict, dict]:
+    """Resolve family-specific recipes only from completed selector files."""
+    if not spec.get("combination_sources"):
+        return {}, {}
+    selections, hashes = {}, {}
+    for name, source in spec["combination_sources"].items():
+        path = Path(source["selection"])
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if str(payload.get("experiment")) != str(source["expected_experiment"]):
+            raise RuntimeError(f"combination source experiment changed: {name}")
+        if bool(payload.get("confirmation_opened", True)):
+            raise RuntimeError(f"combination source opened confirmation: {name}")
+        if set(payload.get("primary_by_group", {})) != set(spec["groups"]):
+            raise RuntimeError(f"combination source families changed: {name}")
+        selections[name] = payload
+        hashes[name] = _sha256(path)
+    resolved = {}
+    for group_name in spec["groups"]:
+        source_rows = {
+            name: payload["primary_by_group"][group_name]
+            for name, payload in selections.items()
+        }
+        resolved[group_name] = [
+            _merge_combination_recipe(
+                candidate["id"],
+                [str(value) for value in candidate.get("sources", [])],
+                source_rows,
+            )
+            for candidate in spec["optimization_candidates"]
+        ]
+    return resolved, hashes
 
 
 def _manifest_path(spec: dict) -> Path:
@@ -152,6 +244,17 @@ def _load_manifest(spec: dict) -> dict:
         raise RuntimeError("upstream 5.2 selection changed after 7.1 preflight")
     if bool(manifest.get("confirmation_opened", True)):
         raise RuntimeError("invalid preflight confirmation state")
+    for name, source in spec.get("combination_sources", {}).items():
+        observed = _sha256(Path(source["selection"]))
+        expected = str(
+            manifest.get("combination_source_selection_sha256", {}).get(
+                name, ""
+            )
+        ).lower()
+        if observed != expected:
+            raise RuntimeError(
+                f"combination source changed after preflight: {name}"
+            )
     return manifest
 
 
@@ -162,7 +265,11 @@ def _optimization_candidate(spec: dict, manifest: dict, dataset: str,
     if not 0 <= index < len(spec["optimization_candidates"]):
         raise IndexError("optimization candidate index outside configured grid")
     base = dict(manifest["base_candidate_by_group"][group_name])
-    recipe = dict(spec["optimization_candidates"][index])
+    resolved = manifest.get("optimization_candidates_by_group", {})
+    recipe = dict(
+        resolved[group_name][index]
+        if group_name in resolved else spec["optimization_candidates"][index]
+    )
     training = dict(base.get("training", {}))
     training.update(recipe.get("training", {}))
     model = dict(recipe.get("model", {}))
@@ -221,6 +328,7 @@ def static_preflight(config_path: str) -> None:
             * len(spec["paired_seeds"]) * 2
         ),
         "confirmation_opened": False,
+        "combination_source_count": len(spec.get("combination_sources", {})),
     }
     print(json.dumps(payload, indent=2))
 
@@ -230,7 +338,11 @@ def preflight(config_path: str) -> Path:
     selection_path = Path(spec["upstream_selection"])
     selection = json.loads(selection_path.read_text(encoding="utf-8"))
     base_candidates = _upstream_base_candidates(spec, selection)
-    manifest_stub = {"base_candidate_by_group": base_candidates}
+    resolved_candidates, source_hashes = _resolve_combination_candidates(spec)
+    manifest_stub = {
+        "base_candidate_by_group": base_candidates,
+        "optimization_candidates_by_group": resolved_candidates,
+    }
     datasets = []
     for dataset in spec["datasets"]:
         group_name, group = _group_for_dataset(spec, dataset)
@@ -287,6 +399,8 @@ def preflight(config_path: str) -> Path:
         "upstream_selection_sha256": _sha256(selection_path),
         "upstream_selector_job_id": spec["upstream_selector_job_id"],
         "base_candidate_by_group": base_candidates,
+        "optimization_candidates_by_group": resolved_candidates,
+        "combination_source_selection_sha256": source_hashes,
         "confirmation_opened": False,
         "dataset_count": len(spec["datasets"]),
         "optimization_candidate_count": len(spec["optimization_candidates"]),
@@ -519,6 +633,10 @@ def _candidate_summary(spec: dict, manifest: dict, group_name: str,
         index for index, row in enumerate(spec["optimization_candidates"])
         if str(row["id"]) == str(recipe["id"])
     )
+    representative = _optimization_candidate(
+        spec, manifest, datasets[0], recipe_index
+    )
+    resolved_recipe = representative["optimization_recipe"]
     per_dataset = {}
     seed_gains = {int(seed): [] for seed in spec["paired_seeds"]}
     parameter_counts = set()
@@ -536,7 +654,9 @@ def _candidate_summary(spec: dict, manifest: dict, group_name: str,
         return {
             "physical_family": group_name,
             "optimization_id": str(recipe["id"]),
-            "optimization_recipe_json": json.dumps(recipe, sort_keys=True),
+            "optimization_recipe_json": json.dumps(
+                resolved_recipe, sort_keys=True
+            ),
             "eligible": False,
             "status": "invalid_numerical_instability",
             "ineligible_datasets_json": json.dumps(sorted({
@@ -608,7 +728,9 @@ def _candidate_summary(spec: dict, manifest: dict, group_name: str,
     return {
         "physical_family": group_name,
         "optimization_id": str(recipe["id"]),
-        "optimization_recipe_json": json.dumps(recipe, sort_keys=True),
+        "optimization_recipe_json": json.dumps(
+            resolved_recipe, sort_keys=True
+        ),
         "eligible": True,
         "status": "",
         "ineligible_datasets_json": "[]",
