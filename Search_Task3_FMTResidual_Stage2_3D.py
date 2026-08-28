@@ -33,7 +33,8 @@ from Verify_Task3_FMTClassifier import (
     _normalize_train_only,
     _stack_split,
 )
-from Verify_Task3_FMTResidual import _train_one
+from FMT_Utils.PathlineClassifier_3D import PathlineFMTResidualClassifier3D
+from Verify_Task3_FMTResidual import _load_raw_model, _train_one
 
 
 def _selection_path(spec: dict, stage: int) -> Path:
@@ -102,6 +103,110 @@ def _result_path(spec: dict, candidate: dict, dataset: str,
     )
 
 
+def _parameter_budget_status(spec: dict, group: dict, candidate: dict,
+                             dataset: str, fmt_dim: int) -> dict:
+    """Preflight a stage-2 architecture against the frozen Raw-wide cap.
+
+    Feature concatenations change ``fmt_dim`` and therefore the residual
+    parameter count.  A Cartesian network grid can consequently contain
+    structurally inadmissible feature/network pairs even though both grid
+    axes are valid in isolation.  Check every paired seed before training so
+    these pairs are recorded as ineligible rather than failing mid-array.
+    """
+    total_counts = []
+    trainable_counts = []
+    for seed_value in spec["stage2_screen_seeds"]:
+        seed = int(seed_value)
+        checkpoint = (
+            Path(group["raw_checkpoint_dir"])
+            / f"{dataset}_raw_seed{seed}.pt"
+        )
+        raw_model, _ = _load_raw_model(
+            checkpoint, int(fmt_dim), torch.device("cpu")
+        )
+        model = PathlineFMTResidualClassifier3D(
+            raw_model,
+            fmt_dim=int(fmt_dim),
+            embedding_dim=int(candidate.get("embedding_dim", 128)),
+            auxiliary_dim=int(candidate.get("auxiliary_dim", 64)),
+            residual_input=str(candidate.get("residual_input", "geometry_fmt")),
+        )
+        total_counts.append(sum(
+            parameter.numel() for parameter in model.parameters()
+        ))
+        trainable_counts.append(sum(
+            parameter.numel() for parameter in model.parameters()
+            if parameter.requires_grad
+        ))
+    if len(set(total_counts)) != 1 or len(set(trainable_counts)) != 1:
+        raise RuntimeError(
+            f"parameter counts differ across paired seeds for "
+            f"{candidate['id']}/{dataset}: total={total_counts}, "
+            f"trainable={trainable_counts}"
+        )
+    total = int(total_counts[0])
+    trainable = int(trainable_counts[0])
+    limit = int(spec["raw_wide_parameter_count"])
+    return {
+        "eligible": bool(total < limit),
+        "total_parameter_count": total,
+        "trainable_residual_parameter_count": trainable,
+        "raw_wide_parameter_count": limit,
+        "reason": (
+            "" if total < limit else
+            f"residual model has {total} parameters, not below Raw-wide {limit}"
+        ),
+    }
+
+
+def _write_ineligible_results(spec: dict, candidate: dict, dataset: str,
+                              fmt_dim: int, budget: dict) -> Path:
+    """Write one auditable sentinel for every skipped paired run."""
+    if bool(budget["eligible"]):
+        raise ValueError("eligible candidates must not be written as ineligible")
+    last_path = None
+    for seed_value in spec["stage2_screen_seeds"]:
+        seed = int(seed_value)
+        for source in ("fmt", "raw_pca"):
+            result_path = _result_path(spec, candidate, dataset, seed, source)
+            existing = _read_csv(result_path)
+            if len(existing) > 1:
+                raise RuntimeError(f"duplicate stage2 result: {result_path}")
+            expected = {
+                "dataset": dataset,
+                "variant": "invalid_parameter_budget",
+                "seed": seed,
+                "status": "invalid_parameter_budget",
+                "invalid_reason": str(budget["reason"]),
+                "parameter_count": int(budget["total_parameter_count"]),
+                "trainable_residual_parameter_count": int(
+                    budget["trainable_residual_parameter_count"]
+                ),
+                "raw_wide_parameter_count": int(
+                    budget["raw_wide_parameter_count"]
+                ),
+                "auxiliary_source": source,
+                "candidate_id": candidate["id"],
+                "network_id": candidate["network_id"],
+                "feature_candidate_id": candidate["feature_candidate_id"],
+                "fmt_feature": candidate["fmt_feature"],
+                "fmt_dim": int(fmt_dim),
+                "reused_from_stage1": False,
+            }
+            if existing:
+                observed = existing[0]
+                for key, value in expected.items():
+                    if str(observed.get(key, "")) != str(value):
+                        raise RuntimeError(
+                            f"ineligible sentinel changed for {result_path}: {key}"
+                        )
+            else:
+                result_path.parent.mkdir(parents=True, exist_ok=True)
+                _append_csv(result_path, expected)
+            last_path = result_path
+    return last_path
+
+
 def _stage1_result_path(spec: dict, candidate: dict, dataset: str,
                         seed: int, source: str) -> Path:
     return (
@@ -168,6 +273,17 @@ def run_candidate(config_path: str, dataset: str,
     fmt_dim = int(train[1].shape[1])
     if fmt_dim > train[0].reshape(len(train[0]), -1).shape[1]:
         raise ValueError(f"Raw-PCA cannot match {fmt_dim} FMT dimensions")
+    budget = _parameter_budget_status(
+        spec, group, candidate, dataset, fmt_dim
+    )
+    if not budget["eligible"]:
+        print(
+            f"INELIGIBLE {candidate['id']} {dataset}: {budget['reason']}",
+            flush=True,
+        )
+        return _write_ineligible_results(
+            spec, candidate, dataset, fmt_dim, budget
+        )
     last_path = None
     for seed_value in spec["stage2_screen_seeds"]:
         seed = int(seed_value)
@@ -267,12 +383,10 @@ def _candidate_summary(spec: dict, group_name: str, candidate: dict) -> dict:
     datasets = spec["groups"][group_name]["datasets"]
     seeds = [int(value) for value in spec["stage2_screen_seeds"]]
     metrics = ("f1", "average_precision")
-    per_dataset = {}
-    seed_gains = {seed: [] for seed in seeds}
+    result_rows = {}
+    ineligible = []
     for dataset in datasets:
-        per_seed = {}
         for seed in seeds:
-            rows = {}
             for source in ("fmt", "raw_pca"):
                 values = _read_csv(_result_path(
                     spec, candidate, dataset, seed, source
@@ -282,7 +396,57 @@ def _candidate_summary(spec: dict, group_name: str, candidate: dict) -> dict:
                         f"incomplete Task3 stage2 {candidate['id']}/{dataset}/"
                         f"seed={seed}/{source}"
                     )
-                rows[source] = values[0]
+                row = values[0]
+                status = str(row.get("status", ""))
+                if status and status != "invalid_parameter_budget":
+                    raise RuntimeError(
+                        f"unknown stage2 status {status!r} for "
+                        f"{candidate['id']}/{dataset}/seed={seed}/{source}"
+                    )
+                if status == "invalid_parameter_budget":
+                    ineligible.append({
+                        "dataset": dataset,
+                        "seed": seed,
+                        "source": source,
+                        "reason": str(row["invalid_reason"]),
+                        "parameter_count": int(row["parameter_count"]),
+                        "raw_wide_parameter_count": int(
+                            row["raw_wide_parameter_count"]
+                        ),
+                    })
+                result_rows[(dataset, seed, source)] = row
+    if ineligible:
+        affected = sorted({row["dataset"] for row in ineligible})
+        for dataset in affected:
+            observed = [
+                row for row in ineligible if row["dataset"] == dataset
+            ]
+            expected = len(seeds) * 2
+            if len(observed) != expected:
+                raise RuntimeError(
+                    f"partial parameter-budget sentinels for "
+                    f"{candidate['id']}/{dataset}: {len(observed)}/{expected}"
+                )
+        reasons = sorted({row["reason"] for row in ineligible})
+        return {
+            "group": group_name,
+            "candidate_id": candidate["id"],
+            "feature_candidate_id": candidate["feature_candidate_id"],
+            "network_id": candidate["network_id"],
+            "fmt_feature": candidate["fmt_feature"],
+            "eligible": False,
+            "ineligible_datasets_json": json.dumps(affected),
+            "ineligible_reasons_json": json.dumps(reasons),
+        }
+    per_dataset = {}
+    seed_gains = {seed: [] for seed in seeds}
+    for dataset in datasets:
+        per_seed = {}
+        for seed in seeds:
+            rows = {
+                source: result_rows[(dataset, seed, source)]
+                for source in ("fmt", "raw_pca")
+            }
             if {
                 int(rows[source]["trainable_residual_parameter_count"])
                 for source in ("fmt", "raw_pca")
@@ -349,6 +513,9 @@ def _candidate_summary(spec: dict, group_name: str, candidate: dict) -> dict:
         "feature_candidate_id": candidate["feature_candidate_id"],
         "network_id": candidate["network_id"],
         "fmt_feature": candidate["fmt_feature"],
+        "eligible": True,
+        "ineligible_datasets_json": "[]",
+        "ineligible_reasons_json": "[]",
         "fmt_f1_macro": macro["fmt"]["f1"],
         "raw_pca_f1_macro": macro["raw_pca"]["f1"],
         "strong_raw_f1_macro": macro["strong_raw"]["f1"],
@@ -376,14 +543,23 @@ def select(config_path: str) -> Path:
             _candidate_summary(spec, group_name, candidate)
             for candidate in _stage2_candidates(spec, group_name)
         ]
+        eligible = [row for row in rows if bool(row["eligible"])]
+        if not eligible:
+            raise RuntimeError(
+                f"all Task3 stage2 candidates are ineligible for {group_name}"
+            )
         ranked = sorted(
-            rows,
+            eligible,
             key=_selection_key,
             reverse=True,
         )
         for rank, row in enumerate(ranked, 1):
             row["rank_within_group"] = rank
             leaderboard.append(row)
+        for row in rows:
+            if not bool(row["eligible"]):
+                row["rank_within_group"] = ""
+                leaderboard.append(row)
         primary[group_name] = ranked[0]
     output = Path(spec["output_root"])
     _write_csv(output / "stage2_leaderboard.csv", leaderboard)

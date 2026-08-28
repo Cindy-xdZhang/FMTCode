@@ -19,7 +19,13 @@ from Search_Task3_FMTResidual_3D import (
     _load_search_splits,
     _load_spec,
 )
-from Search_Task3_FMTResidual_Stage2_3D import _decode_job as decode_stage2
+from Search_Task3_FMTResidual_Stage2_3D import (
+    _candidate_summary,
+    _decode_job as decode_stage2,
+    _parameter_budget_status,
+    _write_ineligible_results,
+)
+from FMT_Utils.PathlineClassifier_3D import PathlineBinaryClassifier3D
 from Verify_Task3_FMTClassifier import _normalize_train_only
 
 
@@ -81,6 +87,55 @@ def test_5_2_config_cartesian_products_and_exposed_populations_are_frozen():
     assert spec["exposed_training"]["seed_grid_phase"] != (
         spec["robust_validation"]["seed_grid_phase"]
     )
+
+
+def test_stage2_parameter_budget_excludes_only_structurally_invalid_pairs(
+        monkeypatch, tmp_path):
+    def fake_load_raw_model(path, fmt_dim, device):
+        return PathlineBinaryClassifier3D("raw", fmt_dim=fmt_dim), {}
+
+    monkeypatch.setattr(
+        "Search_Task3_FMTResidual_Stage2_3D._load_raw_model",
+        fake_load_raw_model,
+    )
+    spec = {
+        "stage2_screen_seeds": [40, 41, 42],
+        "raw_wide_parameter_count": 148225,
+        "output_root": str(tmp_path),
+        "groups": {"deltaWing": {"datasets": ["delta"]}},
+    }
+    group = {"raw_checkpoint_dir": str(tmp_path / "checkpoints")}
+    feature = {
+        "id": "c17__n05",
+        "network_id": "n05",
+        "feature_candidate_id": "c17",
+        "fmt_feature": "fmt_all+aivd2w8",
+        "residual_input": "dual",
+        "auxiliary_dim": 96,
+    }
+    invalid = _parameter_budget_status(spec, group, feature, "delta", 171)
+    assert invalid["eligible"] is False
+    assert invalid["total_parameter_count"] == 148611
+    feature["id"] = "c17__n04"
+    feature["network_id"] = "n04"
+    feature["residual_input"] = "fmt_only"
+    valid = _parameter_budget_status(spec, group, feature, "delta", 171)
+    assert valid["eligible"] is True
+    assert valid["total_parameter_count"] == 119426
+
+    feature.update({
+        "id": "c17__n05", "network_id": "n05", "residual_input": "dual"
+    })
+    last = _write_ineligible_results(spec, feature, "delta", 171, invalid)
+    assert last.exists()
+    assert len(list(tmp_path.rglob("per_run.csv"))) == 6
+    # Re-running a failed array index is idempotent and does not duplicate rows.
+    _write_ineligible_results(spec, feature, "delta", 171, invalid)
+    assert all(len(path.read_text(encoding="utf-8").splitlines()) == 2
+               for path in tmp_path.rglob("per_run.csv"))
+    summary = _candidate_summary(spec, "deltaWing", feature)
+    assert summary["eligible"] is False
+    assert json.loads(summary["ineligible_datasets_json"]) == ["delta"]
 
 
 def test_5_2_search_appends_only_declared_exposed_populations(tmp_path):
