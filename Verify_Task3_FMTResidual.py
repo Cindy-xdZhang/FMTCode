@@ -14,6 +14,7 @@ import torch
 from sklearn.decomposition import PCA
 from sklearn.metrics import average_precision_score
 from torch import nn
+from torch.nn import functional as F
 import yaml
 
 from FMT_Utils.PathlineClassifier_3D import (
@@ -157,6 +158,65 @@ def _select_alpha(targets, raw_logits, residual_logits, alpha_grid,
 def _probabilities(raw_logits, residual_logits, alpha):
     logits = raw_logits + float(alpha) * residual_logits
     return 1.0 / (1.0 + np.exp(-np.clip(logits, -40.0, 40.0)))
+
+
+class _WeightedFocalBCEWithLogitsLoss(nn.Module):
+    """Class-weighted binary cross entropy with optional focal modulation.
+
+    ``gamma=0`` is exactly weighted BCE.  Keeping both cases in one
+    implementation makes the Task3 optimization search change only the
+    declared loss recipe while preserving the same positive-class weighting
+    rule for the paired FMT and Raw-PCA arms.
+    """
+
+    def __init__(self, pos_weight: float, gamma: float = 0.0):
+        super().__init__()
+        if not np.isfinite(pos_weight) or float(pos_weight) <= 0.0:
+            raise ValueError("pos_weight must be finite and positive")
+        if not np.isfinite(gamma) or float(gamma) < 0.0:
+            raise ValueError("focal gamma must be finite and non-negative")
+        self.register_buffer(
+            "pos_weight", torch.tensor(float(pos_weight), dtype=torch.float32)
+        )
+        self.gamma = float(gamma)
+
+    def forward(self, logits, targets):
+        loss = F.binary_cross_entropy_with_logits(
+            logits, targets, pos_weight=self.pos_weight, reduction="none"
+        )
+        if self.gamma > 0.0:
+            probabilities = torch.sigmoid(logits)
+            probability_of_target = (
+                targets * probabilities + (1.0 - targets) * (1.0 - probabilities)
+            )
+            loss = loss * (1.0 - probability_of_target).pow(self.gamma)
+        return loss.mean()
+
+
+def _build_training_loss(training: dict, positive: float, negative: float,
+                         device: torch.device):
+    """Build the declared paired Task3 loss and return its audit metadata."""
+    if positive <= 0.0 or negative <= 0.0:
+        raise ValueError("Task3 training labels must contain both classes")
+    name = str(training.get("loss", "weighted_bce")).lower()
+    if name not in {"weighted_bce", "focal"}:
+        raise ValueError("training.loss must be 'weighted_bce' or 'focal'")
+    scale = float(training.get("positive_weight_scale", 1.0))
+    if not np.isfinite(scale) or scale <= 0.0:
+        raise ValueError("positive_weight_scale must be finite and positive")
+    gamma = float(training.get("focal_gamma", 0.0 if name == "weighted_bce" else 2.0))
+    if name == "weighted_bce" and gamma != 0.0:
+        raise ValueError("weighted_bce requires focal_gamma=0")
+    positive_weight = (negative / positive) * scale
+    criterion = _WeightedFocalBCEWithLogitsLoss(
+        pos_weight=positive_weight, gamma=gamma
+    ).to(device)
+    return criterion, {
+        "loss": name,
+        "positive_weight_scale": scale,
+        "positive_weight": positive_weight,
+        "focal_gamma": gamma,
+    }
 
 
 def _apply_raw_pca_transform(raw, transform):
@@ -326,14 +386,31 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         )
     positive = float(train[2].sum())
     negative = float(len(train[2]) - positive)
-    criterion = nn.BCEWithLogitsLoss(
-        pos_weight=torch.tensor(negative / positive, device=device)
+    criterion, loss_metadata = _build_training_loss(
+        spec["training"], positive, negative, device
     )
     optimizer = torch.optim.AdamW(
         [parameter for parameter in model.parameters() if parameter.requires_grad],
         lr=float(spec["training"]["learning_rate"]),
         weight_decay=float(spec["training"]["weight_decay"]),
     )
+    scheduler_name = str(spec["training"].get("scheduler", "none")).lower()
+    if scheduler_name == "none":
+        scheduler = None
+    elif scheduler_name == "cosine":
+        minimum_ratio = float(spec["training"].get("minimum_learning_rate_ratio", 0.05))
+        if not 0.0 <= minimum_ratio <= 1.0:
+            raise ValueError("minimum_learning_rate_ratio must be in [0, 1]")
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=int(spec["training"]["max_epochs"]),
+            eta_min=float(spec["training"]["learning_rate"]) * minimum_ratio,
+        )
+    else:
+        raise ValueError("training.scheduler must be 'none' or 'cosine'")
+    training_alpha = float(spec["training"].get("training_alpha", 1.0))
+    if not np.isfinite(training_alpha) or training_alpha <= 0.0:
+        raise ValueError("training_alpha must be finite and positive")
     if "fixed_alpha" in spec["fusion"]:
         alpha_grid = np.asarray(
             [float(spec["fusion"]["fixed_alpha"])], dtype=np.float64
@@ -371,13 +448,16 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             logits = model(
                 raw.to(device, non_blocking=True),
                 fmt.to(device, non_blocking=True),
-                alpha=1.0,
+                alpha=training_alpha,
             )
             loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
             total_loss += float(loss.detach()) * len(labels)
             count += len(labels)
+        current_learning_rate = float(optimizer.param_groups[0]["lr"])
+        if scheduler is not None:
+            scheduler.step()
         val_targets, val_raw, val_residual = _predict_components(
             model, validation_loader, device
         )
@@ -414,6 +494,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             "validation_f1": selected_metrics["f1"],
             "validation_alpha": alpha, "is_best": int(improved),
             "stale_epochs": stale,
+            "learning_rate": current_learning_rate,
+            "training_alpha": training_alpha,
+            **loss_metadata,
         })
         print(
             f"{dataset} {variant} seed={seed} epoch={epoch + 1:02d} "
@@ -459,6 +542,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "selection_baseline": selection_baseline,
         "auxiliary_source": auxiliary_source,
         "auxiliary_transform": auxiliary_transform,
+        "loss_metadata": loss_metadata,
+        "scheduler": scheduler_name,
+        "training_alpha": training_alpha,
     }, checkpoint_path)
     result = {
         "dataset": dataset, "variant": variant, "seed": seed,
@@ -474,6 +560,12 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             else auxiliary_transform["explained_variance_ratio_sum"]
         ),
         "validation_threshold": threshold,
+        "training_loss": loss_metadata["loss"],
+        "training_positive_weight_scale": loss_metadata["positive_weight_scale"],
+        "training_positive_weight": loss_metadata["positive_weight"],
+        "training_focal_gamma": loss_metadata["focal_gamma"],
+        "training_scheduler": scheduler_name,
+        "training_alpha": training_alpha,
         "train_positive_fraction": float(train[2].mean()),
         "validation_positive_fraction": float(validation[2].mean()),
         **{f"validation_{key}": value for key, value in val_metrics.items()},

@@ -1,0 +1,69 @@
+experiment: Verify_Task3_LossOptimization_7.1
+output_root: outputs/Verify_Task3_LossOptimization_7.1
+task: Task3
+
+# 5.2 uses only already exposed development populations.  Its selector is an
+# upstream dependency; the 7.1 preflight freezes the resulting file hash before
+# any paired training starts.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+# Combine the family-specific 5.2 feature/route/fusion choice with the global
+# architecture winner from Verify_Task3_NetworkArchitecture_6.1.
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+
+# Every recipe is applied unchanged to both the FMT and train-only Raw-PCA arm.
+# This is a one-factor search around o00, plus three explicitly declared
+# interaction candidates.  No test/confirmation population is used.
+optimization_candidates:
+  - {id: o00_control}
+  - {id: o01_posweight035, training: {positive_weight_scale: 0.35}}
+  - {id: o02_posweight050, training: {positive_weight_scale: 0.50}}
+  - {id: o03_posweight075, training: {positive_weight_scale: 0.75}}
+  - {id: o04_posweight125, training: {positive_weight_scale: 1.25}}
+  - {id: o05_posweight150, training: {positive_weight_scale: 1.50}}
+  - {id: o06_posweight200, training: {positive_weight_scale: 2.00}}
+  - {id: o07_focal_g05, training: {loss: focal, focal_gamma: 0.5}}
+  - {id: o08_focal_g10, training: {loss: focal, focal_gamma: 1.0}}
+  - {id: o09_focal_g20, training: {loss: focal, focal_gamma: 2.0}}
+  - {id: o10_focal_g30, training: {loss: focal, focal_gamma: 3.0}}
+  - {id: o11_dropout010, model: {head_dropout: 0.10}}
+  - {id: o12_dropout020, model: {head_dropout: 0.20}}
+  - {id: o13_weightdecay0, training: {weight_decay: 0.0}}
+  - {id: o14_weightdecay1e5, training: {weight_decay: 0.00001}}
+  - {id: o15_weightdecay1e3, training: {weight_decay: 0.001}}
+  - {id: o16_trainalpha200, training: {training_alpha: 2.0}}
+  - {id: o17_trainalpha300, training: {training_alpha: 3.0}}
+  - {id: o18_cosine, training: {scheduler: cosine,
+                                minimum_learning_rate_ratio: 0.05}}
+  - {id: o19_batch256, training: {batch_size: 256}}
+  - {id: o20_batch1024, training: {batch_size: 1024}}
+  - {id: o21_long160, training: {max_epochs: 160, patience: 30}}
+  - {id: o22_pos075_cosine,
+     training: {positive_weight_scale: 0.75, scheduler: cosine,
+                minimum_learning_rate_ratio: 0.05}}
+  - {id: o23_focal1_cosine,
+     training: {loss: focal, focal_gamma: 1.0, scheduler: cosine,
+                minimum_learning_rate_ratio: 0.05}}
+  - {id: o24_dropout1_cosine_long,
+     model: {head_dropout: 0.10},
+     training: {scheduler: cosine, minimum_learning_rate_ratio: 0.05,
+                max_epochs: 160, patience: 30}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  target_dataset_macro_f1_gain: 0.15
+  confirmation_opened: false
