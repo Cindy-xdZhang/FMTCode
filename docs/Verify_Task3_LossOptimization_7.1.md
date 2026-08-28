@@ -11,7 +11,9 @@
   `mainExp_Task3_3D_5.1` 已公开 validation 空间 population。
 - 不读取、生成或评估 `mainExp_Task3_3D_5.2` final population。
 - 上游为 `Verify_Task3_SpatialRobust_5.2` Stage2 development selection。Ibex
-  preflight 在任何训练开始前记录该文件的 SHA-256；之后若文件改变，所有 child 拒绝运行。
+preflight 在任何训练开始前记录该文件的 SHA-256；之后若文件改变，所有 child 拒绝运行。
+基础 YAML 的身份哈希先将文本换行标准化为 LF，避免 Windows CRLF 与 Linux LF 使同一
+Git 内容产生不同身份；运行时生成的 selection/manifest 仍使用原始字节 SHA-256。
 - 使用 `Verify_Task3_NetworkArchitecture_6.1` 胜出的 two-hidden-layer 64-unit deep
   multilayer perceptron residual head。
 - 每个候选对 FMT 与 Raw-PCA 两臂使用相同 optimizer、loss、batch size、training

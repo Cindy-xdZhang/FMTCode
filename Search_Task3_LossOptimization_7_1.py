@@ -43,6 +43,13 @@ def _sha256(path: str | Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def _canonical_text_sha256(path: str | Path) -> str:
+    """Hash text with LF newlines so Git content is OS-independent."""
+    text = Path(path).read_text(encoding="utf-8")
+    canonical = text.replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def _load_optimization_spec(path: str | Path) -> dict:
     path = Path(path)
     overlay = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -55,7 +62,7 @@ def _load_optimization_spec(path: str | Path) -> dict:
     if missing:
         raise ValueError(f"missing optimization config keys: {missing}")
     base_path = Path(overlay["base_search_config"])
-    base_hash = _sha256(base_path)
+    base_hash = _canonical_text_sha256(base_path)
     if base_hash != str(overlay["base_search_config_sha256"]).lower():
         raise RuntimeError("base Task3 development config changed")
     base = _load_spec(base_path)

@@ -5,6 +5,7 @@ import torch
 from torch.nn import functional as F
 
 from Search_Task3_LossOptimization_7_1 import (
+    _canonical_text_sha256,
     _load_optimization_spec,
     _optimization_candidate,
 )
@@ -65,6 +66,14 @@ def test_optimization_config_is_paired_and_does_not_open_confirmation():
     assert spec["paired_seeds"] == [40, 41, 42]
     assert spec["optimization_selection"]["confirmation_opened"] is False
     assert spec["model_override"]["head_architecture"] == "deep_mlp"
+
+
+def test_base_config_hash_is_independent_of_newline_style(tmp_path):
+    lf = tmp_path / "lf.yaml"
+    crlf = tmp_path / "crlf.yaml"
+    lf.write_bytes(b"alpha: 1\nbeta: 2\n")
+    crlf.write_bytes(b"alpha: 1\r\nbeta: 2\r\n")
+    assert _canonical_text_sha256(lf) == _canonical_text_sha256(crlf)
 
 
 def test_recipe_merges_upstream_training_and_model_without_arm_specific_keys():
