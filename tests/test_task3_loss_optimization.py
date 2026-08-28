@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -6,8 +7,11 @@ from torch.nn import functional as F
 
 from Search_Task3_LossOptimization_7_1 import (
     _canonical_text_sha256,
+    _is_numerical_instability,
+    _load_numerical_instability,
     _load_optimization_spec,
     _optimization_candidate,
+    _write_numerical_instability,
 )
 from Verify_Task3_FMTResidual import _build_training_loss
 
@@ -99,3 +103,58 @@ def test_recipe_merges_upstream_training_and_model_without_arm_specific_keys():
     assert candidate["training"]["positive_weight_scale"] == pytest.approx(0.75)
     assert candidate["head_architecture"] == "deep_mlp"
     assert "auxiliary_source" not in candidate
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        FloatingPointError("non-finite training gradient"),
+        ValueError("Input contains NaN."),
+        ValueError("array contains inf"),
+        ValueError("Input contains infinity"),
+    ],
+)
+def test_numerical_instability_errors_are_explicitly_classified(error):
+    assert _is_numerical_instability(error)
+
+
+def test_unrelated_value_error_is_not_silently_downgraded():
+    assert not _is_numerical_instability(ValueError("wrong tensor shape"))
+
+
+def test_numerical_instability_marker_is_hash_bound_and_idempotent(tmp_path):
+    manifest_path = tmp_path / "preflight_manifest.json"
+    manifest_path.write_text("{}\n", encoding="utf-8")
+    spec = {
+        "output_root": str(tmp_path),
+        "optimization_config_sha256": "optimization-hash",
+    }
+    manifest = {"upstream_selection_sha256": "selection-hash"}
+    candidate = {"id": "o07_focal_g05"}
+
+    marker = _write_numerical_instability(
+        spec, manifest, candidate, "cylinder3d", 40, "fmt",
+        FloatingPointError("non-finite residual validation logits"),
+    )
+    first_text = marker.read_text(encoding="utf-8")
+    loaded = _load_numerical_instability(
+        spec, manifest, candidate, "cylinder3d"
+    )
+    assert loaded["status"] == "invalid_numerical_instability"
+    assert loaded["failed_seed"] == 40
+    assert loaded["failed_source"] == "fmt"
+
+    repeated = _write_numerical_instability(
+        spec, manifest, candidate, "cylinder3d", 41, "raw_pca",
+        FloatingPointError("second failure must not rewrite evidence"),
+    )
+    assert repeated == marker
+    assert marker.read_text(encoding="utf-8") == first_text
+
+    payload = json.loads(first_text)
+    payload["dataset"] = "tampered"
+    marker.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="marker changed"):
+        _load_numerical_instability(
+            spec, manifest, candidate, "cylinder3d"
+        )

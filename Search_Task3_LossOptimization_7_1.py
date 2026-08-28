@@ -313,6 +313,77 @@ def _result_path(spec: dict, candidate: dict, dataset: str,
     )
 
 
+def _numerical_instability_path(spec: dict, candidate: dict,
+                                dataset: str) -> Path:
+    return (
+        Path(spec["output_root"]) / "candidates" / str(candidate["id"])
+        / dataset / "invalid_numerical_instability.json"
+    )
+
+
+def _is_numerical_instability(error: BaseException) -> bool:
+    if isinstance(error, FloatingPointError):
+        return True
+    text = str(error).lower()
+    return isinstance(error, ValueError) and any(
+        token in text for token in (
+            "input contains nan", "non-finite", "not finite", "contains inf",
+            "infinity",
+        )
+    )
+
+
+def _load_numerical_instability(spec: dict, manifest: dict, candidate: dict,
+                                dataset: str) -> dict | None:
+    path = _numerical_instability_path(spec, candidate, dataset)
+    if not path.exists():
+        return None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    expected = {
+        "schema": 1,
+        "status": "invalid_numerical_instability",
+        "dataset": str(dataset),
+        "optimization_id": str(candidate["id"]),
+        "optimization_config_sha256": spec["optimization_config_sha256"],
+        "preflight_manifest_sha256": _sha256(_manifest_path(spec)),
+        "upstream_selection_sha256": manifest["upstream_selection_sha256"],
+    }
+    for key, value in expected.items():
+        if str(payload.get(key, "")).lower() != str(value).lower():
+            raise RuntimeError(
+                f"numerical-instability marker changed for {path}: {key}"
+            )
+    payload["path"] = str(path)
+    return payload
+
+
+def _write_numerical_instability(spec: dict, manifest: dict, candidate: dict,
+                                 dataset: str, seed: int, source: str,
+                                 error: BaseException) -> Path:
+    path = _numerical_instability_path(spec, candidate, dataset)
+    payload = {
+        "schema": 1,
+        "status": "invalid_numerical_instability",
+        "dataset": str(dataset),
+        "optimization_id": str(candidate["id"]),
+        "failed_seed": int(seed),
+        "failed_source": str(source),
+        "error_type": type(error).__name__,
+        "error_message": str(error),
+        "optimization_config_sha256": spec["optimization_config_sha256"],
+        "preflight_manifest_sha256": _sha256(_manifest_path(spec)),
+        "upstream_selection_sha256": manifest["upstream_selection_sha256"],
+    }
+    if path.exists():
+        _load_numerical_instability(spec, manifest, candidate, dataset)
+        return path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8"
+    )
+    return path
+
+
 def run_candidate(config_path: str, dataset: str,
                   candidate_index: int) -> Path:
     spec = _load_optimization_spec(config_path)
@@ -322,6 +393,16 @@ def run_candidate(config_path: str, dataset: str,
     candidate = _optimization_candidate(
         spec, manifest, dataset, candidate_index
     )
+    invalid = _load_numerical_instability(
+        spec, manifest, candidate, dataset
+    )
+    if invalid is not None:
+        print(
+            f"INELIGIBLE {candidate['id']} {dataset}: "
+            "invalid_numerical_instability",
+            flush=True,
+        )
+        return Path(invalid["path"])
     _, group = _group_for_dataset(spec, dataset)
     device_name = str(spec["training"].get("device", "auto"))
     device = torch.device(
@@ -371,10 +452,23 @@ def run_candidate(config_path: str, dataset: str,
             (path.parent / "config_snapshot.yaml").write_text(
                 yaml.safe_dump(run_spec, sort_keys=False), encoding="utf-8"
             )
-            row = _train_one(
-                run_spec, dataset, seed, (train, validation, None), stats,
-                device, path.parent,
-            )
+            try:
+                row = _train_one(
+                    run_spec, dataset, seed, (train, validation, None), stats,
+                    device, path.parent,
+                )
+            except (FloatingPointError, ValueError) as error:
+                if not _is_numerical_instability(error):
+                    raise
+                marker = _write_numerical_instability(
+                    spec, manifest, candidate, dataset, seed, source, error
+                )
+                print(
+                    f"INELIGIBLE {candidate['id']} {dataset} seed={seed} "
+                    f"{source}: invalid_numerical_instability: {error}",
+                    flush=True,
+                )
+                return marker
             row.update({
                 "optimization_id": candidate["optimization_id"],
                 "optimization_recipe_json": json.dumps(
@@ -428,6 +522,33 @@ def _candidate_summary(spec: dict, manifest: dict, group_name: str,
     per_dataset = {}
     seed_gains = {int(seed): [] for seed in spec["paired_seeds"]}
     parameter_counts = set()
+    instabilities = []
+    for dataset in datasets:
+        candidate = _optimization_candidate(
+            spec, manifest, dataset, recipe_index
+        )
+        marker = _load_numerical_instability(
+            spec, manifest, candidate, dataset
+        )
+        if marker is not None:
+            instabilities.append(marker)
+    if instabilities:
+        return {
+            "physical_family": group_name,
+            "optimization_id": str(recipe["id"]),
+            "optimization_recipe_json": json.dumps(recipe, sort_keys=True),
+            "eligible": False,
+            "status": "invalid_numerical_instability",
+            "ineligible_datasets_json": json.dumps(sorted({
+                row["dataset"] for row in instabilities
+            })),
+            "ineligible_reasons_json": json.dumps(sorted({
+                row["error_message"] for row in instabilities
+            })),
+            "instability_markers_json": json.dumps(
+                instabilities, sort_keys=True
+            ),
+        }
     for dataset in datasets:
         candidate = _optimization_candidate(
             spec, manifest, dataset, recipe_index
@@ -488,6 +609,11 @@ def _candidate_summary(spec: dict, manifest: dict, group_name: str,
         "physical_family": group_name,
         "optimization_id": str(recipe["id"]),
         "optimization_recipe_json": json.dumps(recipe, sort_keys=True),
+        "eligible": True,
+        "status": "",
+        "ineligible_datasets_json": "[]",
+        "ineligible_reasons_json": "[]",
+        "instability_markers_json": "[]",
         "dataset_macro_fmt_f1": float(np.mean([
             row["fmt"]["f1"] for row in per_dataset.values()
         ])),
@@ -527,17 +653,27 @@ def select(config_path: str) -> Path:
             _candidate_summary(spec, manifest, group_name, recipe)
             for recipe in spec["optimization_candidates"]
         ]
+        eligible = [row for row in rows if bool(row["eligible"])]
+        if not eligible:
+            raise RuntimeError(
+                f"all Task3 optimization candidates are ineligible for "
+                f"{group_name}"
+            )
         for key in required:
-            if any(key not in row for row in rows):
+            if any(key not in row for row in eligible):
                 raise KeyError(f"unknown optimization selection key {key!r}")
         ranked = sorted(
-            rows,
+            eligible,
             key=lambda row: tuple(float(row[key]) for key in required),
             reverse=True,
         )
         for rank, row in enumerate(ranked, 1):
             row["rank_within_family"] = rank
             leaderboard.append(row)
+        for row in rows:
+            if not bool(row["eligible"]):
+                row["rank_within_family"] = ""
+                leaderboard.append(row)
         primary[group_name] = ranked[0]
     output_root = Path(spec["output_root"])
     _write_csv(output_root / "optimization_leaderboard.csv", leaderboard)
@@ -574,6 +710,23 @@ def select(config_path: str) -> Path:
         "opened_only_exposed_development_populations": True,
         "confirmation_opened": False,
         "paired_seeds": spec["paired_seeds"],
+        "ineligible_candidates": [
+            {
+                "physical_family": row["physical_family"],
+                "optimization_id": row["optimization_id"],
+                "status": row["status"],
+                "ineligible_datasets_json": row[
+                    "ineligible_datasets_json"
+                ],
+                "ineligible_reasons_json": row[
+                    "ineligible_reasons_json"
+                ],
+                "instability_markers_json": row[
+                    "instability_markers_json"
+                ],
+            }
+            for row in leaderboard if not bool(row["eligible"])
+        ],
         "primary_by_group": primary,
         "development_dataset_macro_f1_gain_vs_raw_pca": f1_gain,
         "development_dataset_macro_ap_gain_vs_raw_pca": ap_gain,

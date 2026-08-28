@@ -68,10 +68,16 @@ def _predict_components(model, loader, device):
         targets.append(labels.numpy())
         raw_logits.append(raw_logit.cpu().numpy())
         residual_logits.append(residual_logit.cpu().numpy())
+    raw_logits = np.concatenate(raw_logits)
+    residual_logits = np.concatenate(residual_logits)
+    if not np.isfinite(raw_logits).all():
+        raise FloatingPointError("non-finite frozen Raw validation logits")
+    if not np.isfinite(residual_logits).all():
+        raise FloatingPointError("non-finite residual validation logits")
     return (
         np.concatenate(targets).astype(bool),
-        np.concatenate(raw_logits),
-        np.concatenate(residual_logits),
+        raw_logits,
+        residual_logits,
     )
 
 
@@ -451,7 +457,20 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
                 alpha=training_alpha,
             )
             loss = criterion(logits, labels)
+            if not bool(torch.isfinite(loss)):
+                raise FloatingPointError(
+                    f"non-finite training loss at epoch {epoch + 1}"
+                )
             loss.backward()
+            if any(
+                parameter.grad is not None
+                and not bool(torch.isfinite(parameter.grad).all())
+                for parameter in model.parameters()
+                if parameter.requires_grad
+            ):
+                raise FloatingPointError(
+                    f"non-finite training gradient at epoch {epoch + 1}"
+                )
             optimizer.step()
             total_loss += float(loss.detach()) * len(labels)
             count += len(labels)
