@@ -16,6 +16,7 @@ from Search_Task3_LossOptimization_7_1 import (
 )
 from Verify_Task3_FMTResidual import (
     _build_training_loss,
+    _paired_ranking_loss,
     _raw_hardness_weights,
     _raw_margin_residual_loss,
     _raw_margin_residual_targets,
@@ -26,6 +27,9 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config" / "Verify_Task3_LossOptimization_7.1.yaml"
 RESIDUAL_CORRECTION_CONFIG = (
     ROOT / "config" / "Verify_Task3_ResidualCorrection_9.1.yaml"
+)
+PAIRWISE_RANKING_CONFIG = (
+    ROOT / "config" / "Verify_Task3_PairwiseRanking_10.1.yaml"
 )
 
 
@@ -53,6 +57,9 @@ def test_weighted_bce_default_matches_torch_reference():
         "raw_margin_target": 1.0,
         "raw_margin_huber_delta": 1.0,
         "raw_margin_max_correction": 20.0,
+        "pairwise_ranking_loss_weight": 0.0,
+        "pairwise_ranking_margin": 0.0,
+        "pairwise_ranking_temperature": 1.0,
     }
 
 
@@ -204,6 +211,52 @@ def test_raw_margin_control_is_exact_zero_with_zero_gradient():
     assert torch.equal(residual_logits.grad, torch.zeros_like(residual_logits))
 
 
+def test_pairwise_ranking_rewards_correct_order_and_has_finite_gradient():
+    targets = torch.tensor([1.0, 1.0, 0.0, 0.0])
+    correct = torch.tensor([3.0, 2.0, -1.0, -2.0], requires_grad=True)
+    reversed_logits = torch.tensor(
+        [-2.0, -1.0, 2.0, 3.0], requires_grad=True
+    )
+    training = {
+        "pairwise_ranking_loss_weight": 0.3,
+        "pairwise_ranking_margin": 1.0,
+        "pairwise_ranking_temperature": 0.5,
+    }
+    correct_loss = _paired_ranking_loss(correct, targets, training)
+    reversed_loss = _paired_ranking_loss(reversed_logits, targets, training)
+    reversed_loss.backward()
+    assert correct_loss < reversed_loss
+    assert torch.isfinite(reversed_loss)
+    assert torch.isfinite(reversed_logits.grad).all()
+
+
+def test_pairwise_ranking_control_and_one_class_batches_are_exact_noops():
+    logits = torch.tensor([0.2, -0.4], requires_grad=True)
+    control = _paired_ranking_loss(
+        logits, torch.tensor([1.0, 0.0]), {}
+    )
+    one_class = _paired_ranking_loss(
+        logits,
+        torch.ones(2),
+        {"pairwise_ranking_loss_weight": 1.0},
+    )
+    (control + one_class).backward()
+    assert control == pytest.approx(0.0)
+    assert one_class == pytest.approx(0.0)
+    assert torch.equal(logits.grad, torch.zeros_like(logits))
+
+
+def test_pairwise_ranking_mean_one_weights_preserve_constant_weight_loss():
+    logits = torch.tensor([1.0, 0.0, -1.0])
+    targets = torch.tensor([1.0, 0.0, 0.0])
+    training = {"pairwise_ranking_loss_weight": 0.1}
+    plain = _paired_ranking_loss(logits, targets, training)
+    weighted = _paired_ranking_loss(
+        logits, targets, training, sample_weights=torch.ones(3)
+    )
+    assert torch.equal(plain, weighted)
+
+
 @pytest.mark.parametrize(
     "training,match",
     [
@@ -215,6 +268,9 @@ def test_raw_margin_control_is_exact_zero_with_zero_gradient():
         ({"raw_margin_target": 0.0}, "raw_margin_target"),
         ({"raw_margin_huber_delta": 0.0}, "raw_margin_huber_delta"),
         ({"raw_margin_max_correction": 0.0}, "raw_margin_max_correction"),
+        ({"pairwise_ranking_loss_weight": -1.0}, "pairwise_ranking_loss_weight"),
+        ({"pairwise_ranking_margin": -1.0}, "pairwise_ranking_margin"),
+        ({"pairwise_ranking_temperature": 0.0}, "pairwise_ranking_temperature"),
     ],
 )
 def test_raw_hardness_rejects_invalid_hyperparameters(training, match):
@@ -250,6 +306,15 @@ def test_residual_correction_search_is_paired_and_array_bounds_match():
     assert spec["paired_seeds"] == [40, 41, 42]
     assert spec["optimization_selection"]["confirmation_opened"] is False
     assert _decode_job(spec, 129) == ("smokeBuoyancy", 12)
+
+
+def test_pairwise_ranking_search_is_paired_and_array_bounds_match():
+    spec = _load_optimization_spec(PAIRWISE_RANKING_CONFIG)
+    assert len(spec["datasets"]) == 10
+    assert len(spec["optimization_candidates"]) == 14
+    assert spec["paired_seeds"] == [40, 41, 42]
+    assert spec["optimization_selection"]["confirmation_opened"] is False
+    assert _decode_job(spec, 139) == ("smokeBuoyancy", 13)
 
 
 def test_base_config_hash_is_independent_of_newline_style(tmp_path):

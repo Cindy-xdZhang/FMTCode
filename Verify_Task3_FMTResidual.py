@@ -246,6 +246,13 @@ def _build_training_loss(training: dict, positive: float, negative: float,
     margin_max_correction = float(
         training.get("raw_margin_max_correction", 20.0)
     )
+    ranking_loss_weight = float(
+        training.get("pairwise_ranking_loss_weight", 0.0)
+    )
+    ranking_margin = float(training.get("pairwise_ranking_margin", 0.0))
+    ranking_temperature = float(
+        training.get("pairwise_ranking_temperature", 1.0)
+    )
     if not np.isfinite(hardness_scale) or hardness_scale < 0.0:
         raise ValueError("raw_hardness_scale must be finite and non-negative")
     if not np.isfinite(hardness_power) or hardness_power <= 0.0:
@@ -273,6 +280,18 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         raise ValueError(
             "raw_margin_max_correction must be finite and positive"
         )
+    if not np.isfinite(ranking_loss_weight) or ranking_loss_weight < 0.0:
+        raise ValueError(
+            "pairwise_ranking_loss_weight must be finite and non-negative"
+        )
+    if not np.isfinite(ranking_margin) or ranking_margin < 0.0:
+        raise ValueError(
+            "pairwise_ranking_margin must be finite and non-negative"
+        )
+    if not np.isfinite(ranking_temperature) or ranking_temperature <= 0.0:
+        raise ValueError(
+            "pairwise_ranking_temperature must be finite and positive"
+        )
     criterion = _WeightedFocalBCEWithLogitsLoss(
         pos_weight=positive_weight, gamma=gamma
     ).to(device)
@@ -289,6 +308,9 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         "raw_margin_target": margin_target,
         "raw_margin_huber_delta": margin_huber_delta,
         "raw_margin_max_correction": margin_max_correction,
+        "pairwise_ranking_loss_weight": ranking_loss_weight,
+        "pairwise_ranking_margin": ranking_margin,
+        "pairwise_ranking_temperature": ranking_temperature,
     }
 
 
@@ -365,6 +387,46 @@ def _raw_margin_residual_loss(raw_logits, residual_logits, targets, training,
             raise ValueError("sample_weights must match residual logits shape")
         loss = loss * sample_weights
     return weight * loss.mean()
+
+
+def _paired_ranking_loss(logits, targets, training, sample_weights=None):
+    """Encourage every positive logit to rank above every negative logit.
+
+    The smooth pairwise objective is applied identically to the FMT and
+    train-only Raw-PCA arms.  A zero weight is an exact no-op.  Mini-batches
+    containing only one class also contribute zero instead of making the
+    training result depend on an arbitrary fallback pair.
+    """
+    weight = float(training.get("pairwise_ranking_loss_weight", 0.0))
+    if weight == 0.0:
+        return logits.sum() * 0.0
+    positive_mask = targets >= 0.5
+    negative_mask = ~positive_mask
+    if not bool(positive_mask.any()) or not bool(negative_mask.any()):
+        return logits.sum() * 0.0
+    margin = float(training.get("pairwise_ranking_margin", 0.0))
+    temperature = float(training.get("pairwise_ranking_temperature", 1.0))
+    positive_logits = logits[positive_mask]
+    negative_logits = logits[negative_mask]
+    gaps = positive_logits[:, None] - negative_logits[None, :]
+    pair_loss = temperature * F.softplus(
+        (margin - gaps) / temperature
+    )
+    if sample_weights is not None:
+        sample_weights = torch.as_tensor(
+            sample_weights, dtype=logits.dtype, device=logits.device
+        )
+        if sample_weights.shape != logits.shape:
+            raise ValueError("sample_weights must match logits shape")
+        pair_weights = torch.sqrt(
+            sample_weights[positive_mask, None]
+            * sample_weights[None, negative_mask]
+        )
+        pair_weights = pair_weights / pair_weights.mean().clamp_min(
+            torch.finfo(pair_weights.dtype).tiny
+        )
+        pair_loss = pair_loss * pair_weights
+    return weight * pair_loss.mean()
 
 
 def _apply_raw_pca_transform(raw, transform):
@@ -616,7 +678,13 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
                 training_alpha,
                 sample_weights=sample_weights,
             )
-            loss = classification_loss + correction_loss
+            ranking_loss = _paired_ranking_loss(
+                logits,
+                labels,
+                spec["training"],
+                sample_weights=sample_weights,
+            )
+            loss = classification_loss + correction_loss + ranking_loss
             if not bool(torch.isfinite(loss)):
                 raise FloatingPointError(
                     f"non-finite training loss at epoch {epoch + 1}"
@@ -771,6 +839,15 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         ],
         "training_raw_margin_max_correction": loss_metadata[
             "raw_margin_max_correction"
+        ],
+        "training_pairwise_ranking_loss_weight": loss_metadata[
+            "pairwise_ranking_loss_weight"
+        ],
+        "training_pairwise_ranking_margin": loss_metadata[
+            "pairwise_ranking_margin"
+        ],
+        "training_pairwise_ranking_temperature": loss_metadata[
+            "pairwise_ranking_temperature"
         ],
         "training_scheduler": scheduler_name,
         "training_alpha": training_alpha,
