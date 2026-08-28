@@ -31,6 +31,7 @@ Task4 的背景类处理必须在首个实验前冻结：可以是预先分割�
 1. **数据拆分**：按时间片拆 train/validation/test；不得随机拆空间 seed。pathline source window 必须一起计入时间泄漏检查。
 2. **test 冻结**：test/confirmation 标签不得参与 feature 选择、cluster-to-class 映射、checkpoint、threshold、alpha 或超参数选择。
 3. **标签冻结**：IVD 定义、空间平均区域、阈值和边界处理必须写入 config；
+   - 当前论文中所有采用 whole-field IVD 二分类的 3D 实验统一固定为 **IVD p95**：Task1/Task2 将其用于评估，Task3/Task5 将其用于监督。依据 `Ablation_Task23IVDPercentile_1.2`，p95 在 p80、p85、p87.5、p90、p92.5、p95 的完整扫描中给出最大的 Task2 F1 增益以及 Task3 F1、Average Precision 增益。p80–p92.5 只作为标签敏感性分析；后续若改变阈值，必须建立新实验版本并与已有 p95 结果并列报告。
 4. **统一预处理**：normalization 只在 train 上拟合；Raw 与 FMT 的维度、缩放和邻居权重必须明确。
 5. **容量控制**：训练网络必须报告总参数和可训练参数；至少包含参数量更多的 Raw 或结构匹配的 Raw residual 对照。
 6. **重复实验**：神经网络至少 3 个训练 seed。KMeans 必须固定并报告 `random_state` 和 `n_init`。

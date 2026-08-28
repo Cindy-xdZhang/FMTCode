@@ -10,6 +10,8 @@
 
 当前研究范围包含 **3D Task1、Task2、Task3、Task5**；Task4 尚未开始。旧实验 ID 不因本协议改名。
 
+当前论文中所有采用 whole-field IVD 二分类的 3D 实验统一固定为 **IVD p95**：Task1/Task2 将其用于评估，Task3/Task5 将其用于监督。`Ablation_Task23IVDPercentile_1.2` 表明，在 p80、p85、p87.5、p90、p92.5、p95 的完整扫描中，p95 给出最大的 Task2 F1 增益以及 Task3 F1、Average Precision 增益；较低百分位只作为标签敏感性分析。任何后续阈值变更必须建立新实验版本，不得重写已有 p95 结果。
+
 完整定义和评测边界见 `docs/research_tasks_and_protocol.md`。
 
 ## 实验记录
