@@ -1,0 +1,54 @@
+experiment: Verify_Task3_NetworkArchitecture_6.1
+output_root: outputs/Verify_Task3_NetworkArchitecture_6.1
+task: Task3
+
+# Reuse only already-exposed development populations.  The hash prevents the
+# running 5.2 protocol from changing underneath this architecture-only search.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+
+# FMT recipes were frozen by the completed 5.1 development selection.  This
+# experiment changes only the trainable residual/fusion network structure.
+feature_selection: outputs/Verify_Task3_AnchoredRobust_5.1/stage2_selection.json
+feature_selection_sha256: 8341272e5984008cb0d39059f6fb84dbeea4251989b0a37040e931481968a2ab
+
+paired_seeds: [40, 41, 42]
+
+common_model:
+  embedding_dim: 128
+  auxiliary_dim: 64
+  residual_input: geometry_fmt
+  head_dropout: 0.0
+
+common_fusion:
+  alpha_min: 0.0
+  alpha_max: 6.0
+  alpha_steps: 121
+  selection_metric: minimum_gain
+  minimum_f1_gain: 0.0
+
+architectures:
+  - {id: a00_linear, head_architecture: linear,
+     head_hidden_dim: 64, head_depth: 1}
+  - {id: a01_shallow_mlp, head_architecture: mlp,
+     head_hidden_dim: 128, head_depth: 1}
+  - {id: a02_deep_mlp, head_architecture: deep_mlp,
+     head_hidden_dim: 64, head_depth: 2}
+  - {id: a03_residual_mlp, head_architecture: residual_mlp,
+     head_hidden_dim: 48, head_depth: 2}
+  - {id: a04_gated_fusion, head_architecture: gated_fusion,
+     head_hidden_dim: 64, head_depth: 1}
+  - {id: a05_bilinear_fusion, head_architecture: bilinear_fusion,
+     head_hidden_dim: 64, head_depth: 1, bilinear_rank: 32}
+  - {id: a06_attention_fusion, head_architecture: attention_fusion,
+     head_hidden_dim: 64, head_depth: 1, attention_heads: 4}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  target_dataset_macro_f1_gain: 0.15
+  confirmation_opened: false

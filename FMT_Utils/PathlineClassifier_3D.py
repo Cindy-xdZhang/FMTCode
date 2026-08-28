@@ -6,6 +6,147 @@ import torch
 from torch import nn
 
 
+class _ResidualMLPBlock(nn.Module):
+    def __init__(self, width, dropout=0.0):
+        super().__init__()
+        width = int(width)
+        self.network = nn.Sequential(
+            nn.LayerNorm(width),
+            nn.Linear(width, width),
+            nn.GELU(),
+            nn.Dropout(float(dropout)),
+            nn.Linear(width, width),
+            nn.Dropout(float(dropout)),
+        )
+
+    def forward(self, values):
+        return values + self.network(values)
+
+
+class _ResidualMLPHead(nn.Module):
+    def __init__(self, input_dim, hidden_dim, depth=2, dropout=0.0):
+        super().__init__()
+        if int(depth) < 1:
+            raise ValueError("residual MLP depth must be positive")
+        self.input_projection = nn.Sequential(
+            nn.Linear(int(input_dim), int(hidden_dim)),
+            nn.LayerNorm(int(hidden_dim)),
+            nn.GELU(),
+        )
+        self.blocks = nn.ModuleList([
+            _ResidualMLPBlock(hidden_dim, dropout) for _ in range(int(depth))
+        ])
+        self.output = nn.Sequential(
+            nn.LayerNorm(int(hidden_dim)), nn.Linear(int(hidden_dim), 1)
+        )
+
+    def forward(self, values):
+        values = self.input_projection(values)
+        for block in self.blocks:
+            values = block(values)
+        return self.output(values)
+
+
+class _GatedFusionHead(nn.Module):
+    def __init__(self, geometry_dim, auxiliary_dim, hidden_dim, dropout=0.0):
+        super().__init__()
+        geometry_dim = int(geometry_dim)
+        auxiliary_dim = int(auxiliary_dim)
+        hidden_dim = int(hidden_dim)
+        self.geometry_projection = nn.Linear(geometry_dim, hidden_dim)
+        self.auxiliary_projection = nn.Linear(auxiliary_dim, hidden_dim)
+        self.gate = nn.Linear(geometry_dim + auxiliary_dim, hidden_dim)
+        self.output = nn.Sequential(
+            nn.LayerNorm(hidden_dim),
+            nn.GELU(),
+            nn.Dropout(float(dropout)),
+            nn.Linear(hidden_dim, 1),
+        )
+
+    def forward(self, geometry, auxiliary):
+        geometry_hidden = self.geometry_projection(geometry)
+        auxiliary_hidden = self.auxiliary_projection(auxiliary)
+        gate = torch.sigmoid(self.gate(torch.cat((geometry, auxiliary), dim=-1)))
+        fused = gate * auxiliary_hidden + (1.0 - gate) * geometry_hidden
+        return self.output(fused)
+
+
+class _LowRankBilinearFusionHead(nn.Module):
+    def __init__(self, geometry_dim, auxiliary_dim, hidden_dim, rank,
+                 dropout=0.0):
+        super().__init__()
+        rank = int(rank)
+        if rank < 1:
+            raise ValueError("bilinear rank must be positive")
+        self.geometry_projection = nn.Linear(int(geometry_dim), rank)
+        self.auxiliary_projection = nn.Linear(int(auxiliary_dim), rank)
+        self.output = nn.Sequential(
+            nn.Linear(3 * rank, int(hidden_dim)),
+            nn.LayerNorm(int(hidden_dim)),
+            nn.GELU(),
+            nn.Dropout(float(dropout)),
+            nn.Linear(int(hidden_dim), 1),
+        )
+
+    def forward(self, geometry, auxiliary):
+        geometry_low_rank = self.geometry_projection(geometry)
+        auxiliary_low_rank = self.auxiliary_projection(auxiliary)
+        interaction = geometry_low_rank * auxiliary_low_rank
+        return self.output(torch.cat(
+            (geometry_low_rank, auxiliary_low_rank, interaction), dim=-1
+        ))
+
+
+class _AttentionFusionHead(nn.Module):
+    def __init__(self, geometry_dim, auxiliary_dim, hidden_dim, heads=4,
+                 dropout=0.0):
+        super().__init__()
+        hidden_dim = int(hidden_dim)
+        heads = int(heads)
+        if heads < 1 or hidden_dim % heads:
+            raise ValueError("attention hidden dimension must divide by heads")
+        self.geometry_projection = nn.Linear(int(geometry_dim), hidden_dim)
+        self.auxiliary_projection = nn.Linear(int(auxiliary_dim), hidden_dim)
+        self.attention = nn.MultiheadAttention(
+            hidden_dim, heads, dropout=float(dropout), batch_first=True
+        )
+        self.normalization = nn.LayerNorm(hidden_dim)
+        self.output = nn.Sequential(
+            nn.LayerNorm(hidden_dim),
+            nn.GELU(),
+            nn.Dropout(float(dropout)),
+            nn.Linear(hidden_dim, 1),
+        )
+
+    def forward(self, geometry, auxiliary):
+        tokens = torch.stack((
+            self.geometry_projection(geometry),
+            self.auxiliary_projection(auxiliary),
+        ), dim=1)
+        attended, _ = self.attention(
+            tokens, tokens, tokens, need_weights=False
+        )
+        tokens = self.normalization(tokens + attended)
+        return self.output(tokens.mean(dim=1))
+
+
+def _dense_head(input_dim, hidden_dim, depth, dropout):
+    if int(depth) < 1:
+        raise ValueError("dense MLP depth must be positive")
+    layers = []
+    current = int(input_dim)
+    for _ in range(int(depth)):
+        layers.extend((
+            nn.Linear(current, int(hidden_dim)),
+            nn.LayerNorm(int(hidden_dim)),
+            nn.GELU(),
+            nn.Dropout(float(dropout)),
+        ))
+        current = int(hidden_dim)
+    layers.append(nn.Linear(current, 1))
+    return nn.Sequential(*layers)
+
+
 class TemporalLineEncoder3D(nn.Module):
     """Encode each pathline with shared temporal convolutions.
 
@@ -131,8 +272,16 @@ class PathlineFMTResidualClassifier3D(nn.Module):
     incremental FMT information from changes to the raw geometry backbone.
     """
 
+    VALID_HEAD_ARCHITECTURES = {
+        "linear", "mlp", "deep_mlp", "residual_mlp", "gated_fusion",
+        "bilinear_fusion", "attention_fusion",
+    }
+
     def __init__(self, raw_model, fmt_dim=161, embedding_dim=128,
-                 auxiliary_dim=64, residual_input="geometry_fmt"):
+                 auxiliary_dim=64, residual_input="geometry_fmt",
+                 head_architecture="mlp", head_hidden_dim=None,
+                 head_depth=2, bilinear_rank=32, attention_heads=4,
+                 head_dropout=0.0):
         super().__init__()
         if not isinstance(raw_model, PathlineBinaryClassifier3D):
             raise TypeError("raw_model must be PathlineBinaryClassifier3D")
@@ -148,6 +297,24 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                 "residual_input must be 'geometry_fmt', 'fmt_only', or 'dual'"
             )
         self.residual_input = str(residual_input)
+        self.head_architecture = str(head_architecture)
+        if self.head_architecture not in self.VALID_HEAD_ARCHITECTURES:
+            raise ValueError(
+                f"unknown residual head architecture {self.head_architecture!r}"
+            )
+        fusion_architectures = {
+            "gated_fusion", "bilinear_fusion", "attention_fusion"
+        }
+        if (self.head_architecture in fusion_architectures
+                and self.residual_input != "geometry_fmt"):
+            raise ValueError(
+                f"{self.head_architecture} requires residual_input='geometry_fmt'"
+            )
+        hidden_dim = (
+            embedding_dim if head_hidden_dim is None else int(head_hidden_dim)
+        )
+        if hidden_dim < 1:
+            raise ValueError("head_hidden_dim must be positive")
         self.fmt_encoder = nn.Sequential(
             nn.Linear(int(fmt_dim), auxiliary_dim),
             nn.LayerNorm(auxiliary_dim),
@@ -157,12 +324,43 @@ class PathlineFMTResidualClassifier3D(nn.Module):
             embedding_dim + auxiliary_dim
             if self.residual_input in {"geometry_fmt", "dual"} else auxiliary_dim
         )
-        self.residual_head = nn.Sequential(
-            nn.Linear(residual_width, embedding_dim),
-            nn.LayerNorm(embedding_dim),
-            nn.GELU(),
-            nn.Linear(embedding_dim, 1),
-        )
+        self.fusion_head = None
+        if self.head_architecture == "linear":
+            self.residual_head = nn.Linear(residual_width, 1)
+        elif self.head_architecture == "mlp":
+            # Keep the historical default byte-for-byte compatible with old
+            # checkpoints: one embedding-width hidden layer and no Dropout.
+            self.residual_head = nn.Sequential(
+                nn.Linear(residual_width, embedding_dim),
+                nn.LayerNorm(embedding_dim),
+                nn.GELU(),
+                nn.Linear(embedding_dim, 1),
+            )
+        elif self.head_architecture == "deep_mlp":
+            self.residual_head = _dense_head(
+                residual_width, hidden_dim, head_depth, head_dropout
+            )
+        elif self.head_architecture == "residual_mlp":
+            self.residual_head = _ResidualMLPHead(
+                residual_width, hidden_dim, head_depth, head_dropout
+            )
+        elif self.head_architecture == "gated_fusion":
+            self.residual_head = None
+            self.fusion_head = _GatedFusionHead(
+                embedding_dim, auxiliary_dim, hidden_dim, head_dropout
+            )
+        elif self.head_architecture == "bilinear_fusion":
+            self.residual_head = None
+            self.fusion_head = _LowRankBilinearFusionHead(
+                embedding_dim, auxiliary_dim, hidden_dim, bilinear_rank,
+                head_dropout,
+            )
+        elif self.head_architecture == "attention_fusion":
+            self.residual_head = None
+            self.fusion_head = _AttentionFusionHead(
+                embedding_dim, auxiliary_dim, hidden_dim, attention_heads,
+                head_dropout,
+            )
         self.fmt_only_head = None
         if self.residual_input == "dual":
             self.fmt_only_head = nn.Sequential(
@@ -183,7 +381,11 @@ class PathlineFMTResidualClassifier3D(nn.Module):
             torch.cat((geometry.detach(), auxiliary), dim=-1)
             if self.residual_input in {"geometry_fmt", "dual"} else auxiliary
         )
-        residual_logit = self.residual_head(residual_input).squeeze(-1)
+        residual_logit = (
+            self.fusion_head(geometry.detach(), auxiliary).squeeze(-1)
+            if self.fusion_head is not None
+            else self.residual_head(residual_input).squeeze(-1)
+        )
         if self.fmt_only_head is not None:
             residual_logit = residual_logit + self.fmt_only_head(auxiliary).squeeze(-1)
         return raw_logit, residual_logit
@@ -191,6 +393,27 @@ class PathlineFMTResidualClassifier3D(nn.Module):
     def forward(self, pathlines, fmt_features, alpha=1.0):
         raw_logit, residual_logit = self.forward_components(pathlines, fmt_features)
         return raw_logit + float(alpha) * residual_logit
+
+
+def residual_model_kwargs(model_spec):
+    """Normalize checkpoint/config fields for residual model construction."""
+    return {
+        "embedding_dim": int(model_spec.get("embedding_dim", 128)),
+        "auxiliary_dim": int(model_spec.get("auxiliary_dim", 64)),
+        "residual_input": str(
+            model_spec.get("residual_input", "geometry_fmt")
+        ),
+        "head_architecture": str(
+            model_spec.get("head_architecture", "mlp")
+        ),
+        "head_hidden_dim": int(model_spec.get(
+            "head_hidden_dim", model_spec.get("embedding_dim", 128)
+        )),
+        "head_depth": int(model_spec.get("head_depth", 2)),
+        "bilinear_rank": int(model_spec.get("bilinear_rank", 32)),
+        "attention_heads": int(model_spec.get("attention_heads", 4)),
+        "head_dropout": float(model_spec.get("head_dropout", 0.0)),
+    }
 
 
 def trainable_parameter_count(model):

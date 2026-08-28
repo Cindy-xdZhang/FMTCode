@@ -19,6 +19,7 @@ import yaml
 
 from FMT_Utils.PathlineClassifier_3D import (
     PathlineBinaryClassifier3D, PathlineFMTResidualClassifier3D,
+    residual_model_kwargs,
 )
 from Verify_Task3_FMTClassifier import (
     _classification_metrics, _load_dataset, _loader, _predict, _stack_split,
@@ -108,9 +109,7 @@ def _load_residual(path, fmt_dim, device):
     model = PathlineFMTResidualClassifier3D(
         raw_model,
         fmt_dim=auxiliary_dim,
-        embedding_dim=model_spec["embedding_dim"],
-        auxiliary_dim=model_spec["auxiliary_dim"],
-        residual_input=model_spec.get("residual_input", "geometry_fmt"),
+        **residual_model_kwargs(model_spec),
     ).to(device)
     state = model.state_dict()
     state.update(checkpoint["residual_state_dict"])

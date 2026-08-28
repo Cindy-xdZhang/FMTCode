@@ -18,6 +18,7 @@ import yaml
 
 from FMT_Utils.PathlineClassifier_3D import (
     PathlineBinaryClassifier3D, PathlineFMTResidualClassifier3D,
+    residual_model_kwargs,
 )
 from Verify_Task3_FMTClassifier import (
     _append_csv, _classification_metrics, _config_without_seeds,
@@ -312,9 +313,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             )
     model = PathlineFMTResidualClassifier3D(
         raw_model, fmt_dim=train[1].shape[1],
-        embedding_dim=spec["model"]["embedding_dim"],
-        auxiliary_dim=spec["model"]["auxiliary_dim"],
-        residual_input=spec["model"].get("residual_input", "geometry_fmt"),
+        **residual_model_kwargs(spec["model"]),
     ).to(device)
     total_parameters = sum(parameter.numel() for parameter in model.parameters())
     trainable_parameters = sum(

@@ -33,7 +33,9 @@ from Verify_Task3_FMTClassifier import (
     _normalize_train_only,
     _stack_split,
 )
-from FMT_Utils.PathlineClassifier_3D import PathlineFMTResidualClassifier3D
+from FMT_Utils.PathlineClassifier_3D import (
+    PathlineFMTResidualClassifier3D, residual_model_kwargs,
+)
 from Verify_Task3_FMTResidual import _load_raw_model, _train_one
 
 
@@ -127,9 +129,7 @@ def _parameter_budget_status(spec: dict, group: dict, candidate: dict,
         model = PathlineFMTResidualClassifier3D(
             raw_model,
             fmt_dim=int(fmt_dim),
-            embedding_dim=int(candidate.get("embedding_dim", 128)),
-            auxiliary_dim=int(candidate.get("auxiliary_dim", 64)),
-            residual_input=str(candidate.get("residual_input", "geometry_fmt")),
+            **residual_model_kwargs(candidate),
         )
         total_counts.append(sum(
             parameter.numel() for parameter in model.parameters()

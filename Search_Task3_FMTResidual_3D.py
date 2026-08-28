@@ -361,6 +361,16 @@ def _candidate_spec(spec: dict, group: dict, candidate: dict, dataset: str,
             "embedding_dim": int(candidate.get("embedding_dim", 128)),
             "auxiliary_dim": int(candidate.get("auxiliary_dim", 64)),
             "residual_input": str(candidate.get("residual_input", "geometry_fmt")),
+            "head_architecture": str(candidate.get(
+                "head_architecture", "mlp"
+            )),
+            "head_hidden_dim": int(candidate.get(
+                "head_hidden_dim", candidate.get("embedding_dim", 128)
+            )),
+            "head_depth": int(candidate.get("head_depth", 2)),
+            "bilinear_rank": int(candidate.get("bilinear_rank", 32)),
+            "attention_heads": int(candidate.get("attention_heads", 4)),
+            "head_dropout": float(candidate.get("head_dropout", 0.0)),
         },
         "fusion": _fusion(candidate),
         "training": _training(spec, candidate, seed),
