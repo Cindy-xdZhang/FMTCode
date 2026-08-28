@@ -191,11 +191,17 @@ class _WeightedFocalBCEWithLogitsLoss(nn.Module):
             logits, targets, pos_weight=self.pos_weight, reduction="none"
         )
         if self.gamma > 0.0:
-            probabilities = torch.sigmoid(logits)
-            probability_of_target = (
-                targets * probabilities + (1.0 - targets) * (1.0 - probabilities)
+            # Mathematically, 1 - p_t = sigmoid(-s), where
+            # s=(2y-1)*logit.  Computing ``(1-p_t)**gamma`` directly gives an
+            # infinite derivative at p_t=1 for 0<gamma<1; the subsequent
+            # sigmoid derivative is zero and autograd can produce 0*inf=NaN.
+            # The log-domain form is equivalent but has a finite derivative
+            # even for saturated, correctly classified samples.
+            signed_logits = (2.0 * targets - 1.0) * logits
+            focal_factor = torch.exp(
+                self.gamma * F.logsigmoid(-signed_logits)
             )
-            loss = loss * (1.0 - probability_of_target).pow(self.gamma)
+            loss = loss * focal_factor
         return loss.mean()
 
 

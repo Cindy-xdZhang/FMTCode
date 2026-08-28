@@ -54,6 +54,40 @@ def test_focal_loss_is_finite_and_backpropagates():
     assert metadata["positive_weight"] == pytest.approx(2.25)
 
 
+def test_fractional_focal_gamma_is_stable_for_saturated_correct_logits():
+    logits = torch.tensor([-100.0, 100.0], requires_grad=True)
+    targets = torch.tensor([0.0, 1.0])
+    criterion, _ = _build_training_loss(
+        {"loss": "focal", "focal_gamma": 0.5},
+        positive=1.0, negative=1.0, device=torch.device("cpu"),
+    )
+    loss = criterion(logits, targets)
+    loss.backward()
+    assert torch.isfinite(loss)
+    assert torch.isfinite(logits.grad).all()
+
+
+def test_log_domain_focal_matches_direct_formula_away_from_saturation():
+    logits = torch.tensor([-2.0, -0.3, 0.4, 1.7])
+    targets = torch.tensor([0.0, 1.0, 0.0, 1.0])
+    criterion, metadata = _build_training_loss(
+        {"loss": "focal", "focal_gamma": 0.5},
+        positive=2.0, negative=6.0, device=torch.device("cpu"),
+    )
+    observed = criterion(logits, targets)
+    bce = F.binary_cross_entropy_with_logits(
+        logits, targets,
+        pos_weight=torch.tensor(metadata["positive_weight"]),
+        reduction="none",
+    )
+    probability = torch.sigmoid(logits)
+    probability_of_target = (
+        targets * probability + (1.0 - targets) * (1.0 - probability)
+    )
+    expected = (bce * (1.0 - probability_of_target).pow(0.5)).mean()
+    assert torch.allclose(observed, expected, rtol=1e-6, atol=1e-7)
+
+
 @pytest.mark.parametrize("scale", [0.0, -1.0, float("inf")])
 def test_loss_rejects_invalid_positive_weight_scale(scale):
     with pytest.raises(ValueError, match="positive_weight_scale"):
