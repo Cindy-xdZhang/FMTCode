@@ -1,0 +1,55 @@
+experiment: Verify_Task3_RawHardness_8.1
+output_root: outputs/Verify_Task3_RawHardness_8.1
+task: Task3
+
+# This is an orthogonal development-only search around the same frozen 5.2
+# family recipes and 6.1 network winner used by 7.1.  It does not read 7.1
+# partial rankings or any final/confirmation population.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+
+# For each mini-batch, both arms receive the same mean-one sample weight:
+#   1 + scale * (1 - p_t(frozen Raw))^power
+# plus an optional boost when the frozen Raw logit has the wrong sign.
+# No term depends on FMT or Raw-PCA auxiliary features.
+optimization_candidates:
+  - {id: h00_control}
+  - {id: h01_scale05, training: {raw_hardness_scale: 0.5}}
+  - {id: h02_scale10, training: {raw_hardness_scale: 1.0}}
+  - {id: h03_scale20, training: {raw_hardness_scale: 2.0}}
+  - {id: h04_scale40, training: {raw_hardness_scale: 4.0}}
+  - {id: h05_scale80, training: {raw_hardness_scale: 8.0}}
+  - {id: h06_scale20_power05,
+     training: {raw_hardness_scale: 2.0, raw_hardness_power: 0.5}}
+  - {id: h07_scale20_power20,
+     training: {raw_hardness_scale: 2.0, raw_hardness_power: 2.0}}
+  - {id: h08_scale20_temp05,
+     training: {raw_hardness_scale: 2.0, raw_hardness_temperature: 0.5}}
+  - {id: h09_scale20_temp20,
+     training: {raw_hardness_scale: 2.0, raw_hardness_temperature: 2.0}}
+  - {id: h10_error10, training: {raw_error_boost: 1.0}}
+  - {id: h11_error20, training: {raw_error_boost: 2.0}}
+  - {id: h12_error40, training: {raw_error_boost: 4.0}}
+  - {id: h13_scale20_error20,
+     training: {raw_hardness_scale: 2.0, raw_error_boost: 2.0}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  target_dataset_macro_f1_gain: 0.15
+  confirmation_opened: false
+

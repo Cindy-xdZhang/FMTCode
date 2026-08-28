@@ -13,7 +13,10 @@ from Search_Task3_LossOptimization_7_1 import (
     _optimization_candidate,
     _write_numerical_instability,
 )
-from Verify_Task3_FMTResidual import _build_training_loss
+from Verify_Task3_FMTResidual import (
+    _build_training_loss,
+    _raw_hardness_weights,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,6 +39,10 @@ def test_weighted_bce_default_matches_torch_reference():
         "positive_weight_scale": 1.0,
         "positive_weight": 3.0,
         "focal_gamma": 0.0,
+        "raw_hardness_scale": 0.0,
+        "raw_hardness_power": 1.0,
+        "raw_hardness_temperature": 1.0,
+        "raw_error_boost": 0.0,
     }
 
 
@@ -86,6 +93,73 @@ def test_log_domain_focal_matches_direct_formula_away_from_saturation():
     )
     expected = (bce * (1.0 - probability_of_target).pow(0.5)).mean()
     assert torch.allclose(observed, expected, rtol=1e-6, atol=1e-7)
+
+
+def test_raw_hardness_weights_are_mean_one_detached_and_monotone():
+    raw_logits = torch.tensor([4.0, 0.0, -4.0], requires_grad=True)
+    targets = torch.ones(3)
+    weights = _raw_hardness_weights(
+        raw_logits,
+        targets,
+        {"raw_hardness_scale": 4.0, "raw_hardness_power": 1.0},
+    )
+    assert weights.requires_grad is False
+    assert weights.mean() == pytest.approx(1.0)
+    assert weights[0] < weights[1] < weights[2]
+
+
+def test_raw_hardness_control_returns_none_and_preserves_loss():
+    raw_logits = torch.tensor([2.0, -1.0])
+    targets = torch.tensor([1.0, 0.0])
+    assert _raw_hardness_weights(raw_logits, targets, {}) is None
+    criterion, _ = _build_training_loss(
+        {}, positive=1.0, negative=1.0, device=torch.device("cpu")
+    )
+    assert torch.equal(
+        criterion(raw_logits, targets, sample_weights=None),
+        F.binary_cross_entropy_with_logits(raw_logits, targets),
+    )
+
+
+def test_weighted_loss_matches_manual_mean_and_error_boost_is_paired():
+    raw_logits = torch.tensor([2.0, -1.0, -2.0, 1.0])
+    targets = torch.tensor([1.0, 1.0, 0.0, 0.0])
+    training = {
+        "raw_hardness_scale": 2.0,
+        "raw_hardness_power": 2.0,
+        "raw_hardness_temperature": 0.5,
+        "raw_error_boost": 3.0,
+    }
+    first = _raw_hardness_weights(raw_logits, targets, training)
+    second = _raw_hardness_weights(raw_logits, targets, training)
+    assert torch.equal(first, second)
+    criterion, _ = _build_training_loss(
+        training, positive=2.0, negative=2.0, device=torch.device("cpu")
+    )
+    observed = criterion(raw_logits, targets, sample_weights=first)
+    expected = (
+        F.binary_cross_entropy_with_logits(
+            raw_logits, targets, reduction="none"
+        ) * first
+    ).mean()
+    assert torch.allclose(observed, expected)
+
+
+@pytest.mark.parametrize(
+    "training,match",
+    [
+        ({"raw_hardness_scale": -1.0}, "raw_hardness_scale"),
+        ({"raw_hardness_power": 0.0}, "raw_hardness_power"),
+        ({"raw_hardness_temperature": 0.0}, "raw_hardness_temperature"),
+        ({"raw_error_boost": -1.0}, "raw_error_boost"),
+    ],
+)
+def test_raw_hardness_rejects_invalid_hyperparameters(training, match):
+    with pytest.raises(ValueError, match=match):
+        _build_training_loss(
+            training, positive=1.0, negative=1.0,
+            device=torch.device("cpu"),
+        )
 
 
 @pytest.mark.parametrize("scale", [0.0, -1.0, float("inf")])

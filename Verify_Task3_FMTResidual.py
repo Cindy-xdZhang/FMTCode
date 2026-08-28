@@ -186,7 +186,7 @@ class _WeightedFocalBCEWithLogitsLoss(nn.Module):
         )
         self.gamma = float(gamma)
 
-    def forward(self, logits, targets):
+    def forward(self, logits, targets, sample_weights=None):
         loss = F.binary_cross_entropy_with_logits(
             logits, targets, pos_weight=self.pos_weight, reduction="none"
         )
@@ -202,6 +202,18 @@ class _WeightedFocalBCEWithLogitsLoss(nn.Module):
                 self.gamma * F.logsigmoid(-signed_logits)
             )
             loss = loss * focal_factor
+        if sample_weights is not None:
+            sample_weights = torch.as_tensor(
+                sample_weights, dtype=loss.dtype, device=loss.device
+            )
+            if sample_weights.shape != loss.shape:
+                raise ValueError("sample_weights must match logits shape")
+            if (
+                not bool(torch.isfinite(sample_weights).all())
+                or bool(torch.any(sample_weights <= 0.0))
+            ):
+                raise ValueError("sample_weights must be finite and positive")
+            loss = loss * sample_weights
         return loss.mean()
 
 
@@ -220,6 +232,22 @@ def _build_training_loss(training: dict, positive: float, negative: float,
     if name == "weighted_bce" and gamma != 0.0:
         raise ValueError("weighted_bce requires focal_gamma=0")
     positive_weight = (negative / positive) * scale
+    hardness_scale = float(training.get("raw_hardness_scale", 0.0))
+    hardness_power = float(training.get("raw_hardness_power", 1.0))
+    hardness_temperature = float(
+        training.get("raw_hardness_temperature", 1.0)
+    )
+    error_boost = float(training.get("raw_error_boost", 0.0))
+    if not np.isfinite(hardness_scale) or hardness_scale < 0.0:
+        raise ValueError("raw_hardness_scale must be finite and non-negative")
+    if not np.isfinite(hardness_power) or hardness_power <= 0.0:
+        raise ValueError("raw_hardness_power must be finite and positive")
+    if not np.isfinite(hardness_temperature) or hardness_temperature <= 0.0:
+        raise ValueError(
+            "raw_hardness_temperature must be finite and positive"
+        )
+    if not np.isfinite(error_boost) or error_boost < 0.0:
+        raise ValueError("raw_error_boost must be finite and non-negative")
     criterion = _WeightedFocalBCEWithLogitsLoss(
         pos_weight=positive_weight, gamma=gamma
     ).to(device)
@@ -228,7 +256,38 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         "positive_weight_scale": scale,
         "positive_weight": positive_weight,
         "focal_gamma": gamma,
+        "raw_hardness_scale": hardness_scale,
+        "raw_hardness_power": hardness_power,
+        "raw_hardness_temperature": hardness_temperature,
+        "raw_error_boost": error_boost,
     }
+
+
+def _raw_hardness_weights(raw_logits, targets, training):
+    """Return mean-one weights derived only from the frozen Raw arm.
+
+    ``difficulty = 1 - p_t(raw)`` is detached from autograd.  Both FMT and
+    train-only Raw-PCA residual arms therefore receive the exact same weights
+    for the same seed and mini-batch.
+    """
+    scale = float(training.get("raw_hardness_scale", 0.0))
+    power = float(training.get("raw_hardness_power", 1.0))
+    temperature = float(training.get("raw_hardness_temperature", 1.0))
+    error_boost = float(training.get("raw_error_boost", 0.0))
+    if scale == 0.0 and error_boost == 0.0:
+        return None
+    with torch.no_grad():
+        signed_raw = (2.0 * targets - 1.0) * raw_logits
+        difficulty = torch.sigmoid(-signed_raw / temperature).pow(power)
+        weights = 1.0 + scale * difficulty
+        if error_boost > 0.0:
+            weights = weights + error_boost * (signed_raw < 0.0).to(weights)
+        weights = weights / weights.mean().clamp_min(
+            torch.finfo(weights.dtype).tiny
+        )
+    if not bool(torch.isfinite(weights).all()) or bool(torch.any(weights <= 0.0)):
+        raise FloatingPointError("non-finite Raw-hardness sample weights")
+    return weights.detach()
 
 
 def _apply_raw_pca_transform(raw, transform):
@@ -457,16 +516,19 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         for raw, fmt, labels in train_loader:
             labels = labels.to(device, non_blocking=True)
             optimizer.zero_grad(set_to_none=True)
-            logits = model(
+            raw_logits, residual_logits = model.forward_components(
                 raw.to(device, non_blocking=True),
                 fmt.to(device, non_blocking=True),
-                alpha=training_alpha,
             )
+            logits = raw_logits + training_alpha * residual_logits
             if not bool(torch.isfinite(logits).all()):
                 raise FloatingPointError(
                     f"non-finite training logits at epoch {epoch + 1}"
                 )
-            loss = criterion(logits, labels)
+            sample_weights = _raw_hardness_weights(
+                raw_logits.detach(), labels, spec["training"]
+            )
+            loss = criterion(logits, labels, sample_weights=sample_weights)
             if not bool(torch.isfinite(loss)):
                 raise FloatingPointError(
                     f"non-finite training loss at epoch {epoch + 1}"
@@ -606,6 +668,12 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "training_positive_weight_scale": loss_metadata["positive_weight_scale"],
         "training_positive_weight": loss_metadata["positive_weight"],
         "training_focal_gamma": loss_metadata["focal_gamma"],
+        "training_raw_hardness_scale": loss_metadata["raw_hardness_scale"],
+        "training_raw_hardness_power": loss_metadata["raw_hardness_power"],
+        "training_raw_hardness_temperature": loss_metadata[
+            "raw_hardness_temperature"
+        ],
+        "training_raw_error_boost": loss_metadata["raw_error_boost"],
         "training_scheduler": scheduler_name,
         "training_alpha": training_alpha,
         "train_positive_fraction": float(train[2].mean()),
