@@ -462,22 +462,39 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
                 fmt.to(device, non_blocking=True),
                 alpha=training_alpha,
             )
+            if not bool(torch.isfinite(logits).all()):
+                raise FloatingPointError(
+                    f"non-finite training logits at epoch {epoch + 1}"
+                )
             loss = criterion(logits, labels)
             if not bool(torch.isfinite(loss)):
                 raise FloatingPointError(
                     f"non-finite training loss at epoch {epoch + 1}"
                 )
             loss.backward()
-            if any(
-                parameter.grad is not None
-                and not bool(torch.isfinite(parameter.grad).all())
-                for parameter in model.parameters()
+            invalid_gradients = [
+                name for name, parameter in model.named_parameters()
                 if parameter.requires_grad
-            ):
+                and parameter.grad is not None
+                and not bool(torch.isfinite(parameter.grad).all())
+            ]
+            if invalid_gradients:
                 raise FloatingPointError(
-                    f"non-finite training gradient at epoch {epoch + 1}"
+                    f"non-finite training gradient at epoch {epoch + 1}; "
+                    f"parameters={','.join(invalid_gradients[:8])}"
                 )
             optimizer.step()
+            invalid_parameters = [
+                name for name, parameter in model.named_parameters()
+                if parameter.requires_grad
+                and not bool(torch.isfinite(parameter).all())
+            ]
+            if invalid_parameters:
+                raise FloatingPointError(
+                    f"non-finite training parameter after optimizer step at "
+                    f"epoch {epoch + 1}; "
+                    f"parameters={','.join(invalid_parameters[:8])}"
+                )
             total_loss += float(loss.detach()) * len(labels)
             count += len(labels)
         current_learning_rate = float(optimizer.param_groups[0]["lr"])
