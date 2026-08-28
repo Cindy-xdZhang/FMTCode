@@ -7,6 +7,7 @@ from torch.nn import functional as F
 
 from Search_Task3_LossOptimization_7_1 import (
     _canonical_text_sha256,
+    _decode_job,
     _is_numerical_instability,
     _load_numerical_instability,
     _load_optimization_spec,
@@ -16,11 +17,16 @@ from Search_Task3_LossOptimization_7_1 import (
 from Verify_Task3_FMTResidual import (
     _build_training_loss,
     _raw_hardness_weights,
+    _raw_margin_residual_loss,
+    _raw_margin_residual_targets,
 )
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config" / "Verify_Task3_LossOptimization_7.1.yaml"
+RESIDUAL_CORRECTION_CONFIG = (
+    ROOT / "config" / "Verify_Task3_ResidualCorrection_9.1.yaml"
+)
 
 
 def test_weighted_bce_default_matches_torch_reference():
@@ -43,6 +49,10 @@ def test_weighted_bce_default_matches_torch_reference():
         "raw_hardness_power": 1.0,
         "raw_hardness_temperature": 1.0,
         "raw_error_boost": 0.0,
+        "raw_margin_loss_weight": 0.0,
+        "raw_margin_target": 1.0,
+        "raw_margin_huber_delta": 1.0,
+        "raw_margin_max_correction": 20.0,
     }
 
 
@@ -145,6 +155,55 @@ def test_weighted_loss_matches_manual_mean_and_error_boost_is_paired():
     assert torch.allclose(observed, expected)
 
 
+def test_raw_margin_targets_are_paired_missing_logit_corrections():
+    raw_logits = torch.tensor([2.0, 0.0, -2.0], requires_grad=True)
+    targets = torch.ones(3)
+    observed = _raw_margin_residual_targets(
+        raw_logits,
+        targets,
+        {"raw_margin_target": 1.0, "raw_margin_max_correction": 20.0},
+        training_alpha=2.0,
+    )
+    assert observed.requires_grad is False
+    assert torch.equal(observed, torch.tensor([0.0, 0.5, 1.5]))
+
+
+def test_raw_margin_loss_rewards_the_declared_correction_and_backpropagates():
+    raw_logits = torch.tensor([2.0, 0.0, -2.0])
+    targets = torch.ones(3)
+    training = {
+        "raw_margin_loss_weight": 0.25,
+        "raw_margin_target": 1.0,
+        "raw_margin_huber_delta": 1.0,
+    }
+    target_residual = torch.tensor([0.0, 1.0, 3.0], requires_grad=True)
+    zero_residual = torch.zeros(3, requires_grad=True)
+    target_loss = _raw_margin_residual_loss(
+        raw_logits, target_residual, targets, training, training_alpha=1.0
+    )
+    zero_loss = _raw_margin_residual_loss(
+        raw_logits, zero_residual, targets, training, training_alpha=1.0
+    )
+    zero_loss.backward()
+    assert target_loss == pytest.approx(0.0)
+    assert zero_loss > target_loss
+    assert torch.isfinite(zero_residual.grad).all()
+
+
+def test_raw_margin_control_is_exact_zero_with_zero_gradient():
+    residual_logits = torch.tensor([0.2, -0.4], requires_grad=True)
+    loss = _raw_margin_residual_loss(
+        torch.tensor([1.0, -1.0]),
+        residual_logits,
+        torch.tensor([1.0, 0.0]),
+        {},
+        training_alpha=1.0,
+    )
+    loss.backward()
+    assert loss == pytest.approx(0.0)
+    assert torch.equal(residual_logits.grad, torch.zeros_like(residual_logits))
+
+
 @pytest.mark.parametrize(
     "training,match",
     [
@@ -152,6 +211,10 @@ def test_weighted_loss_matches_manual_mean_and_error_boost_is_paired():
         ({"raw_hardness_power": 0.0}, "raw_hardness_power"),
         ({"raw_hardness_temperature": 0.0}, "raw_hardness_temperature"),
         ({"raw_error_boost": -1.0}, "raw_error_boost"),
+        ({"raw_margin_loss_weight": -1.0}, "raw_margin_loss_weight"),
+        ({"raw_margin_target": 0.0}, "raw_margin_target"),
+        ({"raw_margin_huber_delta": 0.0}, "raw_margin_huber_delta"),
+        ({"raw_margin_max_correction": 0.0}, "raw_margin_max_correction"),
     ],
 )
 def test_raw_hardness_rejects_invalid_hyperparameters(training, match):
@@ -178,6 +241,15 @@ def test_optimization_config_is_paired_and_does_not_open_confirmation():
     assert spec["paired_seeds"] == [40, 41, 42]
     assert spec["optimization_selection"]["confirmation_opened"] is False
     assert spec["model_override"]["head_architecture"] == "deep_mlp"
+
+
+def test_residual_correction_search_is_paired_and_array_bounds_match():
+    spec = _load_optimization_spec(RESIDUAL_CORRECTION_CONFIG)
+    assert len(spec["datasets"]) == 10
+    assert len(spec["optimization_candidates"]) == 13
+    assert spec["paired_seeds"] == [40, 41, 42]
+    assert spec["optimization_selection"]["confirmation_opened"] is False
+    assert _decode_job(spec, 129) == ("smokeBuoyancy", 12)
 
 
 def test_base_config_hash_is_independent_of_newline_style(tmp_path):

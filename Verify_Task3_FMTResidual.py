@@ -238,6 +238,14 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         training.get("raw_hardness_temperature", 1.0)
     )
     error_boost = float(training.get("raw_error_boost", 0.0))
+    margin_loss_weight = float(training.get("raw_margin_loss_weight", 0.0))
+    margin_target = float(training.get("raw_margin_target", 1.0))
+    margin_huber_delta = float(
+        training.get("raw_margin_huber_delta", 1.0)
+    )
+    margin_max_correction = float(
+        training.get("raw_margin_max_correction", 20.0)
+    )
     if not np.isfinite(hardness_scale) or hardness_scale < 0.0:
         raise ValueError("raw_hardness_scale must be finite and non-negative")
     if not np.isfinite(hardness_power) or hardness_power <= 0.0:
@@ -248,6 +256,23 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         )
     if not np.isfinite(error_boost) or error_boost < 0.0:
         raise ValueError("raw_error_boost must be finite and non-negative")
+    if not np.isfinite(margin_loss_weight) or margin_loss_weight < 0.0:
+        raise ValueError(
+            "raw_margin_loss_weight must be finite and non-negative"
+        )
+    if not np.isfinite(margin_target) or margin_target <= 0.0:
+        raise ValueError("raw_margin_target must be finite and positive")
+    if not np.isfinite(margin_huber_delta) or margin_huber_delta <= 0.0:
+        raise ValueError(
+            "raw_margin_huber_delta must be finite and positive"
+        )
+    if (
+        not np.isfinite(margin_max_correction)
+        or margin_max_correction <= 0.0
+    ):
+        raise ValueError(
+            "raw_margin_max_correction must be finite and positive"
+        )
     criterion = _WeightedFocalBCEWithLogitsLoss(
         pos_weight=positive_weight, gamma=gamma
     ).to(device)
@@ -260,6 +285,10 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         "raw_hardness_power": hardness_power,
         "raw_hardness_temperature": hardness_temperature,
         "raw_error_boost": error_boost,
+        "raw_margin_loss_weight": margin_loss_weight,
+        "raw_margin_target": margin_target,
+        "raw_margin_huber_delta": margin_huber_delta,
+        "raw_margin_max_correction": margin_max_correction,
     }
 
 
@@ -288,6 +317,54 @@ def _raw_hardness_weights(raw_logits, targets, training):
     if not bool(torch.isfinite(weights).all()) or bool(torch.any(weights <= 0.0)):
         raise FloatingPointError("non-finite Raw-hardness sample weights")
     return weights.detach()
+
+
+def _raw_margin_residual_targets(raw_logits, targets, training,
+                                 training_alpha):
+    """Build the correction required to reach a signed Raw-logit margin.
+
+    The target is zero where the frozen Raw classifier already exceeds the
+    requested correct-class margin.  Elsewhere it asks the residual branch for
+    exactly the missing signed logit correction, capped for numerical safety.
+    It depends only on frozen Raw logits and training labels, so paired FMT and
+    Raw-PCA arms receive an identical target for every mini-batch.
+    """
+    margin = float(training.get("raw_margin_target", 1.0))
+    maximum = float(training.get("raw_margin_max_correction", 20.0))
+    alpha = float(training_alpha)
+    if not np.isfinite(alpha) or alpha <= 0.0:
+        raise ValueError("training_alpha must be finite and positive")
+    with torch.no_grad():
+        sign = 2.0 * targets - 1.0
+        signed_raw = sign * raw_logits
+        shortfall = torch.clamp(margin - signed_raw, min=0.0, max=maximum)
+        correction = sign * shortfall / alpha
+    if not bool(torch.isfinite(correction).all()):
+        raise FloatingPointError("non-finite Raw-margin residual targets")
+    return correction.detach()
+
+
+def _raw_margin_residual_loss(raw_logits, residual_logits, targets, training,
+                              training_alpha, sample_weights=None):
+    """Return the optional paired Smooth-L1 residual-correction objective."""
+    weight = float(training.get("raw_margin_loss_weight", 0.0))
+    if weight == 0.0:
+        return residual_logits.sum() * 0.0
+    target = _raw_margin_residual_targets(
+        raw_logits.detach(), targets, training, training_alpha
+    )
+    delta = float(training.get("raw_margin_huber_delta", 1.0))
+    loss = F.smooth_l1_loss(
+        residual_logits, target, reduction="none", beta=delta
+    )
+    if sample_weights is not None:
+        sample_weights = torch.as_tensor(
+            sample_weights, dtype=loss.dtype, device=loss.device
+        )
+        if sample_weights.shape != loss.shape:
+            raise ValueError("sample_weights must match residual logits shape")
+        loss = loss * sample_weights
+    return weight * loss.mean()
 
 
 def _apply_raw_pca_transform(raw, transform):
@@ -528,7 +605,18 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             sample_weights = _raw_hardness_weights(
                 raw_logits.detach(), labels, spec["training"]
             )
-            loss = criterion(logits, labels, sample_weights=sample_weights)
+            classification_loss = criterion(
+                logits, labels, sample_weights=sample_weights
+            )
+            correction_loss = _raw_margin_residual_loss(
+                raw_logits,
+                residual_logits,
+                labels,
+                spec["training"],
+                training_alpha,
+                sample_weights=sample_weights,
+            )
+            loss = classification_loss + correction_loss
             if not bool(torch.isfinite(loss)):
                 raise FloatingPointError(
                     f"non-finite training loss at epoch {epoch + 1}"
@@ -674,6 +762,16 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             "raw_hardness_temperature"
         ],
         "training_raw_error_boost": loss_metadata["raw_error_boost"],
+        "training_raw_margin_loss_weight": loss_metadata[
+            "raw_margin_loss_weight"
+        ],
+        "training_raw_margin_target": loss_metadata["raw_margin_target"],
+        "training_raw_margin_huber_delta": loss_metadata[
+            "raw_margin_huber_delta"
+        ],
+        "training_raw_margin_max_correction": loss_metadata[
+            "raw_margin_max_correction"
+        ],
         "training_scheduler": scheduler_name,
         "training_alpha": training_alpha,
         "train_positive_fraction": float(train[2].mean()),
