@@ -437,6 +437,10 @@ def _candidate_spec(spec: dict, group: dict, candidate: dict, dataset: str,
             "auxiliary_hidden_dim": int(candidate.get(
                 "auxiliary_hidden_dim", 64
             )),
+            "auxiliary_block_dims": (
+                None if candidate.get("auxiliary_block_dims") is None
+                else [int(value) for value in candidate["auxiliary_block_dims"]]
+            ),
             "residual_gate": str(candidate.get(
                 "residual_gate", "none"
             )),

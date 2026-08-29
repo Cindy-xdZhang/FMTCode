@@ -21,6 +21,7 @@ from FMT_Utils.PathlineClassifier_3D import (
     PathlineFMTResidualClassifier3D,
     residual_model_kwargs,
 )
+from FMT_Utils.Task12Data_3D import feature_block_dims
 from Search_Task3_FMTResidual_3D import (
     _candidate_spec,
     _frozen_raw_normalization,
@@ -391,6 +392,18 @@ def _optimization_candidate(spec: dict, manifest: dict, dataset: str,
     base.update(model)
     if "fmt_feature" in recipe:
         base["fmt_feature"] = str(recipe["fmt_feature"])
+    if str(base.get("auxiliary_projection", "")).startswith("blockwise_"):
+        inferred = list(feature_block_dims(base["fmt_feature"]))
+        declared = base.get("auxiliary_block_dims")
+        if declared is not None and [int(value) for value in declared] != inferred:
+            raise ValueError(
+                f"{recipe['id']}: auxiliary_block_dims disagree with "
+                f"{base['fmt_feature']}: {declared} vs {inferred}"
+            )
+        base["auxiliary_block_dims"] = inferred
+        recipe_model = dict(recipe.get("model", {}))
+        recipe_model["auxiliary_block_dims"] = inferred
+        recipe["model"] = recipe_model
     base["training"] = training
     base["id"] = str(recipe["id"])
     base["optimization_id"] = str(recipe["id"])

@@ -24,8 +24,91 @@ class _RMSNorm(nn.Module):
         return values * scale * self.weight
 
 
+def _balanced_block_widths(total_width, block_count):
+    """Split ``total_width`` across blocks without dropping a block."""
+    total_width = int(total_width)
+    block_count = int(block_count)
+    if block_count < 1 or total_width < block_count:
+        raise ValueError(
+            "blockwise auxiliary projection requires output width >= block count"
+        )
+    quotient, remainder = divmod(total_width, block_count)
+    return tuple(
+        quotient + int(index < remainder) for index in range(block_count)
+    )
+
+
+class _BlockwiseAuxiliaryProjection(nn.Module):
+    """Project fixed semantic feature blocks before allowing cross-block mixing.
+
+    The same block boundaries and branch network are used by FMT and its
+    train-only Raw-PCA control.  Only the meaning of the fixed input values
+    differs between the paired arms.
+    """
+
+    def __init__(self, input_dim, output_dim, block_dims, architecture,
+                 hidden_dim=64):
+        super().__init__()
+        self.block_dims = tuple(int(value) for value in block_dims)
+        if not self.block_dims or any(value < 1 for value in self.block_dims):
+            raise ValueError("auxiliary_block_dims must contain positive widths")
+        if sum(self.block_dims) != int(input_dim):
+            raise ValueError(
+                f"auxiliary block widths sum to {sum(self.block_dims)}, "
+                f"expected input width {int(input_dim)}"
+            )
+        output_dims = _balanced_block_widths(output_dim, len(self.block_dims))
+        hidden_dim = int(hidden_dim)
+        if hidden_dim < 1:
+            raise ValueError("blockwise auxiliary hidden width must be positive")
+        branches = []
+        for block_dim, branch_output_dim in zip(self.block_dims, output_dims):
+            if architecture == "blockwise_linear_gelu":
+                branch = nn.Sequential(
+                    nn.Linear(block_dim, branch_output_dim), nn.GELU(),
+                )
+            elif architecture == "blockwise_layernorm_gelu":
+                branch = nn.Sequential(
+                    nn.Linear(block_dim, branch_output_dim),
+                    nn.LayerNorm(branch_output_dim),
+                    nn.GELU(),
+                )
+            elif architecture == "blockwise_rmsnorm_gelu":
+                branch = nn.Sequential(
+                    nn.Linear(block_dim, branch_output_dim),
+                    _RMSNorm(branch_output_dim),
+                    nn.GELU(),
+                )
+            elif architecture == "blockwise_mlp_gelu":
+                branch = nn.Sequential(
+                    nn.Linear(block_dim, hidden_dim),
+                    nn.LayerNorm(hidden_dim),
+                    nn.GELU(),
+                    nn.Linear(hidden_dim, branch_output_dim),
+                    nn.GELU(),
+                )
+            else:
+                raise ValueError(
+                    f"unknown blockwise auxiliary projection {architecture!r}"
+                )
+            branches.append(branch)
+        self.branches = nn.ModuleList(branches)
+
+    def forward(self, values):
+        if values.shape[-1] != sum(self.block_dims):
+            raise ValueError(
+                f"expected auxiliary width {sum(self.block_dims)}, "
+                f"got {values.shape[-1]}"
+            )
+        blocks = torch.split(values, self.block_dims, dim=-1)
+        return torch.cat(
+            tuple(branch(block) for branch, block in zip(self.branches, blocks)),
+            dim=-1,
+        )
+
+
 def _auxiliary_projection(input_dim, output_dim, architecture,
-                          hidden_dim=64):
+                          hidden_dim=64, block_dims=None):
     """Build the paired FMT/Raw-PCA auxiliary projection.
 
     The historical default is kept byte-for-byte compatible.  Alternative
@@ -38,6 +121,14 @@ def _auxiliary_projection(input_dim, output_dim, architecture,
     architecture = str(architecture)
     if output_dim < 1 or hidden_dim < 1:
         raise ValueError("auxiliary projection dimensions must be positive")
+    if architecture.startswith("blockwise_"):
+        if block_dims is None:
+            raise ValueError(
+                f"{architecture} requires model.auxiliary_block_dims"
+            )
+        return _BlockwiseAuxiliaryProjection(
+            input_dim, output_dim, block_dims, architecture, hidden_dim
+        )
     if architecture == "linear_layernorm_gelu":
         return nn.Sequential(
             nn.Linear(input_dim, output_dim),
@@ -364,7 +455,7 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  head_depth=2, bilinear_rank=32, attention_heads=4,
                  head_dropout=0.0,
                  auxiliary_projection="linear_layernorm_gelu",
-                 auxiliary_hidden_dim=64):
+                 auxiliary_hidden_dim=64, auxiliary_block_dims=None):
         super().__init__()
         if not isinstance(raw_model, PathlineBinaryClassifier3D):
             raise TypeError("raw_model must be PathlineBinaryClassifier3D")
@@ -400,9 +491,13 @@ class PathlineFMTResidualClassifier3D(nn.Module):
             raise ValueError("head_hidden_dim must be positive")
         self.auxiliary_projection = str(auxiliary_projection)
         self.auxiliary_hidden_dim = int(auxiliary_hidden_dim)
+        self.auxiliary_block_dims = (
+            None if auxiliary_block_dims is None
+            else tuple(int(value) for value in auxiliary_block_dims)
+        )
         self.fmt_encoder = _auxiliary_projection(
             int(fmt_dim), auxiliary_dim, self.auxiliary_projection,
-            self.auxiliary_hidden_dim,
+            self.auxiliary_hidden_dim, self.auxiliary_block_dims,
         )
         residual_width = (
             embedding_dim + auxiliary_dim
@@ -506,6 +601,10 @@ def residual_model_kwargs(model_spec):
         "auxiliary_hidden_dim": int(model_spec.get(
             "auxiliary_hidden_dim", 64
         )),
+        "auxiliary_block_dims": (
+            None if model_spec.get("auxiliary_block_dims") is None
+            else [int(value) for value in model_spec["auxiliary_block_dims"]]
+        ),
     }
 
 

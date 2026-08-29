@@ -55,6 +55,37 @@ def _anchored_recipe(name):
     }
 
 
+def feature_block_dims(name):
+    """Return contiguous, label-free semantic block widths for Task3 models.
+
+    The cached 161-dimensional Fourier feature is line-major, so each pathline
+    is one contiguous block.  Current anchored Task3 candidates use one IVD
+    scalar channel; their temporal DFT and each requested time-domain anchor
+    are kept separate.  Concatenated representations concatenate these block
+    declarations in the same order as :func:`feature_matrix`.
+    """
+    name = str(name)
+    if "+" in name:
+        result = []
+        for part in name.split("+"):
+            result.extend(feature_block_dims(part))
+        return tuple(result)
+    if name == "fmt_all":
+        return (23,) * 7
+    anchored = _anchored_recipe(name)
+    if anchored is not None:
+        if len(anchored["channels"]) != 1:
+            raise ValueError(
+                "semantic anchored blocks currently require one scalar channel"
+            )
+        result = []
+        if anchored["include_dft"]:
+            result.append(2 * int(anchored["num_freq"]) - 1)
+        result.extend(1 for _ in anchored["anchor_names"])
+        return tuple(result)
+    raise ValueError(f"no contiguous semantic block declaration for {name!r}")
+
+
 def load_cache_records(cache_dir, expected_count=None, ordinals=None):
     """Load selected cache records without opening held-out slices.
 
