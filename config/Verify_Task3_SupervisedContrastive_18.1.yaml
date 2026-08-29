@@ -1,0 +1,56 @@
+experiment: Verify_Task3_SupervisedContrastive_18.1
+output_root: outputs/Verify_Task3_SupervisedContrastive_18.1
+task: Task3
+
+# Independent development-only search. The supervised contrastive objective
+# acts on the trainable auxiliary projection and is identical in FMT/Raw-PCA.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+
+optimization_candidates:
+  - {id: s00_control}
+  - {id: s01_w0001_t010,
+     training: {supervised_contrastive_loss_weight: 0.001}}
+  - {id: s02_w0003_t010,
+     training: {supervised_contrastive_loss_weight: 0.003}}
+  - {id: s03_w0010_t010,
+     training: {supervised_contrastive_loss_weight: 0.010}}
+  - {id: s04_w0030_t010,
+     training: {supervised_contrastive_loss_weight: 0.030}}
+  - {id: s05_w0100_t010,
+     training: {supervised_contrastive_loss_weight: 0.100}}
+  - {id: s06_w0010_t005,
+     training: {supervised_contrastive_loss_weight: 0.010,
+                supervised_contrastive_temperature: 0.05}}
+  - {id: s07_w0010_t020,
+     training: {supervised_contrastive_loss_weight: 0.010,
+                supervised_contrastive_temperature: 0.20}}
+  - {id: s08_w0010_t050,
+     training: {supervised_contrastive_loss_weight: 0.010,
+                supervised_contrastive_temperature: 0.50}}
+  - {id: s09_w0030_t005,
+     training: {supervised_contrastive_loss_weight: 0.030,
+                supervised_contrastive_temperature: 0.05}}
+  - {id: s10_w0030_t020,
+     training: {supervised_contrastive_loss_weight: 0.030,
+                supervised_contrastive_temperature: 0.20}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  target_dataset_macro_f1_gain: 0.16
+  confirmation_opened: false

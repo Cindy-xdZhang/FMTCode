@@ -72,6 +72,8 @@ def test_weighted_bce_default_matches_torch_reference():
         "overlap_false_positive_weight": 0.5,
         "overlap_false_negative_weight": 0.5,
         "overlap_smoothing": 1.0,
+        "supervised_contrastive_loss_weight": 0.0,
+        "supervised_contrastive_temperature": 0.1,
     }
 
 

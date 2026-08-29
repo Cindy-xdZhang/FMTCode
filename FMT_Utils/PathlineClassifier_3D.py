@@ -370,7 +370,8 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                 nn.Linear(embedding_dim, 1),
             )
 
-    def forward_components(self, pathlines, fmt_features):
+    def forward_components(self, pathlines, fmt_features,
+                           return_auxiliary=False):
         if fmt_features is None:
             raise ValueError("FMT residual classifier requires fmt_features")
         with torch.no_grad():
@@ -388,6 +389,8 @@ class PathlineFMTResidualClassifier3D(nn.Module):
         )
         if self.fmt_only_head is not None:
             residual_logit = residual_logit + self.fmt_only_head(auxiliary).squeeze(-1)
+        if return_auxiliary:
+            return raw_logit, residual_logit, auxiliary
         return raw_logit, residual_logit
 
     def forward(self, pathlines, fmt_features, alpha=1.0):

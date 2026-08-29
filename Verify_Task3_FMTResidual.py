@@ -280,6 +280,12 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         training.get("overlap_false_negative_weight", 0.5)
     )
     overlap_smoothing = float(training.get("overlap_smoothing", 1.0))
+    contrastive_loss_weight = float(
+        training.get("supervised_contrastive_loss_weight", 0.0)
+    )
+    contrastive_temperature = float(
+        training.get("supervised_contrastive_temperature", 0.1)
+    )
     if not np.isfinite(hardness_scale) or hardness_scale < 0.0:
         raise ValueError("raw_hardness_scale must be finite and non-negative")
     if not np.isfinite(hardness_power) or hardness_power <= 0.0:
@@ -344,6 +350,21 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         )
     if not np.isfinite(overlap_smoothing) or overlap_smoothing <= 0.0:
         raise ValueError("overlap_smoothing must be finite and positive")
+    if (
+        not np.isfinite(contrastive_loss_weight)
+        or contrastive_loss_weight < 0.0
+    ):
+        raise ValueError(
+            "supervised_contrastive_loss_weight must be finite and "
+            "non-negative"
+        )
+    if (
+        not np.isfinite(contrastive_temperature)
+        or contrastive_temperature <= 0.0
+    ):
+        raise ValueError(
+            "supervised_contrastive_temperature must be finite and positive"
+        )
     criterion = _WeightedFocalBCEWithLogitsLoss(
         pos_weight=positive_weight, gamma=gamma
     ).to(device)
@@ -368,6 +389,8 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         "overlap_false_positive_weight": overlap_false_positive_weight,
         "overlap_false_negative_weight": overlap_false_negative_weight,
         "overlap_smoothing": overlap_smoothing,
+        "supervised_contrastive_loss_weight": contrastive_loss_weight,
+        "supervised_contrastive_temperature": contrastive_temperature,
     }
 
 
@@ -545,6 +568,85 @@ def _soft_tversky_loss(logits, targets, training, sample_weights=None):
     loss = weight * (1.0 - score)
     if not bool(torch.isfinite(loss)):
         raise FloatingPointError("non-finite overlap loss")
+    return loss
+
+
+def _supervised_contrastive_loss(embeddings, targets, training,
+                                 sample_weights=None):
+    """Separate binary IVD classes in the trainable auxiliary embedding.
+
+    This is the supervised contrastive objective of averaging each anchor's
+    log-probability over same-class peers. Self-pairs are excluded. Batches
+    without both classes or without a same-class peer return an exact zero,
+    so the loss never invents an arbitrary fallback pair.
+    """
+    weight = float(training.get("supervised_contrastive_loss_weight", 0.0))
+    if weight == 0.0:
+        return embeddings.sum() * 0.0
+    if embeddings.ndim != 2:
+        raise ValueError("contrastive embeddings must be [batch, features]")
+    if targets.ndim != 1 or len(targets) != len(embeddings):
+        raise ValueError("contrastive targets must be [batch]")
+    if len(targets) < 2:
+        return embeddings.sum() * 0.0
+    if (
+        not bool(torch.isfinite(embeddings).all())
+        or not bool(torch.isfinite(targets).all())
+    ):
+        raise FloatingPointError("non-finite supervised contrastive input")
+    if bool(torch.any(targets < 0.0)) or bool(torch.any(targets > 1.0)):
+        raise ValueError("contrastive targets must be in [0, 1]")
+    binary_targets = targets >= 0.5
+    if not bool(binary_targets.any()) or bool(binary_targets.all()):
+        return embeddings.sum() * 0.0
+    temperature = float(
+        training.get("supervised_contrastive_temperature", 0.1)
+    )
+    normalized = F.normalize(embeddings, p=2, dim=1)
+    similarities = normalized @ normalized.transpose(0, 1)
+    similarities = similarities / temperature
+    similarities = similarities - similarities.max(
+        dim=1, keepdim=True
+    ).values.detach()
+    off_diagonal = ~torch.eye(
+        len(targets), dtype=torch.bool, device=embeddings.device
+    )
+    positive_pairs = (
+        binary_targets[:, None] == binary_targets[None, :]
+    ) & off_diagonal
+    positive_counts = positive_pairs.sum(dim=1)
+    valid_anchors = positive_counts > 0
+    if not bool(valid_anchors.any()):
+        return embeddings.sum() * 0.0
+    denominator = (
+        torch.exp(similarities) * off_diagonal.to(similarities.dtype)
+    ).sum(dim=1).clamp_min(torch.finfo(similarities.dtype).tiny)
+    log_probabilities = similarities - torch.log(denominator[:, None])
+    anchor_losses = -(
+        log_probabilities * positive_pairs.to(log_probabilities.dtype)
+    ).sum(dim=1) / positive_counts.clamp_min(1).to(log_probabilities.dtype)
+    anchor_losses = anchor_losses[valid_anchors]
+    if sample_weights is not None:
+        sample_weights = torch.as_tensor(
+            sample_weights,
+            dtype=anchor_losses.dtype,
+            device=anchor_losses.device,
+        )
+        if sample_weights.shape != targets.shape:
+            raise ValueError("sample_weights must match contrastive targets")
+        if (
+            not bool(torch.isfinite(sample_weights).all())
+            or bool(torch.any(sample_weights <= 0.0))
+        ):
+            raise ValueError("sample_weights must be finite and positive")
+        anchor_weights = sample_weights[valid_anchors]
+        anchor_weights = anchor_weights / anchor_weights.mean().clamp_min(
+            torch.finfo(anchor_weights.dtype).tiny
+        )
+        anchor_losses = anchor_losses * anchor_weights
+    loss = weight * anchor_losses.mean()
+    if not bool(torch.isfinite(loss)):
+        raise FloatingPointError("non-finite supervised contrastive loss")
     return loss
 
 
@@ -785,9 +887,12 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         for raw, fmt, labels in train_loader:
             labels = labels.to(device, non_blocking=True)
             optimizer.zero_grad(set_to_none=True)
-            raw_logits, residual_logits = model.forward_components(
-                raw.to(device, non_blocking=True),
-                fmt.to(device, non_blocking=True),
+            raw_logits, residual_logits, auxiliary_embeddings = (
+                model.forward_components(
+                    raw.to(device, non_blocking=True),
+                    fmt.to(device, non_blocking=True),
+                    return_auxiliary=True,
+                )
             )
             logits = raw_logits + training_alpha * residual_logits
             if not bool(torch.isfinite(logits).all()):
@@ -820,11 +925,18 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
                 spec["training"],
                 sample_weights=sample_weights,
             )
+            contrastive_loss = _supervised_contrastive_loss(
+                auxiliary_embeddings,
+                labels,
+                spec["training"],
+                sample_weights=sample_weights,
+            )
             loss = (
                 classification_loss
                 + correction_loss
                 + ranking_loss
                 + overlap_loss
+                + contrastive_loss
             )
             if not bool(torch.isfinite(loss)):
                 raise FloatingPointError(
@@ -1008,6 +1120,12 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             "overlap_false_negative_weight"
         ],
         "training_overlap_smoothing": loss_metadata["overlap_smoothing"],
+        "training_supervised_contrastive_loss_weight": loss_metadata[
+            "supervised_contrastive_loss_weight"
+        ],
+        "training_supervised_contrastive_temperature": loss_metadata[
+            "supervised_contrastive_temperature"
+        ],
         "training_scheduler": scheduler_name,
         "training_alpha": training_alpha,
         "train_positive_fraction": float(train[2].mean()),
