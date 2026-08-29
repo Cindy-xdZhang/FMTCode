@@ -48,3 +48,17 @@ The development targets are dataset-macro F1 gain `>= +0.160` and absolute
 FMT F1 `>= 0.890`.  A larger gap obtained by lowering FMT does not satisfy the
 joint target.  Any development winner still needs a fresh unseen spatial
 population before it can support a paper-level generalization claim.
+
+## Result
+
+Ibex jobs `50996832` and `50996835` completed all 480 paired trainings and the
+registered selector. Dataset-macro Raw-PCA/FMT F1 was `0.69666/0.88717`, a
+gain of `+0.19052`; Average Precision was `0.74250/0.94809`, a gain of
+`+0.20559`. All ten data entries had positive F1 gain.
+
+The gain target passed, but the joint target failed because absolute FMT F1
+was below `0.890`. Relative to 22.1, FMT F1 and Average Precision changed by
+`-0.00205/-0.00236`; Raw-PCA deteriorated more. Therefore this experiment
+supports a larger paired difference, not a stronger absolute FMT classifier.
+Confirmation remains closed. Selection and leaderboard SHA-256 values are
+`528dc082...eed9` and `64a0c9ed...ddf`.

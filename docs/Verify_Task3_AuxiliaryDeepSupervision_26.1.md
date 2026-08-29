@@ -81,3 +81,17 @@ on a fresh, previously unseen spatial population.
 - `Search_Task3_LossOptimization_7_1.py`
 - `tests/test_task3_auxiliary_deep_supervision_26_1.py`
 - `ibex_bash/verify_task3_auxiliary_deep_supervision_26.1_*.sh`
+
+## Result
+
+Ibex jobs `50997130` and `50997133` completed all 660 paired trainings and the
+registered selector. Dataset-macro Raw-PCA/FMT F1 was `0.69289/0.88490`, a
+gain of `+0.19201`; Average Precision was `0.73530/0.94578`, a gain of
+`+0.21049`. All ten data entries had positive F1 gain.
+
+The gain target passed, but the joint target failed because absolute FMT F1
+was below `0.892`. Relative to 22.1, FMT F1 and Average Precision fell by
+`0.00432/0.00466`; Raw-PCA fell more. Direct auxiliary supervision therefore
+did not improve the absolute FMT representation under this protocol.
+Confirmation remains closed. Selection and leaderboard SHA-256 values are
+`1693a9f9...257f` and `d49b2932...7ccd`.
