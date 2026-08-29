@@ -1,0 +1,38 @@
+experiment: Confirm_Task3_CombinedOptimization_12.1
+task: Task3
+output_root: outputs/Confirm_Task3_CombinedOptimization_12.1
+recipe_manifest: outputs/Confirm_Task3_CombinedOptimization_12.1/frozen_recipe_manifest.json
+
+# The optimization repository is separate from the full data repository on
+# Ibex.  TASK3_OPTIMIZATION_REPO_ROOT may override this path for tests only.
+optimization_repo_root: /home/zhanx0o/FMT_Task3_LossOptimization_7_1
+optimization_config: config/Verify_Task3_CombinedOptimization_11.1.yaml
+optimization_preflight_manifest: outputs/Verify_Task3_CombinedOptimization_11.1/preflight_manifest.json
+optimization_selection: outputs/Verify_Task3_CombinedOptimization_11.1/optimization_selection.json
+expected_optimization_experiment: Verify_Task3_CombinedOptimization_11.1
+
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+paired_seeds: [40, 41, 42]
+confirmation_count: 4
+expected_ivd_percentile: 95.0
+require_confirmation_reference_match: true
+
+# This is the already pre-registered 5.2 phase.  It has zero generated caches
+# and labels at 12.1 deployment time and may be opened only after 11.1 freezes.
+confirmation_seed_grid_phase: [0.318359375, 0.4561042524005485, -0.3352]
+confirmation_roots:
+  old8:
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400, tangaroa,
+               deltaWing_resampled, deltaWing_LBM, f22raptor, channel]
+    source_root: outputs/mainExp_Task3_3D_5.2/confirmation_cache_old8
+    label_root: outputs/mainExp_Task3_3D_5.2/confirmation_labels_old8/labels
+  new2:
+    datasets: [boeing747, smokeBuoyancy]
+    source_root: outputs/mainExp_Task3_3D_5.2/confirmation_cache_new2
+    label_root: outputs/mainExp_Task3_3D_5.2/confirmation_labels_new2/labels
+
+target_dataset_macro_f1_gain: 0.15
+aspirational_dataset_macro_f1_gain: 0.16
+confirmation_opened_by_static_preflight: false
