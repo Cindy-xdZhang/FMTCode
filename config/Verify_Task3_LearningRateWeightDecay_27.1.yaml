@@ -1,0 +1,78 @@
+experiment: Verify_Task3_LearningRateWeightDecay_27.1
+output_root: outputs/Verify_Task3_LearningRateWeightDecay_27.1
+task: Task3
+
+# Development-only optimizer factorial around the completed 22.1 anchored
+# feature. No confirmation population is opened.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+
+combination_sources:
+  feature:
+    kind: stage1_feature
+    selection: outputs/Verify_Task3_AnchoredFeatureDecomposition_22.1/stage1_selection.json
+    expected_experiment: Verify_Task3_AnchoredFeatureDecomposition_22.1
+
+# Complete 5 x 3 learning-rate/weight-decay grid. l07 is the registered
+# reference cell matching the base config's AdamW defaults. Every cell is
+# applied without change to both FMT and train-only Raw-PCA; candidate values
+# intentionally replace any learning-rate choice embedded in a 5.2 Stage2
+# family recipe so the two-factor grid has the same support for every family.
+optimization_candidates:
+  - {id: l00_lr2e4_wd0, sources: [feature],
+     training: {learning_rate: 0.0002, weight_decay: 0.0}}
+  - {id: l01_lr2e4_wd1e4, sources: [feature],
+     training: {learning_rate: 0.0002, weight_decay: 0.0001}}
+  - {id: l02_lr2e4_wd1e3, sources: [feature],
+     training: {learning_rate: 0.0002, weight_decay: 0.001}}
+  - {id: l03_lr5e4_wd0, sources: [feature],
+     training: {learning_rate: 0.0005, weight_decay: 0.0}}
+  - {id: l04_lr5e4_wd1e4, sources: [feature],
+     training: {learning_rate: 0.0005, weight_decay: 0.0001}}
+  - {id: l05_lr5e4_wd1e3, sources: [feature],
+     training: {learning_rate: 0.0005, weight_decay: 0.001}}
+  - {id: l06_lr1e3_wd0, sources: [feature],
+     training: {learning_rate: 0.001, weight_decay: 0.0}}
+  - {id: l07_control_lr1e3_wd1e4, sources: [feature],
+     training: {learning_rate: 0.001, weight_decay: 0.0001}}
+  - {id: l08_lr1e3_wd1e3, sources: [feature],
+     training: {learning_rate: 0.001, weight_decay: 0.001}}
+  - {id: l09_lr2e3_wd0, sources: [feature],
+     training: {learning_rate: 0.002, weight_decay: 0.0}}
+  - {id: l10_lr2e3_wd1e4, sources: [feature],
+     training: {learning_rate: 0.002, weight_decay: 0.0001}}
+  - {id: l11_lr2e3_wd1e3, sources: [feature],
+     training: {learning_rate: 0.002, weight_decay: 0.001}}
+  - {id: l12_lr5e3_wd0, sources: [feature],
+     training: {learning_rate: 0.005, weight_decay: 0.0}}
+  - {id: l13_lr5e3_wd1e4, sources: [feature],
+     training: {learning_rate: 0.005, weight_decay: 0.0001}}
+  - {id: l14_lr5e3_wd1e3, sources: [feature],
+     training: {learning_rate: 0.005, weight_decay: 0.001}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: l07_control_lr1e3_wd1e4
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.190
+  target_absolute_fmt_f1: 0.892
+  confirmation_opened: false
