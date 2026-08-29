@@ -371,6 +371,12 @@ def _candidate_spec(spec: dict, group: dict, candidate: dict, dataset: str,
             "bilinear_rank": int(candidate.get("bilinear_rank", 32)),
             "attention_heads": int(candidate.get("attention_heads", 4)),
             "head_dropout": float(candidate.get("head_dropout", 0.0)),
+            "auxiliary_projection": str(candidate.get(
+                "auxiliary_projection", "linear_layernorm_gelu"
+            )),
+            "auxiliary_hidden_dim": int(candidate.get(
+                "auxiliary_hidden_dim", 64
+            )),
         },
         "fusion": _fusion(candidate),
         "training": _training(spec, candidate, seed),

@@ -167,6 +167,29 @@ def _merge_combination_recipe(candidate_id: str, source_names: list[str],
     return merged
 
 
+def _merge_candidate_overrides(merged: dict, candidate: dict) -> dict:
+    """Add locally declared knobs without overwriting frozen source values."""
+    unsupported = sorted(set(candidate) - {"id", "sources", "training", "model"})
+    if unsupported:
+        raise ValueError(
+            f"unsupported local candidate keys for {candidate['id']}: "
+            f"{unsupported}"
+        )
+    result = dict(merged)
+    for section in ("training", "model"):
+        source_values = dict(result.get(section, {}))
+        for key, value in dict(candidate.get(section, {})).items():
+            if key in source_values and source_values[key] != value:
+                raise ValueError(
+                    f"local candidate conflicts with frozen {section}.{key}: "
+                    f"{source_values[key]!r} vs {value!r}"
+                )
+            source_values[key] = value
+        if source_values:
+            result[section] = source_values
+    return result
+
+
 def _resolve_combination_candidates(spec: dict) -> tuple[dict, dict]:
     """Resolve family-specific recipes only from completed selector files."""
     if not spec.get("combination_sources"):
@@ -189,14 +212,16 @@ def _resolve_combination_candidates(spec: dict) -> tuple[dict, dict]:
             name: payload["primary_by_group"][group_name]
             for name, payload in selections.items()
         }
-        resolved[group_name] = [
-            _merge_combination_recipe(
+        resolved[group_name] = []
+        for candidate in spec["optimization_candidates"]:
+            merged = _merge_combination_recipe(
                 candidate["id"],
                 [str(value) for value in candidate.get("sources", [])],
                 source_rows,
             )
-            for candidate in spec["optimization_candidates"]
-        ]
+            resolved[group_name].append(
+                _merge_candidate_overrides(merged, candidate)
+            )
     return resolved, hashes
 
 

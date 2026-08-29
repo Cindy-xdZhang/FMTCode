@@ -6,6 +6,87 @@ import torch
 from torch import nn
 
 
+class _RMSNorm(nn.Module):
+    """Root-mean-square normalization without mean subtraction.
+
+    Unlike LayerNorm, this remains informative for a one-dimensional
+    auxiliary bottleneck because it does not subtract the sole coordinate
+    from itself.
+    """
+
+    def __init__(self, width, eps=1e-6):
+        super().__init__()
+        self.eps = float(eps)
+        self.weight = nn.Parameter(torch.ones(int(width)))
+
+    def forward(self, values):
+        scale = torch.rsqrt(values.square().mean(dim=-1, keepdim=True) + self.eps)
+        return values * scale * self.weight
+
+
+def _auxiliary_projection(input_dim, output_dim, architecture,
+                          hidden_dim=64):
+    """Build the paired FMT/Raw-PCA auxiliary projection.
+
+    The historical default is kept byte-for-byte compatible.  Alternative
+    projections are shared by both experimental arms; only their fixed input
+    representation differs.
+    """
+    input_dim = int(input_dim)
+    output_dim = int(output_dim)
+    hidden_dim = int(hidden_dim)
+    architecture = str(architecture)
+    if output_dim < 1 or hidden_dim < 1:
+        raise ValueError("auxiliary projection dimensions must be positive")
+    if architecture == "linear_layernorm_gelu":
+        return nn.Sequential(
+            nn.Linear(input_dim, output_dim),
+            nn.LayerNorm(output_dim),
+            nn.GELU(),
+        )
+    if architecture == "linear":
+        return nn.Sequential(nn.Linear(input_dim, output_dim))
+    if architecture == "linear_gelu":
+        return nn.Sequential(
+            nn.Linear(input_dim, output_dim), nn.GELU()
+        )
+    if architecture == "linear_silu":
+        return nn.Sequential(
+            nn.Linear(input_dim, output_dim), nn.SiLU()
+        )
+    if architecture == "linear_rmsnorm_gelu":
+        return nn.Sequential(
+            nn.Linear(input_dim, output_dim),
+            _RMSNorm(output_dim),
+            nn.GELU(),
+        )
+    if architecture == "mlp_layernorm_gelu":
+        return nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, output_dim),
+            nn.GELU(),
+        )
+    if architecture == "mlp_layernorm_silu":
+        return nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.SiLU(),
+            nn.Linear(hidden_dim, output_dim),
+            nn.SiLU(),
+        )
+    if architecture == "mlp_rmsnorm_gelu":
+        return nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            _RMSNorm(hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, output_dim),
+            nn.GELU(),
+        )
+    raise ValueError(f"unknown auxiliary projection {architecture!r}")
+
+
 class _ResidualMLPBlock(nn.Module):
     def __init__(self, width, dropout=0.0):
         super().__init__()
@@ -281,7 +362,9 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  auxiliary_dim=64, residual_input="geometry_fmt",
                  head_architecture="mlp", head_hidden_dim=None,
                  head_depth=2, bilinear_rank=32, attention_heads=4,
-                 head_dropout=0.0):
+                 head_dropout=0.0,
+                 auxiliary_projection="linear_layernorm_gelu",
+                 auxiliary_hidden_dim=64):
         super().__init__()
         if not isinstance(raw_model, PathlineBinaryClassifier3D):
             raise TypeError("raw_model must be PathlineBinaryClassifier3D")
@@ -315,10 +398,11 @@ class PathlineFMTResidualClassifier3D(nn.Module):
         )
         if hidden_dim < 1:
             raise ValueError("head_hidden_dim must be positive")
-        self.fmt_encoder = nn.Sequential(
-            nn.Linear(int(fmt_dim), auxiliary_dim),
-            nn.LayerNorm(auxiliary_dim),
-            nn.GELU(),
+        self.auxiliary_projection = str(auxiliary_projection)
+        self.auxiliary_hidden_dim = int(auxiliary_hidden_dim)
+        self.fmt_encoder = _auxiliary_projection(
+            int(fmt_dim), auxiliary_dim, self.auxiliary_projection,
+            self.auxiliary_hidden_dim,
         )
         residual_width = (
             embedding_dim + auxiliary_dim
@@ -416,6 +500,12 @@ def residual_model_kwargs(model_spec):
         "bilinear_rank": int(model_spec.get("bilinear_rank", 32)),
         "attention_heads": int(model_spec.get("attention_heads", 4)),
         "head_dropout": float(model_spec.get("head_dropout", 0.0)),
+        "auxiliary_projection": str(model_spec.get(
+            "auxiliary_projection", "linear_layernorm_gelu"
+        )),
+        "auxiliary_hidden_dim": int(model_spec.get(
+            "auxiliary_hidden_dim", 64
+        )),
     }
 
 
