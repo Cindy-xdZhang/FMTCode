@@ -1,0 +1,39 @@
+experiment: Verify_Task3_UltraNarrowBottleneck_20.1
+output_root: outputs/Verify_Task3_UltraNarrowBottleneck_20.1
+task: Task3
+
+# Development-only boundary refinement motivated by 17.2: five of seven
+# physical families selected the minimum tested auxiliary_dim=4. Dimensions
+# 4, 8, and 96 are retained as exact 17.2 controls while 1-3 refine below it.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+
+optimization_candidates:
+  - {id: u00_aux1, model: {auxiliary_dim: 1}}
+  - {id: u01_aux2, model: {auxiliary_dim: 2}}
+  - {id: u02_aux3, model: {auxiliary_dim: 3}}
+  - {id: u03_aux4_control, model: {auxiliary_dim: 4}}
+  - {id: u04_aux6, model: {auxiliary_dim: 6}}
+  - {id: u05_aux8_control, model: {auxiliary_dim: 8}}
+  - {id: u06_aux12, model: {auxiliary_dim: 12}}
+  - {id: u07_aux96_control, model: {auxiliary_dim: 96}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  target_dataset_macro_f1_gain: 0.165
+  confirmation_opened: false
