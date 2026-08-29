@@ -437,6 +437,15 @@ def _candidate_spec(spec: dict, group: dict, candidate: dict, dataset: str,
             "auxiliary_hidden_dim": int(candidate.get(
                 "auxiliary_hidden_dim", 64
             )),
+            "residual_gate": str(candidate.get(
+                "residual_gate", "none"
+            )),
+            "residual_gate_temperature": float(candidate.get(
+                "residual_gate_temperature", 1.0
+            )),
+            "residual_gate_floor": float(candidate.get(
+                "residual_gate_floor", 0.0
+            )),
         },
         "fusion": _fusion(candidate),
         "training": _training(spec, candidate, seed),

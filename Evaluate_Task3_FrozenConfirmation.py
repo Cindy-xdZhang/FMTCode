@@ -173,7 +173,8 @@ def _evaluate_residual(model, checkpoint, split, batch_size, seed, device):
     )
     targets, raw_logits, residual_logits = _predict_components(model, loader, device)
     probabilities = _probabilities(
-        raw_logits, residual_logits, checkpoint["alpha"]
+        raw_logits, residual_logits, checkpoint["alpha"],
+        checkpoint["config"]["model"],
     )
     return targets, probabilities, _classification_metrics(
         targets, probabilities, checkpoint["threshold"]

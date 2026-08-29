@@ -75,8 +75,38 @@ def _load_optimization_spec(path: str | Path) -> dict:
     candidate_ids = [str(row["id"]) for row in candidates]
     if not candidate_ids or len(candidate_ids) != len(set(candidate_ids)):
         raise ValueError("optimization candidate ids must be non-empty and unique")
-    if bool(overlay["selection"].get("confirmation_opened", False)):
+    selection = dict(overlay["selection"])
+    if bool(selection.get("confirmation_opened", False)):
         raise RuntimeError("optimization search must not open confirmation")
+    absolute_guard = selection.get("absolute_fmt_guard")
+    if absolute_guard is not None:
+        absolute_guard = dict(absolute_guard)
+        required_guard_keys = {
+            "control_optimization_id", "f1_tolerance",
+            "average_precision_tolerance",
+        }
+        missing_guard_keys = sorted(
+            required_guard_keys.difference(absolute_guard)
+        )
+        if missing_guard_keys:
+            raise ValueError(
+                "absolute_fmt_guard misses keys: "
+                f"{missing_guard_keys}"
+            )
+        control_id = str(absolute_guard["control_optimization_id"])
+        if control_id not in candidate_ids:
+            raise ValueError(
+                "absolute_fmt_guard control is not an optimization candidate"
+            )
+        for key in ("f1_tolerance", "average_precision_tolerance"):
+            value = float(absolute_guard[key])
+            if not np.isfinite(value) or value < 0.0:
+                raise ValueError(
+                    f"absolute_fmt_guard.{key} must be finite and non-negative"
+                )
+            absolute_guard[key] = value
+        absolute_guard["control_optimization_id"] = control_id
+        selection["absolute_fmt_guard"] = absolute_guard
     combination_sources = {
         str(name): dict(row)
         for name, row in dict(overlay.get("combination_sources", {})).items()
@@ -116,7 +146,7 @@ def _load_optimization_spec(path: str | Path) -> dict:
         "stage2_screen_seeds": seeds,
         "model_override": dict(overlay["model_override"]),
         "optimization_candidates": candidates,
-        "optimization_selection": dict(overlay["selection"]),
+        "optimization_selection": selection,
         "combination_sources": combination_sources,
     })
     return spec
@@ -777,6 +807,14 @@ def _candidate_summary(spec: dict, manifest: dict, group_name: str,
         "dataset_macro_raw_pca_f1": float(np.mean([
             row["raw_pca"]["f1"] for row in per_dataset.values()
         ])),
+        "dataset_macro_fmt_average_precision": float(np.mean([
+            row["fmt"]["average_precision"]
+            for row in per_dataset.values()
+        ])),
+        "dataset_macro_raw_pca_average_precision": float(np.mean([
+            row["raw_pca"]["average_precision"]
+            for row in per_dataset.values()
+        ])),
         "dataset_macro_f1_gain_vs_raw_pca": float(np.mean(f1_gains)),
         "dataset_macro_average_precision_gain_vs_raw_pca": float(
             np.mean(ap_gains)
@@ -796,6 +834,67 @@ def _candidate_summary(spec: dict, manifest: dict, group_name: str,
     }
 
 
+def _apply_absolute_fmt_guard(rows: list[dict], selection: dict) -> list[dict]:
+    """Reject gap-only winners that lower absolute FMT quality.
+
+    The comparison is performed separately inside each physical family because
+    ``select`` calls this helper once per family.  The exact declared control
+    therefore provides the same-family FMT F1 and Average Precision reference.
+    """
+    guard = selection.get("absolute_fmt_guard")
+    if guard is None:
+        return rows
+    control_id = str(guard["control_optimization_id"])
+    controls = [
+        row for row in rows if str(row["optimization_id"]) == control_id
+    ]
+    if len(controls) != 1:
+        raise RuntimeError(
+            f"absolute FMT guard requires exactly one control {control_id!r}"
+        )
+    control = controls[0]
+    if not bool(control.get("eligible", False)):
+        raise RuntimeError(
+            f"absolute FMT guard control {control_id!r} is ineligible"
+        )
+    control_f1 = float(control["dataset_macro_fmt_f1"])
+    control_ap = float(control["dataset_macro_fmt_average_precision"])
+    f1_tolerance = float(guard["f1_tolerance"])
+    ap_tolerance = float(guard["average_precision_tolerance"])
+    for row in rows:
+        row["absolute_fmt_control_optimization_id"] = control_id
+        row["absolute_fmt_control_f1"] = control_f1
+        row["absolute_fmt_control_average_precision"] = control_ap
+        if not bool(row.get("eligible", False)):
+            row["absolute_fmt_guard_passed"] = False
+            row["absolute_fmt_f1_delta_vs_control"] = ""
+            row["absolute_fmt_average_precision_delta_vs_control"] = ""
+            continue
+        f1_delta = float(row["dataset_macro_fmt_f1"]) - control_f1
+        ap_delta = (
+            float(row["dataset_macro_fmt_average_precision"]) - control_ap
+        )
+        passed = (
+            f1_delta >= -f1_tolerance and ap_delta >= -ap_tolerance
+        )
+        row["absolute_fmt_f1_delta_vs_control"] = f1_delta
+        row["absolute_fmt_average_precision_delta_vs_control"] = ap_delta
+        row["absolute_fmt_guard_passed"] = bool(passed)
+        if not passed:
+            row["eligible"] = False
+            row["status"] = "absolute_fmt_guard_failed"
+            reasons = [
+                f"FMT F1 delta {f1_delta:+.9f} < {-f1_tolerance:+.9f}"
+                if f1_delta < -f1_tolerance else "",
+                f"FMT AP delta {ap_delta:+.9f} < {-ap_tolerance:+.9f}"
+                if ap_delta < -ap_tolerance else "",
+            ]
+            row["ineligible_reasons_json"] = json.dumps(
+                [reason for reason in reasons if reason]
+            )
+    return rows
+
+
 def select(config_path: str) -> Path:
     spec = _load_optimization_spec(config_path)
     manifest = _load_manifest(spec)
@@ -810,6 +909,7 @@ def select(config_path: str) -> Path:
             _candidate_summary(spec, manifest, group_name, recipe)
             for recipe in spec["optimization_candidates"]
         ]
+        rows = _apply_absolute_fmt_guard(rows, selection)
         eligible = [row for row in rows if bool(row["eligible"])]
         if not eligible:
             raise RuntimeError(
@@ -849,14 +949,36 @@ def select(config_path: str) -> Path:
     ap_gain = float(np.mean([
         row["average_precision_gain"] for row in dataset_details
     ]))
+    fmt_f1 = float(np.mean([
+        row["fmt"]["f1"] for row in dataset_details
+    ]))
+    raw_pca_f1 = float(np.mean([
+        row["raw_pca"]["f1"] for row in dataset_details
+    ]))
+    fmt_ap = float(np.mean([
+        row["fmt"]["average_precision"] for row in dataset_details
+    ]))
+    raw_pca_ap = float(np.mean([
+        row["raw_pca"]["average_precision"] for row in dataset_details
+    ]))
     target_gain = float(selection["target_dataset_macro_f1_gain"])
+    target_absolute_fmt_f1 = selection.get("target_absolute_fmt_f1")
+    absolute_target_reached = (
+        None if target_absolute_fmt_f1 is None
+        else fmt_f1 >= float(target_absolute_fmt_f1)
+    )
+    guard_text = (
+        " Candidates must first pass the preregistered same-family absolute "
+        "FMT F1 and Average Precision guard against the exact control."
+        if selection.get("absolute_fmt_guard") is not None else ""
+    )
     payload = {
         "experiment": spec["experiment"],
         "selection_rule": (
             "family-specific paired optimization: maximize development "
             "dataset-macro F1 gain of FMT over the same-width train-only "
-            "Raw-PCA arm; tie-break by AP, positive datasets, worst dataset, "
-            "and worst paired seed"
+            "Raw-PCA arm; ordered tie-break metrics are "
+            f"{list(required[1:])}." + guard_text
         ),
         "optimization_config_sha256": spec["optimization_config_sha256"],
         "base_search_config_sha256": spec["base_search_config_sha256"],
@@ -887,8 +1009,18 @@ def select(config_path: str) -> Path:
         "primary_by_group": primary,
         "development_dataset_macro_f1_gain_vs_raw_pca": f1_gain,
         "development_dataset_macro_ap_gain_vs_raw_pca": ap_gain,
+        "development_dataset_macro_fmt_f1": fmt_f1,
+        "development_dataset_macro_raw_pca_f1": raw_pca_f1,
+        "development_dataset_macro_fmt_average_precision": fmt_ap,
+        "development_dataset_macro_raw_pca_average_precision": raw_pca_ap,
         "target_dataset_macro_f1_gain": target_gain,
         "target_reached": f1_gain >= target_gain,
+        "target_absolute_fmt_f1": target_absolute_fmt_f1,
+        "absolute_fmt_target_reached": absolute_target_reached,
+        "joint_target_reached": (
+            f1_gain >= target_gain and absolute_target_reached is not False
+        ),
+        "absolute_fmt_guard": selection.get("absolute_fmt_guard"),
         "dataset_details": dataset_details,
     }
     target = output_root / "optimization_selection.json"

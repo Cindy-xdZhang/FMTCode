@@ -81,18 +81,76 @@ def _predict_components(model, loader, device):
     )
 
 
+def _residual_gate_parameters(model_spec=None):
+    """Validate the label-free frozen-Raw residual gate configuration."""
+    model_spec = {} if model_spec is None else dict(model_spec)
+    kind = str(model_spec.get("residual_gate", "none")).lower()
+    if kind not in {"none", "raw_uncertainty"}:
+        raise ValueError(
+            "model.residual_gate must be 'none' or 'raw_uncertainty'"
+        )
+    temperature = float(model_spec.get("residual_gate_temperature", 1.0))
+    floor = float(model_spec.get("residual_gate_floor", 0.0))
+    if not np.isfinite(temperature) or temperature <= 0.0:
+        raise ValueError(
+            "model.residual_gate_temperature must be finite and positive"
+        )
+    if not np.isfinite(floor) or not 0.0 <= floor <= 1.0:
+        raise ValueError("model.residual_gate_floor must be in [0, 1]")
+    if kind == "none" and (
+        not np.isclose(temperature, 1.0) or not np.isclose(floor, 0.0)
+    ):
+        raise ValueError(
+            "the none residual gate requires temperature=1 and floor=0"
+        )
+    return kind, temperature, floor
+
+
+def _residual_gate_numpy(raw_logits, model_spec=None):
+    """Return a deterministic gate derived only from frozen Raw logits."""
+    kind, temperature, floor = _residual_gate_parameters(model_spec)
+    raw_logits = np.asarray(raw_logits)
+    if kind == "none":
+        return np.ones_like(raw_logits)
+    scaled = np.clip(raw_logits / temperature, -40.0, 40.0)
+    probability = 1.0 / (1.0 + np.exp(-scaled))
+    uncertainty = 4.0 * probability * (1.0 - probability)
+    return floor + (1.0 - floor) * uncertainty
+
+
+def _residual_gate_torch(raw_logits, model_spec=None):
+    """Torch equivalent of :func:`_residual_gate_numpy` for training."""
+    kind, temperature, floor = _residual_gate_parameters(model_spec)
+    if kind == "none":
+        return torch.ones_like(raw_logits)
+    probability = torch.sigmoid(raw_logits / temperature)
+    uncertainty = 4.0 * probability * (1.0 - probability)
+    return floor + (1.0 - floor) * uncertainty
+
+
+def _gated_residual_logits(raw_logits, residual_logits, model_spec=None):
+    return residual_logits * _residual_gate_numpy(raw_logits, model_spec)
+
+
 def _select_alpha(targets, raw_logits, residual_logits, alpha_grid,
                   objective="average_precision", baseline_metrics=None,
-                  minimum_f1_gain=0.02):
+                  minimum_f1_gain=0.02, model_spec=None):
+    effective_residual = _gated_residual_logits(
+        raw_logits, residual_logits, model_spec
+    )
     if objective == "average_precision":
         scores = np.asarray([
-            average_precision_score(targets, raw_logits + alpha * residual_logits)
+            average_precision_score(
+                targets, raw_logits + alpha * effective_residual
+            )
             for alpha in alpha_grid
         ])
     elif objective == "f1":
         values = []
         for alpha in alpha_grid:
-            probabilities = _probabilities(raw_logits, residual_logits, alpha)
+            probabilities = _probabilities(
+                raw_logits, residual_logits, alpha, model_spec
+            )
             threshold = _select_f1_threshold(targets, probabilities)
             values.append(_classification_metrics(
                 targets, probabilities, threshold
@@ -103,7 +161,9 @@ def _select_alpha(targets, raw_logits, residual_logits, alpha_grid,
             raise ValueError("minimum_gain selection requires baseline_metrics")
         values = []
         for alpha in alpha_grid:
-            probabilities = _probabilities(raw_logits, residual_logits, alpha)
+            probabilities = _probabilities(
+                raw_logits, residual_logits, alpha, model_spec
+            )
             threshold = _select_f1_threshold(targets, probabilities)
             metrics = _classification_metrics(targets, probabilities, threshold)
             values.append(min(
@@ -119,7 +179,9 @@ def _select_alpha(targets, raw_logits, residual_logits, alpha_grid,
             )
         candidates = []
         for alpha in alpha_grid:
-            probabilities = _probabilities(raw_logits, residual_logits, alpha)
+            probabilities = _probabilities(
+                raw_logits, residual_logits, alpha, model_spec
+            )
             threshold = _select_f1_threshold(targets, probabilities)
             metrics = _classification_metrics(targets, probabilities, threshold)
             candidates.append((float(alpha), metrics))
@@ -161,8 +223,10 @@ def _select_alpha(targets, raw_logits, residual_logits, alpha_grid,
     return float(alpha_grid[index]), float(scores[index])
 
 
-def _probabilities(raw_logits, residual_logits, alpha):
-    logits = raw_logits + float(alpha) * residual_logits
+def _probabilities(raw_logits, residual_logits, alpha, model_spec=None):
+    logits = raw_logits + float(alpha) * _gated_residual_logits(
+        raw_logits, residual_logits, model_spec
+    )
     return 1.0 / (1.0 + np.exp(-np.clip(logits, -40.0, 40.0)))
 
 
@@ -768,6 +832,9 @@ def _strong_validation_baseline(spec, dataset, seed, validation_loader,
 
 def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
     _set_seed(seed)
+    gate_kind, gate_temperature, gate_floor = _residual_gate_parameters(
+        spec["model"]
+    )
     auxiliary_source = str(spec.get("auxiliary_source", "fmt"))
     if auxiliary_source not in {"fmt", "raw_pca"}:
         raise ValueError("auxiliary_source must be 'fmt' or 'raw_pca'")
@@ -894,7 +961,10 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
                     return_auxiliary=True,
                 )
             )
-            logits = raw_logits + training_alpha * residual_logits
+            effective_residual_logits = residual_logits * _residual_gate_torch(
+                raw_logits.detach(), spec["model"]
+            )
+            logits = raw_logits + training_alpha * effective_residual_logits
             if not bool(torch.isfinite(logits).all()):
                 raise FloatingPointError(
                     f"non-finite training logits at epoch {epoch + 1}"
@@ -907,7 +977,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             )
             correction_loss = _raw_margin_residual_loss(
                 raw_logits,
-                residual_logits,
+                effective_residual_logits,
                 labels,
                 spec["training"],
                 training_alpha,
@@ -978,9 +1048,10 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             val_targets, val_raw, val_residual, alpha_grid, selection_metric,
             selection_baseline,
             float(spec["fusion"].get("minimum_f1_gain", 0.02)),
+            spec["model"],
         )
         selected_probabilities = _probabilities(
-            val_raw, val_residual, alpha
+            val_raw, val_residual, alpha, spec["model"]
         )
         selected_threshold = _select_f1_threshold(
             val_targets, selected_probabilities
@@ -1028,7 +1099,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
     val_targets, val_raw, val_residual = _predict_components(
         model, validation_loader, device
     )
-    val_probabilities = _probabilities(val_raw, val_residual, best_alpha)
+    val_probabilities = _probabilities(
+        val_raw, val_residual, best_alpha, spec["model"]
+    )
     threshold = _select_f1_threshold(val_targets, val_probabilities)
     val_metrics = _classification_metrics(val_targets, val_probabilities, threshold)
     if test_loader is None:
@@ -1037,7 +1110,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         test_targets, test_raw, test_residual = _predict_components(
             model, test_loader, device
         )
-        test_probabilities = _probabilities(test_raw, test_residual, best_alpha)
+        test_probabilities = _probabilities(
+            test_raw, test_residual, best_alpha, spec["model"]
+        )
         test_metrics = _classification_metrics(
             test_targets, test_probabilities, threshold
         )
@@ -1058,6 +1133,11 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "loss_metadata": loss_metadata,
         "scheduler": scheduler_name,
         "training_alpha": training_alpha,
+        "residual_gate": {
+            "kind": gate_kind,
+            "temperature": gate_temperature,
+            "floor": gate_floor,
+        },
     }, checkpoint_path)
     result = {
         "dataset": dataset, "variant": variant, "seed": seed,
@@ -1074,6 +1154,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         ),
         "validation_threshold": threshold,
         "training_loss": loss_metadata["loss"],
+        "residual_gate_kind": gate_kind,
+        "residual_gate_temperature": gate_temperature,
+        "residual_gate_floor": gate_floor,
         "training_positive_weight_scale": loss_metadata["positive_weight_scale"],
         "training_positive_weight": loss_metadata["positive_weight"],
         "training_requested_minibatch_positive_fraction": (
