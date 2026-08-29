@@ -1,0 +1,50 @@
+experiment: Verify_Task3_RepresentationCombination_19.1
+output_root: outputs/Verify_Task3_RepresentationCombination_19.1
+task: Task3
+
+# Declared before the 18.1 selector is read. This complete 2^3 factorial tests
+# the frozen 11.1 training core, 17.2 same-width auxiliary bottleneck, and
+# 18.1 supervised-contrastive recipe, including all interactions.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+
+combination_sources:
+  core:
+    selection: outputs/Verify_Task3_CombinedOptimization_11.1/optimization_selection.json
+    expected_experiment: Verify_Task3_CombinedOptimization_11.1
+  bottleneck:
+    selection: outputs/Verify_Task3_AuxiliaryBottleneck_17.2/optimization_selection.json
+    expected_experiment: Verify_Task3_AuxiliaryBottleneck_17.2
+  contrastive:
+    selection: outputs/Verify_Task3_SupervisedContrastive_18.1/optimization_selection.json
+    expected_experiment: Verify_Task3_SupervisedContrastive_18.1
+
+optimization_candidates:
+  - {id: r00_base, sources: []}
+  - {id: r01_core, sources: [core]}
+  - {id: r02_bottleneck, sources: [bottleneck]}
+  - {id: r03_contrastive, sources: [contrastive]}
+  - {id: r04_core_bottleneck, sources: [core, bottleneck]}
+  - {id: r05_core_contrastive, sources: [core, contrastive]}
+  - {id: r06_bottleneck_contrastive, sources: [bottleneck, contrastive]}
+  - {id: r07_all, sources: [core, bottleneck, contrastive]}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  target_dataset_macro_f1_gain: 0.165
+  confirmation_opened: false
