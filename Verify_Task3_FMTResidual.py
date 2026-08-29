@@ -270,6 +270,16 @@ def _build_training_loss(training: dict, positive: float, negative: float,
     ranking_temperature = float(
         training.get("pairwise_ranking_temperature", 1.0)
     )
+    overlap_loss_weight = float(
+        training.get("overlap_loss_weight", 0.0)
+    )
+    overlap_false_positive_weight = float(
+        training.get("overlap_false_positive_weight", 0.5)
+    )
+    overlap_false_negative_weight = float(
+        training.get("overlap_false_negative_weight", 0.5)
+    )
+    overlap_smoothing = float(training.get("overlap_smoothing", 1.0))
     if not np.isfinite(hardness_scale) or hardness_scale < 0.0:
         raise ValueError("raw_hardness_scale must be finite and non-negative")
     if not np.isfinite(hardness_power) or hardness_power <= 0.0:
@@ -309,6 +319,31 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         raise ValueError(
             "pairwise_ranking_temperature must be finite and positive"
         )
+    if not np.isfinite(overlap_loss_weight) or overlap_loss_weight < 0.0:
+        raise ValueError(
+            "overlap_loss_weight must be finite and non-negative"
+        )
+    if (
+        not np.isfinite(overlap_false_positive_weight)
+        or overlap_false_positive_weight < 0.0
+    ):
+        raise ValueError(
+            "overlap_false_positive_weight must be finite and non-negative"
+        )
+    if (
+        not np.isfinite(overlap_false_negative_weight)
+        or overlap_false_negative_weight < 0.0
+    ):
+        raise ValueError(
+            "overlap_false_negative_weight must be finite and non-negative"
+        )
+    if overlap_false_positive_weight + overlap_false_negative_weight <= 0.0:
+        raise ValueError(
+            "overlap false-positive and false-negative weights cannot both "
+            "be zero"
+        )
+    if not np.isfinite(overlap_smoothing) or overlap_smoothing <= 0.0:
+        raise ValueError("overlap_smoothing must be finite and positive")
     criterion = _WeightedFocalBCEWithLogitsLoss(
         pos_weight=positive_weight, gamma=gamma
     ).to(device)
@@ -329,6 +364,10 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         "pairwise_ranking_loss_weight": ranking_loss_weight,
         "pairwise_ranking_margin": ranking_margin,
         "pairwise_ranking_temperature": ranking_temperature,
+        "overlap_loss_weight": overlap_loss_weight,
+        "overlap_false_positive_weight": overlap_false_positive_weight,
+        "overlap_false_negative_weight": overlap_false_negative_weight,
+        "overlap_smoothing": overlap_smoothing,
     }
 
 
@@ -445,6 +484,68 @@ def _paired_ranking_loss(logits, targets, training, sample_weights=None):
         )
         pair_loss = pair_loss * pair_weights
     return weight * pair_loss.mean()
+
+
+def _soft_tversky_loss(logits, targets, training, sample_weights=None):
+    """Return a differentiable mini-batch overlap loss.
+
+    Equal false-positive and false-negative weights (0.5, 0.5) give the
+    standard soft Dice loss. Asymmetric weights give the Tversky loss and
+    test whether scarce IVD-positive samples benefit from a stronger
+    false-negative penalty. Both Task3 arms receive the exact same recipe.
+    """
+    weight = float(training.get("overlap_loss_weight", 0.0))
+    if weight == 0.0:
+        return logits.sum() * 0.0
+    if logits.shape != targets.shape:
+        raise ValueError("targets must match logits shape")
+    if not bool(torch.isfinite(logits).all()):
+        raise FloatingPointError("non-finite overlap logits")
+    if (
+        not bool(torch.isfinite(targets).all())
+        or bool(torch.any(targets < 0.0))
+        or bool(torch.any(targets > 1.0))
+    ):
+        raise ValueError("overlap targets must be finite and in [0, 1]")
+    false_positive_weight = float(
+        training.get("overlap_false_positive_weight", 0.5)
+    )
+    false_negative_weight = float(
+        training.get("overlap_false_negative_weight", 0.5)
+    )
+    smoothing = float(training.get("overlap_smoothing", 1.0))
+    probabilities = torch.sigmoid(logits)
+    if sample_weights is None:
+        weights = torch.ones_like(probabilities)
+    else:
+        weights = torch.as_tensor(
+            sample_weights,
+            dtype=probabilities.dtype,
+            device=probabilities.device,
+        )
+        if weights.shape != probabilities.shape:
+            raise ValueError("sample_weights must match logits shape")
+        if (
+            not bool(torch.isfinite(weights).all())
+            or bool(torch.any(weights <= 0.0))
+        ):
+            raise ValueError("sample_weights must be finite and positive")
+        weights = weights / weights.mean().clamp_min(
+            torch.finfo(weights.dtype).tiny
+        )
+    true_positive = torch.sum(weights * probabilities * targets)
+    false_positive = torch.sum(weights * probabilities * (1.0 - targets))
+    false_negative = torch.sum(weights * (1.0 - probabilities) * targets)
+    score = (true_positive + smoothing) / (
+        true_positive
+        + false_positive_weight * false_positive
+        + false_negative_weight * false_negative
+        + smoothing
+    )
+    loss = weight * (1.0 - score)
+    if not bool(torch.isfinite(loss)):
+        raise FloatingPointError("non-finite overlap loss")
+    return loss
 
 
 def _apply_raw_pca_transform(raw, transform):
@@ -713,7 +814,18 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
                 spec["training"],
                 sample_weights=sample_weights,
             )
-            loss = classification_loss + correction_loss + ranking_loss
+            overlap_loss = _soft_tversky_loss(
+                logits,
+                labels,
+                spec["training"],
+                sample_weights=sample_weights,
+            )
+            loss = (
+                classification_loss
+                + correction_loss
+                + ranking_loss
+                + overlap_loss
+            )
             if not bool(torch.isfinite(loss)):
                 raise FloatingPointError(
                     f"non-finite training loss at epoch {epoch + 1}"
@@ -886,6 +998,16 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "training_pairwise_ranking_temperature": loss_metadata[
             "pairwise_ranking_temperature"
         ],
+        "training_overlap_loss_weight": loss_metadata[
+            "overlap_loss_weight"
+        ],
+        "training_overlap_false_positive_weight": loss_metadata[
+            "overlap_false_positive_weight"
+        ],
+        "training_overlap_false_negative_weight": loss_metadata[
+            "overlap_false_negative_weight"
+        ],
+        "training_overlap_smoothing": loss_metadata["overlap_smoothing"],
         "training_scheduler": scheduler_name,
         "training_alpha": training_alpha,
         "train_positive_fraction": float(train[2].mean()),

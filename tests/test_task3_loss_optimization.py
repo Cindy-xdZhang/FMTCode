@@ -55,6 +55,7 @@ def test_weighted_bce_default_matches_torch_reference():
         "loss": "weighted_bce",
         "positive_weight_scale": 1.0,
         "positive_weight": 3.0,
+        "sampled_positive_fraction": None,
         "focal_gamma": 0.0,
         "raw_hardness_scale": 0.0,
         "raw_hardness_power": 1.0,
@@ -67,6 +68,10 @@ def test_weighted_bce_default_matches_torch_reference():
         "pairwise_ranking_loss_weight": 0.0,
         "pairwise_ranking_margin": 0.0,
         "pairwise_ranking_temperature": 1.0,
+        "overlap_loss_weight": 0.0,
+        "overlap_false_positive_weight": 0.5,
+        "overlap_false_negative_weight": 0.5,
+        "overlap_smoothing": 1.0,
     }
 
 
