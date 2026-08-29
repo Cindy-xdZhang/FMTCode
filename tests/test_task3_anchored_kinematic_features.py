@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from FMT_Utils.DFT_FMT_3D import (
     pathline_anchored_kinematic_dft_features_3d,
 )
+from FMT_Utils.Task12Data_3D import feature_matrix
 
 
 def _rotation(seed=0):
@@ -54,6 +55,66 @@ def test_shape_and_constant_rigid_invariance():
     # Two channels x ((4 real + 3 imaginary) + 7 anchors).
     assert before.shape == (12, 28)
     torch.testing.assert_close(before, after, rtol=1e-8, atol=1e-8)
+
+
+def test_default_anchor_recipe_is_exact_historical_all_recipe():
+    primitives = _primitives(count=5, length=8)
+    historical = pathline_anchored_kinematic_dft_features_3d(
+        primitives, num_freq=2, window=8, channels=(0,),
+        return_numpy=False,
+    )
+    explicit = pathline_anchored_kinematic_dft_features_3d(
+        primitives, num_freq=2, window=8, channels=(0,),
+        anchor_names=(
+            "first", "early_mean", "mean", "std", "max", "min", "last",
+        ),
+        include_dft=True,
+        return_numpy=False,
+    )
+    assert historical.shape == explicit.shape == (5, 10)
+    torch.testing.assert_close(historical, explicit, rtol=0.0, atol=0.0)
+
+
+def test_anchor_ablation_shapes_and_task12_names():
+    primitives = _primitives(count=5, length=8).float()
+    record = {
+        "raw": primitives.numpy().reshape(5, -1),
+        "fmt": np.zeros((5, 161), dtype=np.float32),
+        "features": {},
+    }
+    expected_widths = {
+        "aivd1w3_first": 1,
+        "aivd1w3_early": 2,
+        "aivd1w3_dft": 1,
+        "aivd1w3_core": 3,
+        "aivd1w3_stats": 5,
+        "aivd2w8_dft": 3,
+        "aivd2w8_core": 5,
+        "aivd2w8_stats": 7,
+        "aivd1w3d2_core": 3,
+    }
+    for name, width in expected_widths.items():
+        values = feature_matrix(record, name, "cpu")
+        assert values.shape == (5, width), name
+        assert np.isfinite(values).all(), name
+
+
+def test_anchor_ablation_rejects_empty_or_unknown_summaries():
+    primitives = _primitives(count=3, length=8)
+    for kwargs in (
+        {"anchor_names": (), "include_dft": False},
+        {"anchor_names": ("unknown",), "include_dft": False},
+        {"anchor_names": ("first", "first"), "include_dft": False},
+    ):
+        try:
+            pathline_anchored_kinematic_dft_features_3d(
+                primitives, num_freq=1, window=3, return_numpy=False,
+                **kwargs,
+            )
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"invalid anchor recipe accepted: {kwargs}")
 
 
 if __name__ == "__main__":

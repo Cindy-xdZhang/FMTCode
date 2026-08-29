@@ -135,6 +135,66 @@ def _load_spec(path: str | Path) -> dict:
                 "exposed training and robust validation must use different "
                 "spatial populations"
             )
+    absolute_guard = dict(
+        spec.get("selection", {}).get("absolute_fmt_guard", {})
+    )
+    if absolute_guard:
+        tolerance = float(absolute_guard.get("tolerance", -1.0))
+        controls = dict(absolute_guard.get("by_group", {}))
+        source_selection = absolute_guard.get("source_selection")
+        source_selection_sha = str(
+            absolute_guard.get("source_selection_sha256", "")
+        )
+        if not 0.0 <= tolerance < 1.0:
+            raise ValueError("absolute FMT guard tolerance must be in [0,1)")
+        if len(source_selection_sha) != 64:
+            raise ValueError(
+                "absolute FMT guard requires a full source selection SHA-256"
+            )
+        if source_selection is None:
+            raise ValueError(
+                "absolute FMT guard requires its source selection path"
+            )
+        source_selection_path = Path(source_selection)
+        if not source_selection_path.exists():
+            raise FileNotFoundError(source_selection_path)
+        if hashlib.sha256(source_selection_path.read_bytes()).hexdigest() != (
+            source_selection_sha.lower()
+        ):
+            raise RuntimeError("absolute FMT guard source selection changed")
+        if set(controls) != set(spec["groups"]):
+            raise ValueError(
+                "absolute FMT guard must provide one control per physical family"
+            )
+        for group_name, control in controls.items():
+            required_control = {"feature", "fmt_f1", "fmt_average_precision"}
+            if not required_control.issubset(control):
+                raise ValueError(
+                    f"absolute FMT guard for {group_name} misses "
+                    f"{sorted(required_control.difference(control))}"
+                )
+            for metric in ("fmt_f1", "fmt_average_precision"):
+                value = float(control[metric])
+                if not 0.0 <= value <= 1.0:
+                    raise ValueError(
+                        f"absolute FMT guard {group_name}.{metric} is invalid"
+                    )
+            feature = str(control["feature"])
+            if [
+                str(candidate["fmt_feature"])
+                for candidate in spec["candidates"]
+            ].count(feature) != 1:
+                raise ValueError(
+                    f"absolute FMT guard control {feature!r} for {group_name} "
+                    "must appear exactly once in candidates"
+                )
+    target_absolute_fmt_f1 = spec.get("selection", {}).get(
+        "target_absolute_fmt_f1"
+    )
+    if target_absolute_fmt_f1 is not None and not 0.0 <= float(
+        target_absolute_fmt_f1
+    ) <= 1.0:
+        raise ValueError("target_absolute_fmt_f1 must be in [0,1]")
     return spec
 
 
@@ -594,19 +654,50 @@ def _candidate_summary(spec: dict, group_name: str, candidate: dict) -> dict:
     }
 
 
-def _selection_key(row: dict) -> tuple[float, float, float, float]:
+def _selection_key(row: dict) -> tuple[float, ...]:
     """Rank by the registered Task3 FMT versus Raw-PCA residual comparison.
 
     Strong Raw and Raw-wide remain important reported baselines, but they are
     different model routes and do not replace the same-structure Raw-PCA arm
     used to isolate the contribution of FMT.
     """
-    return (
+    default = (
         float(row["fmt_minus_raw_pca_f1_macro"]),
         float(row["fmt_minus_raw_pca_ap_macro"]),
         float(row["worst_seed_f1_gain"]),
         float(row["fmt_f1_macro"]),
     )
+    if "absolute_fmt_guard_passed" not in row:
+        return default
+    return (float(bool(row["absolute_fmt_guard_passed"])), *default)
+
+
+def _apply_absolute_fmt_guard(spec: dict, group_name: str,
+                              row: dict) -> dict:
+    """Reject gain-only winners that materially lower absolute FMT quality."""
+    guard = dict(spec.get("selection", {}).get("absolute_fmt_guard", {}))
+    if not guard:
+        return row
+    control = dict(guard["by_group"][group_name])
+    tolerance = float(guard["tolerance"])
+    result = dict(row)
+    result.update({
+        "absolute_fmt_control_feature": str(control["feature"]),
+        "absolute_fmt_control_f1": float(control["fmt_f1"]),
+        "absolute_fmt_control_ap": float(control["fmt_average_precision"]),
+        "fmt_f1_delta_vs_absolute_control": (
+            float(row["fmt_f1_macro"]) - float(control["fmt_f1"])
+        ),
+        "fmt_ap_delta_vs_absolute_control": (
+            float(row["fmt_ap_macro"])
+            - float(control["fmt_average_precision"])
+        ),
+    })
+    result["absolute_fmt_guard_passed"] = bool(
+        result["fmt_f1_delta_vs_absolute_control"] >= -tolerance
+        and result["fmt_ap_delta_vs_absolute_control"] >= -tolerance
+    )
+    return result
 
 
 def select(config_path: str) -> Path:
@@ -616,9 +707,20 @@ def select(config_path: str) -> Path:
     selected = {}
     for group_name in spec["groups"]:
         rows = [
-            _candidate_summary(spec, group_name, candidate)
+            _apply_absolute_fmt_guard(
+                spec, group_name,
+                _candidate_summary(spec, group_name, candidate),
+            )
             for candidate in spec["candidates"]
         ]
+        if (
+            spec.get("selection", {}).get("absolute_fmt_guard")
+            and not any(row["absolute_fmt_guard_passed"] for row in rows)
+        ):
+            raise RuntimeError(
+                f"no {group_name} candidate preserves the frozen absolute "
+                "FMT F1 and Average Precision control"
+            )
         ranked = sorted(
             rows,
             key=_selection_key,
@@ -642,12 +744,30 @@ def select(config_path: str) -> Path:
     ap_gain = float(np.mean([
         row["gains"]["average_precision_vs_raw_pca"] for row in dataset_rows
     ]))
+    fmt_f1 = float(np.mean([
+        row["fmt"]["f1"] for row in dataset_rows
+    ]))
+    raw_pca_f1 = float(np.mean([
+        row["raw_pca"]["f1"] for row in dataset_rows
+    ]))
+    fmt_ap = float(np.mean([
+        row["fmt"]["average_precision"] for row in dataset_rows
+    ]))
+    raw_pca_ap = float(np.mean([
+        row["raw_pca"]["average_precision"] for row in dataset_rows
+    ]))
     target_gain = float(
         spec.get("selection", {}).get("target_dataset_macro_f1_gain", 0.15)
     )
     payload = {
         "experiment": spec["experiment"],
         "selection_rule": (
+            "family-specific: first require absolute FMT F1 and Average "
+            "Precision to remain within the preregistered tolerance of the "
+            "frozen family control, then maximize validation F1 gain over "
+            "the same-width Raw-PCA residual; tie-break by AP gain, worst "
+            "seed, and absolute FMT F1"
+            if spec.get("selection", {}).get("absolute_fmt_guard") else
             "family-specific: maximize validation F1 gain over the same-width "
             "Raw-PCA residual; tie-break by AP gain, worst seed, and absolute "
             "FMT F1. Strong Raw is reported but does not select the recipe"
@@ -662,8 +782,23 @@ def select(config_path: str) -> Path:
         "confirmation_opened": False,
         "top_k_by_group": selected,
         "primary_by_group": primary,
+        "absolute_fmt_guard": spec.get("selection", {}).get(
+            "absolute_fmt_guard"
+        ),
+        "development_dataset_macro_fmt_f1": fmt_f1,
+        "development_dataset_macro_raw_pca_f1": raw_pca_f1,
         "development_dataset_macro_f1_gain_vs_raw_pca": f1_gain,
+        "development_dataset_macro_fmt_ap": fmt_ap,
+        "development_dataset_macro_raw_pca_ap": raw_pca_ap,
         "development_dataset_macro_ap_gain_vs_raw_pca": ap_gain,
+        "target_absolute_fmt_f1": spec.get("selection", {}).get(
+            "target_absolute_fmt_f1"
+        ),
+        "absolute_fmt_f1_target_reached": (
+            fmt_f1 >= float(spec["selection"]["target_absolute_fmt_f1"])
+            if spec.get("selection", {}).get("target_absolute_fmt_f1")
+            is not None else None
+        ),
         "development_target_gain": target_gain,
         "development_target_reached": f1_gain >= target_gain,
         "dataset_details": dataset_rows,

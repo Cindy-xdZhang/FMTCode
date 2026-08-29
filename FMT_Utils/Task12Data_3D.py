@@ -17,6 +17,44 @@ from FMT_Utils.DFT_FMT_3D import (
 )
 
 
+_ANCHORED_FEATURE = re.compile(
+    r"a(ivd|ivdq|kin)(\d+)w(\d+)(log)?(d2)?"
+    r"(?:_(all|dft|first|early|core|stats))?"
+)
+
+
+def _anchored_recipe(name):
+    match = _ANCHORED_FEATURE.fullmatch(str(name))
+    if match is None:
+        return None
+    channel_name, num_freq, window, log_suffix, d2_suffix, ablation = (
+        match.groups()
+    )
+    channels = {
+        "ivd": (0,),
+        "ivdq": (0, 3),
+        "kin": (0, 1, 2, 3),
+    }[channel_name]
+    anchor_names, include_dft = {
+        None: (("first", "early_mean", "mean", "std", "max", "min", "last"), True),
+        "all": (("first", "early_mean", "mean", "std", "max", "min", "last"), True),
+        "dft": ((), True),
+        "first": (("first",), False),
+        "early": (("first", "early_mean"), False),
+        "core": (("first", "early_mean"), True),
+        "stats": (("first", "early_mean", "mean", "std"), True),
+    }[ablation]
+    return {
+        "num_freq": int(num_freq),
+        "window": int(window),
+        "channels": channels,
+        "log_compress": bool(log_suffix),
+        "endpoint_order": 2 if d2_suffix else 1,
+        "anchor_names": anchor_names,
+        "include_dft": include_dft,
+    }
+
+
 def load_cache_records(cache_dir, expected_count=None, ordinals=None):
     """Load selected cache records without opening held-out slices.
 
@@ -63,23 +101,11 @@ def load_cache_records(cache_dir, expected_count=None, ordinals=None):
 
 def _extended_feature(primitives, name, device):
     tensor = torch.from_numpy(primitives).to(device)
-    anchored = re.fullmatch(
-        r"a(ivd|ivdq|kin)(\d+)w(\d+)(log)?(d2)?", str(name)
-    )
-    if anchored:
-        channel_name, num_freq, window, log_suffix, d2_suffix = anchored.groups()
-        channels = {
-            "ivd": (0,),
-            "ivdq": (0, 3),
-            "kin": (0, 1, 2, 3),
-        }[channel_name]
+    anchored = _anchored_recipe(name)
+    if anchored is not None:
         return pathline_anchored_kinematic_dft_features_3d(
             tensor,
-            num_freq=int(num_freq),
-            window=int(window),
-            channels=channels,
-            log_compress=bool(log_suffix),
-            endpoint_order=2 if d2_suffix else 1,
+            **anchored,
         ).astype(np.float32)
     if name.startswith("gram"):
         return time_local_gram_dft_features_3d(
@@ -109,9 +135,7 @@ def feature_matrix(record, name, device="cpu"):
         indices = fmt_feature_indices_3d(name.removeprefix("fmt_"))
         value = record["fmt"][:, indices]
     elif (name.startswith("gram") or name.startswith("kin")
-          or re.fullmatch(
-              r"a(ivd|ivdq|kin)\d+w\d+(log)?(d2)?", str(name)
-          )):
+          or _anchored_recipe(name) is not None):
         length = record["raw"].shape[1] // (7 * 3)
         primitives = record["raw"].reshape(-1, 7, length, 3)
         value = _extended_feature(primitives, name, torch.device(device))

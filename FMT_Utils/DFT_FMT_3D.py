@@ -255,15 +255,20 @@ def pathline_anchored_kinematic_dft_features_3d(
     sample_times: torch.Tensor | None = None,
     log_compress: bool = False,
     endpoint_order: int = 1,
+    anchor_names: tuple[str, ...] = (
+        "first", "early_mean", "mean", "std", "max", "min", "last",
+    ),
+    include_dft: bool = True,
 ):
     """Combine early-window Fourier coefficients with time-domain anchors.
 
     Task3 labels describe the seed time, while a low-frequency temporal DFT
     summarizes the complete integration window.  This parameter-free block
-    keeps the DFT and appends seven anchors per selected scalar sequence:
-    first value, early-quarter mean, full-window mean, standard deviation,
-    maximum, minimum, and last value.  It therefore preserves seed-local
-    evidence without discarding later pathline deformation.
+    keeps the DFT and, by default, appends seven anchors per selected scalar
+    sequence: first value, early-quarter mean, full-window mean, standard
+    deviation, maximum, minimum, and last value.  ``anchor_names`` and
+    ``include_dft`` expose deterministic ablations without changing the
+    historical default representation.
 
     Channel indices follow
     :func:`pathline_velocity_gradient_scalar_sequences_3d`.
@@ -295,28 +300,41 @@ def pathline_anchored_kinematic_dft_features_3d(
             f"num_freq={num_freq} must be in [1,{independent_bins}] "
             f"for window={series.shape[1]}"
         )
-    spectrum = torch.fft.rfft(series, dim=1)[:, :int(num_freq)]
-    dft = torch.cat(
-        (
-            spectrum.real.transpose(1, 2).flatten(1),
-            spectrum.imag[:, 1:].transpose(1, 2).flatten(1),
-        ),
-        dim=1,
-    )
     early_count = max(2, int(series.shape[1]) // 4)
-    anchors = torch.stack(
-        (
-            series[:, 0],
-            series[:, :early_count].mean(dim=1),
-            series.mean(dim=1),
-            series.std(dim=1, unbiased=False),
-            series.amax(dim=1),
-            series.amin(dim=1),
-            series[:, -1],
-        ),
-        dim=-1,
-    ).flatten(1)
-    features = torch.cat((dft, anchors), dim=1)
+    anchor_values = {
+        "first": series[:, 0],
+        "early_mean": series[:, :early_count].mean(dim=1),
+        "mean": series.mean(dim=1),
+        "std": series.std(dim=1, unbiased=False),
+        "max": series.amax(dim=1),
+        "min": series.amin(dim=1),
+        "last": series[:, -1],
+    }
+    anchor_names = tuple(str(name) for name in anchor_names)
+    if len(anchor_names) != len(set(anchor_names)):
+        raise ValueError("anchor_names must be unique")
+    unknown_anchors = sorted(set(anchor_names) - set(anchor_values))
+    if unknown_anchors:
+        raise ValueError(f"unknown anchored kinematic summaries: {unknown_anchors}")
+    if not bool(include_dft) and not anchor_names:
+        raise ValueError("anchored features cannot disable both DFT and anchors")
+
+    blocks = []
+    if bool(include_dft):
+        spectrum = torch.fft.rfft(series, dim=1)[:, :int(num_freq)]
+        blocks.append(torch.cat(
+            (
+                spectrum.real.transpose(1, 2).flatten(1),
+                spectrum.imag[:, 1:].transpose(1, 2).flatten(1),
+            ),
+            dim=1,
+        ))
+    if anchor_names:
+        blocks.append(torch.stack(
+            tuple(anchor_values[name] for name in anchor_names),
+            dim=-1,
+        ).flatten(1))
+    features = torch.cat(blocks, dim=1) if len(blocks) > 1 else blocks[0]
     if not torch.isfinite(features).all():
         raise ValueError("non-finite anchored kinematic Fourier features")
     return features.detach().cpu().numpy() if return_numpy else features
