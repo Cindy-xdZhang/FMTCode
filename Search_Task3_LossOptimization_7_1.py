@@ -117,6 +117,12 @@ def _load_optimization_spec(path: str | Path) -> dict:
                 f"combination source {name!r} requires selection and "
                 "expected_experiment"
             )
+        kind = str(row.get("kind", "optimization"))
+        if kind not in {"optimization", "stage1_feature"}:
+            raise ValueError(
+                f"combination source {name!r} has unsupported kind {kind!r}"
+            )
+        row["kind"] = kind
     if combination_sources:
         for candidate in candidates:
             sources = [str(value) for value in candidate.get("sources", [])]
@@ -173,7 +179,7 @@ def _merge_combination_recipe(candidate_id: str, source_names: list[str],
         # bound by the source selection SHA-256.
         unsupported = sorted(
             set(recipe) - {
-                "id", "training", "model", "sources",
+                "id", "training", "model", "fmt_feature", "sources",
                 "source_optimization_ids",
             }
         )
@@ -191,6 +197,14 @@ def _merge_combination_recipe(candidate_id: str, source_names: list[str],
                         f"{source_names}: {target[key]!r} vs {value!r}"
                     )
                 target[key] = value
+        if "fmt_feature" in recipe:
+            value = str(recipe["fmt_feature"])
+            if "fmt_feature" in merged and merged["fmt_feature"] != value:
+                raise ValueError(
+                    "conflicting fmt_feature while combining "
+                    f"{source_names}: {merged['fmt_feature']!r} vs {value!r}"
+                )
+            merged["fmt_feature"] = value
     for section in ("training", "model"):
         if not merged.get(section):
             merged.pop(section, None)
@@ -199,7 +213,9 @@ def _merge_combination_recipe(candidate_id: str, source_names: list[str],
 
 def _merge_candidate_overrides(merged: dict, candidate: dict) -> dict:
     """Add locally declared knobs without overwriting frozen source values."""
-    unsupported = sorted(set(candidate) - {"id", "sources", "training", "model"})
+    unsupported = sorted(
+        set(candidate) - {"id", "sources", "training", "model", "fmt_feature"}
+    )
     if unsupported:
         raise ValueError(
             f"unsupported local candidate keys for {candidate['id']}: "
@@ -217,6 +233,14 @@ def _merge_candidate_overrides(merged: dict, candidate: dict) -> dict:
             source_values[key] = value
         if source_values:
             result[section] = source_values
+    if "fmt_feature" in candidate:
+        value = str(candidate["fmt_feature"])
+        if "fmt_feature" in result and result["fmt_feature"] != value:
+            raise ValueError(
+                "local candidate conflicts with frozen fmt_feature: "
+                f"{result['fmt_feature']!r} vs {value!r}"
+            )
+        result["fmt_feature"] = value
     return result
 
 
@@ -238,10 +262,36 @@ def _resolve_combination_candidates(spec: dict) -> tuple[dict, dict]:
         hashes[name] = _sha256(path)
     resolved = {}
     for group_name in spec["groups"]:
-        source_rows = {
-            name: payload["primary_by_group"][group_name]
-            for name, payload in selections.items()
-        }
+        source_rows = {}
+        for name, payload in selections.items():
+            row = dict(payload["primary_by_group"][group_name])
+            kind = str(spec["combination_sources"][name]["kind"])
+            if kind == "optimization":
+                required = {"optimization_id", "optimization_recipe_json"}
+                missing = sorted(required.difference(row))
+                if missing:
+                    raise RuntimeError(
+                        f"optimization source {name!r}/{group_name} misses "
+                        f"{missing}"
+                    )
+                source_rows[name] = row
+            elif kind == "stage1_feature":
+                required = {"candidate_id", "fmt_feature"}
+                missing = sorted(required.difference(row))
+                if missing:
+                    raise RuntimeError(
+                        f"stage1 feature source {name!r}/{group_name} misses "
+                        f"{missing}"
+                    )
+                source_rows[name] = {
+                    "optimization_id": str(row["candidate_id"]),
+                    "optimization_recipe_json": json.dumps({
+                        "id": str(row["candidate_id"]),
+                        "fmt_feature": str(row["fmt_feature"]),
+                    }, sort_keys=True),
+                }
+            else:  # guarded by _load_optimization_spec
+                raise AssertionError(f"unsupported combination kind {kind!r}")
         resolved[group_name] = []
         for candidate in spec["optimization_candidates"]:
             merged = _merge_combination_recipe(
@@ -339,6 +389,8 @@ def _optimization_candidate(spec: dict, manifest: dict, dataset: str,
     training.update(recipe.get("training", {}))
     model = dict(recipe.get("model", {}))
     base.update(model)
+    if "fmt_feature" in recipe:
+        base["fmt_feature"] = str(recipe["fmt_feature"])
     base["training"] = training
     base["id"] = str(recipe["id"])
     base["optimization_id"] = str(recipe["id"])
@@ -398,6 +450,16 @@ def static_preflight(config_path: str) -> None:
     print(json.dumps(payload, indent=2))
 
 
+def _array_fingerprint(values: np.ndarray) -> str:
+    """Hash shape, dtype, and bytes without retaining a second full array."""
+    array = np.ascontiguousarray(values)
+    digest = hashlib.sha256()
+    digest.update(str(array.dtype).encode("ascii"))
+    digest.update(np.asarray(array.shape, dtype=np.int64).tobytes())
+    digest.update(memoryview(array).cast("B"))
+    return digest.hexdigest()
+
+
 def preflight(config_path: str) -> Path:
     spec = _load_optimization_spec(config_path)
     selection_path = Path(spec["upstream_selection"])
@@ -411,23 +473,73 @@ def preflight(config_path: str) -> Path:
     datasets = []
     for dataset in spec["datasets"]:
         group_name, group = _group_for_dataset(spec, dataset)
-        first = _optimization_candidate(spec, manifest_stub, dataset, 0)
-        train, validation = _load_search_splits(
-            spec, dataset, first, torch.device("cpu")
-        )
-        fmt_dim = int(train[1].shape[1])
-        raw_dim = int(train[0].reshape(len(train[0]), -1).shape[1])
-        if fmt_dim > raw_dim:
-            raise RuntimeError(f"{dataset}: FMT width exceeds Raw width")
-        if not (0 < int(train[2].sum()) < len(train[2])):
-            raise RuntimeError(f"{dataset}: training labels are single-class")
-        if not (0 < int(validation[2].sum()) < len(validation[2])):
-            raise RuntimeError(f"{dataset}: validation labels are single-class")
+        first = None
+        reference_signature = None
+        dataset_summary = None
+        split_by_feature = {}
         recipes = []
         for index in range(len(spec["optimization_candidates"])):
             candidate = _optimization_candidate(
                 spec, manifest_stub, dataset, index
             )
+            feature = str(candidate["fmt_feature"])
+            if feature not in split_by_feature:
+                train, validation = _load_search_splits(
+                    spec, dataset, candidate, torch.device("cpu")
+                )
+                fmt_dim = int(train[1].shape[1])
+                raw_dim = int(np.prod(train[0].shape[1:], dtype=np.int64))
+                if fmt_dim > raw_dim:
+                    raise RuntimeError(
+                        f"{dataset}/{candidate['id']}: FMT width exceeds Raw width"
+                    )
+                if not (0 < int(train[2].sum()) < len(train[2])):
+                    raise RuntimeError(
+                        f"{dataset}/{candidate['id']}: training labels are "
+                        "single-class"
+                    )
+                if not (0 < int(validation[2].sum()) < len(validation[2])):
+                    raise RuntimeError(
+                        f"{dataset}/{candidate['id']}: validation labels are "
+                        "single-class"
+                    )
+                signature = {
+                    "raw_dim": raw_dim,
+                    "training_samples": int(len(train[2])),
+                    "training_positive_count": int(train[2].sum()),
+                    "validation_samples": int(len(validation[2])),
+                    "validation_positive_count": int(validation[2].sum()),
+                    "training_raw_sha256": _array_fingerprint(train[0]),
+                    "training_labels_sha256": _array_fingerprint(train[2]),
+                    "validation_raw_sha256": _array_fingerprint(validation[0]),
+                    "validation_labels_sha256": _array_fingerprint(
+                        validation[2]
+                    ),
+                }
+                split_by_feature[feature] = (
+                    train, validation, fmt_dim, raw_dim, signature
+                )
+                if reference_signature is None:
+                    reference_signature = signature
+                    first = candidate
+                    dataset_summary = {
+                        key: signature[key] for key in (
+                            "raw_dim", "training_samples",
+                            "training_positive_count", "validation_samples",
+                            "validation_positive_count",
+                        )
+                    }
+                elif signature != reference_signature:
+                    changed = sorted(
+                        key for key in signature
+                        if signature[key] != reference_signature[key]
+                    )
+                    raise RuntimeError(
+                        f"{dataset}/{candidate['id']}: candidate-specific FMT "
+                        "feature changed paired Raw/label population: "
+                        f"{changed}"
+                    )
+            train, validation, fmt_dim, raw_dim, _ = split_by_feature[feature]
             budget = _parameter_budget(
                 spec, group, candidate, dataset, fmt_dim
             )
@@ -443,18 +555,21 @@ def preflight(config_path: str) -> Path:
                 run_spec["training"], float(train[2].sum()),
                 float(len(train[2]) - train[2].sum()), torch.device("cpu"),
             )
-            recipes.append({"optimization_id": candidate["id"], **budget})
+            recipes.append({
+                "optimization_id": candidate["id"],
+                "fmt_feature": candidate["fmt_feature"],
+                "fmt_dim": fmt_dim,
+                **budget,
+            })
+        if first is None or dataset_summary is None:
+            raise RuntimeError(f"{dataset}: no optimization candidate was checked")
         datasets.append({
             "dataset": dataset,
             "physical_family": group_name,
             "fmt_feature": first["fmt_feature"],
             "upstream_candidate_id": first["upstream_candidate_id"],
-            "fmt_dim": fmt_dim,
-            "raw_dim": raw_dim,
-            "training_samples": int(len(train[2])),
-            "training_positive_count": int(train[2].sum()),
-            "validation_samples": int(len(validation[2])),
-            "validation_positive_count": int(validation[2].sum()),
+            "fmt_dim": recipes[0]["fmt_dim"],
+            **dataset_summary,
             "recipes": recipes,
         })
     payload = {
