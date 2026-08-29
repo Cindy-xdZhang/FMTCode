@@ -37,3 +37,21 @@ F1 gain, then absolute FMT F1 and the registered robustness tie-breakers.
 Joint development target: F1 gain over Raw-PCA at least `0.195` and absolute
 FMT F1 at least `0.893`. Failure of either requirement is retained as a
 negative result. Any winner still requires a fresh spatial population.
+
+## Ibex deployment
+
+Implementation commit `b7b7a9b` was pushed before deployment. The archive
+SHA-256 is `b28b1d62...f819`; the remote canonical config SHA-256 is
+`2de75e79...7a44`. Local and remote runs both passed the 11 relevant unit
+tests; remote Python compilation and all three `bash -n` checks also passed.
+
+Submitted at `2026-08-30T02:05:34+03:00`: preflight job `51003042`, GPU array
+`51003043[0-119%24]`, and selector `51003044`. The GPU array depends on the
+preflight, and the selector depends on every array child. No partial metric is
+used before the selector completes.
+
+The remote full preflight completed at `02:06:53+03:00` in 78 seconds with
+exit code zero and empty stderr. It confirmed 10 datasets, 12 candidates, 120
+array mappings, 720 paired trainings, no capacity violation, and closed
+confirmation state. Its manifest SHA-256 is `fc7ef7ba...19ca`. The GPU array
+dependency is released and currently waits only for the user GPU quota.
