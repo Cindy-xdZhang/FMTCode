@@ -1,0 +1,69 @@
+experiment: Verify_Task3_TrainingResidualScale_32.1
+output_root: outputs/Verify_Task3_TrainingResidualScale_32.1
+task: Task3
+
+# Adaptive development search designed without reading partial results from
+# 27.1--31.2. It isolates the residual multiplier used only while optimizing
+# the correction branch; validation-time fusion alpha remains selected by the
+# frozen 5.2 protocol.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  feature:
+    kind: stage1_feature
+    selection: outputs/Verify_Task3_AnchoredFeatureDecomposition_22.1/stage1_selection.json
+    expected_experiment: Verify_Task3_AnchoredFeatureDecomposition_22.1
+
+# Log-like coverage below and above the exact historical alpha=1 control.
+# Verify_Task3_LossOptimization_7.1 tried only alpha 2 and 3; this search tests
+# whether the Smoke alpha-2 signal or a lower-gradient regime generalizes when
+# paired with the stronger 22.1 anchored feature.
+optimization_candidates:
+  - {id: t00_control_a1, sources: [feature],
+     training: {training_alpha: 1.0}}
+  - {id: t01_a0125, sources: [feature],
+     training: {training_alpha: 0.125}}
+  - {id: t02_a025, sources: [feature],
+     training: {training_alpha: 0.25}}
+  - {id: t03_a05, sources: [feature],
+     training: {training_alpha: 0.5}}
+  - {id: t04_a075, sources: [feature],
+     training: {training_alpha: 0.75}}
+  - {id: t05_a15, sources: [feature],
+     training: {training_alpha: 1.5}}
+  - {id: t06_a2, sources: [feature],
+     training: {training_alpha: 2.0}}
+  - {id: t07_a3, sources: [feature],
+     training: {training_alpha: 3.0}}
+  - {id: t08_a4, sources: [feature],
+     training: {training_alpha: 4.0}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: t00_control_a1
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.195
+  target_absolute_fmt_f1: 0.893
+  confirmation_opened: false
