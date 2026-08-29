@@ -35,6 +35,9 @@ PAIRWISE_RANKING_CONFIG = (
 COMBINED_CONFIG = (
     ROOT / "config" / "Verify_Task3_CombinedOptimization_11.1.yaml"
 )
+BALANCED_COMBINATION_CONFIG = (
+    ROOT / "config" / "Verify_Task3_BalancedCombination_14.1.yaml"
+)
 
 
 def test_weighted_bce_default_matches_torch_reference():
@@ -329,6 +332,15 @@ def test_combined_search_declares_full_factorial_and_array_bounds():
     assert _decode_job(spec, 159) == ("smokeBuoyancy", 15)
 
 
+def test_balanced_combination_search_is_small_and_array_bounds_match():
+    spec = _load_optimization_spec(BALANCED_COMBINATION_CONFIG)
+    assert set(spec["combination_sources"]) == {"core", "balanced"}
+    assert len(spec["optimization_candidates"]) == 2
+    assert spec["paired_seeds"] == [40, 41, 42]
+    assert spec["optimization_selection"]["confirmation_opened"] is False
+    assert _decode_job(spec, 19) == ("smokeBuoyancy", 1)
+
+
 def test_combination_merge_is_nested_traceable_and_rejects_conflicts():
     rows = {
         "loss": {
@@ -360,6 +372,48 @@ def test_combination_merge_is_nested_traceable_and_rejects_conflicts():
     })
     with pytest.raises(ValueError, match="conflicting training"):
         _merge_combination_recipe("x", ["loss", "ranking"], rows)
+
+
+def test_completed_combination_can_be_merged_with_balanced_sampler():
+    rows = {
+        "core": {
+            "optimization_id": "m15_all",
+            "optimization_recipe_json": json.dumps({
+                "id": "m15_all",
+                "sources": ["loss", "hardness", "correction", "ranking"],
+                "source_optimization_ids": {
+                    "loss": "o09", "hardness": "h02",
+                    "correction": "r00", "ranking": "q04",
+                },
+                "training": {
+                    "focal_gamma": 2.0,
+                    "raw_hardness_scale": 1.0,
+                },
+            }),
+        },
+        "balanced": {
+            "optimization_id": "b07_q020_batch256",
+            "optimization_recipe_json": json.dumps({
+                "id": "b07_q020_batch256",
+                "training": {
+                    "minibatch_positive_fraction": 0.2,
+                    "batch_size": 256,
+                },
+            }),
+        },
+    }
+    merged = _merge_combination_recipe(
+        "z01_core_balanced", ["core", "balanced"], rows
+    )
+    assert merged["source_optimization_ids"] == {
+        "core": "m15_all", "balanced": "b07_q020_batch256"
+    }
+    assert merged["training"] == {
+        "focal_gamma": 2.0,
+        "raw_hardness_scale": 1.0,
+        "minibatch_positive_fraction": 0.2,
+        "batch_size": 256,
+    }
 
 
 def test_base_config_hash_is_independent_of_newline_style(tmp_path):

@@ -136,7 +136,17 @@ def _merge_combination_recipe(candidate_id: str, source_names: list[str],
         merged["source_optimization_ids"][str(source_name)] = str(
             row["optimization_id"]
         )
-        unsupported = sorted(set(recipe) - {"id", "training", "model"})
+        # A completed combination selector stores these two fields only as
+        # frozen provenance.  Allow that selector to become one source of a
+        # later, explicitly preregistered combination without treating its
+        # provenance as trainable hyperparameters.  Its exact recipe remains
+        # bound by the source selection SHA-256.
+        unsupported = sorted(
+            set(recipe) - {
+                "id", "training", "model", "sources",
+                "source_optimization_ids",
+            }
+        )
         if unsupported:
             raise ValueError(
                 f"unsupported keys from {source_name}: {unsupported}"
