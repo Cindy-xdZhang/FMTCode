@@ -13,10 +13,13 @@ import json
 import os
 from pathlib import Path
 
+import numpy as np
+
 from Build_Channel_Killing_Cache import build as build_channel
 from Build_Task2_Universality_Cache import build_dataset
 from Build_Task3_GlobalIVD_Labels import build as build_labels
 from DeepUtils.utils import EasyConfig
+from FMT_Utils.NetCDF_window_3D import inspect_netcdf_3d
 
 
 SETTINGS = {
@@ -53,10 +56,60 @@ SETTINGS = {
 SEED_GRID_PHASE = [0.318359375, 0.4561042524005485, -0.3352]
 SELECTION_FILE = "outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json"
 MANIFEST = "outputs/mainExp_Task3_3D_5.2/frozen_recipe_manifest.json"
+SOURCE_STAGING_ENV = "TASK3_CONFIRMATION_SOURCE_MANIFEST"
 
 
 def _portable_manifest_path(path: Path) -> str:
     return path.as_posix()
+
+
+def _sha256(path: str | Path) -> str:
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def _source_staging_manifest() -> tuple[Path | None, dict | None]:
+    """Load an operational source-path map without changing the protocol.
+
+    The scientific schedule remains in ``SETTINGS``.  A staging manifest may
+    only replace an unavailable source path and remap an original source index
+    to the start of a byte-equivalent, pre-strided temporal window pack.  It
+    cannot add/drop datasets or alter the original four time indices.
+    """
+    value = os.environ.get(SOURCE_STAGING_ENV)
+    if not value:
+        return None, None
+    path = Path(value)
+    if not path.exists():
+        raise FileNotFoundError(path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    expected_datasets = {
+        dataset
+        for settings in SETTINGS.values()
+        for dataset in settings["indices"]
+    }
+    observed = set(payload.get("datasets", {}))
+    if observed != expected_datasets:
+        raise RuntimeError(
+            "source staging manifest dataset set changed: "
+            f"missing={sorted(expected_datasets - observed)}, "
+            f"extra={sorted(observed - expected_datasets)}"
+        )
+    if list(payload.get("seed_grid_phase", [])) != list(SEED_GRID_PHASE):
+        raise RuntimeError("source staging manifest changed the seed-grid phase")
+    if not bool(payload.get("scientific_protocol_unchanged", False)):
+        raise RuntimeError("source staging manifest lacks equivalence declaration")
+    return path, payload
+
+
+def source_staging_identity() -> dict | None:
+    path, payload = _source_staging_manifest()
+    if path is None:
+        return None
+    return {
+        "path": str(path.resolve()),
+        "sha256": _sha256(path),
+        "experiment": str(payload.get("experiment", "")),
+    }
 
 
 def _require_exposed_population(
@@ -145,7 +198,100 @@ def _cache_config(group: str) -> EasyConfig:
     config.output.result_dir = (
         f"outputs/mainExp_Task3_3D_5.2/unused_reference_{group}"
     )
+    staging_path, staging = _source_staging_manifest()
+    if staging is not None:
+        entries = []
+        for raw_item in config.datasets:
+            item = dict(raw_item)
+            dataset = str(item["id"])
+            source = dict(staging["datasets"][dataset])
+            original = [int(value) for value in source["original_fixed_indices"]]
+            expected = [int(value) for value in settings["indices"][dataset]]
+            if original != expected:
+                raise RuntimeError(
+                    f"{dataset}: source staging changed original time indices"
+                )
+            effective = [int(value) for value in source["effective_fixed_indices"]]
+            if len(effective) != len(expected):
+                raise RuntimeError(
+                    f"{dataset}: staged time-index count changed"
+                )
+            staged_path = Path(source["path"])
+            if not staged_path.exists():
+                raise FileNotFoundError(staged_path)
+            expected_hash = source.get("sha256")
+            if expected_hash and _sha256(staged_path) != str(expected_hash):
+                raise RuntimeError(f"{dataset}: staged source SHA-256 changed")
+            item["path"] = str(staged_path)
+            entries.append(item)
+        config.datasets = entries
+        config.sampling.fixed_time_indices_by_dataset = {
+            dataset: [
+                int(value) for value in
+                staging["datasets"][dataset]["effective_fixed_indices"]
+            ]
+            for dataset in settings["indices"]
+        }
+        config.sampling.original_fixed_time_indices_by_dataset = {
+            dataset: [int(value) for value in indices]
+            for dataset, indices in settings["indices"].items()
+        }
+        config.sampling.source_staging_manifest = str(staging_path.resolve())
+        config.sampling.source_staging_manifest_sha256 = _sha256(staging_path)
     return config
+
+
+def source_preflight() -> dict:
+    """Verify every staged source before any confirmation cache is opened."""
+    staging_path, staging = _source_staging_manifest()
+    if staging is None:
+        raise RuntimeError(
+            f"{SOURCE_STAGING_ENV} is required for Ibex source preflight"
+        )
+    checked = {}
+    for group, settings in SETTINGS.items():
+        config = _cache_config(group)
+        future_intervals = int(np.ceil(
+            float(config.pathlines.dt_scale)
+            * int(config.pathlines.integration_steps)
+        ))
+        frame_count = future_intervals + 2
+        entries = {str(item["id"]): item for item in config.datasets}
+        for dataset in settings["indices"]:
+            source = dict(staging["datasets"][dataset])
+            path = Path(entries[dataset]["path"])
+            effective = [int(value) for value in source["effective_fixed_indices"]]
+            if path.suffix.lower() == ".nc":
+                info = inspect_netcdf_3d(path)
+                time_count = int(info["shape"]["t"])
+                if effective[-1] + frame_count > time_count:
+                    raise RuntimeError(
+                        f"{dataset}: staged source does not contain its final window"
+                    )
+            elif dataset != "channel" or path.suffix.lower() != ".vtk":
+                raise RuntimeError(
+                    f"{dataset}: unsupported staged source {path}"
+                )
+            checked[dataset] = {
+                "group": group,
+                "kind": str(source["kind"]),
+                "path": str(path.resolve()),
+                "original_fixed_indices": [
+                    int(value) for value in settings["indices"][dataset]
+                ],
+                "effective_fixed_indices": effective,
+                "frame_count": frame_count,
+                "exists": True,
+                "sha256_verified": bool(source.get("sha256")),
+            }
+    return {
+        "experiment": str(staging.get("experiment", "")),
+        "source_staging_manifest": str(staging_path.resolve()),
+        "source_staging_manifest_sha256": _sha256(staging_path),
+        "scientific_protocol_unchanged": True,
+        "seed_grid_phase": list(SEED_GRID_PHASE),
+        "datasets": checked,
+    }
 
 
 def _jobs() -> list[tuple[str, str]]:

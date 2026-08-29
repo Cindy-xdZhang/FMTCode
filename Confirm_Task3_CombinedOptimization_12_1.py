@@ -284,6 +284,9 @@ def freeze(config_path: str | Path) -> Path:
         "confirmation_artifact_counts_at_freeze": artifact_counts,
         "confirmation_data_opened": False,
     }
+    source_staging = spatial.source_staging_identity()
+    if source_staging is not None:
+        payload["source_staging"] = source_staging
     target = Path(spec["recipe_manifest"])
     target.parent.mkdir(parents=True, exist_ok=True)
     if target.exists():
@@ -311,7 +314,31 @@ def _frozen_state(spec: dict) -> tuple:
         raise RuntimeError("Task3 11.1 preflight changed after freeze")
     if _sha256(selection_path) != manifest["optimization_selection_sha256"]:
         raise RuntimeError("Task3 11.1 selection changed after freeze")
+    staged = spatial.source_staging_identity()
+    frozen_staged = manifest.get("source_staging")
+    if staged is not None and staged != frozen_staged:
+        raise RuntimeError("Task3 confirmation source staging changed after freeze")
+    if frozen_staged is not None and staged is None:
+        raise RuntimeError("frozen Task3 source staging manifest is unavailable")
     return (*state, manifest_path, manifest)
+
+
+def source_preflight(config_path: str | Path) -> Path:
+    spec = _load_spec(config_path)
+    _frozen_state(spec)
+    report = spatial.source_preflight()
+    target = Path(spec["output_root"]) / "source_preflight.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        previous = json.loads(target.read_text(encoding="utf-8"))
+        if previous != report:
+            raise RuntimeError("Task3 source preflight changed")
+    else:
+        target.write_text(
+            json.dumps(report, indent=2, sort_keys=True), encoding="utf-8"
+        )
+    print(target)
+    return target
 
 
 def build_cache(config_path: str | Path, job_index: int,
@@ -637,7 +664,7 @@ def main() -> None:
     parser.add_argument("--config", required=True)
     parser.add_argument(
         "--mode",
-        choices=("static-preflight", "freeze", "cache", "labels", "dataset", "summary"),
+        choices=("static-preflight", "freeze", "source-preflight", "cache", "labels", "dataset", "summary"),
         required=True,
     )
     parser.add_argument("--job-index", type=int)
@@ -648,6 +675,8 @@ def main() -> None:
         static_preflight(args.config)
     elif args.mode == "freeze":
         freeze(args.config)
+    elif args.mode == "source-preflight":
+        source_preflight(args.config)
     elif args.mode == "cache":
         if args.job_index is None:
             parser.error("cache mode requires --job-index")

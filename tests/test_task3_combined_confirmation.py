@@ -103,6 +103,23 @@ class Task3CombinedConfirmationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "dataset order changed"):
                 _load_spec(partition_path)
 
+    def test_12_2_is_only_an_operational_source_staging_repair(self):
+        previous = yaml.safe_load(Path(
+            "config/Confirm_Task3_CombinedOptimization_12.1.yaml"
+        ).read_text(encoding="utf-8"))
+        repaired = yaml.safe_load(Path(
+            "config/Confirm_Task3_CombinedOptimization_12.2.yaml"
+        ).read_text(encoding="utf-8"))
+        allowed = {"experiment", "output_root", "recipe_manifest"}
+        for key in set(previous) | set(repaired):
+            if key not in allowed:
+                self.assertEqual(
+                    repaired[key], previous[key],
+                    f"12.2 changed scientific setting {key}",
+                )
+        self.assertNotEqual(repaired["experiment"], previous["experiment"])
+        _load_spec("config/Confirm_Task3_CombinedOptimization_12.2.yaml")
+
     def test_shard_validation_rejects_duplicates_and_requires_both_arms(self):
         with tempfile.TemporaryDirectory() as directory:
             checkpoint = Path(directory) / "checkpoint.pt"

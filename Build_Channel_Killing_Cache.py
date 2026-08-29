@@ -90,6 +90,13 @@ def build(config, overwrite=False):
         fixed_by_dataset.get("channel") if fixed_by_dataset is not None
         else getattr(config.sampling, "fixed_time_indices", None)
     )
+    original_fixed_by_dataset = getattr(
+        config.sampling, "original_fixed_time_indices_by_dataset", None
+    )
+    original_fixed_indices = (
+        original_fixed_by_dataset.get("channel")
+        if original_fixed_by_dataset is not None else None
+    )
     indices = resolve_time_indices(
         total_frames, int(config.sampling.timeslices), float(config.sampling.begin_fraction),
         float(config.sampling.end_fraction), required_future_frames=frame_count - 1,
@@ -158,6 +165,16 @@ def build(config, overwrite=False):
                     "ivd_threshold": threshold, "ivd_positive_count": int(reference.sum()),
                     "ivd_positive_fraction": float(reference.mean()),
                     "elapsed_seconds": time.time() - started}
+        if original_fixed_indices is not None:
+            metadata["original_source_start_index"] = int(
+                original_fixed_indices[ordinal]
+            )
+            metadata["source_staging_manifest"] = str(
+                config.sampling.source_staging_manifest
+            )
+            metadata["source_staging_manifest_sha256"] = str(
+                config.sampling.source_staging_manifest_sha256
+            )
         np.savez_compressed(output_path, raw_features=raw_features, fmt_features=fmt_features,
                             seeds=seeds_valid.astype(np.float32), reference=reference,
                             valid_mask=valid_mask, line_lengths=lengths,

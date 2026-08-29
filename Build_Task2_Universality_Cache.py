@@ -79,6 +79,13 @@ def build_dataset(config, dataset_id, overwrite=False):
         fixed_by_dataset.get(str(item.id)) if fixed_by_dataset is not None
         else getattr(config.sampling, "fixed_time_indices", None)
     )
+    original_fixed_by_dataset = getattr(
+        config.sampling, "original_fixed_time_indices_by_dataset", None
+    )
+    original_fixed_indices = (
+        original_fixed_by_dataset.get(str(item.id))
+        if original_fixed_by_dataset is not None else None
+    )
     indices = resolve_time_indices(
         info["shape"]["t"], int(config.sampling.timeslices),
         float(config.sampling.begin_fraction), float(config.sampling.end_fraction),
@@ -150,6 +157,16 @@ def build_dataset(config, dataset_id, overwrite=False):
             ),
             "elapsed_seconds": time.time() - started,
         }
+        if original_fixed_indices is not None:
+            metadata["original_source_start_index"] = int(
+                original_fixed_indices[ordinal]
+            )
+            metadata["source_staging_manifest"] = str(
+                config.sampling.source_staging_manifest
+            )
+            metadata["source_staging_manifest_sha256"] = str(
+                config.sampling.source_staging_manifest_sha256
+            )
         np.savez_compressed(
             output_path, raw_features=raw_features, fmt_features=fmt_features,
             seeds=seeds_valid.astype(np.float32), reference=reference,
