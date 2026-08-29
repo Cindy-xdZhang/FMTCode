@@ -16,7 +16,7 @@ from sklearn.metrics import (
     precision_recall_curve, precision_score, recall_score, roc_auc_score,
 )
 from torch import nn
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, Sampler, TensorDataset
 import yaml
 
 from FMT_Utils.DFT_FMT_3D import (
@@ -195,11 +195,92 @@ def _normalize_train_only(train, validation, test=None, raw_stats=None):
     return transform(train), transform(validation), transformed_test, stats
 
 
-def _loader(split, batch_size, shuffle, seed, pin_memory):
+class _ExactClassBalancedBatchSampler(Sampler):
+    """Deterministic exact-composition batches drawn from training labels.
+
+    Each epoch contains ``ceil(N / batch_size)`` full batches.  Class pools are
+    independently shuffled and cycled as needed, so minority examples may be
+    repeated while every paired arm receives the exact same index sequence for
+    the same labels and seed.  This sampler is training-only; validation and
+    test loaders retain the historical sequential contract.
+    """
+
+    def __init__(self, labels, batch_size, positive_fraction, seed):
+        labels = np.asarray(labels).reshape(-1)
+        if labels.size < 2:
+            raise ValueError("class-balanced sampling requires at least 2 samples")
+        if not np.all(np.isin(labels, (0, 1))):
+            raise ValueError("class-balanced sampling requires binary labels")
+        self.positive_indices = np.flatnonzero(labels.astype(bool))
+        self.negative_indices = np.flatnonzero(~labels.astype(bool))
+        if not len(self.positive_indices) or not len(self.negative_indices):
+            raise ValueError("class-balanced sampling requires both classes")
+        self.batch_size = int(batch_size)
+        if self.batch_size < 2:
+            raise ValueError("class-balanced batch_size must be at least 2")
+        requested = float(positive_fraction)
+        if not np.isfinite(requested) or not 0.0 < requested < 1.0:
+            raise ValueError("positive_fraction must be finite and in (0, 1)")
+        self.positive_per_batch = int(np.clip(
+            round(self.batch_size * requested), 1, self.batch_size - 1
+        ))
+        self.negative_per_batch = self.batch_size - self.positive_per_batch
+        self.actual_positive_fraction = (
+            self.positive_per_batch / self.batch_size
+        )
+        self.requested_positive_fraction = requested
+        self.num_batches = int(np.ceil(labels.size / self.batch_size))
+        self.seed = int(seed)
+        self.epoch = 0
+
+    @staticmethod
+    def _cycled_permutations(rng, pool, count):
+        chunks = []
+        remaining = int(count)
+        while remaining:
+            permutation = rng.permutation(pool)
+            take = min(remaining, len(permutation))
+            chunks.append(permutation[:take])
+            remaining -= take
+        return np.concatenate(chunks).astype(np.int64, copy=False)
+
+    def __iter__(self):
+        rng = np.random.default_rng(self.seed + 1_000_003 * self.epoch)
+        self.epoch += 1
+        positives = self._cycled_permutations(
+            rng, self.positive_indices,
+            self.num_batches * self.positive_per_batch,
+        ).reshape(self.num_batches, self.positive_per_batch)
+        negatives = self._cycled_permutations(
+            rng, self.negative_indices,
+            self.num_batches * self.negative_per_batch,
+        ).reshape(self.num_batches, self.negative_per_batch)
+        for positive, negative in zip(positives, negatives):
+            batch = np.concatenate((positive, negative))
+            yield rng.permutation(batch).tolist()
+
+    def __len__(self):
+        return self.num_batches
+
+
+def _loader(split, batch_size, shuffle, seed, pin_memory,
+            positive_fraction=None):
     raw, fmt, labels = split
     dataset = TensorDataset(
         torch.from_numpy(raw), torch.from_numpy(fmt), torch.from_numpy(labels)
     )
+    if positive_fraction is not None:
+        if not shuffle:
+            raise ValueError(
+                "class-balanced sampling is permitted only for training"
+            )
+        batch_sampler = _ExactClassBalancedBatchSampler(
+            labels, batch_size, positive_fraction, seed
+        )
+        return DataLoader(
+            dataset, batch_sampler=batch_sampler, num_workers=0,
+            pin_memory=bool(pin_memory),
+        )
     generator = torch.Generator().manual_seed(int(seed))
     return DataLoader(
         dataset, batch_size=int(batch_size), shuffle=bool(shuffle),

@@ -218,7 +218,8 @@ class _WeightedFocalBCEWithLogitsLoss(nn.Module):
 
 
 def _build_training_loss(training: dict, positive: float, negative: float,
-                         device: torch.device):
+                         device: torch.device,
+                         sampled_positive_fraction=None):
     """Build the declared paired Task3 loss and return its audit metadata."""
     if positive <= 0.0 or negative <= 0.0:
         raise ValueError("Task3 training labels must contain both classes")
@@ -231,7 +232,23 @@ def _build_training_loss(training: dict, positive: float, negative: float,
     gamma = float(training.get("focal_gamma", 0.0 if name == "weighted_bce" else 2.0))
     if name == "weighted_bce" and gamma != 0.0:
         raise ValueError("weighted_bce requires focal_gamma=0")
-    positive_weight = (negative / positive) * scale
+    if sampled_positive_fraction is None:
+        positive_weight = (negative / positive) * scale
+    else:
+        sampled_positive_fraction = float(sampled_positive_fraction)
+        if (
+            not np.isfinite(sampled_positive_fraction)
+            or not 0.0 < sampled_positive_fraction < 1.0
+        ):
+            raise ValueError(
+                "sampled_positive_fraction must be finite and in (0, 1)"
+            )
+        # Preserve the same class-balanced expected objective after changing
+        # the class prevalence seen by the sampler.  Under sampled prevalence
+        # q, q * pos_weight == (1-q) when scale=1.
+        positive_weight = (
+            (1.0 - sampled_positive_fraction) / sampled_positive_fraction
+        ) * scale
     hardness_scale = float(training.get("raw_hardness_scale", 0.0))
     hardness_power = float(training.get("raw_hardness_power", 1.0))
     hardness_temperature = float(
@@ -299,6 +316,7 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         "loss": name,
         "positive_weight_scale": scale,
         "positive_weight": positive_weight,
+        "sampled_positive_fraction": sampled_positive_fraction,
         "focal_gamma": gamma,
         "raw_hardness_scale": hardness_scale,
         "raw_hardness_power": hardness_power,
@@ -562,7 +580,13 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         else "raw_pca_residual"
     )
     pin = device.type == "cuda"
-    train_loader = _loader(train, spec["training"]["batch_size"], True, seed, pin)
+    requested_sampled_positive_fraction = spec["training"].get(
+        "minibatch_positive_fraction"
+    )
+    train_loader = _loader(
+        train, spec["training"]["batch_size"], True, seed, pin,
+        positive_fraction=requested_sampled_positive_fraction,
+    )
     validation_loader = _loader(validation, spec["training"]["batch_size"], False, seed, pin)
     test_loader = None if test is None else _loader(
         test, spec["training"]["batch_size"], False, seed, pin
@@ -596,8 +620,13 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         )
     positive = float(train[2].sum())
     negative = float(len(train[2]) - positive)
+    batch_sampler = train_loader.batch_sampler
+    sampled_positive_fraction = getattr(
+        batch_sampler, "actual_positive_fraction", None
+    )
     criterion, loss_metadata = _build_training_loss(
-        spec["training"], positive, negative, device
+        spec["training"], positive, negative, device,
+        sampled_positive_fraction=sampled_positive_fraction,
     )
     optimizer = torch.optim.AdamW(
         [parameter for parameter in model.parameters() if parameter.requires_grad],
@@ -823,6 +852,14 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "training_loss": loss_metadata["loss"],
         "training_positive_weight_scale": loss_metadata["positive_weight_scale"],
         "training_positive_weight": loss_metadata["positive_weight"],
+        "training_requested_minibatch_positive_fraction": (
+            "" if requested_sampled_positive_fraction is None
+            else float(requested_sampled_positive_fraction)
+        ),
+        "training_actual_minibatch_positive_fraction": (
+            "" if sampled_positive_fraction is None
+            else float(sampled_positive_fraction)
+        ),
         "training_focal_gamma": loss_metadata["focal_gamma"],
         "training_raw_hardness_scale": loss_metadata["raw_hardness_scale"],
         "training_raw_hardness_power": loss_metadata["raw_hardness_power"],
