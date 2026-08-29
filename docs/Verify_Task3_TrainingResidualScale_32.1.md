@@ -45,3 +45,20 @@ The joint development target is F1 gain at least `0.195` and absolute FMT F1
 at least `0.893`. Failure of either requirement is retained as a negative
 result. Any development winner still requires evaluation on a fresh spatial
 population.
+
+## Ibex deployment
+
+Implementation commit `eb00dc6` was pushed before deployment. The immutable
+archive SHA-256 is `7f8658a1...2270`; local raw and remote canonical config
+SHA-256 values are `3da738b6...5525` and `24f4c507...049f`, respectively (the
+difference is Windows CRLF versus Git-archive LF line endings). Local and
+remote runs passed the eight relevant unit tests; remote Python compilation
+and all three `bash -n` checks also passed.
+
+Submitted on 2026-08-30: preflight job `51003518`, GPU array
+`51003520[0-89%24]`, and selector `51003522`. The remote full preflight ran on
+`cn511-17` from 02:31:07 to 02:32:14, exited zero with empty stderr, and
+confirmed 10 datasets, 9 candidates, 540 paired trainings, and closed
+confirmation state. The remote manifest SHA-256 is `b8e560e3...2897`. The GPU
+array dependency is released and waits in the scheduler; the selector remains
+dependent on every array child. No partial metric may be read before selection.
