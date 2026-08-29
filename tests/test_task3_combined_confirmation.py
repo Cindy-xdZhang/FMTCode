@@ -5,6 +5,8 @@ from pathlib import Path
 
 import yaml
 
+from Evaluate_Task3_FrozenConfirmation import _resolve_raw_checkpoint_path
+
 from Confirm_Task3_CombinedOptimization_12_1 import (
     _aggregate,
     _load_spec,
@@ -14,6 +16,26 @@ from Confirm_Task3_CombinedOptimization_12_1 import (
 
 
 class Task3CombinedConfirmationTests(unittest.TestCase):
+    def test_relative_raw_checkpoint_resolves_against_optimization_root(self):
+        with tempfile.TemporaryDirectory() as directory:
+            optimization_root = Path(directory) / "optimization"
+            relative = Path("outputs/main/checkpoints/raw_seed40.pt")
+            expected = optimization_root / relative
+            expected.parent.mkdir(parents=True)
+            expected.write_bytes(b"frozen-raw-checkpoint")
+            self.assertEqual(
+                _resolve_raw_checkpoint_path(relative, optimization_root),
+                expected,
+            )
+
+    def test_relative_raw_checkpoint_rejects_missing_both_roots(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(FileNotFoundError, "tried"):
+                _resolve_raw_checkpoint_path(
+                    "outputs/main/checkpoints/missing.pt",
+                    Path(directory) / "optimization",
+                )
+
     def test_paired_summary_uses_fmt_minus_raw_pca(self):
         rows = []
         for dataset, family, raw, fmt in (

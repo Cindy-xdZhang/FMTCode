@@ -81,7 +81,36 @@ def _load_baseline(path, fmt_dim, device):
     return model.eval(), checkpoint
 
 
-def _load_residual(path, fmt_dim, device):
+def _resolve_raw_checkpoint_path(recorded_path, checkpoint_root=None):
+    """Resolve a checkpoint's recorded Raw path without changing its value.
+
+    Historical residual checkpoints store a repository-relative Raw checkpoint
+    path.  Evaluation may run from a separate, read-only confirmation checkout,
+    so the original optimization repository must be tried explicitly rather
+    than requiring a mutable symlink or rewriting the frozen checkpoint.
+    """
+    raw_path = Path(recorded_path)
+    candidates = [raw_path]
+    if checkpoint_root is not None and not raw_path.is_absolute():
+        candidates.append(Path(checkpoint_root) / raw_path)
+    existing = [candidate for candidate in candidates if candidate.exists()]
+    if len(existing) == 1:
+        return existing[0]
+    if len(existing) > 1:
+        resolved = {candidate.resolve() for candidate in existing}
+        if len(resolved) == 1:
+            return existing[0]
+        raise RuntimeError(
+            "residual checkpoint Raw path is ambiguous across roots: "
+            f"{existing}"
+        )
+    raise FileNotFoundError(
+        "residual checkpoint references missing Raw checkpoint; tried: "
+        + ", ".join(str(candidate) for candidate in candidates)
+    )
+
+
+def _load_residual(path, fmt_dim, device, checkpoint_root=None):
     checkpoint = torch.load(path, map_location="cpu", weights_only=False)
     if checkpoint["variant"] not in {"raw_fmt_residual", "raw_pca_residual"}:
         raise ValueError(f"expected residual checkpoint, got {checkpoint['variant']}")
@@ -91,11 +120,9 @@ def _load_residual(path, fmt_dim, device):
         if not transform or transform.get("kind") != "raw_pca":
             raise ValueError("Raw-PCA residual checkpoint misses its transform")
         auxiliary_dim = int(np.asarray(transform["components"]).shape[0])
-    raw_path = Path(checkpoint["raw_checkpoint"])
-    if not raw_path.exists():
-        raise FileNotFoundError(
-            f"residual checkpoint references missing Raw checkpoint: {raw_path}"
-        )
+    raw_path = _resolve_raw_checkpoint_path(
+        checkpoint["raw_checkpoint"], checkpoint_root=checkpoint_root
+    )
     raw_model, raw_checkpoint = _load_raw_model(raw_path, auxiliary_dim, device)
     for key in ("raw_mean", "raw_std"):
         if not np.array_equal(

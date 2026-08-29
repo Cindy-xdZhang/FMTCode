@@ -500,7 +500,8 @@ def run_dataset(config_path: str | Path, dataset: str) -> Path:
                 },
             )
             model, checkpoint = _load_residual(
-                checkpoint_path, confirmation[1].shape[1], device
+                checkpoint_path, confirmation[1].shape[1], device,
+                checkpoint_root=optimization_root,
             )
             targets, _, metrics = _evaluate_residual(
                 model, checkpoint, confirmation,
