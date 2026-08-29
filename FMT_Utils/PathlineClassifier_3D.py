@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 import torch
 from torch import nn
 
@@ -348,6 +350,63 @@ def _dense_head(input_dim, hidden_dim, depth, dropout,
     return nn.Sequential(*layers)
 
 
+def _last_linear(module):
+    """Return the terminal registered Linear layer of one output module."""
+    if module is None:
+        return None
+    linears = [child for child in module.modules()
+               if isinstance(child, nn.Linear)]
+    if not linears:
+        raise ValueError("residual output module contains no Linear layer")
+    return linears[-1]
+
+
+def _initialize_residual_outputs(modules, initialization="default", scale=1.0):
+    """Initialize only inference-time residual output layers.
+
+    Small or zero terminal weights preserve the frozen Raw logit at the start
+    of training while leaving every upstream representation layer unchanged.
+    The same rule can therefore be paired exactly between FMT and Raw-PCA.
+    """
+    initialization = str(initialization).lower()
+    scale = float(scale)
+    if initialization not in {"default", "zero", "normal", "xavier_uniform"}:
+        raise ValueError(
+            "residual_output_initialization must be 'default', 'zero', "
+            "'normal', or 'xavier_uniform'"
+        )
+    if not math.isfinite(scale) or scale < 0.0:
+        raise ValueError(
+            "residual_output_initialization_scale must be finite and non-negative"
+        )
+    if initialization in {"normal", "xavier_uniform"} and scale <= 0.0:
+        raise ValueError(
+            f"{initialization} residual initialization requires a positive scale"
+        )
+    if initialization == "default":
+        return
+
+    terminal_layers = []
+    seen = set()
+    for module in modules:
+        layer = _last_linear(module)
+        if layer is not None and id(layer) not in seen:
+            seen.add(id(layer))
+            terminal_layers.append(layer)
+    if not terminal_layers:
+        raise ValueError("no residual output layers were available to initialize")
+
+    for layer in terminal_layers:
+        if initialization == "zero":
+            nn.init.zeros_(layer.weight)
+        elif initialization == "normal":
+            nn.init.normal_(layer.weight, mean=0.0, std=scale)
+        else:
+            nn.init.xavier_uniform_(layer.weight, gain=scale)
+        if layer.bias is not None:
+            nn.init.zeros_(layer.bias)
+
+
 class TemporalLineEncoder3D(nn.Module):
     """Encode each pathline with shared temporal convolutions.
 
@@ -487,7 +546,9 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  auxiliary_projection="linear_layernorm_gelu",
                  auxiliary_hidden_dim=64, auxiliary_block_dims=None,
                  auxiliary_classifier_architecture="none",
-                 auxiliary_classifier_hidden_dim=64):
+                 auxiliary_classifier_hidden_dim=64,
+                 residual_output_initialization="default",
+                 residual_output_initialization_scale=1.0):
         super().__init__()
         if not isinstance(raw_model, PathlineBinaryClassifier3D):
             raise TypeError("raw_model must be PathlineBinaryClassifier3D")
@@ -614,6 +675,17 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                 "auxiliary_classifier_architecture must be 'none', "
                 "'linear', or 'mlp'"
             )
+        self.residual_output_initialization = str(
+            residual_output_initialization
+        ).lower()
+        self.residual_output_initialization_scale = float(
+            residual_output_initialization_scale
+        )
+        _initialize_residual_outputs(
+            (self.residual_head, self.fusion_head, self.fmt_only_head),
+            self.residual_output_initialization,
+            self.residual_output_initialization_scale,
+        )
 
     def forward_components(self, pathlines, fmt_features,
                            return_auxiliary=False):
@@ -696,6 +768,12 @@ def residual_model_kwargs(model_spec):
         )),
         "auxiliary_classifier_hidden_dim": int(model_spec.get(
             "auxiliary_classifier_hidden_dim", 64
+        )),
+        "residual_output_initialization": str(model_spec.get(
+            "residual_output_initialization", "default"
+        )),
+        "residual_output_initialization_scale": float(model_spec.get(
+            "residual_output_initialization_scale", 1.0
         )),
     }
 
