@@ -1,0 +1,39 @@
+experiment: Verify_Task3_AuxiliaryBottleneck_17.2
+output_root: outputs/Verify_Task3_AuxiliaryBottleneck_17.2
+task: Task3
+
+# Safety-only revision of 17.1: aux128 was rejected by preflight for exceeding
+# the frozen Raw-wide capacity on deltaWing_resampled. No GPU child ran and no
+# performance metric was observed before removing that sole ineligible width.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+
+optimization_candidates:
+  - {id: d00_aux4, model: {auxiliary_dim: 4}}
+  - {id: d01_aux8, model: {auxiliary_dim: 8}}
+  - {id: d02_aux16, model: {auxiliary_dim: 16}}
+  - {id: d03_aux24, model: {auxiliary_dim: 24}}
+  - {id: d04_aux32, model: {auxiliary_dim: 32}}
+  - {id: d05_aux48, model: {auxiliary_dim: 48}}
+  - {id: d06_aux64_control, model: {auxiliary_dim: 64}}
+  - {id: d07_aux96, model: {auxiliary_dim: 96}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  target_dataset_macro_f1_gain: 0.16
+  confirmation_opened: false
