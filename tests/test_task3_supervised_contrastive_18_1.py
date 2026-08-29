@@ -69,6 +69,47 @@ class Task3SupervisedContrastiveTests(unittest.TestCase):
         self.assertLess(float(separated_loss), float(mixed_loss))
         self.assertTrue(torch.isfinite(mixed.grad).all())
 
+    def test_combined_classifier_step_updates_only_trainable_residual(self):
+        torch.manual_seed(11)
+        raw = PathlineBinaryClassifier3D(variant="raw")
+        model = PathlineFMTResidualClassifier3D(raw, fmt_dim=6)
+        pathlines = torch.randn(6, 5, 8, 3)
+        features = torch.randn(6, 6)
+        labels = torch.tensor([0.0, 0.0, 0.0, 1.0, 1.0, 1.0])
+        raw_logits, residual_logits, embeddings = model.forward_components(
+            pathlines, features, return_auxiliary=True
+        )
+        criterion, _ = _build_training_loss(
+            {}, 3.0, 3.0, torch.device("cpu")
+        )
+        classification = criterion(raw_logits + residual_logits, labels)
+        contrastive = _supervised_contrastive_loss(
+            embeddings,
+            labels,
+            {
+                "supervised_contrastive_loss_weight": 0.03,
+                "supervised_contrastive_temperature": 0.1,
+            },
+        )
+        (classification + contrastive).backward()
+        trainable_gradients = [
+            parameter.grad for parameter in model.parameters()
+            if parameter.requires_grad and parameter.grad is not None
+        ]
+        self.assertTrue(trainable_gradients)
+        self.assertTrue(all(
+            torch.isfinite(gradient).all()
+            for gradient in trainable_gradients
+        ))
+        self.assertTrue(any(
+            bool(torch.any(gradient != 0.0))
+            for gradient in trainable_gradients
+        ))
+        self.assertTrue(all(
+            parameter.grad is None
+            for parameter in model.raw_model.parameters()
+        ))
+
     def test_one_class_or_unpaired_batches_are_exact_noops(self):
         recipe = {"supervised_contrastive_loss_weight": 1.0}
         one_class = torch.randn(3, 4, requires_grad=True)
