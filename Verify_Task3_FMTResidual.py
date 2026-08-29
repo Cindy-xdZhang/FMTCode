@@ -350,6 +350,9 @@ def _build_training_loss(training: dict, positive: float, negative: float,
     contrastive_temperature = float(
         training.get("supervised_contrastive_temperature", 0.1)
     )
+    auxiliary_supervision_loss_weight = float(
+        training.get("auxiliary_supervision_loss_weight", 0.0)
+    )
     if not np.isfinite(hardness_scale) or hardness_scale < 0.0:
         raise ValueError("raw_hardness_scale must be finite and non-negative")
     if not np.isfinite(hardness_power) or hardness_power <= 0.0:
@@ -429,6 +432,14 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         raise ValueError(
             "supervised_contrastive_temperature must be finite and positive"
         )
+    if (
+        not np.isfinite(auxiliary_supervision_loss_weight)
+        or auxiliary_supervision_loss_weight < 0.0
+    ):
+        raise ValueError(
+            "auxiliary_supervision_loss_weight must be finite and "
+            "non-negative"
+        )
     criterion = _WeightedFocalBCEWithLogitsLoss(
         pos_weight=positive_weight, gamma=gamma
     ).to(device)
@@ -455,6 +466,9 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         "overlap_smoothing": overlap_smoothing,
         "supervised_contrastive_loss_weight": contrastive_loss_weight,
         "supervised_contrastive_temperature": contrastive_temperature,
+        "auxiliary_supervision_loss_weight": (
+            auxiliary_supervision_loss_weight
+        ),
     }
 
 
@@ -714,6 +728,27 @@ def _supervised_contrastive_loss(embeddings, targets, training,
     return loss
 
 
+def _auxiliary_supervision_loss(model, auxiliary_embeddings, targets,
+                                training, criterion, sample_weights=None):
+    """Directly supervise the projected auxiliary representation.
+
+    This loss is paired: FMT and train-only Raw-PCA receive the same head,
+    class weights, mini-batches, labels, and scalar weight.  The auxiliary
+    classifier is training-only and does not enter the fused inference logit.
+    """
+    weight = float(training.get("auxiliary_supervision_loss_weight", 0.0))
+    if weight == 0.0:
+        return auxiliary_embeddings.sum() * 0.0
+    auxiliary_logits = model.auxiliary_classification_logits(
+        auxiliary_embeddings
+    )
+    if not bool(torch.isfinite(auxiliary_logits).all()):
+        raise FloatingPointError("non-finite auxiliary classification logits")
+    return weight * criterion(
+        auxiliary_logits, targets, sample_weights=sample_weights
+    )
+
+
 def _apply_raw_pca_transform(raw, transform):
     flat = np.asarray(raw, dtype=np.float32).reshape(len(raw), -1)
     projected = (
@@ -898,6 +933,14 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         spec["training"], positive, negative, device,
         sampled_positive_fraction=sampled_positive_fraction,
     )
+    auxiliary_supervision_enabled = (
+        float(loss_metadata["auxiliary_supervision_loss_weight"]) > 0.0
+    )
+    if auxiliary_supervision_enabled != (model.auxiliary_classifier is not None):
+        raise ValueError(
+            "auxiliary supervision requires a configured auxiliary classifier, "
+            "and an auxiliary classifier requires a positive supervision weight"
+        )
     optimizer = torch.optim.AdamW(
         [parameter for parameter in model.parameters() if parameter.requires_grad],
         lr=float(spec["training"]["learning_rate"]),
@@ -1001,12 +1044,21 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
                 spec["training"],
                 sample_weights=sample_weights,
             )
+            auxiliary_supervision_loss = _auxiliary_supervision_loss(
+                model,
+                auxiliary_embeddings,
+                labels,
+                spec["training"],
+                criterion,
+                sample_weights=sample_weights,
+            )
             loss = (
                 classification_loss
                 + correction_loss
                 + ranking_loss
                 + overlap_loss
                 + contrastive_loss
+                + auxiliary_supervision_loss
             )
             if not bool(torch.isfinite(loss)):
                 raise FloatingPointError(
@@ -1208,6 +1260,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         ],
         "training_supervised_contrastive_temperature": loss_metadata[
             "supervised_contrastive_temperature"
+        ],
+        "training_auxiliary_supervision_loss_weight": loss_metadata[
+            "auxiliary_supervision_loss_weight"
         ],
         "training_scheduler": scheduler_name,
         "training_alpha": training_alpha,

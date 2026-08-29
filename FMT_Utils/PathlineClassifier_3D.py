@@ -455,7 +455,9 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  head_depth=2, bilinear_rank=32, attention_heads=4,
                  head_dropout=0.0,
                  auxiliary_projection="linear_layernorm_gelu",
-                 auxiliary_hidden_dim=64, auxiliary_block_dims=None):
+                 auxiliary_hidden_dim=64, auxiliary_block_dims=None,
+                 auxiliary_classifier_architecture="none",
+                 auxiliary_classifier_hidden_dim=64):
         super().__init__()
         if not isinstance(raw_model, PathlineBinaryClassifier3D):
             raise TypeError("raw_model must be PathlineBinaryClassifier3D")
@@ -548,6 +550,29 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                 nn.GELU(),
                 nn.Linear(embedding_dim, 1),
             )
+        # Build the training-only classifier after every inference module so
+        # enabling deep supervision cannot change their random initialization.
+        self.auxiliary_classifier_architecture = str(
+            auxiliary_classifier_architecture
+        ).lower()
+        auxiliary_classifier_hidden_dim = int(auxiliary_classifier_hidden_dim)
+        if auxiliary_classifier_hidden_dim < 1:
+            raise ValueError("auxiliary_classifier_hidden_dim must be positive")
+        if self.auxiliary_classifier_architecture == "none":
+            self.auxiliary_classifier = None
+        elif self.auxiliary_classifier_architecture == "linear":
+            self.auxiliary_classifier = nn.Linear(auxiliary_dim, 1)
+        elif self.auxiliary_classifier_architecture == "mlp":
+            self.auxiliary_classifier = nn.Sequential(
+                nn.Linear(auxiliary_dim, auxiliary_classifier_hidden_dim),
+                nn.GELU(),
+                nn.Linear(auxiliary_classifier_hidden_dim, 1),
+            )
+        else:
+            raise ValueError(
+                "auxiliary_classifier_architecture must be 'none', "
+                "'linear', or 'mlp'"
+            )
 
     def forward_components(self, pathlines, fmt_features,
                            return_auxiliary=False):
@@ -571,6 +596,20 @@ class PathlineFMTResidualClassifier3D(nn.Module):
         if return_auxiliary:
             return raw_logit, residual_logit, auxiliary
         return raw_logit, residual_logit
+
+    def auxiliary_classification_logits(self, auxiliary):
+        """Classify the projected auxiliary representation during training.
+
+        The auxiliary head is deliberately absent from the inference fusion.
+        It only provides direct supervision to the shared projection, and the
+        exact same head is trained for the FMT and train-only Raw-PCA arms.
+        """
+        if self.auxiliary_classifier is None:
+            raise RuntimeError(
+                "auxiliary classification logits require a configured "
+                "auxiliary classifier"
+            )
+        return self.auxiliary_classifier(auxiliary).squeeze(-1)
 
     def forward(self, pathlines, fmt_features, alpha=1.0):
         raw_logit, residual_logit = self.forward_components(pathlines, fmt_features)
@@ -605,6 +644,12 @@ def residual_model_kwargs(model_spec):
             None if model_spec.get("auxiliary_block_dims") is None
             else [int(value) for value in model_spec["auxiliary_block_dims"]]
         ),
+        "auxiliary_classifier_architecture": str(model_spec.get(
+            "auxiliary_classifier_architecture", "none"
+        )),
+        "auxiliary_classifier_hidden_dim": int(model_spec.get(
+            "auxiliary_classifier_hidden_dim", 64
+        )),
     }
 
 

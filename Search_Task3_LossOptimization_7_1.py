@@ -564,10 +564,21 @@ def preflight(config_path: str) -> Path:
                 spec, group, candidate, dataset, spec["paired_seeds"][0],
                 "fmt", Path(spec["output_root"]) / "preflight", fmt_dim,
             )
-            _build_training_loss(
+            _, loss_metadata = _build_training_loss(
                 run_spec["training"], float(train[2].sum()),
                 float(len(train[2]) - train[2].sum()), torch.device("cpu"),
             )
+            supervision_enabled = (
+                float(loss_metadata["auxiliary_supervision_loss_weight"]) > 0.0
+            )
+            classifier_enabled = str(run_spec["model"].get(
+                "auxiliary_classifier_architecture", "none"
+            )).lower() != "none"
+            if supervision_enabled != classifier_enabled:
+                raise ValueError(
+                    f"{dataset}/{candidate['id']}: auxiliary supervision and "
+                    "auxiliary classifier must be enabled together"
+                )
             recipes.append({
                 "optimization_id": candidate["id"],
                 "fmt_feature": candidate["fmt_feature"],
