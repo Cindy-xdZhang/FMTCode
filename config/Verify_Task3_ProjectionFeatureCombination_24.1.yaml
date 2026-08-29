@@ -65,4 +65,3 @@ selection:
   target_dataset_macro_f1_gain: 0.175
   target_absolute_fmt_f1: 0.887
   confirmation_opened: false
-

@@ -22,4 +22,3 @@ nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 python Search_Task3_LossOptimization_7_1.py \
   --config config/Verify_Task3_ProjectionFeatureCombination_24.1.yaml \
   --mode candidate --job-index "$SLURM_ARRAY_TASK_ID"
-

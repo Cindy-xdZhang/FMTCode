@@ -17,4 +17,3 @@ export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
 python Search_Task3_LossOptimization_7_1.py \
   --config config/Verify_Task3_ProjectionFeatureCombination_24.1.yaml \
   --mode preflight
-

@@ -47,4 +47,3 @@ The joint development target is dataset-macro F1 gain `>= +0.175` and absolute
 FMT F1 `>= 0.887`. A larger gap caused only by degrading FMT does not satisfy
 the joint target. Any selected development recipe still needs a new unseen
 spatial population before supporting a paper-level generalization claim.
-

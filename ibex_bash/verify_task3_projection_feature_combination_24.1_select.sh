@@ -15,4 +15,3 @@ conda activate deepvortex
 python Search_Task3_LossOptimization_7_1.py \
   --config config/Verify_Task3_ProjectionFeatureCombination_24.1.yaml \
   --mode select
-
