@@ -302,7 +302,36 @@ class _AttentionFusionHead(nn.Module):
         return self.output(tokens.mean(dim=1))
 
 
-def _dense_head(input_dim, hidden_dim, depth, dropout):
+def _head_normalization(architecture, width):
+    """Build one registered residual-head normalization layer."""
+    architecture = str(architecture).lower()
+    if architecture == "layernorm":
+        return nn.LayerNorm(int(width))
+    if architecture == "rmsnorm":
+        return _RMSNorm(int(width))
+    if architecture == "none":
+        return nn.Identity()
+    raise ValueError(
+        "head_normalization must be 'layernorm', 'rmsnorm', or 'none'"
+    )
+
+
+def _head_activation(architecture):
+    """Build one registered residual-head activation layer."""
+    architecture = str(architecture).lower()
+    if architecture == "gelu":
+        return nn.GELU()
+    if architecture == "silu":
+        return nn.SiLU()
+    if architecture == "relu":
+        return nn.ReLU()
+    raise ValueError(
+        "head_activation must be 'gelu', 'silu', or 'relu'"
+    )
+
+
+def _dense_head(input_dim, hidden_dim, depth, dropout,
+                normalization="layernorm", activation="gelu"):
     if int(depth) < 1:
         raise ValueError("dense MLP depth must be positive")
     layers = []
@@ -310,8 +339,8 @@ def _dense_head(input_dim, hidden_dim, depth, dropout):
     for _ in range(int(depth)):
         layers.extend((
             nn.Linear(current, int(hidden_dim)),
-            nn.LayerNorm(int(hidden_dim)),
-            nn.GELU(),
+            _head_normalization(normalization, hidden_dim),
+            _head_activation(activation),
             nn.Dropout(float(dropout)),
         ))
         current = int(hidden_dim)
@@ -453,7 +482,8 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  auxiliary_dim=64, residual_input="geometry_fmt",
                  head_architecture="mlp", head_hidden_dim=None,
                  head_depth=2, bilinear_rank=32, attention_heads=4,
-                 head_dropout=0.0,
+                 head_dropout=0.0, head_normalization="layernorm",
+                 head_activation="gelu",
                  auxiliary_projection="linear_layernorm_gelu",
                  auxiliary_hidden_dim=64, auxiliary_block_dims=None,
                  auxiliary_classifier_architecture="none",
@@ -491,6 +521,16 @@ class PathlineFMTResidualClassifier3D(nn.Module):
         )
         if hidden_dim < 1:
             raise ValueError("head_hidden_dim must be positive")
+        self.head_normalization = str(head_normalization).lower()
+        self.head_activation = str(head_activation).lower()
+        if self.head_architecture != "deep_mlp" and (
+            self.head_normalization != "layernorm"
+            or self.head_activation != "gelu"
+        ):
+            raise ValueError(
+                "head_normalization/head_activation overrides require "
+                "head_architecture='deep_mlp'"
+            )
         self.auxiliary_projection = str(auxiliary_projection)
         self.auxiliary_hidden_dim = int(auxiliary_hidden_dim)
         self.auxiliary_block_dims = (
@@ -519,7 +559,8 @@ class PathlineFMTResidualClassifier3D(nn.Module):
             )
         elif self.head_architecture == "deep_mlp":
             self.residual_head = _dense_head(
-                residual_width, hidden_dim, head_depth, head_dropout
+                residual_width, hidden_dim, head_depth, head_dropout,
+                self.head_normalization, self.head_activation,
             )
         elif self.head_architecture == "residual_mlp":
             self.residual_head = _ResidualMLPHead(
@@ -634,6 +675,12 @@ def residual_model_kwargs(model_spec):
         "bilinear_rank": int(model_spec.get("bilinear_rank", 32)),
         "attention_heads": int(model_spec.get("attention_heads", 4)),
         "head_dropout": float(model_spec.get("head_dropout", 0.0)),
+        "head_normalization": str(model_spec.get(
+            "head_normalization", "layernorm"
+        )),
+        "head_activation": str(model_spec.get(
+            "head_activation", "gelu"
+        )),
         "auxiliary_projection": str(model_spec.get(
             "auxiliary_projection", "linear_layernorm_gelu"
         )),
