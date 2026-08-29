@@ -865,6 +865,43 @@ def _strong_validation_baseline(spec, dataset, seed, validation_loader,
     }
 
 
+def _build_optimizer(training: dict, parameters):
+    """Build the registered optimizer without changing the paired arm budget."""
+    name = str(training.get("optimizer", "adamw")).lower()
+    learning_rate = float(training["learning_rate"])
+    weight_decay = float(training["weight_decay"])
+    amsgrad = bool(training.get("optimizer_amsgrad", False))
+    parameters = list(parameters)
+    if not parameters:
+        raise ValueError("optimizer requires at least one trainable parameter")
+    common = {
+        "lr": learning_rate,
+        "weight_decay": weight_decay,
+    }
+    if name == "adamw":
+        optimizer = torch.optim.AdamW(
+            parameters, amsgrad=amsgrad, **common
+        )
+    elif name == "adam":
+        optimizer = torch.optim.Adam(
+            parameters, amsgrad=amsgrad, **common
+        )
+    elif name == "radam":
+        if amsgrad:
+            raise ValueError("RAdam does not support optimizer_amsgrad")
+        optimizer = torch.optim.RAdam(parameters, **common)
+    elif name == "nadam":
+        if amsgrad:
+            raise ValueError("NAdam does not support optimizer_amsgrad")
+        optimizer = torch.optim.NAdam(parameters, **common)
+    else:
+        raise ValueError(
+            "training.optimizer must be one of "
+            "'adamw', 'adam', 'radam', or 'nadam'"
+        )
+    return optimizer, name, amsgrad
+
+
 def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
     _set_seed(seed)
     gate_kind, gate_temperature, gate_floor = _residual_gate_parameters(
@@ -941,10 +978,12 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             "auxiliary supervision requires a configured auxiliary classifier, "
             "and an auxiliary classifier requires a positive supervision weight"
         )
-    optimizer = torch.optim.AdamW(
-        [parameter for parameter in model.parameters() if parameter.requires_grad],
-        lr=float(spec["training"]["learning_rate"]),
-        weight_decay=float(spec["training"]["weight_decay"]),
+    optimizer, optimizer_name, optimizer_amsgrad = _build_optimizer(
+        spec["training"],
+        (
+            parameter for parameter in model.parameters()
+            if parameter.requires_grad
+        ),
     )
     scheduler_name = str(spec["training"].get("scheduler", "none")).lower()
     if scheduler_name == "none":
@@ -1183,6 +1222,8 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "auxiliary_source": auxiliary_source,
         "auxiliary_transform": auxiliary_transform,
         "loss_metadata": loss_metadata,
+        "optimizer": optimizer_name,
+        "optimizer_amsgrad": optimizer_amsgrad,
         "scheduler": scheduler_name,
         "training_alpha": training_alpha,
         "residual_gate": {
@@ -1264,6 +1305,8 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "training_auxiliary_supervision_loss_weight": loss_metadata[
             "auxiliary_supervision_loss_weight"
         ],
+        "training_optimizer": optimizer_name,
+        "training_optimizer_amsgrad": optimizer_amsgrad,
         "training_scheduler": scheduler_name,
         "training_alpha": training_alpha,
         "train_positive_fraction": float(train[2].mean()),
