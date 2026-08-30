@@ -65,10 +65,45 @@ Remote Python compilation, the same 48 tests, and all three `bash -n` checks
 passed.
 
 Submitted at `2026-08-30T10:15:01+03:00`: CPU preflight job `51016376`, GPU
-array `51016379[0-89%24]`, and selector `51016380`. The array has strict
-`afterok:51016376`; the selector has strict `afterok:51016379_*`. Preflight
+array `51016379[0-89%24]`, and selector `51016380`. The array had strict
+`afterok:51016376`; the selector had strict `afterok:51016379_*`. Preflight
 ran on `cn511-09` from 10:15:03 to 10:16:16, exited zero with empty stderr,
 and produced remote manifest SHA-256 `fd3bbc3f...ff06`. It confirmed 10
 datasets, 9 candidates, 90 mappings, 540 paired trainings, all capacity
-guards, and closed confirmation state. The GPU array now waits for scheduler
-priority. Performance results have not been read.
+guards, and closed confirmation state.
+
+## Completed result
+
+All 90 GPU children and all 540 paired trainings completed successfully by
+19:32:23; total GPU stderr was zero bytes. The array used 4 A100-SXM4-80GB,
+2 GTX 1080 Ti, 3 P100-PCIE-16GB, and 81 V100-SXM2-32GB allocations. Selector
+`51016380` then completed in 7 seconds with empty stderr.
+
+The family-specific choices are decay 0.99 for channel, 0.80 for
+halfcylinder and Tangaroa, 0.95 for deltaWing, and exact no-EMA controls for
+Boeing747, F22, and SmokeBuoyancy. Selected dataset-macro results are:
+
+- Raw-PCA F1: `0.69734194`
+- FMT F1: `0.88742737`
+- paired F1 gain: `+0.19008543`
+- Raw-PCA Average Precision: `0.74035309`
+- FMT Average Precision: `0.94608995`
+- paired Average Precision gain: `+0.20573686`
+
+All ten dataset-level F1 gains are positive. Relative to the exact no-EMA
+control (`0.69781588 -> 0.88707552`, gain `+0.18925964`), selection raises
+the FMT F1 by only `+0.00035186` and the paired gain by `+0.00082580`.
+Consequently, it misses both preregistered targets: F1 gain `>=0.195` and
+absolute FMT F1 `>=0.893`. It is also weaker than the completed dropout search
+38.1 (`+0.19648` F1 gain), so EMA does not independently open confirmation;
+its guarded family winners remain valid inputs to preregistered combination
+searches 44.1 and 48.1.
+
+The downloaded selection, leaderboard, and per-run archive SHA-256 values are
+`f5d4952f...1c1d`, `4c8f3c94...abe5`, and `0fc2bb50...f243`. An independent
+audit reconstructed the complete 9 x 10 x 3 x 2 Cartesian product, paired
+parameter counts, source hashes, absolute-FMT guards, family ranking, and all
+macros directly from the 540 CSV files without importing the selector. Its
+maximum discrepancy was `5.6e-17`; audit SHA-256 is `0fd76781...e29`.
+Temporary `.pt` files were verified absent after archival; 540 empty
+checkpoint directories remain and are not experiment evidence.
