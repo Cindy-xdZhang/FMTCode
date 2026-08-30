@@ -49,6 +49,10 @@ feature recipe, checkpoint, model-capacity guard, and loss contract; all 90
 dataset/candidate mappings are eligible. Its manifest SHA-256 is
 `ce557cd3...a2681`.
 
-Pending Ibex submission. The GPU array is limited to 24 concurrent jobs; each
-array element evaluates one dataset/epoch candidate and performs three paired
-seeds for both arms. Checkpoints are not retained.
+Ibex preflight job `51028066` completed successfully on `cn604-14` in 85 s.
+The remote canonical preflight manifest SHA-256 is
+`aefe405a42d731ed1283f1c71f1ddcf5a59301eb951efe5014c1d81b2ee53d56`.
+GPU array `51028067` and selector `51028071` are submitted with strict
+dependencies. The array is limited to 24 concurrent jobs; each element
+evaluates one dataset/epoch candidate and performs three paired seeds for both
+arms. Checkpoints are not retained.
