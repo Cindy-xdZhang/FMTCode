@@ -34,3 +34,13 @@ Every candidate must preserve each family's FMT F1 and Average Precision
 relative to the exact anchored-feature control with zero tolerance. The joint
 development target remains F1 gain `>= +0.195` and absolute FMT F1 `>= 0.893`.
 Any winner still requires a fresh spatial-population confirmation.
+
+## Deployment
+
+- Implementation commit: `3fe1aee`.
+- Immutable archive SHA-256: `32bb4313d8bc4af394caeadd4d4a8ba3c69aca90386bfaa6a037ceb19d71a9de`.
+- Preflight: job `51020702`.
+- GPU array: job `51020733[0-79%24]`, strict `afterok:51020702`.
+- Selector: job `51020778`, strict `afterok:51020733_*`.
+- Local and remote 45.1/44.1/19.1 combination contracts: 10/10 passed.
+  Remote Python compilation and all three Slurm-script syntax checks passed.
