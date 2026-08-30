@@ -60,3 +60,14 @@ absolute FMT Average Precision, and registered robustness tie-breakers.
 
 Reaching only one target is not success. Any development winner still requires
 a fresh spatial-population confirmation before it can support a paper claim.
+
+## Deployment
+
+- Implementation commit: `db1c353`.
+- Immutable archive SHA-256: `88867bb2a282765f03ca19efa517e6bce008e4485fed7353c93a6fc486e42b26`.
+- Preflight job: `51018914`, with strict `afterok` dependencies on all eight
+  36.1--43.1 selector jobs.
+- GPU array: `51018920[0-279%24]`, strict `afterok:51018914`.
+- Selector: `51018923`, strict `afterok:51018920_*`.
+- Local and remote combination contracts: 7/7 passed. Remote Python
+  compilation and all three Slurm-script syntax checks passed.
