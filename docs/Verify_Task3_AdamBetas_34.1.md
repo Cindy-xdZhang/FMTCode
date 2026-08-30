@@ -63,3 +63,33 @@ with empty stderr, and produced manifest SHA-256 `e2db5ad3...6184d`. It
 confirmed ten datasets, nine candidates, 540 paired trainings, zero ineligible
 recipes, and closed confirmation state. The GPU dependency is released and the
 array waits for scheduler priority.
+
+All 90 GPU children ran between 08:56:27 and 10:15:54 on 47 P100, 39 GTX
+1080 Ti, 3 RTX 2080 Ti, and 1 V100 devices. All 90 stderr files are empty.
+Selector `51004191` then ran on `cn604-14` from 10:15:57 to 10:16:05,
+exited zero, and kept confirmation closed.
+
+## Result
+
+The family-specific selection produced the following development macro result:
+
+| quantity | Raw-PCA | FMT | FMT − Raw-PCA |
+|---|---:|---:|---:|
+| F1 | 0.696919 | 0.887689 | +0.190770 |
+| Average Precision | 0.740544 | 0.946010 | +0.205466 |
+
+The half-cylinder family selected `(beta1,beta2)=(0.95,0.999)`. Tangaroa,
+Delta Wing, and Boeing selected `(0.95,0.9)`. Channel, F-22, and Smoke
+Buoyancy retained the exact PyTorch-default control `(0.9,0.999)`.
+
+Relative to choosing the exact control in every family, the selected beta
+pairs changed FMT F1 by `+0.000564`, Raw-PCA F1 by `-0.000432`, and paired F1
+gain by `+0.000996`. FMT Average Precision increased only `+0.000265`, while
+Raw-PCA Average Precision increased `+0.000771`, so paired AP gain decreased
+`0.000506`.
+
+The preregistered joint target was not reached: `0.190770 < 0.195` for paired
+F1 gain and `0.887689 < 0.893` for absolute FMT F1. AdamW beta tuning is
+therefore a small development-only change, not evidence for a new confirmed
+Task3 method. Selection and leaderboard SHA-256 values are
+`1c71f658...c18e` and `9aa9454a...f8a`, respectively.
