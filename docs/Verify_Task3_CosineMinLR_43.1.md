@@ -58,14 +58,36 @@ Remote Python compilation, the same 67 tests, and all three `bash -n` checks
 passed.
 
 Submitted at `2026-08-30T10:47:54+03:00`: CPU preflight job `51017332`, GPU
-array `51017334[0-89%24]`, and selector `51017338`. The array has strict
-`afterok:51017332`; the selector has strict `afterok:51017334_*`. Preflight
-ran from 10:47:56 to 10:49:02 on `cn604-13`, exited 0, and produced an empty
-stderr. The remote manifest SHA-256 is `5dcb69fb...9929`. The GPU array is now
-running: at `2026-08-30T21:33+03:00`, 2/90 children were complete, 5 were
-running, and 83 were waiting, with no failure. Performance results have not
-been read. Evidence archive/cleanup job `51058184` was submitted with strict
-`afterok:51017338`; its committed script SHA-256 is
-`55d5daff...b4903`, identical locally and remotely. It will require all 540
-per-run CSV files, create a byte-stable archive, and delete only this
-experiment's temporary checkpoints after successful selection.
+array `51017334[0-89%24]`, selector `51017338`, and evidence archive/cleanup
+job `51058184`. All four jobs completed with exit code 0 and empty stderr. The
+GPU array ran from the first child at 21:19:43 until 23:26:42 and completed all
+90 mappings and 540 paired trainings. Its allocations comprised 9 A100, 41
+GTX 1080 Ti, 16 P100, and 24 V100 child runs. The selector finished at
+23:26:55, and the archive/cleanup job finished at 23:27:38.
+
+## Final development result
+
+The per-family guarded selection chose terminal ratios `0.50` for Channel,
+`0.05` for halfcylinder, and `0.01` for Tangaroa; Boeing 747, Delta Wing,
+F-22, and Smoke retained the exact constant-learning-rate control. Across ten
+datasets, train-only Raw-PCA and FMT obtained F1 `0.697864` and `0.887322`,
+respectively, for a paired gain of `+0.189459`. Their Average Precision values
+were `0.739669` and `0.946137`, for a gain of `+0.206467`. All 10 datasets had
+positive F1 gain, and the worst dataset gain was `+0.047216`.
+
+The exact constant-schedule control already had F1 gain `+0.189125` and FMT
+F1 `0.887076`. Selection therefore improved gain by only `+0.000333` and
+absolute FMT F1 by only `+0.000247`. It failed both registered joint targets:
+gain `>=0.195` and FMT F1 `>=0.893`, and it remains weaker than the completed
+Dropout search 38.1 (`+0.196479`). Cosine annealing is therefore not promoted
+as a standalone confirmation candidate, although its selected family recipes
+remain eligible inputs to the preregistered combination searches.
+
+An independent implementation reconstructed all 540 archived records, all
+guards, all seven family choices, and every macro metric. Its maximum absolute
+difference from the selector was `2.22e-16`; all source hashes were consistent.
+The independent audit SHA-256 is `2d15f307...b4473`. Selection, leaderboard,
+preflight, and stable per-run archive SHA-256 values are
+`403d5207...d0e6`, `b6c2a0c8...0920`, `5dcb69fb...9929`, and
+`4d02dfd9...0e24`. The cleanup verified 540 archived CSV files, deleted 540
+temporary checkpoints, and left zero checkpoints.
