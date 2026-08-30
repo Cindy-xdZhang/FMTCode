@@ -2,8 +2,8 @@
 
 本页只合并已冻结 confirmation 结果，不重新选择任何 feature、VAE、checkpoint、
 cluster 映射或阈值。Task2/Task3 当前机器结果分别位于
-`outputs/mainExp_Task2_3D_4.1/` 和 `outputs/mainExp_Task3_3D_6.1/`。Task2
-冻结协议见 `docs/mainExp_Task23_3D_4.1.md`，Task3 anchored FMT 协议与哈希见
+`outputs/mainExp_Task2_3D_5.2/` 和 `outputs/mainExp_Task3_3D_6.1/`。Task2
+冻结协议见 `docs/mainExp_Task2_3D_5.2.md`，Task3 anchored FMT 协议与哈希见
 `docs/mainExp_Task3_3D_6.1.md`；Task5 机器表位于
 `outputs/mainExp_Task5_3D_1.1_ibex_v100/outputs/mainExp_Task5_3D_1.1/final_confirmation/`。
 
@@ -33,22 +33,24 @@ FMT 的条目平均 F1 为 `0.6130`；9/10 条目高于 Raw。
 
 | Flow | 冻结 VAE / FMT feature | Raw+VAE F1 | FMT+VAE F1 | 配对 F1 增益 |
 |---|---|---:|---:|---:|
-| Channel observer | MLP `[128,64]`, latent 8 / all+kin4 | .0548±.0102 | .2243±.0533 | **+.1695±.0498** |
-| Half-cylinder Re160 | MLP `[512,256]`, latent 64 / all+kin4 | .4523±.0040 | .4890±.0146 | **+.0367±.0183** |
-| Half-cylinder Re640 | MLP `[512,256]`, latent 64 / all+kin4 | .3305±.0012 | .4361±.0145 | **+.1056±.0146** |
-| Half-cylinder Re6400 | MLP `[512,256]`, latent 64 / all+kin4 | .4768±.0061 | .5868±.0111 | **+.1101±.0093** |
-| Tangaroa | MLP `[128,64]`, latent 8 / real-neighbor | .6474±.1764 | .7705±.0170 | **+.1231±.1809** |
-| Delta-wing resampled | Linear, latent 8 / all | .4274±.0274 | .8250±.0208 | **+.3976±.0269** |
-| Delta-wing original LBM | Linear, latent 8 / all | .4619±.0513 | .8524±.0031 | **+.3905±.0538** |
-| F-22 | MLP `[256,128]`, latent 16 / all+kin4 | .6670±.0152 | .5958±.0202 | **−.0712±.0297** |
-| Boeing 747 | Linear, latent 4 / kin2 | .5801±.0129 | .8114±.0300 | **+.2313±.0366** |
-| Smoke buoyancy | Linear, latent 16 / real+imag-neighbor | .5184±.1489 | .7163±.0055 | **+.1980±.1538** |
-| **Dataset macro** | — | **.4617** | **.6308** | **+.1691** |
-| **Family macro** | — | **.4760** | **.6373** | **+.1613** |
+| Channel observer | MLP `[128,64]`, latent 8 / all+kin4 | .0557±.0101 | .3050±.0428 | **+.2494±.0398** |
+| Half-cylinder Re160 | MLP `[512,256]`, latent 64 / all+kin4 | .5496±.0048 | .6077±.0123 | **+.0581±.0112** |
+| Half-cylinder Re640 | MLP `[512,256]`, latent 64 / all+kin4 | .3863±.0034 | .4873±.0365 | **+.1010±.0366** |
+| Half-cylinder Re6400 | MLP `[512,256]`, latent 64 / all+kin4 | .4779±.0080 | .5900±.0086 | **+.1121±.0130** |
+| Tangaroa | MLP `[128,64]`, latent 1 / real-neighbor | .2529±.0884 | .7269±.0812 | **+.4740±.1030** |
+| Delta-wing resampled | Linear, latent 12 / all | .4580±.0247 | .8167±.0243 | **+.3587±.0434** |
+| Delta-wing original LBM | Linear, latent 12 / all | .4975±.0220 | .8366±.0162 | **+.3392±.0335** |
+| F-22 | MLP `[256,128]`, latent 1 / all+kin4 | .2192±.0761 | .4142±.1230 | **+.1951±.1581** |
+| Boeing 747 | Linear, latent 6 / kin2 | .5151±.0431 | .8131±.0173 | **+.2979±.0490** |
+| Smoke buoyancy | Linear, latent 24 / real+imag-neighbor | .5106±.1362 | .7167±.0065 | **+.2061±.1365** |
+| **Dataset macro** | — | **.3923** | **.6314** | **+.2392** |
+| **Family macro** | — | **.3575** | **.6235** | **+.2660** |
 
-新空间 primitive population 上，9/10 条目、6/7 family 为正；dataset-macro
-增益达到预注册 `+.15` 目标。F-22 是保留的反例。该 confirmation 改变空间采样
-相位，但时间切片在历史实验中出现过，因此不称 sealed temporal test。
+第五空间 primitive population 上，10/10 条目、7/7 family、5/5 seed macro
+均为正；dataset-macro 增益同时达到预注册 `+.15` 和期望 `+.22`。作为同一数据和
+seed上的诊断，Task2-4.1 latent control 为 Raw/FMT `.4859/.6522`、增益`+.1662`，
+仍达到`.15`，但F-22为`−.0743`。selected FMT绝对F1比control低`.0207`；因此主表
+证明的是冻结共享瓶颈下FMT输入优势扩大，不声称latent选择提高FMT绝对准确率。
 
 ## Task3：监督 IVD 二分类
 
@@ -112,6 +114,6 @@ Re160 未超过 strongest Raw，Re160/Smoke 未超过 fixed-scale FMT transfer�
 ## 结果来源
 
 - Task1：`mainExp_Task1_3D_2.1` + `mainExp_Task1_3D_2.2_newflows`。
-- Task2：`mainExp_Task2_3D_4.1`（Ibex V100；10条目×4个新空间相位切片×5 paired seeds；summary SHA-256 `06c7de3e…be8122`）。
+- Task2：`mainExp_Task2_3D_5.2`（Ibex GTX 1080 Ti/P100；第五空间population，10条目×4切片×2 recipes×5 paired seeds；200/200唯一结果；summary/per-run SHA-256 `739b48ea…c3095`/`20d9de15…7111f`）。
 - Task3：`mainExp_Task3_3D_6.1`（Ibex GTX 1080 Ti/P100 生成第四空间population，CPU冻结推理；10条目×2 paired seeds×2 arms；summary SHA-256 `f46a307a…fb756`，`per_run.csv` SHA-256 `bc5a61b9…ef591`）。
 - Task5：`mainExp_Task5_3D_1.1`（Ibex V100；10条目×5训练seed×4 held-out confirmation时间片×9个未见尺度tuple；归档SHA-256 `6053ed15…c58ec`）。

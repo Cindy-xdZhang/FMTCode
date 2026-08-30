@@ -118,3 +118,12 @@ selected gain is `+.08395` larger. However, selected absolute FMT F1 is
 same-VAE bottleneck advantage on development data, but does not yet replace
 the Task2 4.1 paper result. `mainExp_Task2_3D_5.2` freezes these winners and
 evaluates both selected and control recipes on a new fifth spatial population.
+
+That independent confirmation is now complete. The selected recipe gives
+Raw/FMT F1 `.39227/.63143`, gain `+.23916`, with 10/10 datasets and 7/7
+families positive. The diagnostic control gives `.48594/.65216`, gain
+`+.16622`, with 9/10 datasets positive. Therefore the development gain
+increase survives the fifth population, while the earlier warning also
+survives: selected absolute FMT F1 is lower than control FMT by `.02074`.
+Authoritative evidence and hashes are recorded in
+`docs/mainExp_Task2_3D_5.2.md`.

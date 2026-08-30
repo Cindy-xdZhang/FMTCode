@@ -329,8 +329,8 @@
 | 51036983 | Task2 | mainExp_Task2_3D_5.2_source_preflight | 2026-08-30T17:02:35+03:00 | 2026-08-30T17:03:05+03:00 | **COMPLETED** 17:03:16（11s），exit 0、stderr为空；10/10源数据、时间片身份、第五空间相位及冻结recipe通过 | 只支持独立确认数据与development数据空间上不同且协议可执行，不产生性能结论 | Ibex CPU `cn604-09`；4 CPU、16 GB，无GPU | 严格依赖`51036982`；物理时间、积分参数、FMT encoder与IVD-p95保持不变 | `outputs/mainExp_Task2_3D_5.2/source_preflight.json`；`slurm_logs/FMTT2l52v.51036983.{out,err}` |
 | 51036984[0-9%10] | Task2 | mainExp_Task2_3D_5.2_cache | 2026-08-30T17:02:35+03:00 | 首个child 2026-08-30T17:10:23+03:00 | **COMPLETED** 17:19:21；10/10 children exit 0、stderr为空，生成10 datasets×4 slices的第五空间population，最长2m04s | 只生成预注册独立确认primitive；不选择超参数、不产生性能结论 | 7×GTX 1080 Ti、3×Tesla P100；每child 1 GPU、8 CPU、64 GB，TimeLimit 30m | 每数据集固定4个confirmation slices；SHA-256→Halton phase预先冻结；不改变物理时间、积分或标签；调度commit `df9ff11`、脚本 SHA `4cb3f22d…6b360` | `/home/zhanx0o/FMT_Task2_LatentBottleneck_5_2/slurm_logs/FMTT2l52c.51036984_<array>.{out,err}` |
 | 51036985 | Task2 | mainExp_Task2_3D_5.2_evaluation_preflight | 2026-08-30T17:02:35+03:00 | 2026-08-30T17:19:25+03:00 | **COMPLETED** 17:19:39（14s），exit 0、stderr为空；确认10个完整confirmation cache及200次唯一训练映射 | 只支持缺片、配方漂移和确认数据隔离检查通过，不产生性能结论 | Ibex CPU `cn604-12`；8 CPU、32 GB，无GPU | 10 datasets×2 recipes×2 arms×5 seeds=`200`次VAE训练；ordinal 0–7训练、8–9仅校准KMeans类别语义 | `outputs/mainExp_Task2_3D_5.2/evaluation_preflight.json`；`slurm_logs/FMTT2l52e.51036985.{out,err}` |
-| 51036986[0-9%10] | Task2 | mainExp_Task2_3D_5.2_evaluate | 2026-08-30T17:02:36+03:00 | children 0–6于2026-08-30T17:23:02+03:00开始 | **RUNNING**；7个children运行、3个等待Priority；10 children共执行100组Raw/FMT同VAE配对、200次训练，尚未读取partial metrics | 尚无性能结果；primary为冻结selected recipe，4.1-control仅诊断；禁止读取partial metrics | Ibex GTX 1080 Ti/P100；每child 1 GPU、8 CPU、TimeLimit 30m；已运行0–6保留48 GB，pending 7–9降为8 GB | 两臂同一VAE架构、latent、KL权重、学习率、步数、split和seed；只比较Raw输入与FMT输入；不保存checkpoint；调度commits `df9ff11`,`3ff6159`、当前脚本 SHA `26922daa…4bda8` | `/home/zhanx0o/FMT_Task2_LatentBottleneck_5_2/slurm_logs/FMTT2l52r.51036986_<array>.{out,err}` |
-| 51036987 | Task2 | mainExp_Task2_3D_5.2_summary | 2026-08-30T17:02:36+03:00 | 未开始 | **PENDING (Dependency)**；严格`afterok:51036986_*`，只在10个评估children全成功后汇总 | 预注册primary目标：dataset-macro F1 gain `>=+.15`，期望目标`>=+.22`；结果未知 | Ibex CPU待分配；4 CPU、8 GB，无GPU | 独立检查200行唯一结果、10/10 datasets、5 seeds、两recipes及Raw/FMT完整配对；不允许测试集选latent | `outputs/mainExp_Task2_3D_5.2/{summary.json,per_dataset.csv,all_runs.csv}`；`slurm_logs/FMTT2l52s.51036987.{out,err}` |
+| 51036986[0-9%10] | Task2 | mainExp_Task2_3D_5.2_evaluate | 2026-08-30T17:02:36+03:00 | children 0–6于2026-08-30T17:23:02+03:00开始；7–9于17:25:44开始 | **COMPLETED** 17:36:23；10/10 children exit 0、stderr总计0 byte，最长13m21s；完成100组Raw/FMT同VAE配对、200次训练 | 只支持预注册paired evaluation完整执行；性能结论由依赖其全部输出的summary作业给出 | Ibex GTX 1080 Ti/P100；每child 1 GPU、8 CPU、TimeLimit 30m | 两臂同一VAE架构、latent、KL权重、学习率、步数、split和seed；只比较Raw输入与FMT输入；不保存checkpoint；调度commits `df9ff11`,`3ff6159`，脚本 SHA `26922daa…4bda8` | `/home/zhanx0o/FMT_Task2_LatentBottleneck_5_2/slurm_logs/FMTT2l52r.51036986_<array>.{out,err}` |
+| 51036987 | Task2 | mainExp_Task2_3D_5.2_summary | 2026-08-30T17:02:36+03:00 | 2026-08-30T17:36:25+03:00 | **COMPLETED** 17:36:32（7s），exit 0、stderr为空；selected Raw/FMT F1=`.39227/.63143`，gain=`+.23916`；control=`.48594/.65216`，gain=`+.16622` | **支持Task2核心结论及预注册`+.15`主目标、`+.22`扩展目标。**selected为10/10 datasets、7/7 families、5/5 seeds正增益，worst dataset `+.05812`；但selected绝对FMT F1比control低`.02074`，因此只证明相对增益更大，不证明绝对FMT最优 | Ibex CPU `cn604-18`；4 CPU、8 GB，无GPU | 200/200唯一结果；独立从`per_run.csv`复算与summary在`1e-12`内一致；selected family-macro gain `+.26598`；summary/paper/per-run SHA `739b48ea…3095`/`fe68a987…cd45`/`20d9de15…111f` | `outputs/mainExp_Task2_3D_5.2/{summary.json,paper_table.csv,per_run.csv}`；本地镜像`output/mainExp_Task2_3D_5.2_ibex/`；`slurm_logs/FMTT2l52s.51036987.{out,err}` |
 
 ## 2026-08-30 调度说明
 
@@ -438,3 +438,33 @@ indices 7–9仍为`PENDING (Priority)`；同期仅Dropout indices 59、61继续
 共9个GPU作业。Task3所有尚未启动的children继续hold，给剩余3个Task2 evaluation
 child保留调度机会。17:24复核未见`FAILED`、`CANCELLED`、`TIMEOUT`或
 `OUT_OF_MEMORY`，且未读取partial metric。
+
+17:25:44 Task2-5.2 evaluation剩余indices 7–9启动，至此10/10 children均运行；同期
+仅Dropout index 61仍运行。17:26按当日实测约16个并发GPU作业配额，只解除Dropout
+indices 62–66共5个children的hold；逐项`JobState=PENDING`、无依赖，其他indices
+67–99及全部其他Task3数组继续hold。17:27复核这5项仍为`PENDING (Priority)`，
+因此没有抢占Task2，账号实际仍为10个Task2加1个Task3 GPU作业。未读取partial metric。
+
+17:28 Dropout indices 62–64启动；17:30 Task2 evaluation已有3个children成功完成、
+7个运行；17:31 Dropout indices 65–66也启动。此时Task2为6个运行、Dropout为5个
+运行；为回填约16张GPU的实测并发，仅继续解除Dropout indices 67–71的hold，逐项
+确认为无依赖的`PENDING`，indices 72–99及其他Task3数组继续hold。所有已完成
+Task2 evaluation child均exit 0；未见失败，未读取partial metric。
+
+17:36:32 Task2-5.2完整依赖链结束；最终结果、独立复算和正式结论见jobs
+`51036986–51036987`表项及`docs/experiment_log.md`。17:40解除为Task2让路的全部
+Task3 hold：`51012521`,`51012681`,`51016379`,`51016612`,`51016836`,`51017334`,
+`51020733`,`51028067`。`scontrol release`报告所有尚未结束children成功解除，随后
+`squeue`确认八个数组的pending reason均为`None`，不再有`JobHeldUser`；44.1数组
+`51018920`按原设计继续等待selectors依赖。此操作只恢复调度，不改变实验设置。
+
+17:42恢复调度后的首轮复核：10个Dropout children与4个EMA children正在运行，
+其余八组搜索children均为`PENDING (Priority)`，对应selectors继续等待完整数组；未见
+`FAILED`、`CANCELLED`、`TIMEOUT`或`OUT_OF_MEMORY`。这表明hold解除已生效，
+调度器开始跨实验回填可用GPU；仍不读取任何partial metric。
+
+17:45数组级计数复核：Dropout `51012521`为67/100 completed、13 running、20 pending；
+EMA `51016379`为34/90 completed、5 running、51 pending；Focal、Label smoothing、
+Adam epsilon、Cosine minimum learning rate、Head×alpha×clip与Training horizon尚未开始
+children并保持`PENDING (Priority)`。九个selectors全部为`PENDING (Dependency)`，
+数组未见失败；未读取partial metric。保持所有数组eligible，由Slurm按可用GPU调度。
