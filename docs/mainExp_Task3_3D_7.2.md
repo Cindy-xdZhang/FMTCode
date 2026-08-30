@@ -1,6 +1,6 @@
 # mainExp_Task3_3D_7.2
 
-> Status: **PRE-REGISTERED; waiting for the five development selectors and
+> Status: **SUBMITTED; waiting for the five development selectors and
 > training-free 52.1 adaptive portfolio.** No sixth-population primitive, IVD
 > label, or performance metric exists.
 
