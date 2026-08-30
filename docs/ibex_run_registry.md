@@ -327,9 +327,9 @@
 | 51036981 | Task2 | mainExp_Task2_3D_5.2_static_preflight | 2026-08-30T17:02:35+03:00 | 2026-08-30T17:02:47+03:00 | **COMPLETED** 17:02:58（11s），exit 0、stderr为空；6/6 dependency-free contracts通过且确认目标目录提交前为空 | 只支持5.2代码、冻结5.1 selection、配置和关闭确认集等静态契约，不产生性能结论 | Ibex CPU `cn604-08`；8 CPU、16 GB，无GPU | commit `4cc1ed8`；config SHA `66105337…cfd43`；测试 SHA `8fbb704e…b980`；search-config canonical SHA `cc375e2a…` | `outputs/mainExp_Task2_3D_5.2/static_preflight.json`；`slurm_logs/FMTT2l52p.51036981.{out,err}` |
 | 51036982 | Task2 | mainExp_Task2_3D_5.2_freeze | 2026-08-30T17:02:35+03:00 | 2026-08-30T17:02:59+03:00 | **COMPLETED** 17:03:04（5s），exit 0、stderr为空；冻结selected与4.1-control两套family-level latent recipe | 只支持5.1 winner作为不可变primary recipe、4.1 control仅作诊断；不产生性能结论 | Ibex CPU `cn604-18`；4 CPU、8 GB，无GPU | 5.1 selection SHA `cf1c546f…e3dc`；训练seeds `9090–9094`；confirmation在冻结后才允许打开 | `outputs/mainExp_Task2_3D_5.2/frozen_recipe_manifest.json`；`slurm_logs/FMTT2l52f.51036982.{out,err}` |
 | 51036983 | Task2 | mainExp_Task2_3D_5.2_source_preflight | 2026-08-30T17:02:35+03:00 | 2026-08-30T17:03:05+03:00 | **COMPLETED** 17:03:16（11s），exit 0、stderr为空；10/10源数据、时间片身份、第五空间相位及冻结recipe通过 | 只支持独立确认数据与development数据空间上不同且协议可执行，不产生性能结论 | Ibex CPU `cn604-09`；4 CPU、16 GB，无GPU | 严格依赖`51036982`；物理时间、积分参数、FMT encoder与IVD-p95保持不变 | `outputs/mainExp_Task2_3D_5.2/source_preflight.json`；`slurm_logs/FMTT2l52v.51036983.{out,err}` |
-| 51036984[0-9%10] | Task2 | mainExp_Task2_3D_5.2_cache | 2026-08-30T17:02:35+03:00 | 未开始 | **PENDING (Priority)**；10个children分别为10个数据集生成第五套独立空间primitive cache，严格依赖成功source preflight `51036983` | 尚无性能结果；禁止从生成中的cache选择配置或读取partial metrics | Ibex GPU待分配；每child 1 GPU、8 CPU、64 GB，限10并发 | 每数据集固定4个confirmation slices；SHA-256→Halton phase预先冻结；不改变物理时间、积分或标签 | `/home/zhanx0o/FMT_Task2_LatentBottleneck_5_2/slurm_logs/FMTT2l52c.51036984_<array>.{out,err}` |
+| 51036984[0-9%10] | Task2 | mainExp_Task2_3D_5.2_cache | 2026-08-30T17:02:35+03:00 | 未开始 | **PENDING (Priority)**；10个children分别为10个数据集生成第五套独立空间primitive cache，严格依赖成功source preflight `51036983` | 尚无性能结果；禁止从生成中的cache选择配置或读取partial metrics | Ibex GPU待分配；每child 1 GPU、8 CPU、64 GB，限10并发，TimeLimit 30m | 每数据集固定4个confirmation slices；SHA-256→Halton phase预先冻结；不改变物理时间、积分或标签；调度commit `df9ff11`、脚本 SHA `4cb3f22d…6b360` | `/home/zhanx0o/FMT_Task2_LatentBottleneck_5_2/slurm_logs/FMTT2l52c.51036984_<array>.{out,err}` |
 | 51036985 | Task2 | mainExp_Task2_3D_5.2_evaluation_preflight | 2026-08-30T17:02:35+03:00 | 未开始 | **PENDING (Dependency)**；严格`afterok:51036984_*`，仅在10个cache children全成功后验证数据和200次训练映射 | 不产生性能结论；防止缺片、配方漂移或确认数据提前参与训练 | Ibex CPU待分配；8 CPU、32 GB，无GPU | 预期10 datasets×2 recipes×2 arms×5 seeds=`200`次VAE训练；ordinal 0–7训练、8–9仅校准KMeans类别语义 | `outputs/mainExp_Task2_3D_5.2/evaluation_preflight.json`；`slurm_logs/FMTT2l52e.51036985.{out,err}` |
-| 51036986[0-9%10] | Task2 | mainExp_Task2_3D_5.2_evaluate | 2026-08-30T17:02:36+03:00 | 未开始 | **PENDING (Dependency)**；严格依赖成功evaluation preflight `51036985`；10 children共执行100组Raw/FMT同VAE配对、200次训练 | 尚无性能结果；primary为冻结selected recipe，4.1-control仅诊断；禁止读取partial metrics | Ibex GPU待分配；每child 1 GPU、8 CPU、48 GB，限10并发 | 两臂同一VAE架构、latent、KL权重、学习率、步数、split和seed；只比较Raw输入与FMT输入；不保存checkpoint | `/home/zhanx0o/FMT_Task2_LatentBottleneck_5_2/slurm_logs/FMTT2l52r.51036986_<array>.{out,err}` |
+| 51036986[0-9%10] | Task2 | mainExp_Task2_3D_5.2_evaluate | 2026-08-30T17:02:36+03:00 | 未开始 | **PENDING (Dependency)**；严格依赖成功evaluation preflight `51036985`；10 children共执行100组Raw/FMT同VAE配对、200次训练 | 尚无性能结果；primary为冻结selected recipe，4.1-control仅诊断；禁止读取partial metrics | Ibex GPU待分配；每child 1 GPU、8 CPU、48 GB，限10并发，TimeLimit 30m | 两臂同一VAE架构、latent、KL权重、学习率、步数、split和seed；只比较Raw输入与FMT输入；不保存checkpoint；调度commit `df9ff11`、脚本 SHA `bafdc4d2…077f` | `/home/zhanx0o/FMT_Task2_LatentBottleneck_5_2/slurm_logs/FMTT2l52r.51036986_<array>.{out,err}` |
 | 51036987 | Task2 | mainExp_Task2_3D_5.2_summary | 2026-08-30T17:02:36+03:00 | 未开始 | **PENDING (Dependency)**；严格`afterok:51036986_*`，只在10个评估children全成功后汇总 | 预注册primary目标：dataset-macro F1 gain `>=+.15`，期望目标`>=+.22`；结果未知 | Ibex CPU待分配；4 CPU、8 GB，无GPU | 独立检查200行唯一结果、10/10 datasets、5 seeds、两recipes及Raw/FMT完整配对；不允许测试集选latent | `outputs/mainExp_Task2_3D_5.2/{summary.json,per_dataset.csv,all_runs.csv}`；`slurm_logs/FMTT2l52s.51036987.{out,err}` |
 
 ## 2026-08-30 调度说明
@@ -384,3 +384,16 @@ prepare、static preflight、recipe freeze和source preflight于17:03前后依�
 可选搜索数组中尚未启动的children；`squeue`确认24个正在运行的Dropout children均未
 中断，pending children转为`JobHeldUser`。Task2 5.2完整结束后将立即解除这些hold。
 本次调度不改变任何实验的数据、模型、latent、seed、预算、配对或汇总规则。
+
+17:09依据同构第四空间cache数组`51028082`的实测最长运行约7分钟，将尚未启动的
+Task2 5.2 cache/evaluation数组TimeLimit分别由2h/1h降至30m，以改善Slurm backfill；
+live jobs与远端脚本均已同步，`scontrol`和远端`bash -n`核验通过。该30m上限保留cache
+约4倍实测余量，不改变科学计算；调度commit为`df9ff11`。
+
+17:06权威复核：Task3 Dropout数组`51012521`为35/100 completed、24 running、
+其余pending children保持`JobHeldUser`；EMA数组`51016379`为34/90 completed、
+56 held。Focal、Label smoothing、Adam epsilon、Cosine minimum learning rate、
+Head×alpha×clip和Training horizon数组尚无已启动child并保持hold；44.1组合数组仍为
+`PENDING (Dependency)`，全部selector仍为`PENDING (Dependency)`。`sacct -X`
+未见`FAILED`、`CANCELLED`、`TIMEOUT`或`OUT_OF_MEMORY`。该快照只记录调度和
+完成计数，不读取任何partial metric，也不产生性能结论。
