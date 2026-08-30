@@ -1,5 +1,8 @@
 # mainExp_Task3_3D_5.1：anchored FMT 的新空间确认
 
+> 历史结果：本实验的失败记录保持不变；当前 Task3 论文主结果已由全新第四空间
+> population 的 `mainExp_Task3_3D_6.1` 取代。
+
 ## 结论
 
 相对同宽、同结构、同训练过程的 train-only Raw-PCA residual，anchored FMT

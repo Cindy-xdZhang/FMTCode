@@ -72,17 +72,13 @@ paper-level generalization claim.
 
 ## Status
 
-Implementation and local validation are complete. The local full preflight
-records 10 datasets, 15 candidates, 150 array mappings, three paired seeds,
-two arms, and 900 expected trainings with `confirmation_opened=false`.
-Its manifest SHA-256 is
-`976e01a1e50b43816edecfe274eed3000eab64fcd5e3c1cb3a2be504edc20ceb`.
+The experiment is complete. The local and remote full preflights record 10
+datasets, 15 candidates, 150 array mappings, three paired seeds, two arms, and
+900 expected trainings with `confirmation_opened=false`. Their SHA-256 values
+are `976e01a1e50b43816edecfe274eed3000eab64fcd5e3c1cb3a2be504edc20ceb`
+and `d4ec39fe9207ee3f98eaad330f58422ceca28609e9f5a283e124f5e3fb0eee34`.
 The 22.1/37.1 contract suites pass 10/10 tests locally and on Ibex; the three
 execution modules compile and all three Slurm scripts pass `bash -n` on Ibex.
-Neither environment has the optional `pytest` package, so the older
-pytest-only loss suite was not loaded; the 37.1 suite directly checks the loss
-scale numerics and metadata. No performance result has been read, and
-confirmation remains closed.
 
 Implementation commit `372a56c` was pushed and archived byte-for-byte. The
 archive SHA-256 is
@@ -91,11 +87,25 @@ Submitted to Ibex on `2026-08-30`:
 
 - preflight `51010975`, completed at `06:55:52+03:00` on `cn604-08`, exit
   code 0 with empty stderr;
-- GPU array `51010980[0-149%24]`, released from its successful preflight and
-  currently waiting on `QOSMaxGRESPerUser`; and
-- selector `51010981`, with `afterok:51010980_*`.
+- GPU array `51010980[0-149%24]`, completed 150/150 children from
+  `11:54:47` through `14:40:28`, with no failed child; and
+- selector `51010981`, completed at `14:40:44` on `cn604-18`, exit code 0.
 
-The remote full-preflight manifest SHA-256 is
-`d4ec39fe9207ee3f98eaad330f58422ceca28609e9f5a283e124f5e3fb0eee34`.
-The complete selector is the only process authorized to update the performance
-conclusion.
+The family-specific selection yields Raw-PCA/FMT dataset-macro F1
+`.69716/.88778`, a paired gain of `+.19062`; Average Precision is
+`.74053/.94799`, a gain of `+.20746`. All 10 datasets remain positive. The
+selected scales differ from the exact scale-one control only for Channel
+(`.10`), Delta-wing (`.50`), and Smoke (`.10`); the other four physical
+families retain scale `1.00`.
+
+The result does **not** meet the registered joint target: F1 gain is below
+`+.195` and absolute FMT F1 is below `.893`. Relative to the 22.1 development
+control, the gain increases by about `+.00371`, but absolute FMT F1 decreases
+by about `.00144`. Therefore 37.1 is a useful negative ablation and is not
+promoted to a fresh confirmation. Confirmation remains closed.
+
+Leaderboard and selection SHA-256 values are
+`85786d390129bc7809e922b507aa8064b7eb8d7dd91b4bf5458086799f5a01a9`
+and `25b2f8f305dac07b1860c37c009519c04c59f46df3c8d6efb85a58aafaae30be`;
+the downloaded copies match the remote hashes exactly. No checkpoint was
+downloaded.

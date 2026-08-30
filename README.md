@@ -4,7 +4,7 @@
 
 - **Task1（2D/3D）**：`primitive -> training-free FMT -> feature -> KMeans(k=2)`，无监督区分涡区域和非涡区域。
 - **Task2（2D/3D）**：比较 `Raw pathline -> VAE` 与 `FMT -> VAE` 的 latent feature 二类聚类质量；同一 physical-family 的两臂固定使用为 FMT 开发的同一个 VAE，核心命题是 FMT 是否改善该 VAE 的输入。
-- **Task3（2D/3D）**：加入 FMT 是否提高 IVD 标签监督的涡/非涡二分类性能。当前 3D 主表为 anchored FMT 与同宽同结构 Raw-PCA residual 的 `mainExp_Task3_3D_5.1`。
+- **Task3（2D/3D）**：加入 FMT 是否提高 IVD 标签监督的涡/非涡二分类性能。当前 3D 主表为 anchored FMT 与同宽同结构 Raw-PCA residual 的 `mainExp_Task3_3D_6.1`。
 - **Task4（仅3D）**：加入 FMT 是否提高 streamwise、spanwise、hairpin 等涡类型多分类；尚未开始。
 - **Task5（2D/3D）**：Task3 的不同尺度扩展；邻居距离、积分步长和积分步数变化，但网络输入仍固定为相同线数与每线采样点数。
 
@@ -25,8 +25,8 @@
 | [docs/mainExp_Task2_3D_2.4_newflows.md](docs/mainExp_Task2_3D_2.4_newflows.md) | Boeing747与SmokeBuoyancy的Task2 same-VAE独立confirmation |
 | [docs/mainExp_Task3Universality_2.2.md](docs/mainExp_Task3Universality_2.2.md) | Task3 跨流场监督分类：冻结协议、失败版本、最终 8/8 结果与适用边界 |
 | [docs/mainExp_Task3NewFlows_2.3.md](docs/mainExp_Task3NewFlows_2.3.md) | Boeing747与SmokeBuoyancy的Task3独立confirmation及A100结果 |
-| [docs/mainExp_Task23_3D_4.1.md](docs/mainExp_Task23_3D_4.1.md) | Task2 same-VAE 新空间确认，以及被5.1取代的Task3-4.1结果 |
-| [docs/mainExp_Task3_3D_5.1.md](docs/mainExp_Task3_3D_5.1.md) | 当前Task3 anchored FMT主表：10条目、5 paired seeds、同宽Raw-PCA强对照 |
+| [docs/mainExp_Task23_3D_4.1.md](docs/mainExp_Task23_3D_4.1.md) | Task2 same-VAE 新空间确认，以及已被6.1取代的Task3-4.1结果 |
+| [docs/mainExp_Task3_3D_6.1.md](docs/mainExp_Task3_3D_6.1.md) | 当前Task3 anchored FMT主表：全新第四空间population、10条目、同宽Raw-PCA强对照 |
 | [docs/mainExp_Task5_3D_1.1.md](docs/mainExp_Task5_3D_1.1.md) | Task5可变尺度监督二分类主实验 |
 | docs/from_pyflowvis/ | 原仓库中仅有的两篇相关文档（Vatistas 数据数学、GCD 多涡型命名规划） |
 
@@ -78,12 +78,12 @@ python FMT_Clustering_3D.py --input D:/data/field3d.nc
 
 输出在 `outputs/mainExp_3DFMT_1.1/<field>/`：3D 散点、三个正交投影、代表性中心 pathline，以及含完整特征和标签的 `clustering_result.npz`。KMeans 的簇编号 0/1 没有物理语义，需要通过图像判断哪一簇对应涡区。
 
-## 复核 Task3 论文主表（mainExp_Task3_3D_5.1）
+## 复核 Task3 论文主表（mainExp_Task3_3D_6.1）
 
 在缓存、标签和冻结 checkpoint 已存在时，评估脚本不会训练、选 checkpoint、调整 residual 权重或重选阈值：
 
 ```bash
-python Run_Task3_FMTResidual_Frozen_5_1.py --config config/mainExp_Task3_3D_5.1.yaml --mode summary
+python Confirm_Task3_AnchoredFeature_6_1.py --config config/mainExp_Task3_3D_6.1.yaml --mode summary
 ```
 
-最终 `per_run.csv` 与 `summary.json` 位于 `outputs/mainExp_Task3_3D_5.1/`。相对同宽同结构 Raw-PCA residual，FMT 的 dataset-macro F1/Average Precision 增益为 `+.13591/+.14971`，两项均10/10条目正；F1仍未达到预注册`+.15`。这里验证的是 IVD 涡区域二分类，不是 3D 涡类型分类。
+最终 `per_run.csv` 与 `summary.json` 位于 `outputs/mainExp_Task3_3D_6.1/`。相对同宽同结构 Raw-PCA residual，FMT 的 dataset-macro F1/Average Precision 增益为 `+.17066/+.19202`，两项均为10/10条目、7/7 physical family正增益；F1同时达到预注册`+.15`主目标与`+.17`扩展目标。这里验证的是 IVD 涡区域二分类，不是 3D 涡类型分类。

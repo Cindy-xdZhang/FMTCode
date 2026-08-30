@@ -1,7 +1,7 @@
 # Task2 / Task3 3D family-specific search 与最终确认（4.1）
 
 > 状态：Task2-4.1 仍是当前 Task2 主结果；本页的 Task3-4.1 已被
-> `mainExp_Task3_3D_5.1` 的 anchored FMT 新空间确认取代。旧数值保留用于追踪，
+> `mainExp_Task3_3D_6.1` 的 anchored FMT 第四空间独立确认取代。旧数值保留用于追踪，
 > 不再作为当前 Task3 论文主表。
 
 ## 结论
