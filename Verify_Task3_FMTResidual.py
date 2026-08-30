@@ -128,6 +128,40 @@ def _residual_gate_torch(raw_logits, model_spec=None):
     return floor + (1.0 - floor) * uncertainty
 
 
+def _gradient_clip_norm(training_spec=None):
+    """Return a validated global gradient-norm limit, or ``None`` to disable."""
+    training_spec = {} if training_spec is None else dict(training_spec)
+    value = training_spec.get("gradient_clip_norm")
+    if value is None:
+        return None
+    value = float(value)
+    if not np.isfinite(value) or value <= 0.0:
+        raise ValueError("gradient_clip_norm must be finite and positive")
+    return value
+
+
+def _clip_trainable_gradients(model, maximum_norm):
+    """Clip the global norm of existing trainable gradients.
+
+    The returned value is the norm before clipping. A disabled limit is a
+    strict no-op so that the control reproduces the historical optimizer step.
+    """
+    if maximum_norm is None:
+        return None
+    parameters = [
+        parameter for parameter in model.parameters()
+        if parameter.requires_grad and parameter.grad is not None
+    ]
+    if not parameters:
+        raise RuntimeError("gradient clipping found no trainable gradients")
+    norm = torch.nn.utils.clip_grad_norm_(
+        parameters,
+        max_norm=float(maximum_norm),
+        error_if_nonfinite=True,
+    )
+    return float(norm.detach().cpu())
+
+
 def _gated_residual_logits(raw_logits, residual_logits, model_spec=None):
     return residual_logits * _residual_gate_numpy(raw_logits, model_spec)
 
@@ -1002,6 +1036,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
     training_alpha = float(spec["training"].get("training_alpha", 1.0))
     if not np.isfinite(training_alpha) or training_alpha <= 0.0:
         raise ValueError("training_alpha must be finite and positive")
+    gradient_clip_norm = _gradient_clip_norm(spec["training"])
     if "fixed_alpha" in spec["fusion"]:
         alpha_grid = np.asarray(
             [float(spec["fusion"]["fixed_alpha"])], dtype=np.float64
@@ -1033,6 +1068,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
     for epoch in range(int(spec["training"]["max_epochs"])):
         model.train()
         total_loss, count = 0.0, 0
+        maximum_preclip_gradient_norm = None
         for raw, fmt, labels in train_loader:
             labels = labels.to(device, non_blocking=True)
             optimizer.zero_grad(set_to_none=True)
@@ -1115,6 +1151,15 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
                     f"non-finite training gradient at epoch {epoch + 1}; "
                     f"parameters={','.join(invalid_gradients[:8])}"
                 )
+            preclip_gradient_norm = _clip_trainable_gradients(
+                model, gradient_clip_norm
+            )
+            if preclip_gradient_norm is not None:
+                maximum_preclip_gradient_norm = max(
+                    preclip_gradient_norm,
+                    maximum_preclip_gradient_norm
+                    if maximum_preclip_gradient_norm is not None else 0.0,
+                )
             optimizer.step()
             invalid_parameters = [
                 name for name, parameter in model.named_parameters()
@@ -1171,6 +1216,13 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             "stale_epochs": stale,
             "learning_rate": current_learning_rate,
             "training_alpha": training_alpha,
+            "gradient_clip_norm": (
+                "" if gradient_clip_norm is None else gradient_clip_norm
+            ),
+            "maximum_preclip_gradient_norm": (
+                "" if maximum_preclip_gradient_norm is None
+                else maximum_preclip_gradient_norm
+            ),
             **loss_metadata,
         })
         print(
@@ -1226,6 +1278,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "optimizer_amsgrad": optimizer_amsgrad,
         "scheduler": scheduler_name,
         "training_alpha": training_alpha,
+        "gradient_clip_norm": gradient_clip_norm,
         "residual_gate": {
             "kind": gate_kind,
             "temperature": gate_temperature,
@@ -1309,6 +1362,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "training_optimizer_amsgrad": optimizer_amsgrad,
         "training_scheduler": scheduler_name,
         "training_alpha": training_alpha,
+        "gradient_clip_norm": (
+            "" if gradient_clip_norm is None else gradient_clip_norm
+        ),
         "train_positive_fraction": float(train[2].mean()),
         "validation_positive_fraction": float(validation[2].mean()),
         **{f"validation_{key}": value for key, value in val_metrics.items()},
