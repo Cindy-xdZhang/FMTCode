@@ -354,6 +354,10 @@
 | 51057984 | Task3 artifact | Verify_Task3_AdamEpsilon_42.1_archive_cleanup | 2026-08-30T21:18:54+03:00 | 2026-08-30T22:18:22+03:00 | **COMPLETED** 22:19:04，exit 0、stderr为空；480份逐次CSV归档完整，480个临时checkpoint已删除且剩余0 | 不训练、不选择；仅固化42.1证据并执行协议要求的checkpoint清理 | Ibex CPU `cn113-35-l`；2 CPU、4 GB，无GPU | per-run archive/artifact manifest/checkpoint cleanup SHA `73d563ef…32f`/`0a7a73c2…305`/`c88178fe…eef`；archive脚本commit `b4c0aa7`，本地/远端SHA `97c3f337…a46f74` | `/home/zhanx0o/FMT_Task3_AdamEpsilon_42_1/slurm_logs/FMTT3eps421a.51057984.{out,err}` |
 | 51058184 | Task3 artifact | Verify_Task3_CosineMinLR_43.1_archive_cleanup | 2026-08-30T21:32:59+03:00 | 未开始 | **PENDING (Dependency)**；严格`afterok:51017338`，只在全部90 children和selector成功后运行 | 不训练、不选择；只归档540份逐次CSV并清理43.1自身临时checkpoint | Ibex CPU待分配；2 CPU、4 GB，无GPU | archive脚本commit `904c7a9`；本地/远端SHA `55d5daff…b4903`；远端`bash -n`通过；要求归档30s byte-stable后才发布正式hash；删除目标受限于43.1 candidate checkpoint目录 | `/home/zhanx0o/FMT_Task3_CosineMinLR_43_1/slurm_logs/FMTT3cos431a.51058184.{out,err}` |
 | 51058293 | Task3 artifact | Verify_Task3_TrainingHorizon_47.1_archive | 2026-08-30T21:38:03+03:00 | 未开始 | **PENDING (Dependency)**；严格`afterok:51028071`，只在全部90 children和selector成功后运行 | 不训练、不选择；归档540份逐次CSV并验证47.1没有保留任何checkpoint | Ibex CPU待分配；2 CPU、4 GB，无GPU | archive脚本commit `593465f`；本地/远端SHA `6f2e7392…80eed`；远端`bash -n`通过；要求归档30s byte-stable后才发布正式hash；发现任一`.pt/.pth/.ckpt`即失败 | `/home/zhanx0o/FMT_Task3_TrainingHorizon_47_1/slurm_logs/FMTT3th471a.51058293.{out,err}` |
+| 51058832 | Task3 | Verify_Task3_ResidualDropoutHigh_51.1_preflight | 2026-08-30T22:29:49+03:00 | 2026-08-30T22:29:50+03:00 | **COMPLETED** 22:31:05（75s），exit 0、stderr为空；确认10 datasets、8 candidates、80 mappings、480 paired trainings、容量guard及closed confirmation | 只支持51.1协议、部署、配对公平性和容量检查，不产生性能结论 | Ibex CPU `cn604-10`；8 CPU、16 GB，无GPU | commits `7603658`,`5e70e2d`；deployment archive本地/远端 SHA `2c59c46b…fe54a`；local raw/remote canonical config SHA `c5733166…153f3`/`4f67ee6f…713ae`；local/remote manifest SHA `d19a9415…b293a`/`ec613eec…c5b`；本地/远端各45项`unittest`、Python编译及四个`bash -n`通过；`confirmation_opened=false` | `/home/zhanx0o/FMT_Task3_DropoutHigh_51_1/slurm_logs/FMTT3dh511p.51058832.{out,err}` |
+| 51058833[0-79%24] | Task3 | Verify_Task3_ResidualDropoutHigh_51.1 | 2026-08-30T22:29:56+03:00 | 未开始 | **PENDING (Priority)**；严格`afterok:51058832`已满足，80 children完成8 candidates×10 datasets×3 seeds×2 arms=`480`次paired trainings | 尚无性能结果；禁止读取partial metrics；预注册目标为dataset-macro F1 gain`>=+.195`且absolute FMT F1`>=.893` | Ibex GPU待分配；每child 1 GPU、8 CPU、8 GB，限24并发，1h上限 | exact zero-dropout control与dropout `{.50,.55,.60,.65,.70,.75,.80}`；两臂同dropout、feature、head、optimizer、split、seed和预算；逐family FMT F1/AP零回退guard；`confirmation_opened=false` | `/home/zhanx0o/FMT_Task3_DropoutHigh_51_1/slurm_logs/FMTT3dh511.51058833_<array>.{out,err}` |
+| 51058835 | Task3 | Verify_Task3_ResidualDropoutHigh_51.1_select | 2026-08-30T22:30:04+03:00 | 未开始 | **PENDING (Dependency)**；严格`afterok:51058833_*`，只在80 children全部成功后统一选择 | 只作adaptive development选择；任何赢家仍须fresh spatial population确认 | Ibex CPU待分配；4 CPU、8 GB，无GPU | parent 38.1 selection SHA `f94c51b7…c7616`冻结；不得读取partial metrics或confirmation | `outputs/Verify_Task3_ResidualDropoutHigh_51.1/{optimization_leaderboard.csv,optimization_selection.json}` |
+| 51058838 | Task3 artifact | Verify_Task3_ResidualDropoutHigh_51.1_archive_cleanup | 2026-08-30T22:30:12+03:00 | 未开始 | **PENDING (Dependency)**；严格`afterok:51058835` | 不训练、不选择；只归档480份逐次CSV并清理51.1自身临时checkpoint | Ibex CPU待分配；2 CPU、4 GB，无GPU | 归档要求30s byte-stable后发布SHA-256清单；删除目标限制在51.1 candidate checkpoint目录 | `/home/zhanx0o/FMT_Task3_DropoutHigh_51_1/slurm_logs/FMTT3dh511a.51058838.{out,err}` |
 
 ## 2026-08-30 调度说明
 
@@ -611,3 +615,13 @@ epsilon control只增加`+.00107` gain和`+.00013` absolute FMT F1，未达到`.
 此时Cosine `51017334`为15/90完成、18运行、57等待；Head×alpha×clip `51020733`为
 3/80完成、5运行、72等待；二者0失败。Training horizon和低gamma分别为0/90、0/80，
 均已eligible但等待GPU配额；未读取任何运行中实验的partial metric。
+
+22:29–22:31部署adaptive高Dropout边界搜索`Verify_Task3_ResidualDropoutHigh_51.1`。
+依据已完成38.1中F22与Boeing均选择原上界`.50`的信号，固定`.50–.80`跟进区间；commits
+`7603658`,`5e70e2d`已先推送，部署包本地/远端SHA均为`2c59c46b…fe54a`。本地/远端
+各45项`unittest`、Python编译和四个Slurm脚本`bash -n`通过；两端均未安装可选`pytest`
+runner，故没有把该模块误记为通过。提交依赖链`51058832 → 51058833[0-79%24] →
+51058835 → 51058838`并由`scontrol`逐项核实。preflight于22:31:05 exit 0、stderr为空，
+remote manifest SHA为`ec613eec…c5b`；GPU数组已eligible等待Priority。此时Cosine为
+28/90完成、16运行、46等待，Head×alpha×clip为5/80完成、4运行、71等待；Training
+horizon、低gamma与高Dropout分别为0/90、0/80、0/80等待，未读取任何partial metric。

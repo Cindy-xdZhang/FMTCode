@@ -54,4 +54,22 @@ and full preflight pass. The full-preflight manifest SHA-256 is
 `d19a9415...8b293a`; it confirms ten datasets, seven physical families,
 eight candidates, three paired seeds, two arms, and 480 trainings. No
 performance result has been read, and confirmation is closed. The experiment
-is ready for immutable deployment.
+was fixed in commits `7603658` and `5e70e2d`. The immutable deployment archive
+SHA-256 is `2c59c46b4de1baba08141e49d41b7d1af47f1b70ad6f812f084404db68dfe54a`,
+identical locally and on Ibex. Local raw and remote canonical config SHA-256
+values are `c57331663bf32011077706d0444c2aca1a6d76ca331c2a7b0c37cf28750153f3`
+and `4f67ee6fbbe9baf779b990eab6515ec18e472f6a3026aa4dad0a5a0aad0713ae`;
+their difference is the committed Windows/Unix line ending only. Remote Python
+compilation, the same 45 `unittest` tests, and all four `bash -n` checks pass.
+The optional `pytest` runner is absent in both environments and is not counted
+as passed evidence.
+
+Submitted at `2026-08-30T22:29:49+03:00`: preflight job `51058832`, GPU array
+`51058833[0-79%24]`, selector `51058835`, and archive/cleanup job `51058838`.
+The dependency chain was verified with `scontrol`: preflight -> complete GPU
+array -> selector -> archive. Preflight ran on `cn604-10` from 22:29:50 to
+22:31:05, exited zero with empty stderr, and produced remote manifest SHA-256
+`ec613eec5b4d41be3a4f2fb02bc082d448d65188c6c0db4dee1d12946ed38c5b`.
+It confirmed ten datasets, eight candidates, 80 mappings, 480 paired
+trainings, all capacity guards, and closed confirmation. The GPU array is
+eligible and waiting for priority; no performance result has been read.
