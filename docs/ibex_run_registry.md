@@ -376,3 +376,11 @@ Head×alpha×clip及Training horizon六个数组均为0 started且held。全部T
 `PENDING (Dependency)`，44.1 safe-combination数组继续等待其上游selectors；截至该快照
 Task3无新失败、无完整selector结果，因而未读取partial metrics。Task2当前批从
 16:20:02开始，已完成的同批children约1:56–2:07。
+
+17:02提交独立确认`mainExp_Task2_3D_5.2`完整八段依赖链`51036980–51036987`。
+prepare、static preflight、recipe freeze和source preflight于17:03前后依次exit 0；
+10-child第五空间样本cache数组`51036984`随后等待`Priority`。当时Task3 Dropout
+数组占用24张GPU，其余较早提交的可选搜索仍排在Task2之前。17:05仅hold八个Task3
+可选搜索数组中尚未启动的children；`squeue`确认24个正在运行的Dropout children均未
+中断，pending children转为`JobHeldUser`。Task2 5.2完整结束后将立即解除这些hold。
+本次调度不改变任何实验的数据、模型、latent、seed、预算、配对或汇总规则。
