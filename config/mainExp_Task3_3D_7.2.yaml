@@ -1,0 +1,56 @@
+experiment: mainExp_Task3_3D_7.2
+task: Task3
+status: fresh_spatial_confirmation
+output_root: outputs/mainExp_Task3_3D_7.2
+recipe_manifest: outputs/mainExp_Task3_3D_7.2/frozen_recipe_manifest.json
+
+# Frozen before any 43.1/45.1/47.1/50.1/51.1 final metric was read. The
+# training-free 52.1 portfolio chooses only among guarded development winners
+# and copies all selected seed-40/41 artifacts before source cleanup.
+source_model:
+  repo_root: /home/zhanx0o/FMT_Task3_AdaptivePortfolio_52_1
+  environment: TASK72_SOURCE_MODEL_ROOT
+  expected_experiment: Verify_Task3_AdaptivePortfolio_52.1
+  expected_config_canonical_sha256: fc33380b1af18d2869d3eb18ff0bf8646797dc66f7d3951448a0628f69d091b0
+  paths:
+    config: config/Verify_Task3_AdaptivePortfolio_52.1.yaml
+    selection: outputs/Verify_Task3_AdaptivePortfolio_52.1/portfolio_selection.json
+  source_paired_seeds: [40, 41, 42]
+
+source_staging:
+  parent_manifest: /ibex/scratch/zhanx0o/FMT_Task3_Confirmation_SourcePacks_12_2/source_staging_manifest.json
+  parent_manifest_sha256: 020b48ffa9ee6d59b5c333a1b6513e015523c1e0db984884f1b9ade20a3e2a61
+  derived_manifest: /ibex/scratch/zhanx0o/FMT_Task3_AdaptiveTuned_7_2/source_staging_manifest.json
+
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+paired_seeds: [40, 41]
+confirmation_count: 4
+expected_ivd_percentile: 95.0
+require_confirmation_reference_match: true
+batch_size: 512
+
+# SHA-256(first eight hex digits) modulo 1024 + 1 gives Halton index 678.
+phase_key: mainExp_Task3_3D_7.2|sixth-spatial-population-v1
+phase_key_sha256: ff3312a55c80504295453f30f21340683392157b0e1feabc05a798442ab0581a
+halton_index: 678
+confirmation_seed_grid_phase: [-0.1044921875, -0.3655692729766804,
+                               0.11632000000000009]
+same_physical_times_as_prior_spatial_checks: true
+new_spatial_primitive_population: true
+confirmation_opened_before_freeze: false
+
+confirmation_roots:
+  old8:
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400, tangaroa,
+               deltaWing_resampled, deltaWing_LBM, f22raptor, channel]
+    source_root: outputs/mainExp_Task3_3D_7.2/confirmation_cache_old8
+    label_root: outputs/mainExp_Task3_3D_7.2/confirmation_labels_old8/labels
+  new2:
+    datasets: [boeing747, smokeBuoyancy]
+    source_root: outputs/mainExp_Task3_3D_7.2/confirmation_cache_new2
+    label_root: outputs/mainExp_Task3_3D_7.2/confirmation_labels_new2/labels
+
+target_dataset_macro_f1_gain: 0.15
+aspirational_dataset_macro_f1_gain: 0.20
