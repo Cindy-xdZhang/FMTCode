@@ -62,4 +62,10 @@ array `51017334[0-89%24]`, and selector `51017338`. The array has strict
 `afterok:51017332`; the selector has strict `afterok:51017334_*`. Preflight
 ran from 10:47:56 to 10:49:02 on `cn604-13`, exited 0, and produced an empty
 stderr. The remote manifest SHA-256 is `5dcb69fb...9929`. The GPU array is now
-pending only on `QOSMaxGRESPerUser`; performance results have not been read.
+running: at `2026-08-30T21:33+03:00`, 2/90 children were complete, 5 were
+running, and 83 were waiting, with no failure. Performance results have not
+been read. Evidence archive/cleanup job `51058184` was submitted with strict
+`afterok:51017338`; its committed script SHA-256 is
+`55d5daff...b4903`, identical locally and remotely. It will require all 540
+per-run CSV files, create a byte-stable archive, and delete only this
+experiment's temporary checkpoints after successful selection.
