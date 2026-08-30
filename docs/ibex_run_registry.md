@@ -682,3 +682,10 @@ gain`+.189459`，AP gain`+.206467`，10/10 datasets正；独立审计540份CSV�
 50.1 tasks3–4及44.1全部已运行children继续RUNNING，未被中断；三个数组原selector/
 archive依赖保持不变。待44.1与48.1两个selector均完成后解除上述三个hold，使剩余独立
 搜索使用全部可用GPU。该调整只缩短最终52.1关键路径，期间仍禁止读取partial metrics。
+
+23:51–23:52进一步核对发现47.1原始Slurm脚本只请求通用`--gpus=1`且保留5h上限，
+没有GPU型号约束；live job却仅在`gpu,gpu24,gpu72`排队，而同一训练程序已在45.1/
+50.1安全使用`gpu4/gpu1`。因此将`51028067`的eligible partition扩展为
+`gpu,gpu1,gpu4,gpu24,gpu72`，throttle仍为12，其他请求和科学设置不变。`scontrol`
+确认新partition、`ArrayTaskThrottle=12`、原5h TimeLimit、8 CPU/8 GB/1 GPU及空依赖均
+正确；作业仍为`PENDING (Priority)`且由调度器给出候选节点，未重提交、未产生重复结果。
