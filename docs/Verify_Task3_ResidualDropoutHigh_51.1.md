@@ -49,9 +49,9 @@ least `0.893`. Failure of either target is a negative result.
 
 ## Status
 
-Local Python compilation, 32 related contract/audit tests, static preflight,
+Local Python compilation, 45 related `unittest` contract/audit tests, static preflight,
 and full preflight pass. The full-preflight manifest SHA-256 is
 `d19a9415...8b293a`; it confirms ten datasets, seven physical families,
 eight candidates, three paired seeds, two arms, and 480 trainings. No
-performance result has been read, and confirmation is closed. Deployment is
-in progress.
+performance result has been read, and confirmation is closed. The experiment
+is ready for immutable deployment.
