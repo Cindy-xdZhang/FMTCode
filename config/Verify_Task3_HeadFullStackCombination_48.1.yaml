@@ -1,0 +1,123 @@
+experiment: Verify_Task3_HeadFullStackCombination_48.1
+output_root: outputs/Verify_Task3_HeadFullStackCombination_48.1
+task: Task3
+
+# Declared after 38.1 completed, but before reading any 39.1--47.1 result.
+# It tests whether the selected residual head and training horizon interact
+# safely with the already preregistered optimizer/loss/stability factors.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  feature:
+    kind: stage1_feature
+    selection: outputs/Verify_Task3_AnchoredFeatureDecomposition_22.1/stage1_selection.json
+    expected_experiment: Verify_Task3_AnchoredFeatureDecomposition_22.1
+  head:
+    selection: outputs/Verify_Task3_ResidualHeadDepthWidth_31.2/optimization_selection.json
+    expected_experiment: Verify_Task3_ResidualHeadDepthWidth_31.2
+  alpha:
+    selection: outputs/Verify_Task3_TrainingResidualScale_32.1/optimization_selection.json
+    expected_experiment: Verify_Task3_TrainingResidualScale_32.1
+  clipping:
+    selection: outputs/Verify_Task3_GradientClipping_33.1/optimization_selection.json
+    expected_experiment: Verify_Task3_GradientClipping_33.1
+  betas:
+    selection: outputs/Verify_Task3_AdamBetas_34.1/optimization_selection.json
+    expected_experiment: Verify_Task3_AdamBetas_34.1
+  batch:
+    selection: outputs/Verify_Task3_BatchSize_36.1/optimization_selection.json
+    expected_experiment: Verify_Task3_BatchSize_36.1
+  positive_weight:
+    selection: outputs/Verify_Task3_PositiveWeightScale_37.1/optimization_selection.json
+    expected_experiment: Verify_Task3_PositiveWeightScale_37.1
+  dropout:
+    selection: outputs/Verify_Task3_ResidualDropout_38.1/optimization_selection.json
+    expected_experiment: Verify_Task3_ResidualDropout_38.1
+  focal:
+    selection: outputs/Verify_Task3_FocalGamma_39.1/optimization_selection.json
+    expected_experiment: Verify_Task3_FocalGamma_39.1
+  ema:
+    selection: outputs/Verify_Task3_ParameterEMA_40.1/optimization_selection.json
+    expected_experiment: Verify_Task3_ParameterEMA_40.1
+  smoothing:
+    selection: outputs/Verify_Task3_LabelSmoothing_41.1/optimization_selection.json
+    expected_experiment: Verify_Task3_LabelSmoothing_41.1
+  epsilon:
+    selection: outputs/Verify_Task3_AdamEpsilon_42.1/optimization_selection.json
+    expected_experiment: Verify_Task3_AdamEpsilon_42.1
+  cosine:
+    selection: outputs/Verify_Task3_CosineMinLR_43.1/optimization_selection.json
+    expected_experiment: Verify_Task3_CosineMinLR_43.1
+  horizon:
+    selection: outputs/Verify_Task3_TrainingHorizon_47.1/optimization_selection.json
+    expected_experiment: Verify_Task3_TrainingHorizon_47.1
+
+# Fixed before 39.1--47.1 complete. Sources that later select their exact
+# controls remain present; no candidate is deleted after seeing a result.
+optimization_candidates:
+  - {id: u00_feature_control, sources: [feature]}
+  - {id: u01_head, sources: [feature, head]}
+  - {id: u02_horizon, sources: [feature, horizon]}
+  - {id: u03_head_horizon, sources: [feature, head, horizon]}
+  - {id: u04_head_alpha_dropout,
+     sources: [feature, head, alpha, dropout]}
+  - {id: u05_head_alpha_clipping_dropout,
+     sources: [feature, head, alpha, clipping, dropout]}
+  - {id: u06_head_optimizer_stack,
+     sources: [feature, head, alpha, clipping, betas, epsilon]}
+  - {id: u07_head_loss_regularization_stack,
+     sources: [feature, head, alpha, positive_weight, dropout, focal,
+               smoothing]}
+  - {id: u08_head_stability_stack,
+     sources: [feature, head, alpha, batch, ema, cosine, horizon]}
+  - {id: u09_head_all_non_scheduler,
+     sources: [feature, head, alpha, clipping, betas, batch,
+               positive_weight, dropout, focal, ema, smoothing, epsilon,
+               horizon]}
+  - {id: u10_head_all,
+     sources: [feature, head, alpha, clipping, betas, batch,
+               positive_weight, dropout, focal, ema, smoothing, epsilon,
+               cosine, horizon]}
+  - {id: u11_head_all_without_alpha,
+     sources: [feature, head, clipping, betas, batch, positive_weight,
+               dropout, focal, ema, smoothing, epsilon, cosine, horizon]}
+  - {id: u12_head_dropout_ema,
+     sources: [feature, head, dropout, ema]}
+  - {id: u13_head_alpha_dropout_ema,
+     sources: [feature, head, alpha, dropout, ema]}
+  - {id: u14_head_alpha_dropout_focal_ema,
+     sources: [feature, head, alpha, dropout, focal, ema]}
+  - {id: u15_head_all_without_horizon,
+     sources: [feature, head, alpha, clipping, betas, batch,
+               positive_weight, dropout, focal, ema, smoothing, epsilon,
+               cosine]}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: u00_feature_control
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.20
+  target_absolute_fmt_f1: 0.893
+  confirmation_opened: false
