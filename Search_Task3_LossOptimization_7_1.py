@@ -39,6 +39,7 @@ from Verify_Task3_FMTResidual import (
     _load_raw_model,
     _optimizer_betas,
     _train_one,
+    _warmup_parameters,
 )
 
 
@@ -568,6 +569,7 @@ def preflight(config_path: str) -> Path:
             )
             _gradient_clip_norm(run_spec["training"])
             _optimizer_betas(run_spec["training"])
+            _warmup_parameters(run_spec["training"])
             _, loss_metadata = _build_training_loss(
                 run_spec["training"], float(train[2].sum()),
                 float(len(train[2]) - train[2].sum()), torch.device("cpu"),

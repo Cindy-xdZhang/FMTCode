@@ -1,0 +1,62 @@
+experiment: Verify_Task3_LinearWarmup_35.1
+output_root: outputs/Verify_Task3_LinearWarmup_35.1
+task: Task3
+
+# Development-only warmup search declared without reading partial or final
+# performance from 27.1--34.1. Both paired arms use the same schedule.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  feature:
+    kind: stage1_feature
+    selection: outputs/Verify_Task3_AnchoredFeatureDecomposition_22.1/stage1_selection.json
+    expected_experiment: Verify_Task3_AnchoredFeatureDecomposition_22.1
+
+# null/null is a strict no-scheduler control. Other candidates linearly raise
+# learning rate from 10% to 100% of the unchanged base learning rate, then keep
+# it constant for the remaining epochs.
+optimization_candidates:
+  - {id: w00_control_none, sources: [feature],
+     training: {warmup_epochs: null, warmup_start_ratio: null}}
+  - {id: w01_epoch1, sources: [feature],
+     training: {warmup_epochs: 1, warmup_start_ratio: 0.1}}
+  - {id: w02_epoch2, sources: [feature],
+     training: {warmup_epochs: 2, warmup_start_ratio: 0.1}}
+  - {id: w03_epoch5, sources: [feature],
+     training: {warmup_epochs: 5, warmup_start_ratio: 0.1}}
+  - {id: w04_epoch10, sources: [feature],
+     training: {warmup_epochs: 10, warmup_start_ratio: 0.1}}
+  - {id: w05_epoch20, sources: [feature],
+     training: {warmup_epochs: 20, warmup_start_ratio: 0.1}}
+  - {id: w06_epoch40, sources: [feature],
+     training: {warmup_epochs: 40, warmup_start_ratio: 0.1}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: w00_control_none
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.195
+  target_absolute_fmt_f1: 0.893
+  confirmation_opened: false

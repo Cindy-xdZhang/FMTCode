@@ -953,6 +953,57 @@ def _build_optimizer(training: dict, parameters):
     return optimizer, name, amsgrad
 
 
+def _warmup_parameters(training=None):
+    """Validate epoch-level linear warmup while preserving a strict no-op."""
+    training = {} if training is None else dict(training)
+    epochs_value = training.get("warmup_epochs")
+    start_value = training.get("warmup_start_ratio")
+    epochs = 0 if epochs_value is None else int(epochs_value)
+    start_ratio = 0.1 if start_value is None else float(start_value)
+    if epochs < 0:
+        raise ValueError("warmup_epochs must be non-negative")
+    max_epochs = int(training.get("max_epochs", max(epochs, 1)))
+    if epochs >= max_epochs and epochs > 0:
+        raise ValueError("warmup_epochs must be smaller than max_epochs")
+    if not np.isfinite(start_ratio) or not 0.0 < start_ratio <= 1.0:
+        raise ValueError("warmup_start_ratio must be finite and in (0, 1]")
+    scheduler_name = str(training.get("scheduler", "none")).lower()
+    if epochs > 0 and scheduler_name != "none":
+        raise ValueError("linear warmup currently requires scheduler='none'")
+    overridden = epochs_value is not None or start_value is not None
+    return epochs, start_ratio, overridden
+
+
+def _build_scheduler(training: dict, optimizer):
+    """Build the registered epoch scheduler with optional linear warmup."""
+    warmup_epochs, warmup_start_ratio, _ = _warmup_parameters(training)
+    scheduler_name = str(training.get("scheduler", "none")).lower()
+    if warmup_epochs > 0:
+        scheduler = torch.optim.lr_scheduler.LambdaLR(
+            optimizer,
+            lr_lambda=lambda epoch: (
+                1.0 if epoch >= warmup_epochs else
+                warmup_start_ratio
+                + (1.0 - warmup_start_ratio) * epoch / warmup_epochs
+            ),
+        )
+        return scheduler, "linear_warmup_constant", warmup_epochs, warmup_start_ratio
+    if scheduler_name == "none":
+        scheduler = None
+    elif scheduler_name == "cosine":
+        minimum_ratio = float(training.get("minimum_learning_rate_ratio", 0.05))
+        if not 0.0 <= minimum_ratio <= 1.0:
+            raise ValueError("minimum_learning_rate_ratio must be in [0, 1]")
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=int(training["max_epochs"]),
+            eta_min=float(training["learning_rate"]) * minimum_ratio,
+        )
+    else:
+        raise ValueError("training.scheduler must be 'none' or 'cosine'")
+    return scheduler, scheduler_name, warmup_epochs, warmup_start_ratio
+
+
 def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
     _set_seed(seed)
     gate_kind, gate_temperature, gate_floor = _residual_gate_parameters(
@@ -1037,20 +1088,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         ),
     )
     optimizer_betas, _ = _optimizer_betas(spec["training"])
-    scheduler_name = str(spec["training"].get("scheduler", "none")).lower()
-    if scheduler_name == "none":
-        scheduler = None
-    elif scheduler_name == "cosine":
-        minimum_ratio = float(spec["training"].get("minimum_learning_rate_ratio", 0.05))
-        if not 0.0 <= minimum_ratio <= 1.0:
-            raise ValueError("minimum_learning_rate_ratio must be in [0, 1]")
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer,
-            T_max=int(spec["training"]["max_epochs"]),
-            eta_min=float(spec["training"]["learning_rate"]) * minimum_ratio,
-        )
-    else:
-        raise ValueError("training.scheduler must be 'none' or 'cosine'")
+    scheduler, scheduler_name, warmup_epochs, warmup_start_ratio = (
+        _build_scheduler(spec["training"], optimizer)
+    )
     training_alpha = float(spec["training"].get("training_alpha", 1.0))
     if not np.isfinite(training_alpha) or training_alpha <= 0.0:
         raise ValueError("training_alpha must be finite and positive")
@@ -1296,6 +1336,8 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "optimizer_amsgrad": optimizer_amsgrad,
         "optimizer_betas": optimizer_betas,
         "scheduler": scheduler_name,
+        "warmup_epochs": warmup_epochs,
+        "warmup_start_ratio": warmup_start_ratio,
         "training_alpha": training_alpha,
         "gradient_clip_norm": gradient_clip_norm,
         "residual_gate": {
@@ -1382,6 +1424,8 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "training_optimizer_beta1": optimizer_betas[0],
         "training_optimizer_beta2": optimizer_betas[1],
         "training_scheduler": scheduler_name,
+        "training_warmup_epochs": warmup_epochs,
+        "training_warmup_start_ratio": warmup_start_ratio,
         "training_alpha": training_alpha,
         "gradient_clip_norm": (
             "" if gradient_clip_norm is None else gradient_clip_norm
