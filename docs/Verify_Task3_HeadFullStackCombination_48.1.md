@@ -51,3 +51,20 @@ confirmation before replacing the current Task3 paper result.
 - `Search_Task3_LossOptimization_7_1.py`
 - `tests/test_task3_head_full_stack_combination_48_1.py`
 - `ibex_bash/verify_task3_head_full_stack_combination_48.1_*.sh`
+
+## Ibex deployment
+
+- Implementation commit: `eb2cd44`.
+- Immutable archive SHA-256:
+  `158adf0fd203d7b3e86346ae29c31e1eb5254bec4ad90750b44023686b562372`.
+- Local and remote 48.1/44.1/45.1 contracts: 11/11 passed.
+- Remote Python compilation, static preflight, and all three `bash -n` checks
+  passed. Static preflight confirms 10 datasets, 7 physical families,
+  16 candidates, 14 selector sources, 960 paired trainings, and closed
+  confirmation.
+- Preflight job `51041336` has strict `afterok` dependencies on pending
+  selectors 39.1, 40.1, 41.1, 42.1, 43.1, and 47.1.
+- GPU array `51041338[0-159%24]` has strict `afterok:51041336`.
+- Selector `51041339` has strict `afterok:51041338_*`.
+
+All three jobs were submitted before any 39.1--47.1 final metric was read.
