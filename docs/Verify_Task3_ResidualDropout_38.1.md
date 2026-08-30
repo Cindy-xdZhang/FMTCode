@@ -77,6 +77,49 @@ array `51012521[0-99%24]`, and selector `51012532`. The GPU array has an
 `afterok:51012519` dependency and the selector has
 `afterok:51012521_*`, verified with `scontrol`. The CPU preflight ran on
 `cn604-08` from `08:28:28` to `08:29:45+03:00`, exited zero with empty stderr,
-and produced remote manifest SHA-256 `053c8e8a...df11`. The GPU array now waits
-only for the per-user GPU quota. Performance results have not been read and
-confirmation remains closed.
+and produced remote manifest SHA-256 `053c8e8a...df11`. The GPU array initially
+waited only for the per-user GPU quota.
+
+## Completed development result
+
+The 100 GPU children completed successfully from `14:32:59` to `18:20:03`
+on GTX 1080 Ti, P100, V100, and A100 nodes. Selector `51012532` then completed
+in eight seconds with empty stderr. All 600 paired trainings are present, no
+checkpoint was retained, and confirmation remained closed.
+
+The family-specific selected rates are:
+
+| Physical family | Dropout |
+|---|---:|
+| channel | 0.10 |
+| halfcylinder | 0.40 |
+| tangaroa | 0.30 |
+| deltaWing | 0.00 |
+| f22raptor | 0.50 |
+| boeing747 | 0.50 |
+| smokeBuoyancy | 0.00 |
+
+Across the ten dataset entries, selected Raw-PCA/FMT F1 is
+`0.6918777/0.8883567`, giving a paired gain of `+0.1964790`. Average Precision
+gain is `+0.2118812`. The exact zero-dropout control has Raw-PCA/FMT F1
+`0.6976753/0.8870755`, hence gain `+0.1894002`. Dropout therefore adds
+`+0.0070788` paired F1 gain while also raising absolute FMT F1 by `+0.0012812`.
+
+The registered gain target `>=0.195` is reached, but the absolute FMT F1 target
+`>=0.893` is missed by `0.0046433`; consequently the joint target is not
+reached. This is a positive development result for combination search, not a
+paper-level replacement for `mainExp_Task3_3D_6.1`. Any use of these rates in
+a final claim still requires a fresh spatial population.
+
+Final SHA-256 values are:
+
+- `optimization_selection.json`:
+  `f94c51b7414107629a202bc29f5f92c4610758bee936081dfb0b6c91e25c7616`
+- `optimization_leaderboard.csv`:
+  `a2abbb547fd3b8debfb07bf2d82f536c89e69573e9e7944bdab9c9ebcc33a5f8`
+- `preflight_manifest.json`:
+  `053c8e8a957bc07c7fcb0f03fec2a933f57ba967f8491831fb196a7db00adf11`
+
+Local independent recomputation recovered 10 unique datasets and reproduced
+the selected and control macro values exactly from the stored per-family
+records. Local and remote hashes match byte for byte.
