@@ -61,5 +61,31 @@ may be read before selection.
 Full preflight ran on `cn604-12` from 03:38:56 to 03:40:05, exited zero with
 empty stderr, and produced manifest SHA-256 `01672ff5...756db`. It confirmed
 ten datasets, seven candidates, 420 paired trainings, zero ineligible recipes,
-and closed confirmation state. The GPU dependency is released and the array
-waits for scheduler priority.
+and closed confirmation state. This released the GPU dependency; the array was
+then scheduled without changing the preregistered candidate set.
+
+## Completed result
+
+GPU array `51004395[0-69%24]` completed all 70 children by 11:07:15 on
+9 Tesla P100 and 61 GTX 1080 Ti allocations. All 70 stdout files exist, all 70
+stderr files are empty, and every child exited zero. Selector `51004397` then
+ran on `cn604-14` from 11:07:20 to 11:07:31 and exited zero with empty stderr.
+
+The zero-warmup control was selected for every physical family. Selected
+dataset-macro results are:
+
+| Arm | F1 | Average Precision |
+|---|---:|---:|
+| train-only Raw-PCA residual | 0.697351 | 0.739773 |
+| FMT residual | 0.887125 | 0.945745 |
+| FMT minus Raw-PCA | +0.189774 | +0.205972 |
+
+The joint target was not reached: F1 gain is below `+0.195` and absolute FMT
+F1 is below `0.893`. A few guarded warmup candidates raised absolute FMT F1
+slightly in individual families (at most `+0.001377` for Tangaroa), but their
+paired gain was lower because the Raw-PCA arm improved at least as much. Linear
+warmup therefore does not improve the frozen Task3 objective and will not be
+carried into a combination or confirmation experiment.
+
+Selection and leaderboard SHA-256 values are
+`18543e09...4e0` and `57bd7b20...858`. Confirmation remains closed.
