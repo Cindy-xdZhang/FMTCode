@@ -1,0 +1,61 @@
+experiment: Verify_Task3_ResidualDropoutHigh_51.1
+output_root: outputs/Verify_Task3_ResidualDropoutHigh_51.1
+task: Task3
+
+# Adaptive development-only follow-up to the completed 38.1 dropout search.
+# F22 and Boeing both selected dropout 0.50, exactly at that search's upper
+# boundary.  This experiment closes the unresolved 0.50--0.80 interval.
+motivation_selection: outputs/Verify_Task3_ResidualDropout_38.1/optimization_selection.json
+motivation_selection_local_mirror: output/Verify_Task3_ResidualDropout_38.1_ibex/optimization_selection.json
+motivation_selection_sha256: f94c51b7414107629a202bc29f5f92c4610758bee936081dfb0b6c91e25c7616
+motivation_expected_experiment: Verify_Task3_ResidualDropout_38.1
+
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  feature:
+    kind: stage1_feature
+    selection: outputs/Verify_Task3_AnchoredFeatureDecomposition_22.1/stage1_selection.json
+    expected_experiment: Verify_Task3_AnchoredFeatureDecomposition_22.1
+
+# h00 is the exact no-override historical control.  The 0.50 parent-boundary
+# cell is repeated so that the extension is compared within one execution.
+optimization_candidates:
+  - {id: h00_control_dropout0000, sources: [feature]}
+  - {id: h01_dropout0500, sources: [feature], model: {head_dropout: 0.500}}
+  - {id: h02_dropout0550, sources: [feature], model: {head_dropout: 0.550}}
+  - {id: h03_dropout0600, sources: [feature], model: {head_dropout: 0.600}}
+  - {id: h04_dropout0650, sources: [feature], model: {head_dropout: 0.650}}
+  - {id: h05_dropout0700, sources: [feature], model: {head_dropout: 0.700}}
+  - {id: h06_dropout0750, sources: [feature], model: {head_dropout: 0.750}}
+  - {id: h07_dropout0800, sources: [feature], model: {head_dropout: 0.800}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: h00_control_dropout0000
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.195
+  target_absolute_fmt_f1: 0.893
+  confirmation_opened: false
