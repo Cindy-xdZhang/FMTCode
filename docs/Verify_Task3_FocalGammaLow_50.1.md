@@ -55,5 +55,18 @@ Local Python compilation and 13 relevant contract/audit tests pass. Static
 preflight confirms 10 datasets, 7 physical families, 8 candidates, 3 paired
 seeds, 2 arms, and 480 trainings. Full local preflight also passes all cache,
 label, feature-width, parameter-capacity, and frozen-checkpoint checks; its
-manifest SHA-256 is `b9bf269a...5ec3d`. Ibex deployment is pending. No result
-has been read, and confirmation is closed.
+manifest SHA-256 is `b9bf269a...5ec3d`. No performance result has been read,
+and confirmation is closed.
+
+Implementation commit `cf85a72` was pushed before deployment. The immutable
+archive SHA-256 is `e23cf300...1c8b1`, identical locally and remotely; the
+remote canonical config SHA-256 is `a0b706e8...b5a58`. Remote Python
+compilation, the same 13 tests, static preflight, and all four `bash -n`
+checks pass. Jobs submitted at `2026-08-30T21:00:51+03:00` are full preflight
+`51056257`, GPU array `51056260[0-79%24]`, selector `51056263`, and artifact
+job `51056264`. Their dependencies are respectively none,
+`afterok:51056257`, `afterok:51056260_*`, and `afterok:51056263`. Performance
+results have not been read and confirmation remains closed. Full preflight
+`51056257` ran on `cn604-07` from `21:00:53` to `21:02:02`, completed with
+exit code 0 and empty stderr, and produced remote manifest SHA-256
+`a83e431a...f5c0`. The GPU array is eligible and waiting for Slurm priority.

@@ -346,6 +346,10 @@
 | 51043534 | Task3 | mainExp_Task3_3D_7.1_evaluation_preflight | 2026-08-30T19:13:29+03:00 | 未开始 | **PENDING (Dependency)**；严格`afterok:51043526_*`，确认10个cache、标签、40个模型及全部SHA后才开放冻结推理 | 只支持完整性检查，不产生性能结论 | Ibex CPU待分配；4 CPU、8 GB，无GPU | confirmation不训练、不选feature、threshold或residual scale | `outputs/mainExp_Task3_3D_7.1/evaluation_preflight.json` |
 | 51043535[0-9%10] | Task3 | mainExp_Task3_3D_7.1_evaluate | 2026-08-30T19:13:30+03:00 | 未开始 | **PENDING (Dependency)**；严格`afterok:51043534`；10 children逐dataset执行冻结的Raw-PCA/FMT两臂推理 | 尚无性能结果；禁止读取partial shards | Ibex CPU待分配；每child 8 CPU、12 GB，无GPU | 10 datasets×2 seeds×2 arms=`40`次冻结模型评估；两臂保持同recipe、容量和decision protocol | `/home/zhanx0o/FMT_Task3_FinalTuned_7_1/slurm_logs/FMTT3m71r.51043535_<array>.{out,err}` |
 | 51043546 | Task3 | mainExp_Task3_3D_7.1_summary | 2026-08-30T19:13:32+03:00 | 未开始 | **PENDING (Dependency)**；严格`afterok:51043535_*`，只在10个evaluation shards全部成功后汇总 | 预注册主目标dataset-macro F1 gain`>=+.15`，扩展目标`>=+.20`；无论通过或失败都保留 | Ibex CPU待分配；2 CPU、4 GB，无GPU | summary后删除44.1/45.1/48.1临时checkpoint；结果与6.1并列，不允许覆盖已有`+.17066`证据 | `outputs/mainExp_Task3_3D_7.1/{per_run.csv,summary.json}` |
+| 51056257 | Task3 | Verify_Task3_FocalGammaLow_50.1_preflight | 2026-08-30T21:00:51+03:00 | 2026-08-30T21:00:53+03:00 | **COMPLETED**；2026-08-30T21:02:02+03:00结束，elapsed 69 s，exit 0，stderr 0 bytes；完整核对10 datasets、8 candidates、480 paired trainings、缓存/标签/容量与closed confirmation | 只支持协议和部署完整性，不产生性能结论 | Ibex CPU `cn604-07`；8 CPU、16 GB，无GPU | implementation commit `cf85a72`已推送；archive本地/远端 SHA `e23cf300…1c8b1`；remote config SHA `a0b706e8…b5a58`；parent 39.1 selection SHA `1e99c432…9e994`；本地/远端13/13 tests、Python编译、static preflight和四个`bash -n`通过；local/remote full-preflight manifest SHA `b9bf269a…5ec3d`/`a83e431a…f5c0` | `/home/zhanx0o/FMT_Task3_FocalGammaLow_50_1/slurm_logs/FMTT3fl501p.51056257.{out,err}` |
+| 51056260[0-79%24] | Task3 | Verify_Task3_FocalGammaLow_50.1 | 2026-08-30T21:01:04+03:00 | 未开始 | **PENDING (Dependency)**；严格`afterok:51056257`，预检成功后执行80 children×6 paired trainings=`480` trainings | 尚无性能结果；禁止读取partial metrics | Ibex GPU待分配；每child 1 GPU、8 CPU、8 GB，限24并发，1h上限 | exact weighted-BCE control与gamma `{.01,.025,.05,.075,.10,.15,.20}`；两臂同loss、gamma、feature、head、optimizer、split、seed和预算；逐family FMT F1/AP零回退guard；`confirmation_opened=false` | `/home/zhanx0o/FMT_Task3_FocalGammaLow_50_1/slurm_logs/FMTT3fl501.51056260_<array>.{out,err}` |
+| 51056263 | Task3 | Verify_Task3_FocalGammaLow_50.1_select | 2026-08-30T21:01:18+03:00 | 未开始 | **PENDING (Dependency)**；严格`afterok:51056260_*`，只在80 children全部成功后统一选择 | 只作adaptive development选择；任何赢家仍须fresh spatial population确认 | Ibex CPU待分配；4 CPU、8 GB，无GPU | 目标dataset-macro F1 gain`>=+.195`且absolute FMT F1`>=.893`；不得读取partial metrics或confirmation | `outputs/Verify_Task3_FocalGammaLow_50.1/{optimization_leaderboard.csv,optimization_selection.json}` |
+| 51056264 | Task3 artifact | Verify_Task3_FocalGammaLow_50.1_archive_cleanup | 2026-08-30T21:01:32+03:00 | 未开始 | **PENDING (Dependency)**；严格`afterok:51056263` | 不训练、不选择；只归档480份逐次CSV并清理50.1自身临时checkpoint | Ibex CPU待分配；2 CPU、4 GB，无GPU | 归档在checkpoint清理后等待30s并要求SHA-256保持不变，再发布正式hash清单；只允许删除50.1 candidate checkpoint | `/home/zhanx0o/FMT_Task3_FocalGammaLow_50_1/slurm_logs/FMTT3fl501a.51056264.{out,err}` |
 
 ## 2026-08-30 调度说明
 
@@ -575,3 +579,11 @@ Dropout。独立审计720份逐次CSV，所有family赢家和macro与selector最
 `51016612`为38/90完成、14运行、38等待；Adam epsilon `51016836`为7/80完成、4运行、
 69等待；Cosine、Head×alpha×clip与Training horizon尚未开始但均eligible。44.1、48.1、
 49.1及7.1依赖链保持不变，未读取任何仍在运行实验的partial metric。
+
+21:00–21:01基于已完成39.1的明确下边界信号部署adaptive development搜索
+`Verify_Task3_FocalGammaLow_50.1`。commit `cf85a72`已先推送，部署包本地/远端SHA均为
+`e23cf300…1c8b1`；远端13/13 tests、Python编译、static preflight和四个Slurm脚本
+`bash -n`通过，parent 39.1 selection SHA精确为`1e99c432…9e994`。提交作业链
+`51056257 → 51056260[0-79%24] → 51056263 → 51056264`并逐项用`scontrol`核实依赖。
+该搜索只细化gamma`.10`以下的development区间，不读取confirmation，也不改变39.1
+结论；Label smoothing、Adam epsilon等既有数组继续按Slurm配额并行运行。
