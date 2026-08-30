@@ -493,3 +493,8 @@ epsilon `51016836`、Cosine minimum learning rate `51017334`和Head×alpha×clip
 6h/3h/3h/3h/4h统一缩短为2h；`scontrol show job`逐项确认`02:00:00`，远端脚本同步且
 五项`bash -n`全部通过。Training horizon `51028067`包含最高300 epochs，明确保留5h不变。
 该操作只改善backfill机会，不改变任何科学配置，也未读取partial metric。
+
+18:00对等待八个上游selectors的Safe factor combination `51018920`作同样核验：44.1的
+28 candidates均继承100-epoch base config，每个child为3 seeds×2 arms，与当前已实测
+工作量一致。将其TimeLimit由4h缩短为2h；live job、远端脚本和远端`bash -n`均核验通过。
+该数组仍严格保持`PENDING (Dependency)`，不会提前读取赢家或启动训练；科学配置不变。
