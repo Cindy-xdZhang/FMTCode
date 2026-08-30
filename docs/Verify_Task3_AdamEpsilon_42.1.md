@@ -49,4 +49,17 @@ preflight confirmed 10 datasets, 8 candidates, 80 array mappings, 480 paired
 trainings, all parameter budgets, and closed confirmation state. The local
 preflight manifest SHA-256 is `ce17319b...f3e7`.
 
-Remote validation and deployment are pending.
+Implementation commit `03594f7` was pushed before deployment. The immutable
+archive SHA-256 is `4c17851e...72d8`; local raw and remote canonical config
+SHA-256 values are `9a48c35e...c14d` and `0f851490...773c`, respectively.
+Remote Python compilation, the same 61 tests, and all three `bash -n` checks
+passed.
+
+Submitted at `2026-08-30T10:39:02+03:00`: CPU preflight job `51016835`, GPU
+array `51016836[0-79%24]`, and selector `51016837`. The array has strict
+`afterok:51016835`; the selector has strict `afterok:51016836_*`. Preflight
+ran on `cn604-07` from 10:39:03 to 10:40:10, exited zero with empty stderr,
+and produced remote manifest SHA-256 `e63b1141...8b45`. It confirmed 10
+datasets, 8 candidates, 80 mappings, 480 paired trainings, all capacity
+guards, and closed confirmation state. The GPU array now waits for scheduler
+priority. Performance results have not been read.
