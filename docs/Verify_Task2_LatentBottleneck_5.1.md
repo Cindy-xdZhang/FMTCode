@@ -51,3 +51,10 @@ current Task2 paper result.
   and `f45c4ade1a868bd5818330b001bc8bf5c548185a02c90e6abac3334655018ba3`.
 - GPU array `51029104` and selector `51029108` are submitted with strict
   dependencies. Performance remains pending; partial metrics are not read.
+- At `2026-08-30T14:51+03:00`, before any child started, the scheduler-only
+  `v100` feature constraint was removed and the compatible four-hour
+  partition was added.  The array may now use GTX 1080 Ti, P100, V100, or A100
+  nodes in `gpu,gpu4,gpu24,gpu72`.  This changes no data, model, latent grid,
+  seed, training code, budget, pairing, or selection rule; each Raw/FMT pair
+  still runs within the same child on the same GPU.  The change is solely to
+  reduce queue delay and is recorded before any performance output exists.
