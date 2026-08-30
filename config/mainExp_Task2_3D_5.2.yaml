@@ -1,0 +1,67 @@
+experiment: mainExp_Task2_3D_5.2
+task: Task2
+status: fresh_spatial_confirmation
+output_root: outputs/mainExp_Task2_3D_5.2
+recipe_manifest: outputs/mainExp_Task2_3D_5.2/frozen_recipe_manifest.json
+evaluation_preflight: outputs/mainExp_Task2_3D_5.2/evaluation_preflight.json
+
+# Verify_Task2_LatentBottleneck_5.1 was selected only on development ordinals
+# 0--7.  Its selection and search config are immutable inputs here.
+source_search:
+  artifact_repo_root_env: TASK2_LATENT51_ROOT
+  artifact_repo_root: /home/zhanx0o/FMT_Task2_LatentBottleneck_5_1
+  development_repo_root_env: TASK2_SOURCE_ROOT
+  development_repo_root: /home/zhanx0o/FMT_Task12_3D_20260823
+  expected_search_experiment: Verify_Task2_LatentBottleneck_5.1
+  search_config: config/Verify_Task2_LatentBottleneck_5.1.yaml
+  # SHA-256 after CRLF/LF normalization; scientific YAML content is identical
+  # on Windows and Ibex even though the raw deployment bytes differ.
+  search_config_sha256: cc375e2a21c2216922371c14929b7e88de8e03b53da3124cbbf3e695843848ac
+  selection: outputs/Verify_Task2_LatentBottleneck_5.1/selection.json
+  selection_sha256: cf1c546fb833cacc3b6b582544db6269ea5b2e5d5ad5af04f44223f343e3e3dc
+
+# Reuse only audited temporal velocity windows.  They are independent of the
+# spatial seed phase; no primitive or IVD label is reused.
+source_staging:
+  parent_manifest: /ibex/scratch/zhanx0o/FMT_Task3_Confirmation_SourcePacks_12_2/source_staging_manifest.json
+  parent_manifest_sha256: 020b48ffa9ee6d59b5c333a1b6513e015523c1e0db984884f1b9ade20a3e2a61
+  derived_manifest: /ibex/scratch/zhanx0o/FMT_Task2_LatentBottleneck_5_2/source_staging_manifest.json
+
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+
+# New seeds, distinct from both development seeds 83--85 and Task2 4.1 final
+# seeds 9080--9084.  Each Raw/FMT pair uses exactly the same seed.
+final_training_seeds: [9090, 9091, 9092, 9093, 9094]
+splits:
+  final_train: [0, 1, 2, 3, 4, 5, 6, 7]
+  cluster_calibration: [8, 9]
+confirmation_count: 4
+
+# "selected" is the immutable primary method.  "control" repeats the Task2
+# 4.1 latent dimension on the same fifth population and is diagnostic only.
+recipes: [selected, control]
+kmeans_seed: 7068
+kmeans_n_init: 20
+
+# SHA-256(first eight hex digits) modulo 1024 + 1 gives Halton index 544.
+phase_key: mainExp_Task2_3D_5.2|fifth-spatial-population-v1
+phase_key_sha256: 0abfd21f52056f9beed62d3b2568fb0620f2369cbd08ccc009b6447554627d54
+halton_index: 544
+confirmation_seed_grid_phase: [-0.4833984375, -0.028120713305898493, 0.4344]
+same_physical_times_as_prior_spatial_checks: true
+new_spatial_primitive_population: true
+confirmation_opened_before_freeze: false
+
+confirmation_roots:
+  old8:
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400, tangaroa,
+               deltaWing_resampled, deltaWing_LBM, f22raptor, channel]
+    root: outputs/mainExp_Task2_3D_5.2/confirmation_cache_old8
+  new2:
+    datasets: [boeing747, smokeBuoyancy]
+    root: outputs/mainExp_Task2_3D_5.2/confirmation_cache_new2
+
+target_dataset_macro_f1_gain: 0.15
+aspirational_dataset_macro_f1_gain: 0.22

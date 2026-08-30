@@ -97,3 +97,24 @@ current Task2 paper result.
   and changed neither experiment. All holds were released immediately after
   the first Task2 child exposed the cache-path failure; no running Task3 child
   was interrupted.
+
+## Completed development result
+
+The corrected array `51032757` completed all 120 children at
+`2026-08-30T16:33:04+03:00`; all 720 Raw/FMT paired trainings succeeded.
+Selector `51032779` then completed in 10 seconds with exit code 0 and empty
+stderr. The frozen selection SHA-256 is
+`cf1c546fb833cacc3b6b582544db6269ea5b2e5d5ad5af04f44223f343e3e3dc`;
+its internal result SHA-256 is
+`ca6335b4be77854c11ca7888f1510040958e52016630d451f386fc936cf599dc`.
+
+The selected latent dimensions are: channel 8, half-cylinder family 64,
+Tangaroa 1, delta-wing family 12, F-22 1, Boeing 747 6, and smoke buoyancy
+24. Dataset-macro Raw+VAE/FMT+VAE F1 is `.33703/.63498`, a paired gain of
+`+.29794`; all 10 datasets are positive and the worst dataset gain is
+`+.08599`. The exact controls give `.43103/.64502`, gain `+.21399`, so the
+selected gain is `+.08395` larger. However, selected absolute FMT F1 is
+`.01005` lower than the control. Therefore 5.1 supports the intended
+same-VAE bottleneck advantage on development data, but does not yet replace
+the Task2 4.1 paper result. `mainExp_Task2_3D_5.2` freezes these winners and
+evaluates both selected and control recipes on a new fifth spatial population.
