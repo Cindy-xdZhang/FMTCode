@@ -1,0 +1,55 @@
+experiment: Verify_Task3_AnchoredFeatureSpatialReplay_46.1
+output_root: outputs/Verify_Task3_AnchoredFeatureSpatialReplay_46.1
+status: exposed_development_replay
+
+# The 22.1 family winners and both paired arms remain read-only.  Paths may be
+# overridden for tests, but every artifact is bound by its Ibex SHA-256.
+source_model:
+  repo_root: /home/zhanx0o/FMT_Task3_AnchoredFeatureDecomposition_22_1
+  expected_experiment: Verify_Task3_AnchoredFeatureDecomposition_22.1
+  paths:
+    config: config/Verify_Task3_AnchoredFeatureDecomposition_22.1.yaml
+    preflight: outputs/Verify_Task3_AnchoredFeatureDecomposition_22.1/preflight_manifest.json
+    selection: outputs/Verify_Task3_AnchoredFeatureDecomposition_22.1/stage1_selection.json
+  sha256:
+    config: 52c835ea7a3b10feff38d8b08d3f9b80be842e4087e43ca5e6c7250bdda4015e
+    preflight: 0e5befeae96eb484ad0b26edb340e2638611721a031afe9484b230ec5a7df266
+    selection: b65f0f65bbaa572217a9c1849ace7f831f7f77a82101fb3cc2828ee0e6ca0fb9
+
+# This population is no longer a test set: 12.2 opened it and reported a
+# failed +0.15 confirmation.  Reusing it here is therefore development-only.
+replay_population:
+  repo_root: /home/zhanx0o/FMT_Task3_CombinedConfirmation_12_2
+  source_experiment: Confirm_Task3_CombinedOptimization_12.2
+  seed_grid_phase: [0.318359375, 0.4561042524005485, -0.3352]
+  paths:
+    manifest: outputs/Confirm_Task3_CombinedOptimization_12.2/frozen_recipe_manifest.json
+    summary: outputs/Confirm_Task3_CombinedOptimization_12.2/summary.json
+    per_run: outputs/Confirm_Task3_CombinedOptimization_12.2/per_run.csv
+    source_preflight: outputs/Confirm_Task3_CombinedOptimization_12.2/source_preflight.json
+  sha256:
+    manifest: 3b63c5b485a3a30cfab5c6bfd808d6be65c1aa06af63d98627af5b4ed3cd963e
+    summary: 3bca2314f47efba8e93dd31e75657e00cba9adfffa8ef3ad07106b7e37d16667
+    per_run: 2ea47be2486cfe79ed26edbb5b88d73ada8b77bc17ef52786f42f16eafca2da1
+    source_preflight: abd2fc735ca3329ecc42bcab3e069036102841f945c63f1162f5176a860d41be
+
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+paired_seeds: [40, 41]
+confirmation_count: 4
+expected_ivd_percentile: 95.0
+require_confirmation_reference_match: true
+batch_size: 512
+target_dataset_macro_f1_gain: 0.15
+
+confirmation_roots:
+  old8:
+    datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+               tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor]
+    source_root: /home/zhanx0o/FMT_Task3_CombinedConfirmation_12_2/outputs/mainExp_Task3_3D_5.2/confirmation_cache_old8
+    label_root: /home/zhanx0o/FMT_Task3_CombinedConfirmation_12_2/outputs/mainExp_Task3_3D_5.2/confirmation_labels_old8/labels
+  new2:
+    datasets: [boeing747, smokeBuoyancy]
+    source_root: /home/zhanx0o/FMT_Task3_CombinedConfirmation_12_2/outputs/mainExp_Task3_3D_5.2/confirmation_cache_new2
+    label_root: /home/zhanx0o/FMT_Task3_CombinedConfirmation_12_2/outputs/mainExp_Task3_3D_5.2/confirmation_labels_new2/labels
