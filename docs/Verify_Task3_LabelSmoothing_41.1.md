@@ -62,10 +62,57 @@ array `51016612[0-89%24]`, and selector `51016613`. The array has strict
 ran on `cn604-04` from 10:29:38 to 10:30:52, exited zero with empty stderr,
 and produced remote manifest SHA-256 `b22f0a28...9f41`. It confirmed 10
 datasets, 9 candidates, 90 mappings, 540 paired trainings, all capacity
-guards, and closed confirmation state. At `2026-08-30T21:09+03:00`, the GPU
-array had 81/90 children complete and 9 running, with no failed child.
-Performance results have not been read. Evidence archive/cleanup job
-`51057902` was submitted with strict `afterok:51016613`; its committed script
-SHA-256 is `67d45e7d...b040e`, identical locally and remotely. It will require
-all 540 per-run CSV files, create a byte-stable archive, and delete only this
-experiment's temporary checkpoints after successful selection.
+guards, and closed confirmation state.
+
+The GPU array ran from `19:05:21` to `21:25:22+03:00`. All 90 children exited
+zero, all 540 paired trainings produced a per-run CSV, and the 90 GPU stderr
+files total zero bytes. The actual device distribution was 4 A100-SXM4-80GB,
+44 GTX 1080 Ti, 4 RTX 2080 Ti, 21 P100-PCIE-16GB, and
+17 V100-SXM2-32GB. Selector `51016613` ran on `cn604-15` from `21:25:23` to
+`21:25:30`, exited zero, and had empty stderr.
+
+## Completed development result
+
+Only Channel selected nonzero smoothing, with epsilon `0.001`. The
+half-cylinder, Tangaroa, DeltaWing, F22, Boeing, and Smoke families all
+retained the exact hard-label control.
+
+The selected dataset-macro metrics are:
+
+- Raw-PCA F1: `0.6978320228`;
+- FMT F1: `0.8872801689`;
+- paired F1 gain: `+0.1894481461`;
+- Average Precision gain: `+0.2061758805`;
+- positive datasets: `10/10`;
+- worst dataset F1 gain: `+0.0472160712` on DeltaWing-resampled.
+
+The all-control reference is Raw-PCA/FMT F1
+`0.6977764373/0.8871118008`, paired F1 gain `+0.1893353635`, and Average
+Precision gain `+0.2059043255`. Selection therefore changed paired F1 gain by
+only `+0.0001127826` and absolute FMT F1 by `+0.0001683681`.
+
+The experiment missed both registered targets (`0.195` paired F1 gain and
+`0.893` absolute FMT F1) and is weaker than the completed Dropout search
+(`+0.1964790`). Label smoothing does not open an independent confirmation.
+Its selector remains a frozen input to the pre-registered combination search.
+
+## Independent audit and retention
+
+The stable artifact SHA-256 values are:
+
+- selection: `db7f3e865ca9cd063c35bc2d3796f7368a47df4f4720f77500295192953f2e07`;
+- leaderboard: `49f2f20e0a5f8f8792ac5710e5abadc3c89c0ad176ebc5c4fafc9f4002f7b34b`;
+- preflight manifest: `b22f0a28fba6e691a32d7f866ec6fde4c32e8f88981173329b4d2d7fc3d39f41`;
+- 540-file per-run archive: `891aa774d61f060cdb2a005351e10b251cd76e6876070e3c475bc59e5db4d339`.
+
+`Audit_Task3_ParameterSearch.py` independently reconstructed the full
+candidate/dataset/seed/arm Cartesian product, absolute-FMT guards,
+family-specific selection, exact control, and macro metrics from the archive.
+The maximum discrepancy from the selector was `2.22e-16`; the audit SHA-256
+is `ebfb529920da5e407cdf63618ab68eb518c5925bca0b16f4c396feb738eabe0b`.
+
+Evidence archive/cleanup job `51057902` ran on `cn604-15` from `21:25:31` to
+`21:26:10`, exited zero, and had empty stderr. It archived all 540 per-run CSV
+files, deleted 540 temporary checkpoints, and verified that zero checkpoint
+files remain. Its committed script SHA-256 is `67d45e7d...b040e`, identical
+locally and remotely. Confirmation remains closed.
