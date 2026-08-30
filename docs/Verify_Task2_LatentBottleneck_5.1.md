@@ -75,6 +75,13 @@ current Task2 paper result.
   `15:14:03` on GTX 1080 Ti nodes `dgpu609-22` and `dgpu501-18`; the
   corrected dataset-leaf path has therefore reached training. Performance
   remains pending and partial metrics are not read.
+- After the first nine children all completed in `2:38--2:59`, the pending
+  array walltime was reduced from eight hours to one hour at `15:28` to make
+  the short jobs eligible for more backfill windows. This leaves over 20x
+  observed runtime headroom and changes no training operation or result.
+  The persistent script update is commit `927500d`; remote `bash -n` passed
+  and its SHA-256 is
+  `3674ac8aa97d5edeccc172ae2488b6d7dfb57da59b9ef9c511ee5f2b2086d9fc`.
 - At `2026-08-30T14:51+03:00`, before any child started, the scheduler-only
   `v100` feature constraint was removed and the compatible four-hour
   partition was added. The replacement uses Ibex's default GPU routing, which
