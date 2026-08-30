@@ -52,6 +52,8 @@ dataset/candidate mappings are eligible. Its manifest SHA-256 is
 Ibex preflight job `51028066` completed successfully on `cn604-14` in 85 s.
 The remote canonical preflight manifest SHA-256 is
 `aefe405a42d731ed1283f1c71f1ddcf5a59301eb951efe5014c1d81b2ee53d56`.
+It was downloaded to the local Ibex mirror and independently rehashed to the
+same value; remote stderr is empty.
 GPU array `51028067` and selector `51028071` are submitted with strict
 dependencies. The array is limited to 24 concurrent jobs; each element
 evaluates one dataset/epoch candidate and performs three paired seeds for both
