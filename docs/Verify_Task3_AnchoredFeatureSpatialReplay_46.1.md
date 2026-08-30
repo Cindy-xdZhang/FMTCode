@@ -34,3 +34,26 @@ Passing would show that the 22.1 representation repairs the specific spatial
 generalization weakness exposed by 12.2. Failing would mean the next method
 must use all three exposed spatial populations during development before a
 new, untouched confirmation population is generated.
+
+## Completed result
+
+Ibex jobs `51025812`, `51026592`, and `51026610` completed successfully on
+2026-08-30. The frozen comparison produced:
+
+- Raw-PCA residual / FMT residual F1: `0.695856 / 0.865860`.
+- Dataset-macro F1 gain: `+0.170004`.
+- Raw-PCA residual / FMT residual average precision: `0.753390 / 0.940384`.
+- Dataset-macro average-precision gain: `+0.186994`.
+- Positive F1 gain on all `10/10` datasets and all `7/7` physical families.
+- Minimum dataset F1 gain: `+0.051862`.
+
+The descriptive `+0.15` target therefore passed. This result supports taking
+the 22.1 representation unchanged to a new fourth spatial population, but it
+does not constitute final confirmation because the replayed population was
+already exposed by 12.2.
+
+Artifact identities:
+
+- Preflight manifest SHA-256: `c2be783b19642deecb51e64b5daf90dedc6389a08b10074a30e824cdca8dd3be`.
+- Per-run CSV SHA-256: `26d475a87c572460992b47357cb0b9a1f62de224c0dfd40b503098375c66ef26`.
+- Summary JSON SHA-256: `23e777a13e2b684016ae4869c3a1c68efadf91dda87829adbb77f0cd8220d2b1`.
