@@ -71,8 +71,10 @@ current Task2 paper result.
   and `f45c4ade1a868bd5818330b001bc8bf5c548185a02c90e6abac3334655018ba3`,
   confirming that the scientific grid did not change.
 - Replacement GPU array `51032757` and strict selector `51032779` were
-  submitted at `15:08:39` and `15:08:53`. Performance remains pending;
-  partial metrics are not read.
+  submitted at `15:08:39` and `15:08:53`. Children 0 and 1 started at
+  `15:14:03` on GTX 1080 Ti nodes `dgpu609-22` and `dgpu501-18`; the
+  corrected dataset-leaf path has therefore reached training. Performance
+  remains pending and partial metrics are not read.
 - At `2026-08-30T14:51+03:00`, before any child started, the scheduler-only
   `v100` feature constraint was removed and the compatible four-hour
   partition was added. The replacement uses Ibex's default GPU routing, which
