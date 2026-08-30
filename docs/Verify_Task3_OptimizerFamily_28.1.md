@@ -65,3 +65,30 @@ generalization claim.
 - `Search_Task3_LossOptimization_7_1.py`
 - `tests/test_task3_optimizer_family_28_1.py`
 - `ibex_bash/verify_task3_optimizer_family_28.1_*.sh`
+
+## Deployment status
+
+The upstream 27.1 selector completed successfully. Preflight job `50999751`
+ran from `2026-08-30T03:32:34+03:00` to `03:33:37` on `cn604-14`, exit code
+0 with empty stderr, and froze the seven family-specific 27.1 winners above.
+Its manifest SHA-256 is `bdf473ee…5823d`.
+
+Array `50999752[0-59%24]` started at `03:35:48` and completed all 60/60
+children with exit code 0. All 60 GPU stderr files are empty. The array used
+2 A100-SXM4-80GB, 21 GTX 1080 Ti, 4 RTX 2080 Ti, 28 P100, and 5 V100 GPUs.
+Selector `50999753` ran from `04:40:00` to `04:40:07` on `cn113-35-l`, exit
+code 0 with empty stderr.
+
+## Complete development result
+
+The family-specific selector returned Raw-PCA/FMT dataset-macro F1
+`0.696930/0.888538`, a paired gain of `+0.191608`. Dataset-macro Average
+Precision was `0.739405/0.947280`, a gain of `+0.207875`; all ten datasets had
+positive F1 gain. Channel selected RAdam, F-22 selected AdamW with AMSGrad,
+and the other five physical families retained exact-control AdamW.
+
+Neither preregistered target was reached: F1 gain remained below `0.195` and
+absolute FMT F1 remained below `0.893`. Optimizer family is therefore a
+negative/neutral development result rather than a new Task3 method.
+Confirmation stayed closed. Selection, leaderboard, and preflight SHA-256 are
+`9a8b392c…e5ebb`, `2f86dc11…6ff38`, and `bdf473ee…5823d`.

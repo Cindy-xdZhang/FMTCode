@@ -65,3 +65,25 @@ winner still requires a fresh spatial-population evaluation.
 - `Search_Task3_LossOptimization_7_1.py`
 - `tests/test_task3_residual_output_initialization_30_1.py`
 - `ibex_bash/verify_task3_residual_output_initialization_30.1_*.sh`
+
+## Deployment and complete result
+
+Preflight `51002453` completed from `01:07:33` to `01:08:36`, exit code 0.
+Array `51002457[0-89%24]` ran from its first child at `01:19:01` through the
+last child at `05:47:59`; 90/90 children completed, 90 output files are
+present, and every GPU stderr is empty. Hardware comprised 5 A100-SXM4-80GB,
+31 GTX 1080 Ti, 1 RTX 2080 Ti, 40 P100, and 13 V100 GPUs. Selector `51002460`
+completed from `05:48:01` to `05:48:09` on `cn604-14`, exit code 0 with empty
+stderr.
+
+Raw-PCA/FMT dataset-macro F1 was `0.697335/0.887125`, giving `+0.189790`.
+Average Precision was `0.739746/0.945745`, giving `+0.205999`; all ten dataset
+gains remained positive. Half-cylinder selected normal terminal weights with
+standard deviation `0.025`, Smoke selected `0.005`, and the other five
+families retained the default initialization.
+
+Compared with 29.1, FMT F1 is unchanged to reported precision and paired F1
+gain changes by only `+0.000013`; this is not a meaningful improvement.
+Neither preregistered target was reached and confirmation stayed closed.
+Selection, leaderboard, and preflight SHA-256 are `78824f30…6726e`,
+`5f702052…bef2b`, and `646ea321…032c`.

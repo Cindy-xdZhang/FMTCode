@@ -62,4 +62,23 @@ support a paper-level generalization claim.
 
 ## Deployment status
 
-Not submitted yet.
+Implementation commit `26f0218` was archived and deployed byte-for-byte to
+Ibex. The immutable archive SHA-256 is
+`9f7c3dcc4caf491ea317ca037147bfd937d2560baf93ffebe3056a34041d6b60`.
+Local full preflight passed; local and remote test suites each passed 25/25
+tests; remote Python compilation and all three Slurm scripts passed their
+static checks.
+
+Submitted at `2026-08-30T05:24:33+03:00`:
+
+- preflight `51006631`, completed `05:25:39` on `cn604-11`, exit code 0 with
+  empty stderr; and
+- GPU array `51006632[0-69%24]`, waiting on `QOSMaxGRESPerUser`; and
+- selector `51006633`, waiting on the complete array.
+
+The downloaded preflight manifest SHA-256 is `f167c936…8355`; it confirms ten
+datasets, seven candidates, 70 mappings, 420 paired trainings, zero ineligible
+cells, and `confirmation_opened=false`.
+
+No partial performance output will be read. The selector alone may update the
+performance conclusion after all 70 children finish successfully.

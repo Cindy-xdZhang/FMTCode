@@ -80,3 +80,35 @@ on a fresh, previously unseen spatial population.
 - `Verify_Task3_FMTResidual.py`
 - `tests/test_task3_learning_rate_weight_decay_27_1.py`
 - `ibex_bash/verify_task3_learning_rate_weight_decay_27.1_*.sh`
+
+## Final development result
+
+Ibex array `50997723[0-149%24]` completed all 150 children and all 900
+paired trainings. The final child ended at `2026-08-30T03:32:20+03:00`;
+selector `50997724` then completed at `03:32:31`, exit code 0, with empty
+stderr. The 150 children ran on 4 A100, 31 GTX 1080 Ti, 19 RTX 2080 Ti,
+70 P100, and 26 V100 GPUs.
+
+The selector produced:
+
+- Raw-PCA dataset-macro F1 `0.6969338144`;
+- FMT dataset-macro F1 `0.8884536452`;
+- paired F1 gain `+0.1915198308`;
+- Raw-PCA Average Precision `0.7390788689`;
+- FMT Average Precision `0.9469567928`;
+- paired Average Precision gain `+0.2078779239`.
+
+All ten dataset-level F1 gains are positive. The family winners are Boeing
+`lr=.001, wd=0`; channel `lr=.005, wd=.0001`; delta-wing `lr=.002,
+wd=.001`; half-cylinder `lr=.005, wd=0`; Tangaroa `lr=.002, wd=.0001`;
+F-22 and Smoke retain the exact `lr=.001, wd=.0001` control.
+
+The relative-gain target is reached, but the absolute FMT target is not:
+`0.88845 < 0.892`, hence the joint target is false and confirmation remains
+closed. Relative to 22.1, F1 gain improves by `+0.004612`, while absolute FMT
+F1 and Average Precision decrease by `0.000770` and `0.003483`. The larger
+gap therefore does not establish a stronger absolute FMT classifier.
+
+Artifact SHA-256 values are `5f340246…acdbd` for
+`optimization_selection.json`, `ff8542d8…1573` for the leaderboard, and
+`76fcf949…6ea6` for the preflight manifest.

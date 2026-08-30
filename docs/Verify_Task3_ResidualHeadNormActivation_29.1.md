@@ -71,3 +71,23 @@ generalization claim.
 - `Search_Task3_LossOptimization_7_1.py`
 - `tests/test_task3_residual_head_norm_activation_29_1.py`
 - `ibex_bash/verify_task3_residual_head_norm_activation_29.1_*.sh`
+
+## Deployment and complete result
+
+Preflight `51001984` completed from `00:48:02` to `00:50:03`, exit code 0.
+Array `51001986[0-89%24]` completed 90/90 children by `04:53:17`; all 90 GPU
+stderr files are empty. It used 7 A100, 22 GTX 1080 Ti, 8 RTX 2080 Ti, 36
+P100, and 17 V100 GPUs. Selector `51001989` completed from `04:53:49` to
+`04:53:55`, exit code 0.
+
+Raw-PCA/FMT dataset-macro F1 was `0.697348/0.887125`, giving `+0.189777`.
+Average Precision was `0.739774/0.945745`, giving `+0.205972`; all ten dataset
+gains were positive. Channel selected RMSNorm+GELU, half-cylinder selected
+LayerNorm+ReLU, Smoke selected RMSNorm+ReLU, and the remaining four families
+retained LayerNorm+GELU.
+
+Relative to 28.1, FMT F1 fell by `0.001414` and paired F1 gain fell by
+`0.001831`. Neither `0.195` gain nor `0.893` absolute-FMT target was reached.
+The normalization/activation factorial is therefore a negative development
+result and confirmation stayed closed. Selection, leaderboard, and preflight
+SHA-256 are `1470e7f5…38de0`, `e8da4ae7…711f`, and `0df096e3…b776`.
