@@ -625,3 +625,15 @@ runner，故没有把该模块误记为通过。提交依赖链`51058832 → 510
 remote manifest SHA为`ec613eec…c5b`；GPU数组已eligible等待Priority。此时Cosine为
 28/90完成、16运行、46等待，Head×alpha×clip为5/80完成、4运行、71等待；Training
 horizon、低gamma与高Dropout分别为0/90、0/80、0/80等待，未读取任何partial metric。
+
+22:35为防止adaptive赢家进入最终portfolio前源checkpoint被清理，临时user-hold低gamma
+归档`51056264`与高Dropout归档`51058838`；同时hold旧49.1驱动的7.1入口`51043506`，
+防止未包含50.1/51.1的portfolio提前接触第五空间confirmation。`scontrol show job`确认
+三者均为`PENDING (JobHeldUser)`且原始`afterok`依赖仍保留。该调度保护可逆，不训练、
+不读取指标，也不改变任何已注册候选；后续training-free 52.1将先复制入选的40个模型和
+逐次结果，再允许源归档清理。现有7.1结果链未启动，confirmation仍未被触碰。
+
+22:43调度复核：Cosine `51017334`为44/90完成、15运行、31等待；Head×alpha×clip
+`51020733`为8/80完成、6运行、66等待；两者均0失败。Training horizon、低gamma及
+高Dropout分别仍为0/90、0/80、0/80等待。44.1与48.1按已登记依赖继续等待上游
+selectors。没有读取任何partial性能文件，当前无新增可报告F1/AP结果。
