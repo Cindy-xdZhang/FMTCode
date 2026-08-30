@@ -59,6 +59,26 @@ Submitted on 2026-08-30: preflight job `51003518`, GPU array
 `51003520[0-89%24]`, and selector `51003522`. The remote full preflight ran on
 `cn511-17` from 02:31:07 to 02:32:14, exited zero with empty stderr, and
 confirmed 10 datasets, 9 candidates, 540 paired trainings, and closed
-confirmation state. The remote manifest SHA-256 is `b8e560e3...2897`. The GPU
-array dependency is released and waits in the scheduler; the selector remains
-dependent on every array child. No partial metric may be read before selection.
+confirmation state. The remote manifest SHA-256 is `b8e560e3...2897`.
+
+## Completed development result
+
+All 90 GPU children completed successfully between `06:51:51` and
+`08:16:46+03:00`; all stderr files are empty. The selector completed at
+`08:18:18+03:00`. Actual devices were 52 P100 16 GB, 37 GTX 1080 Ti, and one
+RTX 2080 Ti job. The selection and leaderboard SHA-256 values are
+`07d46203...0248` and `9aa46d2e...b4e`.
+
+The selected development dataset-macro results are:
+
+- Raw-PCA F1/AP: `0.690615 / 0.733421`;
+- FMT F1/AP: `0.889486 / 0.947132`;
+- paired F1/AP gain: `+0.198870 / +0.213712`.
+
+Selected training alpha is `0.5` for Channel, `0.25` for Tangaroa, `0.75`
+for F22 and Boeing, `2.0` for the half-cylinder family, and the exact alpha-1
+control for Delta Wing and Smoke. This is the first focused search to exceed
+the preregistered `0.195` relative-gain target, but absolute FMT F1 remains
+`0.003514` below the `0.893` target. The joint target therefore failed and
+confirmation remains closed; the larger difference is not reported as a
+standalone success.

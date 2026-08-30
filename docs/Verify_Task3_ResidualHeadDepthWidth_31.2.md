@@ -53,5 +53,25 @@ used before the selector completes.
 The remote full preflight completed at `02:06:53+03:00` in 78 seconds with
 exit code zero and empty stderr. It confirmed 10 datasets, 12 candidates, 120
 array mappings, 720 paired trainings, no capacity violation, and closed
-confirmation state. Its manifest SHA-256 is `fc7ef7ba...19ca`. The GPU array
-dependency is released and currently waits only for the user GPU quota.
+confirmation state. Its manifest SHA-256 is `fc7ef7ba...19ca`.
+
+## Completed development result
+
+All 120 GPU children completed successfully between `05:28:44` and
+`07:18:10+03:00`; all stderr files are empty. The selector completed at
+`07:18:25+03:00`. Actual devices were 1 A100 80 GB, 2 V100 32 GB, 70 P100
+16 GB, 1 RTX 2080 Ti, and 46 GTX 1080 Ti jobs. The selection and leaderboard
+SHA-256 values are `140f568d...f359` and `e895b2a2...dc97`.
+
+The selected development dataset-macro results are:
+
+- Raw-PCA F1/AP: `0.695248 / 0.738177`;
+- FMT F1/AP: `0.888201 / 0.946059`;
+- paired F1/AP gain: `+0.192953 / +0.207882`.
+
+The half-cylinder and Tangaroa families selected width 80, depth 1; F22
+selected width 64, depth 1; all other families retained the exact width-64,
+depth-2 control. The F1-gain target `0.195` and absolute FMT-F1 target `0.893`
+both failed. Relative to 22.1, the gain increased, but FMT F1 decreased by
+about `0.0010`; therefore head capacity did not improve absolute FMT quality.
+Confirmation remains closed.

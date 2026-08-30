@@ -64,8 +64,19 @@ still requires a fresh spatial population before a paper-level claim.
 - `tests/test_task3_residual_dropout_38_1.py`
 - `ibex_bash/verify_task3_residual_dropout_38.1_*.sh`
 
-## Status
+## Ibex deployment
 
-Implementation is complete. Performance results have not been read and
-confirmation remains closed. Deployment identifiers and validation hashes are
-added only after the corresponding artifacts exist.
+Implementation commit `274718f` was pushed before deployment. The immutable
+archive SHA-256 is `bae16519...e2c4`; the remote canonical config SHA-256 is
+`cee33cc2...c79`. Local and Ibex environments both passed the 11 relevant
+tests; remote Python compilation and all three `bash -n` checks also passed.
+The local full-preflight manifest SHA-256 is `efdb2161...fb28`.
+
+Submitted at `2026-08-30T08:28:27+03:00`: CPU preflight job `51012519`, GPU
+array `51012521[0-99%24]`, and selector `51012532`. The GPU array has an
+`afterok:51012519` dependency and the selector has
+`afterok:51012521_*`, verified with `scontrol`. The CPU preflight ran on
+`cn604-08` from `08:28:28` to `08:29:45+03:00`, exited zero with empty stderr,
+and produced remote manifest SHA-256 `053c8e8a...df11`. The GPU array now waits
+only for the per-user GPU quota. Performance results have not been read and
+confirmation remains closed.
