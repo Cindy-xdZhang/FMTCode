@@ -134,6 +134,13 @@ def _group_for_dataset(spec: dict, dataset: str) -> tuple[str, dict]:
     return matches[0]
 
 
+def _development_cache_dir(spec: dict, group: dict, dataset: str) -> Path:
+    """Return the dataset leaf consumed by both preflight and training."""
+    if dataset not in group["datasets"]:
+        raise ValueError(f"dataset {dataset!r} is absent from its assigned group")
+    return _source_path(spec, group["development_cache"]) / dataset
+
+
 def _candidate(spec: dict, group: dict, latent_index: int) -> dict:
     latent_dim = int(spec["latent_dims"][int(latent_index)])
     settings = dict(group["base_vae"])
@@ -161,7 +168,7 @@ def _load_development(spec: dict, dataset: str):
         *spec["splits"]["selection_validation"],
     ]
     records = load_cache_records(
-        _source_path(spec, group["development_cache"]),
+        _development_cache_dir(spec, group, dataset),
         expected_count=int(spec.get("expected_slices", 10)),
         ordinals=ordinals,
     )
@@ -479,7 +486,7 @@ def preflight(config_path: str) -> Path:
                 f"{source_architecture} != {frozen_base}"
             )
         for dataset in group["datasets"]:
-            cache_dir = _source_path(spec, group["development_cache"]) / dataset
+            cache_dir = _development_cache_dir(spec, group, dataset)
             manifest = cache_dir / "manifest.json"
             paths = sorted(cache_dir.glob("slice_*.npz"))
             if len(paths) != int(spec.get("expected_slices", 10)):

@@ -2,11 +2,15 @@
 
 from pathlib import Path
 import hashlib
+import os
+import tempfile
+from unittest.mock import patch
 import yaml
 
 from Search_Task2_LatentBottleneck_5_1 import (
     _candidate,
     _decode_job,
+    _development_cache_dir,
     _load_spec,
     _selection_key,
 )
@@ -90,3 +94,15 @@ def test_development_roots_and_forbidden_ordinals_are_separate():
     assert forbidden == {8, 9}
     assert opened.isdisjoint(forbidden)
     assert spec["confirmation_opened"] is False
+
+
+def test_runtime_and_preflight_share_dataset_leaf_cache():
+    spec = _load_spec(CONFIG)
+    with tempfile.TemporaryDirectory() as temporary_directory:
+        source_root = Path(temporary_directory).resolve()
+        with patch.dict(os.environ, {"TASK2_SOURCE_ROOT": str(source_root)}):
+            for group in spec["groups"].values():
+                for dataset in group["datasets"]:
+                    observed = _development_cache_dir(spec, group, dataset)
+                    expected = source_root / group["development_cache"] / dataset
+                    assert observed == expected
