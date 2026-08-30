@@ -58,6 +58,28 @@ exited zero with empty stderr, and produced manifest SHA-256
 trainings, zero ineligible recipes, and closed confirmation state.
 
 GPU array `51004081[0-79%24]` and selector `51004084` were submitted through
-strict `afterok` dependencies. The preflight dependency is released; the GPU
-array waits for scheduler priority. No partial metric may be read before the
-selector runs.
+strict `afterok` dependencies. All 80 GPU children completed by 09:15:54 on a
+mixture of NVIDIA Tesla P100 16 GB and GeForce GTX 1080 Ti 11 GB devices. All
+80 stderr files are empty. Selector `51004084` then ran on `cn113-35-l` from
+09:19:46 to 09:19:54, exited zero, and kept confirmation closed.
+
+## Result
+
+The family-specific selection produced the following development macro result:
+
+| quantity | Raw-PCA | FMT | FMT − Raw-PCA |
+|---|---:|---:|---:|
+| F1 | 0.696592 | 0.887917 | +0.191325 |
+| Average Precision | 0.740252 | 0.947162 | +0.206910 |
+
+Selected clip norms were `2` for Channel, `1` for the half-cylinder family,
+`0.25` for Tangaroa, and `5` for Delta Wing. F-22, Boeing 747, and Smoke
+Buoyancy retained the exact no-clipping control. Relative to selecting the
+no-clipping control in every family, clipping changed FMT F1 by `+0.000792`,
+FMT Average Precision by `+0.001417`, and paired F1 gain by `+0.001551`.
+
+The preregistered joint target was not reached: `0.191325 < 0.195` for paired
+F1 gain and `0.887917 < 0.893` for absolute FMT F1. Therefore this is a small
+development improvement, not evidence for a new confirmed Task3 method.
+Confirmation remains closed. Selection and leaderboard SHA-256 values are
+`8b4ad715...e254` and `c7e785bf...b61`, respectively.
