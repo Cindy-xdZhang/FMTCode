@@ -58,3 +58,8 @@ current Task2 paper result.
   seed, training code, budget, pairing, or selection rule; each Raw/FMT pair
   still runs within the same child on the same GPU.  The change is solely to
   reduce queue delay and is recorded before any performance output exists.
+- At `14:55+03:00`, all still-pending children of Task3 arrays 38.1, 39.1,
+  40.1, 41.1, 42.1, 43.1, 45.1, and 47.1 were temporarily held so the newer
+  Task2 array can receive the next compatible free GPUs.  Already-running
+  Task3 children were verified to remain running.  The hold is scheduler-only
+  and will be released as soon as Task2 starts; it changes neither experiment.
