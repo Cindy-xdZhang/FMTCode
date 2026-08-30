@@ -77,8 +77,25 @@ records 10 datasets, 15 candidates, 150 array mappings, three paired seeds,
 two arms, and 900 expected trainings with `confirmation_opened=false`.
 Its manifest SHA-256 is
 `976e01a1e50b43816edecfe274eed3000eab64fcd5e3c1cb3a2be504edc20ceb`.
-The 22.1/37.1 contract suites pass 10/10 tests and the three execution modules
-compile. The local environment has no `pytest` package, so the older
-pytest-only loss suite will be rerun in the Ibex environment before any GPU
-submission. No performance result has been read, and confirmation remains
-closed.
+The 22.1/37.1 contract suites pass 10/10 tests locally and on Ibex; the three
+execution modules compile and all three Slurm scripts pass `bash -n` on Ibex.
+Neither environment has the optional `pytest` package, so the older
+pytest-only loss suite was not loaded; the 37.1 suite directly checks the loss
+scale numerics and metadata. No performance result has been read, and
+confirmation remains closed.
+
+Implementation commit `372a56c` was pushed and archived byte-for-byte. The
+archive SHA-256 is
+`d6db2b282c5f8729662ad8b0a8e32ddf93c343699a39bf305829a0d0d3911b2f`.
+Submitted to Ibex on `2026-08-30`:
+
+- preflight `51010975`, completed at `06:55:52+03:00` on `cn604-08`, exit
+  code 0 with empty stderr;
+- GPU array `51010980[0-149%24]`, released from its successful preflight and
+  currently waiting on `QOSMaxGRESPerUser`; and
+- selector `51010981`, with `afterok:51010980_*`.
+
+The remote full-preflight manifest SHA-256 is
+`d4ec39fe9207ee3f98eaad330f58422ceca28609e9f5a283e124f5e3fb0eee34`.
+The complete selector is the only process authorized to update the performance
+conclusion.
