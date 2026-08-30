@@ -1,0 +1,123 @@
+experiment: Verify_Task3_SafeFactorCombination_44.1
+output_root: outputs/Verify_Task3_SafeFactorCombination_44.1
+task: Task3
+
+# Adaptive development combination declared after the complete negative 35.1
+# result and before reading any 36.1--43.1 metric. Every optimization source
+# must be a completed, confirmation-closed selector. Preflight freezes source
+# SHA-256 values and family-specific winner IDs before any 44.1 training.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  feature:
+    kind: stage1_feature
+    selection: outputs/Verify_Task3_AnchoredFeatureDecomposition_22.1/stage1_selection.json
+    expected_experiment: Verify_Task3_AnchoredFeatureDecomposition_22.1
+  alpha:
+    selection: outputs/Verify_Task3_TrainingResidualScale_32.1/optimization_selection.json
+    expected_experiment: Verify_Task3_TrainingResidualScale_32.1
+  clipping:
+    selection: outputs/Verify_Task3_GradientClipping_33.1/optimization_selection.json
+    expected_experiment: Verify_Task3_GradientClipping_33.1
+  betas:
+    selection: outputs/Verify_Task3_AdamBetas_34.1/optimization_selection.json
+    expected_experiment: Verify_Task3_AdamBetas_34.1
+  batch:
+    selection: outputs/Verify_Task3_BatchSize_36.1/optimization_selection.json
+    expected_experiment: Verify_Task3_BatchSize_36.1
+  positive_weight:
+    selection: outputs/Verify_Task3_PositiveWeightScale_37.1/optimization_selection.json
+    expected_experiment: Verify_Task3_PositiveWeightScale_37.1
+  dropout:
+    selection: outputs/Verify_Task3_ResidualDropout_38.1/optimization_selection.json
+    expected_experiment: Verify_Task3_ResidualDropout_38.1
+  focal:
+    selection: outputs/Verify_Task3_FocalGamma_39.1/optimization_selection.json
+    expected_experiment: Verify_Task3_FocalGamma_39.1
+  ema:
+    selection: outputs/Verify_Task3_ParameterEMA_40.1/optimization_selection.json
+    expected_experiment: Verify_Task3_ParameterEMA_40.1
+  smoothing:
+    selection: outputs/Verify_Task3_LabelSmoothing_41.1/optimization_selection.json
+    expected_experiment: Verify_Task3_LabelSmoothing_41.1
+  epsilon:
+    selection: outputs/Verify_Task3_AdamEpsilon_42.1/optimization_selection.json
+    expected_experiment: Verify_Task3_AdamEpsilon_42.1
+  cosine:
+    selection: outputs/Verify_Task3_CosineMinLR_43.1/optimization_selection.json
+    expected_experiment: Verify_Task3_CosineMinLR_43.1
+
+# The complete 2^11 factorial would require 2,048 candidates. This fixed grid
+# tests every selected factor alone, every interaction with the strongest
+# relative-gain factor (alpha), and four scientifically grouped stacks. A
+# source that later selects its exact control remains in the declared recipe;
+# data-dependent candidate deletion is forbidden.
+optimization_candidates:
+  - {id: k00_feature_control, sources: [feature]}
+  - {id: k01_alpha, sources: [feature, alpha]}
+  - {id: k02_clipping, sources: [feature, clipping]}
+  - {id: k03_betas, sources: [feature, betas]}
+  - {id: k04_batch, sources: [feature, batch]}
+  - {id: k05_positive_weight, sources: [feature, positive_weight]}
+  - {id: k06_dropout, sources: [feature, dropout]}
+  - {id: k07_focal, sources: [feature, focal]}
+  - {id: k08_ema, sources: [feature, ema]}
+  - {id: k09_smoothing, sources: [feature, smoothing]}
+  - {id: k10_epsilon, sources: [feature, epsilon]}
+  - {id: k11_cosine, sources: [feature, cosine]}
+  - {id: k12_alpha_clipping, sources: [feature, alpha, clipping]}
+  - {id: k13_alpha_betas, sources: [feature, alpha, betas]}
+  - {id: k14_alpha_batch, sources: [feature, alpha, batch]}
+  - {id: k15_alpha_positive_weight,
+     sources: [feature, alpha, positive_weight]}
+  - {id: k16_alpha_dropout, sources: [feature, alpha, dropout]}
+  - {id: k17_alpha_focal, sources: [feature, alpha, focal]}
+  - {id: k18_alpha_ema, sources: [feature, alpha, ema]}
+  - {id: k19_alpha_smoothing, sources: [feature, alpha, smoothing]}
+  - {id: k20_alpha_epsilon, sources: [feature, alpha, epsilon]}
+  - {id: k21_alpha_cosine, sources: [feature, alpha, cosine]}
+  - {id: k22_optimizer_stack,
+     sources: [feature, alpha, clipping, betas, epsilon]}
+  - {id: k23_loss_regularization_stack,
+     sources: [feature, alpha, positive_weight, dropout, focal, smoothing]}
+  - {id: k24_stability_stack,
+     sources: [feature, alpha, batch, ema, cosine]}
+  - {id: k25_all_non_scheduler,
+     sources: [feature, alpha, clipping, betas, batch, positive_weight,
+               dropout, focal, ema, smoothing, epsilon]}
+  - {id: k26_all,
+     sources: [feature, alpha, clipping, betas, batch, positive_weight,
+               dropout, focal, ema, smoothing, epsilon, cosine]}
+  - {id: k27_all_without_alpha,
+     sources: [feature, clipping, betas, batch, positive_weight, dropout,
+               focal, ema, smoothing, epsilon, cosine]}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: k00_feature_control
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.195
+  target_absolute_fmt_f1: 0.893
+  confirmation_opened: false
