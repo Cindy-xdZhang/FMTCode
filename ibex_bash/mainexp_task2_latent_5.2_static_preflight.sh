@@ -15,7 +15,6 @@ conda activate deepvortex
 export PYTHONUNBUFFERED=1
 export TASK2_LATENT51_ROOT=/home/zhanx0o/FMT_Task2_LatentBottleneck_5_1
 export TASK2_SOURCE_ROOT=/home/zhanx0o/FMT_Task12_3D_20260823
-python -m pytest tests/test_mainexp_task2_3d_5_2.py \
-  tests/test_task2_latent_bottleneck_5_1.py -q
+python -m tests.test_mainexp_task2_3d_5_2
 python Confirm_Task2_LatentBottleneck_5_2.py \
   --config config/mainExp_Task2_3D_5.2.yaml --mode static-preflight

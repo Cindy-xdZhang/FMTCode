@@ -1,6 +1,8 @@
 import hashlib
 import json
+import os
 from pathlib import Path
+import tempfile
 
 import numpy as np
 import yaml
@@ -14,6 +16,17 @@ SEARCH = Path("config/Verify_Task2_LatentBottleneck_5.1.yaml")
 LOCAL_SELECTION = Path(
     "output/Verify_Task2_LatentBottleneck_5.1_ibex/selection.json"
 )
+
+
+def _available_selection() -> Path:
+    root = os.environ.get("TASK2_LATENT51_ROOT")
+    if root:
+        remote = (
+            Path(root) / "outputs/Verify_Task2_LatentBottleneck_5.1/selection.json"
+        )
+        if remote.exists():
+            return remote
+    return LOCAL_SELECTION
 
 
 def _radical_inverse(index: int, base: int) -> float:
@@ -57,10 +70,11 @@ def test_config_freezes_task2_same_vae_confirmation_contract():
 
 
 def test_selected_and_control_change_only_latent_dimension_when_selection_exists():
-    if not LOCAL_SELECTION.exists():
+    selection_path = _available_selection()
+    if not selection_path.exists():
         return
     search = yaml.safe_load(SEARCH.read_text(encoding="utf-8"))
-    selection = json.loads(LOCAL_SELECTION.read_text(encoding="utf-8"))
+    selection = json.loads(selection_path.read_text(encoding="utf-8"))
     expected = {
         "boeing747": 6,
         "channel": 8,
@@ -111,7 +125,35 @@ def test_source_hashes_match_completed_development_artifacts_when_present():
     assert hashlib.sha256(normalized).hexdigest() == (
         spec["source_search"]["search_config_sha256"]
     )
-    if LOCAL_SELECTION.exists():
-        assert hashlib.sha256(LOCAL_SELECTION.read_bytes()).hexdigest() == (
+    selection_path = _available_selection()
+    if selection_path.exists():
+        assert hashlib.sha256(selection_path.read_bytes()).hexdigest() == (
             spec["source_search"]["selection_sha256"]
         )
+
+
+def run_dependency_free_contracts():
+    test_phase_is_deterministic_and_distinct_from_prior_populations()
+    test_config_freezes_task2_same_vae_confirmation_contract()
+    test_selected_and_control_change_only_latent_dimension_when_selection_exists()
+    test_array_mapping_covers_each_dataset_once()
+    test_source_hashes_match_completed_development_artifacts_when_present()
+    previous = os.environ.get(spatial.RECIPE_MANIFEST_ENV)
+    with tempfile.TemporaryDirectory() as directory:
+        missing = Path(directory) / "missing_recipe.json"
+        os.environ[spatial.RECIPE_MANIFEST_ENV] = str(missing)
+        try:
+            spatial._require_recipe_frozen()
+        except FileNotFoundError:
+            pass
+        else:
+            raise AssertionError("Task2 5.2 cache opened before recipe freeze")
+    if previous is None:
+        os.environ.pop(spatial.RECIPE_MANIFEST_ENV, None)
+    else:
+        os.environ[spatial.RECIPE_MANIFEST_ENV] = previous
+    print("Task2 5.2 dependency-free contracts: 6 passed")
+
+
+if __name__ == "__main__":
+    run_dependency_free_contracts()
