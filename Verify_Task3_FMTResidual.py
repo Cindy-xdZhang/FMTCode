@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager, nullcontext
 import csv
 import json
 from pathlib import Path
@@ -929,6 +930,61 @@ def _batch_size(training=None):
     return int(numeric)
 
 
+def _parameter_ema_decay(training=None):
+    """Return the optional trainable-parameter EMA decay coefficient."""
+    training = {} if training is None else dict(training)
+    value = training.get("parameter_ema_decay")
+    if value is None:
+        return None
+    decay = float(value)
+    if not np.isfinite(decay) or not 0.0 < decay < 1.0:
+        raise ValueError("parameter_ema_decay must be finite and in (0, 1)")
+    return decay
+
+
+class _TrainableParameterEMA:
+    """Track and temporarily apply an EMA of trainable model parameters."""
+
+    def __init__(self, model, decay):
+        self.decay = float(decay)
+        self.shadow = {
+            name: parameter.detach().clone()
+            for name, parameter in model.named_parameters()
+            if parameter.requires_grad
+        }
+        if not self.shadow:
+            raise ValueError("parameter EMA requires trainable parameters")
+
+    @torch.no_grad()
+    def update(self, model):
+        parameters = dict(model.named_parameters())
+        if set(parameters).intersection(self.shadow) != set(self.shadow):
+            raise RuntimeError("trainable parameter names changed during EMA")
+        for name, average in self.shadow.items():
+            parameter = parameters[name]
+            if not parameter.requires_grad or parameter.shape != average.shape:
+                raise RuntimeError(f"trainable parameter changed during EMA: {name}")
+            average.lerp_(parameter.detach(), 1.0 - self.decay)
+            if not bool(torch.isfinite(average).all()):
+                raise FloatingPointError(f"non-finite EMA parameter: {name}")
+
+    @contextmanager
+    def average_parameters(self, model):
+        parameters = dict(model.named_parameters())
+        backups = {}
+        with torch.no_grad():
+            for name, average in self.shadow.items():
+                parameter = parameters[name]
+                backups[name] = parameter.detach().clone()
+                parameter.copy_(average)
+        try:
+            yield
+        finally:
+            with torch.no_grad():
+                for name, value in backups.items():
+                    parameters[name].copy_(value)
+
+
 def _build_optimizer(training: dict, parameters):
     """Build the registered optimizer without changing the paired arm budget."""
     name = str(training.get("optimizer", "adamw")).lower()
@@ -1112,6 +1168,11 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
     if not np.isfinite(training_alpha) or training_alpha <= 0.0:
         raise ValueError("training_alpha must be finite and positive")
     gradient_clip_norm = _gradient_clip_norm(spec["training"])
+    parameter_ema_decay = _parameter_ema_decay(spec["training"])
+    parameter_ema = (
+        None if parameter_ema_decay is None
+        else _TrainableParameterEMA(model, parameter_ema_decay)
+    )
     if "fixed_alpha" in spec["fusion"]:
         alpha_grid = np.asarray(
             [float(spec["fusion"]["fixed_alpha"])], dtype=np.float64
@@ -1247,40 +1308,47 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
                     f"epoch {epoch + 1}; "
                     f"parameters={','.join(invalid_parameters[:8])}"
                 )
+            if parameter_ema is not None:
+                parameter_ema.update(model)
             total_loss += float(loss.detach()) * len(labels)
             count += len(labels)
         current_learning_rate = float(optimizer.param_groups[0]["lr"])
         if scheduler is not None:
             scheduler.step()
-        val_targets, val_raw, val_residual = _predict_components(
-            model, validation_loader, device
+        evaluation_parameters = (
+            nullcontext() if parameter_ema is None
+            else parameter_ema.average_parameters(model)
         )
-        alpha, score = _select_alpha(
-            val_targets, val_raw, val_residual, alpha_grid, selection_metric,
-            selection_baseline,
-            float(spec["fusion"].get("minimum_f1_gain", 0.02)),
-            spec["model"],
-        )
-        selected_probabilities = _probabilities(
-            val_raw, val_residual, alpha, spec["model"]
-        )
-        selected_threshold = _select_f1_threshold(
-            val_targets, selected_probabilities
-        )
-        selected_metrics = _classification_metrics(
-            val_targets, selected_probabilities, selected_threshold
-        )
-        improved = score > best_score + float(spec["training"]["min_delta"])
-        if improved:
-            best_score, best_epoch, best_alpha = score, epoch + 1, alpha
-            best_state = {
-                key: value.detach().cpu().clone()
-                for key, value in model.state_dict().items()
-                if not key.startswith("raw_model.")
-            }
-            stale = 0
-        else:
-            stale += 1
+        with evaluation_parameters:
+            val_targets, val_raw, val_residual = _predict_components(
+                model, validation_loader, device
+            )
+            alpha, score = _select_alpha(
+                val_targets, val_raw, val_residual, alpha_grid, selection_metric,
+                selection_baseline,
+                float(spec["fusion"].get("minimum_f1_gain", 0.02)),
+                spec["model"],
+            )
+            selected_probabilities = _probabilities(
+                val_raw, val_residual, alpha, spec["model"]
+            )
+            selected_threshold = _select_f1_threshold(
+                val_targets, selected_probabilities
+            )
+            selected_metrics = _classification_metrics(
+                val_targets, selected_probabilities, selected_threshold
+            )
+            improved = score > best_score + float(spec["training"]["min_delta"])
+            if improved:
+                best_score, best_epoch, best_alpha = score, epoch + 1, alpha
+                best_state = {
+                    key: value.detach().cpu().clone()
+                    for key, value in model.state_dict().items()
+                    if not key.startswith("raw_model.")
+                }
+                stale = 0
+            else:
+                stale += 1
         _append_csv(history_path, {
             "epoch": epoch + 1, "train_loss": total_loss / count,
             "selection_metric": selection_metric,
@@ -1293,6 +1361,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             "training_alpha": training_alpha,
             "gradient_clip_norm": (
                 "" if gradient_clip_norm is None else gradient_clip_norm
+            ),
+            "parameter_ema_decay": (
+                "" if parameter_ema_decay is None else parameter_ema_decay
             ),
             "maximum_preclip_gradient_norm": (
                 "" if maximum_preclip_gradient_norm is None
@@ -1357,6 +1428,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "warmup_start_ratio": warmup_start_ratio,
         "training_alpha": training_alpha,
         "gradient_clip_norm": gradient_clip_norm,
+        "parameter_ema_decay": parameter_ema_decay,
         "residual_gate": {
             "kind": gate_kind,
             "temperature": gate_temperature,
@@ -1446,6 +1518,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "training_alpha": training_alpha,
         "gradient_clip_norm": (
             "" if gradient_clip_norm is None else gradient_clip_norm
+        ),
+        "parameter_ema_decay": (
+            "" if parameter_ema_decay is None else parameter_ema_decay
         ),
         "train_positive_fraction": float(train[2].mean()),
         "validation_positive_fraction": float(validation[2].mean()),
