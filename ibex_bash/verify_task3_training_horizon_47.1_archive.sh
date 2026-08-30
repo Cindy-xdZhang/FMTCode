@@ -36,13 +36,13 @@ if [[ "$archived_per_run_count" -ne 540 ]]; then
 fi
 archive_hash_before="$(sha256sum "$archive" | cut -d' ' -f1)"
 
-# This experiment is configured not to retain checkpoints. Refuse to publish
-# a clean artifact if an unexpected model file appears anywhere below its
-# candidate root.
-checkpoint_count="$(find "$candidate_root" -type f \
+# The generic residual runner necessarily writes one temporary checkpoint for
+# each paired training.  Training-horizon selection consumes only the result
+# CSVs and recipe, so require the complete expected set before deleting it.
+checkpoint_count_before="$(find "$candidate_root" -type f \
   \( -name '*.pt' -o -name '*.pth' -o -name '*.ckpt' \) | wc -l)"
-if [[ "$checkpoint_count" -ne 0 ]]; then
-  echo "training-horizon search unexpectedly retained $checkpoint_count checkpoints" >&2
+if [[ "$checkpoint_count_before" -ne 540 ]]; then
+  echo "expected 540 temporary checkpoints, found $checkpoint_count_before" >&2
   exit 1
 fi
 
@@ -54,15 +54,26 @@ if [[ "$archive_hash_before" != "$archive_hash_after" ]]; then
   exit 1
 fi
 
+find "$candidate_root" -type f \
+  \( -name '*.pt' -o -name '*.pth' -o -name '*.ckpt' \) -delete
+checkpoint_count_after="$(find "$candidate_root" -type f \
+  \( -name '*.pt' -o -name '*.pth' -o -name '*.ckpt' \) | wc -l)"
+if [[ "$checkpoint_count_after" -ne 0 ]]; then
+  echo "checkpoint cleanup incomplete: $checkpoint_count_after files remain" >&2
+  exit 1
+fi
+
 (
   cd "$output_root"
   sha256sum optimization_leaderboard.csv optimization_selection.json \
     preflight_manifest.json per_run_csv.tar.gz > artifact_sha256.txt
 )
-python -c 'import json, pathlib, sys; pathlib.Path(sys.argv[1]).write_text(json.dumps({"archived_per_run_csv": int(sys.argv[2]), "retained_checkpoint_count": int(sys.argv[3]), "stable_archive_sha256": sys.argv[4], "status": "passed"}, indent=2, sort_keys=True), encoding="utf-8")' \
+python -c 'import json, pathlib, sys; pathlib.Path(sys.argv[1]).write_text(json.dumps({"archived_per_run_csv": int(sys.argv[2]), "removed_checkpoint_count": int(sys.argv[3]), "retained_checkpoint_count": int(sys.argv[4]), "stable_archive_sha256": sys.argv[5], "status": "passed"}, indent=2, sort_keys=True), encoding="utf-8")' \
   "$output_root/checkpoint_cleanup.json" \
-  "$archived_per_run_count" "$checkpoint_count" "$archive_hash_after"
+  "$archived_per_run_count" "$checkpoint_count_before" \
+  "$checkpoint_count_after" "$archive_hash_after"
 
 echo "archived_per_run_csv=$archived_per_run_count"
-echo "retained_checkpoint_count=$checkpoint_count"
+echo "removed_checkpoint_count=$checkpoint_count_before"
+echo "retained_checkpoint_count=$checkpoint_count_after"
 echo "stable_archive_sha256=$archive_hash_after"
