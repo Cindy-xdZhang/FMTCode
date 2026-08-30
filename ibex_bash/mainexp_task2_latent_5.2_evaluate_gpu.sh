@@ -7,7 +7,7 @@
 #SBATCH --time=00:30:00
 #SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=8
-#SBATCH --mem=48G
+#SBATCH --mem=8G
 
 set -euo pipefail
 cd "${TASK2L52_REPO_ROOT:-/home/zhanx0o/FMT_Task2_LatentBottleneck_5_2}"
