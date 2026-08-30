@@ -1,0 +1,63 @@
+experiment: Verify_Task3_BatchSize_36.1
+output_root: outputs/Verify_Task3_BatchSize_36.1
+task: Task3
+
+# Development-only batch-size search. Both paired arms receive the same batch
+# size, ordering seed, labels, model, optimizer, epoch budget, and split. The
+# completed 22.1 selector freezes the family-specific anchored FMT feature.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  feature:
+    kind: stage1_feature
+    selection: outputs/Verify_Task3_AnchoredFeatureDecomposition_22.1/stage1_selection.json
+    expected_experiment: Verify_Task3_AnchoredFeatureDecomposition_22.1
+
+# b04 is the exact historical batch-size control. The fixed epoch budget means
+# every candidate sees the same number of data passes; the number of optimizer
+# updates changes as an intentional consequence of batch size.
+optimization_candidates:
+  - {id: b00_batch32, sources: [feature],
+     training: {batch_size: 32}}
+  - {id: b01_batch64, sources: [feature],
+     training: {batch_size: 64}}
+  - {id: b02_batch128, sources: [feature],
+     training: {batch_size: 128}}
+  - {id: b03_batch256, sources: [feature],
+     training: {batch_size: 256}}
+  - {id: b04_control_batch512, sources: [feature],
+     training: {batch_size: 512}}
+  - {id: b05_batch1024, sources: [feature],
+     training: {batch_size: 1024}}
+  - {id: b06_batch2048, sources: [feature],
+     training: {batch_size: 2048}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: b04_control_batch512
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.195
+  target_absolute_fmt_f1: 0.893
+  confirmation_opened: false

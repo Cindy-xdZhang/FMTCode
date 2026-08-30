@@ -913,6 +913,22 @@ def _optimizer_betas(training=None):
     return (beta1, beta2), overridden
 
 
+def _batch_size(training=None):
+    """Return a positive integral batch size without silent truncation."""
+    training = {} if training is None else dict(training)
+    value = training.get("batch_size")
+    if isinstance(value, (bool, np.bool_)) or value is None:
+        raise ValueError("batch_size must be a positive integer")
+    numeric = float(value)
+    if (
+        not np.isfinite(numeric)
+        or numeric < 1.0
+        or numeric != float(int(numeric))
+    ):
+        raise ValueError("batch_size must be a positive integer")
+    return int(numeric)
+
+
 def _build_optimizer(training: dict, parameters):
     """Build the registered optimizer without changing the paired arm budget."""
     name = str(training.get("optimizer", "adamw")).lower()
@@ -1024,16 +1040,17 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         else "raw_pca_residual"
     )
     pin = device.type == "cuda"
+    batch_size = _batch_size(spec["training"])
     requested_sampled_positive_fraction = spec["training"].get(
         "minibatch_positive_fraction"
     )
     train_loader = _loader(
-        train, spec["training"]["batch_size"], True, seed, pin,
+        train, batch_size, True, seed, pin,
         positive_fraction=requested_sampled_positive_fraction,
     )
-    validation_loader = _loader(validation, spec["training"]["batch_size"], False, seed, pin)
+    validation_loader = _loader(validation, batch_size, False, seed, pin)
     test_loader = None if test is None else _loader(
-        test, spec["training"]["batch_size"], False, seed, pin
+        test, batch_size, False, seed, pin
     )
     raw_checkpoint_path = (
         Path(spec["raw_checkpoint_dir"]) / f"{dataset}_raw_seed{seed}.pt"
