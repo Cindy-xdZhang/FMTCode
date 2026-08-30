@@ -347,3 +347,10 @@ children。15:13的`squeue`快照显示14个Dropout children与6个EMA children�
 child启动，即解除本次hold。Task2 children 0/1于15:14:03启动；15:15已解除全部
 Task3 hold，随后`squeue`确认所有Task3 pending children恢复`PENDING (Priority)`，
 原有20个running children均未中断。
+
+15:17观察到Task2 children 0/1均已成功完成（2分48秒/2分42秒、exit 0），但解除
+hold后其余118个children再次被较早提交的Task3 pending arrays压回Priority等待；期间
+Task3又启动了3个Dropout与1个EMA child。为避免约3分钟/child的Task2短数组反复
+饥饿，再次仅hold八个Task3数组的pending children，并改为在Task2数组完整结束后解除；
+所有已经运行的Task3 children保持运行。15:18快照为Task2 2 completed、118 pending、
+0 failed，selector仍严格等待完整数组。
