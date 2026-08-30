@@ -1,0 +1,60 @@
+experiment: Verify_Task3_FocalGammaLow_50.1
+output_root: outputs/Verify_Task3_FocalGammaLow_50.1
+task: Task3
+
+# Adaptive development-only follow-up to the completed 39.1 search.  The
+# parent selected gamma 0.10 at the lower searched boundary for Channel and
+# the half-cylinder family, while every larger gamma reduced absolute FMT
+# quality.  This grid resolves the interval between weighted BCE and 0.20.
+motivation_selection: outputs/Verify_Task3_FocalGamma_39.1/optimization_selection.json
+motivation_selection_local_mirror: output/Verify_Task3_FocalGamma_39.1_ibex/optimization_selection.json
+motivation_selection_sha256: 1e99c4328b7271cf4526333c5e38a9415911208219b3cea4da0692a86f59e994
+motivation_expected_experiment: Verify_Task3_FocalGamma_39.1
+
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  feature:
+    kind: stage1_feature
+    selection: outputs/Verify_Task3_AnchoredFeatureDecomposition_22.1/stage1_selection.json
+    expected_experiment: Verify_Task3_AnchoredFeatureDecomposition_22.1
+
+optimization_candidates:
+  - {id: l00_control_weighted_bce, sources: [feature]}
+  - {id: l01_gamma0010, sources: [feature], training: {loss: focal, focal_gamma: 0.010}}
+  - {id: l02_gamma0025, sources: [feature], training: {loss: focal, focal_gamma: 0.025}}
+  - {id: l03_gamma0050, sources: [feature], training: {loss: focal, focal_gamma: 0.050}}
+  - {id: l04_gamma0075, sources: [feature], training: {loss: focal, focal_gamma: 0.075}}
+  - {id: l05_gamma0100, sources: [feature], training: {loss: focal, focal_gamma: 0.100}}
+  - {id: l06_gamma0150, sources: [feature], training: {loss: focal, focal_gamma: 0.150}}
+  - {id: l07_gamma0200, sources: [feature], training: {loss: focal, focal_gamma: 0.200}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: l00_control_weighted_bce
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.195
+  target_absolute_fmt_f1: 0.893
+  confirmation_opened: false
