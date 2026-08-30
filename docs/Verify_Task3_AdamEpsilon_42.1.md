@@ -61,5 +61,10 @@ array `51016836[0-79%24]`, and selector `51016837`. The array has strict
 ran on `cn604-07` from 10:39:03 to 10:40:10, exited zero with empty stderr,
 and produced remote manifest SHA-256 `e63b1141...8b45`. It confirmed 10
 datasets, 8 candidates, 80 mappings, 480 paired trainings, all capacity
-guards, and closed confirmation state. The GPU array now waits for scheduler
-priority. Performance results have not been read.
+guards, and closed confirmation state. At `2026-08-30T21:09+03:00`, the GPU
+array had 12/80 children complete, 6 running, and 62 waiting, with no failed
+child. Performance results have not been read. Evidence archive/cleanup job
+`51057984` was submitted with strict `afterok:51016837`; its committed script
+SHA-256 is `97c3f337...a46f74`, identical locally and remotely. It will require
+all 480 per-run CSV files, create a byte-stable archive, and delete only this
+experiment's temporary checkpoints after successful selection.
