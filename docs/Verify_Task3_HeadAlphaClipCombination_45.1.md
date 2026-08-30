@@ -44,3 +44,7 @@ Any winner still requires a fresh spatial-population confirmation.
 - Selector: job `51020778`, strict `afterok:51020733_*`.
 - Local and remote 45.1/44.1/19.1 combination contracts: 10/10 passed.
   Remote Python compilation and all three Slurm-script syntax checks passed.
+- Preflight completed at `2026-08-30T11:43:58+03:00` with exit code 0 and
+  empty stderr: 10 datasets, 8 candidates, 80 mappings, 480 paired trainings,
+  and zero ineligible recipes. Manifest SHA-256:
+  `169bf1ede723953b60b829ca15d3d534ab1df68974e12143b32120494a460b57`.
