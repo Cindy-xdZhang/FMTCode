@@ -931,6 +931,18 @@ def _optimizer_betas(training=None):
     return (beta1, beta2), overridden
 
 
+def _optimizer_epsilon(training=None):
+    """Return the optional Adam-family denominator epsilon override."""
+    training = {} if training is None else dict(training)
+    value = training.get("optimizer_epsilon")
+    if value is None:
+        return None
+    epsilon = float(value)
+    if not np.isfinite(epsilon) or epsilon <= 0.0:
+        raise ValueError("optimizer_epsilon must be finite and positive")
+    return epsilon
+
+
 def _batch_size(training=None):
     """Return a positive integral batch size without silent truncation."""
     training = {} if training is None else dict(training)
@@ -1018,6 +1030,9 @@ def _build_optimizer(training: dict, parameters):
     betas, betas_overridden = _optimizer_betas(training)
     if betas_overridden:
         common["betas"] = betas
+    epsilon = _optimizer_epsilon(training)
+    if epsilon is not None:
+        common["eps"] = epsilon
     if name == "adamw":
         optimizer = torch.optim.AdamW(
             parameters, amsgrad=amsgrad, **common
@@ -1178,6 +1193,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         ),
     )
     optimizer_betas, _ = _optimizer_betas(spec["training"])
+    optimizer_epsilon = _optimizer_epsilon(spec["training"])
     scheduler, scheduler_name, warmup_epochs, warmup_start_ratio = (
         _build_scheduler(spec["training"], optimizer)
     )
@@ -1440,6 +1456,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "optimizer": optimizer_name,
         "optimizer_amsgrad": optimizer_amsgrad,
         "optimizer_betas": optimizer_betas,
+        "optimizer_epsilon": optimizer_epsilon,
         "scheduler": scheduler_name,
         "warmup_epochs": warmup_epochs,
         "warmup_start_ratio": warmup_start_ratio,
@@ -1530,6 +1547,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "training_optimizer_amsgrad": optimizer_amsgrad,
         "training_optimizer_beta1": optimizer_betas[0],
         "training_optimizer_beta2": optimizer_betas[1],
+        "training_optimizer_epsilon": (
+            "" if optimizer_epsilon is None else optimizer_epsilon
+        ),
         "training_scheduler": scheduler_name,
         "training_warmup_epochs": warmup_epochs,
         "training_warmup_start_ratio": warmup_start_ratio,
