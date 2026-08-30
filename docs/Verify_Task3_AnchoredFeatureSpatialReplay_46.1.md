@@ -23,6 +23,9 @@ evidence.
   trainable architecture, Raw backbone, training budget, and target samples.
 - Forty evaluations are performed; no training or threshold selection occurs.
 - No checkpoint is created, copied, downloaded, or archived by 46.1.
+- Evaluation may use CPU or GPU because all learned values are frozen; the
+  actual device is recorded per Slurm process and no device result is mixed
+  within a dataset shard.
 
 ## Interpretation
 
