@@ -1,0 +1,100 @@
+experiment: Verify_Task2_LatentBottleneck_5.1
+output_root: outputs/Verify_Task2_LatentBottleneck_5.1
+expected_slices: 10
+confirmation_opened: false
+
+source:
+  repo_root_env: TASK2_SOURCE_ROOT
+  repo_root: .
+  family_search_config: config/Verify_Task2_FMTVAEFamilySearch_4.1.yaml
+  stage2_selection: outputs/Verify_Task2_FMTVAEFamilySearch_4.1/stage2_selection.json
+  stage2_selection_sha256: 439d9e5dcf72adc78d12c38dda55443d87ffed2b8aeb061067b3cda8a8d97795
+
+splits:
+  selection_train: [0, 1, 2, 3, 4, 5]
+  selection_validation: [6, 7]
+  forbidden: [8, 9]
+
+# Only latent_dim changes.  Each group's FMT block, hidden layers, beta,
+# optimizer and training budget are frozen from Task2 family search 4.1.
+latent_dims: [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64]
+
+groups:
+  channel:
+    datasets: [channel]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+    fmt_feature: fmt_all+kin4
+    source_architecture_id: s128_l8_b1e-6
+    base_vae: {hidden_dims: [128, 64], control_latent_dim: 8,
+               beta: 0.000001, learning_rate: 0.001,
+               optimizer_steps: 4600, relational_weight: 0.0,
+               pair_count: 2048}
+  halfcylinder:
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+    fmt_feature: fmt_all+kin4
+    source_architecture_id: l512_l64_b1e-6
+    base_vae: {hidden_dims: [512, 256], control_latent_dim: 64,
+               beta: 0.000001, learning_rate: 0.0003,
+               optimizer_steps: 7000, relational_weight: 0.0,
+               pair_count: 2048}
+  tangaroa:
+    datasets: [tangaroa]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+    fmt_feature: fmt_real_neighbor
+    source_architecture_id: s128_l8_b1e-6
+    base_vae: {hidden_dims: [128, 64], control_latent_dim: 8,
+               beta: 0.000001, learning_rate: 0.001,
+               optimizer_steps: 4600, relational_weight: 0.0,
+               pair_count: 2048}
+  deltaWing:
+    datasets: [deltaWing_resampled, deltaWing_LBM]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+    fmt_feature: fmt_all
+    source_architecture_id: lin8_b1e-6
+    base_vae: {hidden_dims: [], control_latent_dim: 8,
+               beta: 0.000001, learning_rate: 0.001,
+               optimizer_steps: 4600, relational_weight: 0.0,
+               pair_count: 2048}
+  f22raptor:
+    datasets: [f22raptor]
+    development_cache: outputs/Verify_Task2Universality_1.1/cache
+    source_config: config/Verify_Task2Universality_1.1.yaml
+    fmt_feature: fmt_all+kin4
+    source_architecture_id: m256_l16_b1e-6
+    base_vae: {hidden_dims: [256, 128], control_latent_dim: 16,
+               beta: 0.000001, learning_rate: 0.001,
+               optimizer_steps: 4600, relational_weight: 0.0,
+               pair_count: 2048}
+  boeing747:
+    datasets: [boeing747]
+    development_cache: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    source_config: config/mainExp_Task123NewFlows_1.1_development_cache.yaml
+    fmt_feature: kin2
+    source_architecture_id: lin4_b1e-6
+    base_vae: {hidden_dims: [], control_latent_dim: 4,
+               beta: 0.000001, learning_rate: 0.001,
+               optimizer_steps: 4600, relational_weight: 0.0,
+               pair_count: 2048}
+  smokeBuoyancy:
+    datasets: [smokeBuoyancy]
+    development_cache: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    source_config: config/mainExp_Task123NewFlows_1.1_development_cache.yaml
+    fmt_feature: fmt_real_imag_neighbor
+    source_architecture_id: lin16_b1e-6
+    base_vae: {hidden_dims: [], control_latent_dim: 16,
+               beta: 0.000001, learning_rate: 0.001,
+               optimizer_steps: 4600, relational_weight: 0.0,
+               pair_count: 2048}
+
+screen_seeds: [83, 84, 85]
+kmeans_seed: 7068
+kmeans_n_init: 20
+
+selection:
+  rule: maximize_same_vae_paired_f1_gain
+  target_dataset_macro_f1_gain: 0.22
