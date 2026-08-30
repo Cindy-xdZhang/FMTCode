@@ -899,6 +899,20 @@ def _strong_validation_baseline(spec, dataset, seed, validation_loader,
     }
 
 
+def _optimizer_betas(training=None):
+    """Return validated Adam-family momentum coefficients and override state."""
+    training = {} if training is None else dict(training)
+    beta1_value = training.get("optimizer_beta1")
+    beta2_value = training.get("optimizer_beta2")
+    overridden = beta1_value is not None or beta2_value is not None
+    beta1 = 0.9 if beta1_value is None else float(beta1_value)
+    beta2 = 0.999 if beta2_value is None else float(beta2_value)
+    for name, value in (("optimizer_beta1", beta1), ("optimizer_beta2", beta2)):
+        if not np.isfinite(value) or not 0.0 <= value < 1.0:
+            raise ValueError(f"{name} must be finite and in [0, 1)")
+    return (beta1, beta2), overridden
+
+
 def _build_optimizer(training: dict, parameters):
     """Build the registered optimizer without changing the paired arm budget."""
     name = str(training.get("optimizer", "adamw")).lower()
@@ -912,6 +926,9 @@ def _build_optimizer(training: dict, parameters):
         "lr": learning_rate,
         "weight_decay": weight_decay,
     }
+    betas, betas_overridden = _optimizer_betas(training)
+    if betas_overridden:
+        common["betas"] = betas
     if name == "adamw":
         optimizer = torch.optim.AdamW(
             parameters, amsgrad=amsgrad, **common
@@ -1019,6 +1036,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             if parameter.requires_grad
         ),
     )
+    optimizer_betas, _ = _optimizer_betas(spec["training"])
     scheduler_name = str(spec["training"].get("scheduler", "none")).lower()
     if scheduler_name == "none":
         scheduler = None
@@ -1276,6 +1294,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "loss_metadata": loss_metadata,
         "optimizer": optimizer_name,
         "optimizer_amsgrad": optimizer_amsgrad,
+        "optimizer_betas": optimizer_betas,
         "scheduler": scheduler_name,
         "training_alpha": training_alpha,
         "gradient_clip_norm": gradient_clip_norm,
@@ -1360,6 +1379,8 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         ],
         "training_optimizer": optimizer_name,
         "training_optimizer_amsgrad": optimizer_amsgrad,
+        "training_optimizer_beta1": optimizer_betas[0],
+        "training_optimizer_beta2": optimizer_betas[1],
         "training_scheduler": scheduler_name,
         "training_alpha": training_alpha,
         "gradient_clip_norm": (

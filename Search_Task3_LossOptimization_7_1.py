@@ -37,6 +37,7 @@ from Verify_Task3_FMTResidual import (
     _build_training_loss,
     _gradient_clip_norm,
     _load_raw_model,
+    _optimizer_betas,
     _train_one,
 )
 
@@ -566,6 +567,7 @@ def preflight(config_path: str) -> Path:
                 "fmt", Path(spec["output_root"]) / "preflight", fmt_dim,
             )
             _gradient_clip_norm(run_spec["training"])
+            _optimizer_betas(run_spec["training"])
             _, loss_metadata = _build_training_loss(
                 run_spec["training"], float(train[2].sum()),
                 float(len(train[2]) - train[2].sum()), torch.device("cpu"),
