@@ -43,5 +43,11 @@ current Task2 paper result.
 - Config: `config/Verify_Task2_LatentBottleneck_5.1.yaml`
 - Contracts: `tests/test_task2_latent_bottleneck_5_1.py`
 - Ibex scripts: `ibex_bash/verify_task2_latent_bottleneck_5.1_*.sh`
-- Deployment commit, archive SHA, preflight SHA, job IDs, devices, and final
-  metrics are recorded only after they exist.
+- Implementation commit: `156d8ef`.
+- Deployment archive SHA-256: `8c00205074d7acef4c1a3ce572fa2635e37223ee1a4e16212dcc6e5c87ef1013`.
+- Preflight job `51029073` completed in 18 s on `cn604-06`, exit 0,
+  empty stderr. File/content manifest SHA-256 values are
+  `48ab4e7468313781749e173159db7035bec793960c24f7095ac92b6ad4c8a32c`
+  and `f45c4ade1a868bd5818330b001bc8bf5c548185a02c90e6abac3334655018ba3`.
+- GPU array `51029104` and selector `51029108` are submitted with strict
+  dependencies. Performance remains pending; partial metrics are not read.
