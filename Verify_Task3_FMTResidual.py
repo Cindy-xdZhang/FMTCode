@@ -274,20 +274,32 @@ class _WeightedFocalBCEWithLogitsLoss(nn.Module):
     rule for the paired FMT and Raw-PCA arms.
     """
 
-    def __init__(self, pos_weight: float, gamma: float = 0.0):
+    def __init__(self, pos_weight: float, gamma: float = 0.0,
+                 label_smoothing: float = 0.0):
         super().__init__()
         if not np.isfinite(pos_weight) or float(pos_weight) <= 0.0:
             raise ValueError("pos_weight must be finite and positive")
         if not np.isfinite(gamma) or float(gamma) < 0.0:
             raise ValueError("focal gamma must be finite and non-negative")
+        if (
+            not np.isfinite(label_smoothing)
+            or not 0.0 <= float(label_smoothing) < 1.0
+        ):
+            raise ValueError("label_smoothing must be finite and in [0, 1)")
         self.register_buffer(
             "pos_weight", torch.tensor(float(pos_weight), dtype=torch.float32)
         )
         self.gamma = float(gamma)
+        self.label_smoothing = float(label_smoothing)
 
     def forward(self, logits, targets, sample_weights=None):
+        loss_targets = (
+            targets if self.label_smoothing == 0.0
+            else targets * (1.0 - self.label_smoothing)
+            + 0.5 * self.label_smoothing
+        )
         loss = F.binary_cross_entropy_with_logits(
-            logits, targets, pos_weight=self.pos_weight, reduction="none"
+            logits, loss_targets, pos_weight=self.pos_weight, reduction="none"
         )
         if self.gamma > 0.0:
             # Mathematically, 1 - p_t = sigmoid(-s), where
@@ -331,6 +343,9 @@ def _build_training_loss(training: dict, positive: float, negative: float,
     gamma = float(training.get("focal_gamma", 0.0 if name == "weighted_bce" else 2.0))
     if name == "weighted_bce" and gamma != 0.0:
         raise ValueError("weighted_bce requires focal_gamma=0")
+    label_smoothing = float(training.get("label_smoothing", 0.0))
+    if not np.isfinite(label_smoothing) or not 0.0 <= label_smoothing < 1.0:
+        raise ValueError("label_smoothing must be finite and in [0, 1)")
     if sampled_positive_fraction is None:
         positive_weight = (negative / positive) * scale
     else:
@@ -476,7 +491,8 @@ def _build_training_loss(training: dict, positive: float, negative: float,
             "non-negative"
         )
     criterion = _WeightedFocalBCEWithLogitsLoss(
-        pos_weight=positive_weight, gamma=gamma
+        pos_weight=positive_weight, gamma=gamma,
+        label_smoothing=label_smoothing,
     ).to(device)
     return criterion, {
         "loss": name,
@@ -484,6 +500,7 @@ def _build_training_loss(training: dict, positive: float, negative: float,
         "positive_weight": positive_weight,
         "sampled_positive_fraction": sampled_positive_fraction,
         "focal_gamma": gamma,
+        "label_smoothing": label_smoothing,
         "raw_hardness_scale": hardness_scale,
         "raw_hardness_power": hardness_power,
         "raw_hardness_temperature": hardness_temperature,
@@ -1464,6 +1481,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             else float(sampled_positive_fraction)
         ),
         "training_focal_gamma": loss_metadata["focal_gamma"],
+        "training_label_smoothing": loss_metadata["label_smoothing"],
         "training_raw_hardness_scale": loss_metadata["raw_hardness_scale"],
         "training_raw_hardness_power": loss_metadata["raw_hardness_power"],
         "training_raw_hardness_temperature": loss_metadata[
