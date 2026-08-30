@@ -340,3 +340,8 @@ config、输入、seed、依赖或结果选择规则。
 解除全部Task3 hold，Task3 children恢复正常排队。旧Task2数组/selector随后取消，
 由修复并重新预检的`51032757`/`51032779`替代。此调度操作与路径修复均未改变数据、
 模型、latent grid、seed、预算、配对或选择规则。
+
+15:12 修复后的Task2数组确认eligible后，再次仅hold上述八个Task3数组中尚未启动的
+children。15:13的`squeue`快照显示14个Dropout children与6个EMA children仍为
+`RUNNING`，未被中断；Task2 `51032757`保持`PENDING (Priority)`。一旦任一Task2
+child启动，即解除本次hold。
