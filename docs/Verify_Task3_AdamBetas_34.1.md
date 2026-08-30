@@ -45,3 +45,21 @@ The joint development target is F1 gain at least `0.195` and absolute FMT F1
 at least `0.893`. Failure of either requirement is retained as a negative
 result. Any development winner still requires evaluation on a fresh spatial
 population.
+
+## Ibex deployment
+
+Implementation commit `4dc40ad` was pushed before deployment. The immutable
+archive SHA-256 is `c5d2524a...a4b2`; local raw and remote canonical config
+SHA-256 values are `71e164db...be44` and `3db86f16...66ee`, respectively.
+
+Local and remote runs passed the same 22 relevant unit tests. Remote Python
+compilation, three `bash -n` checks, and static preflight also passed. Full
+preflight job `51004187`, GPU array `51004190[0-89%24]`, and selector
+`51004191` were submitted with strict `afterok` dependencies. No partial metric
+may be read before selection.
+
+Full preflight ran on `cn604-14` from 03:27:50 to 03:28:50, exited zero
+with empty stderr, and produced manifest SHA-256 `e2db5ad3...6184d`. It
+confirmed ten datasets, nine candidates, 540 paired trainings, zero ineligible
+recipes, and closed confirmation state. The GPU dependency is released and the
+array waits for scheduler priority.
