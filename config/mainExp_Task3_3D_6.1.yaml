@@ -1,0 +1,59 @@
+experiment: mainExp_Task3_3D_6.1
+task: Task3
+status: fresh_spatial_confirmation
+output_root: outputs/mainExp_Task3_3D_6.1
+recipe_manifest: outputs/mainExp_Task3_3D_6.1/frozen_recipe_manifest.json
+
+# Frozen 22.1 family winners.  Both arms use the same architecture, width,
+# split, seed and training budget; no value below may be selected on 6.1.
+source_model:
+  repo_root: /home/zhanx0o/FMT_Task3_AnchoredFeatureDecomposition_22_1
+  expected_experiment: Verify_Task3_AnchoredFeatureDecomposition_22.1
+  paths:
+    config: config/Verify_Task3_AnchoredFeatureDecomposition_22.1.yaml
+    preflight: outputs/Verify_Task3_AnchoredFeatureDecomposition_22.1/preflight_manifest.json
+    selection: outputs/Verify_Task3_AnchoredFeatureDecomposition_22.1/stage1_selection.json
+  sha256:
+    config: 52c835ea7a3b10feff38d8b08d3f9b80be842e4087e43ca5e6c7250bdda4015e
+    preflight: 0e5befeae96eb484ad0b26edb340e2638611721a031afe9484b230ec5a7df266
+    selection: b65f0f65bbaa572217a9c1849ace7f831f7f77a82101fb3cc2828ee0e6ca0fb9
+
+# These files contain only the four frozen temporal velocity windows.  Their
+# values do not depend on the spatial seed phase.  A small 6.1 manifest is
+# deterministically derived and hashed before the recipe is frozen.
+source_staging:
+  parent_manifest: /ibex/scratch/zhanx0o/FMT_Task3_Confirmation_SourcePacks_12_2/source_staging_manifest.json
+  parent_manifest_sha256: 020b48ffa9ee6d59b5c333a1b6513e015523c1e0db984884f1b9ade20a3e2a61
+  derived_manifest: /ibex/scratch/zhanx0o/FMT_Task3_AnchoredFeature_6_1/source_staging_manifest.json
+
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+paired_seeds: [40, 41]
+confirmation_count: 4
+expected_ivd_percentile: 95.0
+require_confirmation_reference_match: true
+batch_size: 512
+
+# SHA-256(first eight hex digits) modulo 1024 + 1 gives Halton index 417.
+phase_key: mainExp_Task3_3D_6.1|fourth-spatial-population-v1
+phase_key_sha256: dce639a01fa0139281f3fedb76c3d8d40ed3530de35dec0507c965fac4bb9b3a
+halton_index: 417
+confirmation_seed_grid_phase: [0.021484375, -0.34224965706447186, 0.0328]
+same_physical_times_as_prior_spatial_checks: true
+new_spatial_primitive_population: true
+confirmation_opened_before_freeze: false
+
+confirmation_roots:
+  old8:
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400, tangaroa,
+               deltaWing_resampled, deltaWing_LBM, f22raptor, channel]
+    source_root: outputs/mainExp_Task3_3D_6.1/confirmation_cache_old8
+    label_root: outputs/mainExp_Task3_3D_6.1/confirmation_labels_old8/labels
+  new2:
+    datasets: [boeing747, smokeBuoyancy]
+    source_root: outputs/mainExp_Task3_3D_6.1/confirmation_cache_new2
+    label_root: outputs/mainExp_Task3_3D_6.1/confirmation_labels_new2/labels
+
+target_dataset_macro_f1_gain: 0.15
+aspirational_dataset_macro_f1_gain: 0.17

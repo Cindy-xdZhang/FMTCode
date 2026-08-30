@@ -1,0 +1,6 @@
+experiment: mainExp_Task3_3D_6.1_labels_new2
+source_cache_root: outputs/mainExp_Task3_3D_6.1/confirmation_cache_new2
+output_dir: outputs/mainExp_Task3_3D_6.1/confirmation_labels_new2
+datasets: [boeing747, smokeBuoyancy]
+expected_slices: 4
+label: {definition: standard_global_ivd, percentile: 95.0}
