@@ -57,4 +57,8 @@ same value; remote stderr is empty.
 GPU array `51028067` and selector `51028071` are submitted with strict
 dependencies. The array is limited to 24 concurrent jobs; each element
 evaluates one dataset/epoch candidate and performs three paired seeds for both
-arms. Checkpoints are not retained.
+arms. Checkpoints are not retained. Evidence archive job `51058293` was added
+with strict `afterok:51028071`; its committed script SHA-256 is
+`6f2e7392...80eed`, identical locally and remotely, and remote `bash -n`
+passes. It requires all 540 per-run CSV files, refuses any unexpected model
+checkpoint, and publishes hashes only after a 30 s archive-stability check.
