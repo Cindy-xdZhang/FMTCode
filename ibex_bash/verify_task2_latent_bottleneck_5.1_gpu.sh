@@ -7,7 +7,6 @@
 #SBATCH --time=08:00:00
 #SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=8
-#SBATCH --partition=gpu,gpu4,gpu24,gpu72
 #SBATCH --mem=48G
 
 set -euo pipefail
