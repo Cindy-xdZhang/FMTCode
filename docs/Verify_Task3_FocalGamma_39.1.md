@@ -68,8 +68,18 @@ claim.
 - `tests/test_task3_focal_gamma_39_1.py`
 - `ibex_bash/verify_task3_focal_gamma_39.1_*.sh`
 
-## Status
+## Ibex deployment
 
-Implementation is complete. Performance results have not been read and
-confirmation remains closed. Deployment identifiers and hashes are added only
-after their artifacts exist.
+Implementation commit `9e824d3` was pushed before deployment. The immutable
+archive SHA-256 is `105853f7...4991`; the remote canonical config SHA-256 is
+`a7487120...d041`. Local and Ibex environments both passed the 10 relevant
+tests; remote Python compilation and all three `bash -n` checks also passed.
+The local full-preflight manifest SHA-256 is `cb20b0aa...4111`.
+
+Submitted at `2026-08-30T08:42:12+03:00`: CPU preflight job `51012669`, GPU
+array `51012681[0-119%24]`, and selector `51012699`. The GPU array has
+`afterok:51012669`; the selector has `afterok:51012681_*`. The preflight ran
+on `cn604-13` from `08:42:13` to `08:43:23+03:00`, exited zero with empty
+stderr, and produced remote manifest SHA-256 `e33cd17c...f702`. The GPU array
+now waits only for the per-user GPU quota. Performance results have not been
+read and confirmation remains closed.
