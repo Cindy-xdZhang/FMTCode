@@ -468,3 +468,16 @@ EMA `51016379`为34/90 completed、5 running、51 pending；Focal、Label smooth
 Adam epsilon、Cosine minimum learning rate、Head×alpha×clip与Training horizon尚未开始
 children并保持`PENDING (Priority)`。九个selectors全部为`PENDING (Dependency)`，
 数组未见失败；未读取partial metric。保持所有数组eligible，由Slurm按可用GPU调度。
+
+17:48复核：Dropout推进至71/100 completed、13 running、16 pending；EMA为35/90
+completed、4 running、51 pending，合计17个GPU children运行，说明解除hold后调度器
+可继续扩展并发。对应selectors仍等待完整数组，未见失败且未读取partial metric。
+
+17:53复核：Dropout `51012521`推进至78/100 completed、8 running、14 pending；EMA
+`51016379`为37/90 completed、4 running、49 pending；二者均0失败。其余Focal、Label
+smoothing、Adam epsilon、Cosine minimum learning rate、Head×alpha×clip与Training
+horizon仍为`PENDING (Priority)`，对应selectors均为`PENDING (Dependency)`。截至调整前，
+Dropout和EMA已完成children的最长Elapsed分别为29:14和26:49；据此将两数组尚未完成部分的
+TimeLimit分别由6h、3h统一缩短至2h，保留约4倍实测余量。`scontrol show job`确认两数组
+均为`TimeLimit=02:00:00`；本地与远端GPU脚本同步，远端`bash -n`通过。该调整仅改变Slurm
+预留时限，不改变数据、模型、训练epoch、随机种子、配对或选择规则；仍未读取partial metric。

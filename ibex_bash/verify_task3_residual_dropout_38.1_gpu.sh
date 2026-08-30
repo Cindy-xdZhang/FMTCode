@@ -4,7 +4,7 @@
 #SBATCH -J FMTT3do381
 #SBATCH -o slurm_logs/%x.%A_%a.out
 #SBATCH -e slurm_logs/%x.%A_%a.err
-#SBATCH --time=06:00:00
+#SBATCH --time=02:00:00
 #SBATCH --gpus=1
 #SBATCH --cpus-per-gpu=8
 #SBATCH --mem=8G
