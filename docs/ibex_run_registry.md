@@ -297,7 +297,7 @@
 | 51017334[0-89%24] | Task3 | Verify_Task3_CosineMinLR_43.1 | 2026-08-30T10:47:56+03:00 | 首批children 2026-08-30T21:19:43+03:00 | **COMPLETED** 23:26:42；90/90 mappings、540/540 paired trainings均exit 0，GPU stderr为空 | 数组完整支持统一selector；性能结论见`51017338`，运行中未读取partial metrics | 9×A100、41×GTX 1080 Ti、16×P100、24×V100 child allocations；每child 1 GPU、8 CPU、8 GB，限24并发 | constant-LR control与cosine terminal ratio `{0,.001,.01,.025,.05,.10,.25,.50}`；逐candidate两臂同schedule、feature、head、optimizer、batch、split、seed和预算；调度脚本commit `50b303d`只改变pending TimeLimit，科学设置不变；`confirmation_opened=false` | `/home/zhanx0o/FMT_Task3_CosineMinLR_43_1/slurm_logs/FMTT3cos431.51017334_<array>.{out,err}` |
 | 51017338 | Task3 | Verify_Task3_CosineMinLR_43.1_select | 2026-08-30T10:47:58+03:00 | 2026-08-30T23:26:46+03:00 | **COMPLETED** 23:26:55（9s），exit 0、stderr为空；Raw-PCA/FMT F1 `.697864/.887322`，gain `+.189459`；AP gain `+.206467`；10/10 datasets正 | 未达到`+.195/.893`联合目标且弱于38.1 Dropout；Cosine不单独进入confirmation | Ibex CPU；4 CPU、8 GB，无GPU | Channel/halfcylinder/Tangaroa选ratio`.50/.05/.01`，其余family保留constant control；selection/leaderboard SHA `403d5207…d0e6`/`b6c2a0c8…0920`；独立审计540份CSV最大误差`2.22e−16`，audit SHA `2d15f307…b4473`；`confirmation_opened=false` | `outputs/Verify_Task3_CosineMinLR_43.1/{optimization_leaderboard.csv,optimization_selection.json}`；本地镜像`output/Verify_Task3_CosineMinLR_43.1_ibex/` |
 | 51018914 | Task3 | Verify_Task3_SafeFactorCombination_44.1_preflight | 2026-08-30T11:27:54+03:00 | 2026-08-30T23:26:57+03:00 | **COMPLETED** 23:28:04（67s），exit 0、stderr为空；全部八个上游selectors结束后冻结其SHA、逐family赢家并检查recipe冲突 | 只支持44.1输入身份、固定候选及配对公平性，不产生性能结论 | Ibex CPU `cn604-14`；8 CPU、16 GB，无GPU | implementation commit `db1c353`；archive SHA `88867bb2…2b26`；remote manifest SHA `b9b0cbcf…629b`；本地与远端44.1+19.1 tests均7/7通过，远端Python编译及三个脚本`bash -n`通过；`confirmation_opened=false` | `/home/zhanx0o/FMT_Task3_SafeFactorCombination_44_1/slurm_logs/FMTT3sf441p.51018914.{out,err}`；`outputs/Verify_Task3_SafeFactorCombination_44.1/preflight_manifest.json` |
-| 51018920[0-279%12] | Task3 | Verify_Task3_SafeFactorCombination_44.1 | 2026-08-30T11:28:01+03:00 | 首批children 2026-08-30T23:28:05+03:00 | **RUNNING/PENDING**；截至23:47为0/280完成、19运行、261等待、0失败；live throttle降至12后已运行children不被中断，将自然降至12并发 | 尚无性能结果；禁止读取partial metrics；预注册联合目标为dataset-macro F1 gain`>=+.195`且absolute FMT F1`>=+.893` | 当前混合Ibex GPU；每child 1 GPU、8 CPU、8 GB；live TimeLimit由2h降至1h，23:44后live throttle为12以开放47.1→48.1关键路径 | 28-candidate固定grid；FMT与train-only Raw-PCA逐cell使用同一head、optimizer/loss、初始化、batch、split、seed和预算；调度脚本commit `50b303d`，科学设置不变；逐family FMT F1/AP相对exact anchored-feature control采用零回退guard；`confirmation_opened=false` | `/home/zhanx0o/FMT_Task3_SafeFactorCombination_44_1/slurm_logs/FMTT3sf441.51018920_<array>.{out,err}` |
+| 51018920[0-279%12] | Task3 | Verify_Task3_SafeFactorCombination_44.1 | 2026-08-30T11:28:01+03:00 | 首批children 2026-08-30T23:28:05+03:00 | **RUNNING/PENDING**；截至23:47为0/280完成、19运行、261等待、0失败；live throttle降至12后已运行children不被中断，将自然降至12并发 | 尚无性能结果；禁止读取partial metrics；预注册联合目标为dataset-macro F1 gain`>=+.195`且absolute FMT F1`>=+.893` | 当前混合Ibex GPU；每child 1 GPU、8 CPU、8 GB；23:44后live throttle为12；00:42发现旧children的1h时限不足，未启动tasks 38–279已恢复为5h，已经运行的旧children因Ibex权限限制保持1h并单独监控 | 28-candidate固定grid；FMT与train-only Raw-PCA逐cell使用同一head、optimizer/loss、初始化、batch、split、seed和预算；调度脚本commit `50b303d`，科学设置不变；逐family FMT F1/AP相对exact anchored-feature control采用零回退guard；`confirmation_opened=false` | `/home/zhanx0o/FMT_Task3_SafeFactorCombination_44_1/slurm_logs/FMTT3sf441.51018920_<array>.{out,err}` |
 | 51018923 | Task3 | Verify_Task3_SafeFactorCombination_44.1_select | 2026-08-30T11:28:11+03:00 | 未开始 | **PENDING (Dependency)**；`afterok:51018920_*`已由`scontrol`核实，只在280 children全部成功后统一选择 | 只作development选择；任何赢家仍须fresh spatial population确认 | Ibex CPU待分配；4 CPU、8 GB | 先要求逐family FMT F1/AP均不低于exact anchored-feature control，再按paired F1 gain、absolute FMT F1及预注册tie-breakers排序；不得读取partial metrics或confirmation | `outputs/Verify_Task3_SafeFactorCombination_44.1/{optimization_leaderboard.csv,optimization_selection.json}` |
 | 51020702 | Task3 | Verify_Task3_HeadAlphaClipCombination_45.1_preflight | 2026-08-30T11:41:09+03:00 | 2026-08-30T11:41:10+03:00 | **COMPLETED** 11:43:58（168s），exit 0、stderr为空；冻结4个source selector SHA并确认10 datasets、8 candidates、80 mappings、480 paired trainings、0 ineligible及无recipe冲突 | 只支持45.1协议、部署和配对公平性，不产生性能结论 | Ibex CPU `cn504-12`；8 CPU、16 GB，无GPU | implementation commit `3fe1aee`；archive SHA `32bb4313…a9de`且本地/远端一致；local/remote raw config SHA `5dc85354…6b6f`/`8b273783…bbb2`；manifest SHA `169bf1ed…0b57`且已下载复核；本地/远端10/10组合tests、远端Python编译和三个脚本`bash -n`通过；`confirmation_opened=false` | `/home/zhanx0o/FMT_Task3_HeadAlphaClipCombination_45_1/slurm_logs/FMTT3hc451p.51020702.{out,err}`；`outputs/Verify_Task3_HeadAlphaClipCombination_45.1/preflight_manifest.json` |
 | 51020733[0-79%24] | Task3 | Verify_Task3_HeadAlphaClipCombination_45.1 | 2026-08-30T11:41:26+03:00 | 首批children 2026-08-30T21:42:56+03:00 | **RUNNING/HELD**；截至23:47为53/80完成、1运行、26个未启动children临时user-hold、0失败；已运行task53未中断 | 尚无性能结果；禁止读取partial metrics；预注册联合目标为dataset-macro F1 gain`>=+.195`且absolute FMT F1`>=.893` | 当前运行child为A100；每child 1 GPU、8 CPU、8 GB；未启动children待44.1与48.1 selectors完成后解除hold | head×alpha×clipping完整`2^3`因子；两臂同head、alpha、clipping、初始化、optimizer、batch、split、seed和预算；调度脚本commit `50b303d`，科学设置不变；FMT F1/AP相对exact control零回退；`confirmation_opened=false` | `/home/zhanx0o/FMT_Task3_HeadAlphaClipCombination_45_1/slurm_logs/FMTT3hc451.51020733_<array>.{out,err}` |
@@ -695,3 +695,25 @@ archive依赖保持不变。待44.1与48.1两个selector均完成后解除上述
 42分钟余量。该值只改变Slurm backfill窗口，不改变任一候选的epoch数、early stopping、
 训练预算或结果。`scontrol`确认pending与已运行children均为2h、throttle12及五partition
 不变；调整后task4也获得GPU。若任一child接近90分钟仍未结束，将在超时前恢复5h并登记。
+
+2026-08-31 00:42–00:44权威复核：44.1 `51018920`为26/280完成、12运行、242等待；
+47.1 `51028067`为18/90完成、12运行、60等待；二者均0失败。为避免44.1中已出现的慢
+mapping拖断`44.1→48.1→52.1→7.2`关键路径，尝试将live array的时限从1h扩为2h并补入
+`gpu1`。Slurm只允许更新尚未启动的children：pending tasks现为2h且partition为
+`gpu,gpu1,gpu4,gpu24,gpu72`；12个running children保持原1h，更新返回明确的
+`Access/permission denied`/`Job is no longer pending execution`，没有重启或取消任何任务。
+其中task4/task14已分别运行约72/61分钟但仍为RUNNING；`sstat`显示batch CPU持续累计，
+stdout分别在00:44:05/00:43:53继续更新，stderr均为0字节，故判定为仍活跃而非僵死。
+45.1为54/80完成、50.1为5/80完成、51.1为0/80；三者未启动children继续按23:44登记的
+可逆user hold等待44.1及48.1 selectors，防止分散当前关键路径GPU。全程未读取任何partial
+metric；52.1、7.2仍严格等待完整selectors及冻结哈希。
+
+00:42–00:44复核44.1时发现原1h backfill窗口不足：tasks 4、14分别已运行约71、61分钟，
+仍为`RUNNING`。立即执行`scontrol update JobId=51018920 TimeLimit=05:00:00`；Ibex成功
+把尚未启动的tasks 38–279改为5h，但拒绝修改已经运行的旧children（包括tasks 4、14、
+24–27、32–37）。进一步核验显示tasks 4、14的stdout在00:43:48/00:43:53仍持续更新，
+累计CPU时间约71/61分钟、驻留内存约1.0 GB且stderr均为空，证明它们仍在有效训练而非
+僵死。普通用户使用array task ID或Slurm实际job ID延长时限均被`Access/permission denied`
+拒绝，因此不取消仍有效的计算；只在其真实终态为`TIMEOUT`时精确补跑对应array index。
+该修正只改变Slurm预留时限，不改变数据、候选、seed、模型、epoch、配对或选择协议；仍未
+读取任何partial metric。
