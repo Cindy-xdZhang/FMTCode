@@ -67,6 +67,44 @@ class AdaptivePortfolioTests(unittest.TestCase):
             self.assertIs(portfolio._base._load_spec, portfolio._load_spec)
         self.assertIs(portfolio._base._load_spec, original)
 
+    def test_source_identity_preflight_checks_deployed_config_content(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            tmp_path = Path(temporary)
+            spec = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))
+            spec["output_root"] = str(tmp_path / "output")
+            source_paths = []
+            for name, section in spec["sources"].items():
+                root = tmp_path / name
+                config = root / section["paths"]["config"]
+                config.parent.mkdir(parents=True, exist_ok=True)
+                config.write_text(
+                    yaml.safe_dump({
+                        "experiment": section["expected_experiment"],
+                    }),
+                    encoding="utf-8",
+                )
+                section["repo_root"] = str(root)
+                section["expected_config_canonical_sha256"] = (
+                    portfolio._canonical_text_sha256(config)
+                )
+                source_paths.append(config)
+            config_path = tmp_path / "portfolio.yaml"
+            config_path.write_text(
+                yaml.safe_dump(spec, sort_keys=False), encoding="utf-8"
+            )
+            with redirect_stdout(io.StringIO()):
+                target = portfolio.source_identity_preflight(config_path)
+            payload = json.loads(target.read_text(encoding="utf-8"))
+            self.assertEqual(payload["source_count"], 5)
+            self.assertFalse(payload["performance_artifacts_read"])
+
+            source_paths[0].write_text(
+                source_paths[0].read_text(encoding="utf-8") + "changed: true\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(RuntimeError, "canonical SHA-256"):
+                portfolio.source_identity_preflight(config_path)
+
     def test_freeze_copies_and_repoints_all_artifacts(self):
         with tempfile.TemporaryDirectory() as temporary:
             tmp_path = Path(temporary)

@@ -34,6 +34,12 @@ def _sha256(path: str | Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def _canonical_text_sha256(path: str | Path) -> str:
+    text = Path(path).read_text(encoding="utf-8")
+    canonical = text.replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def _load_spec(path: str | Path) -> dict:
     path = Path(path)
     spec = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -101,6 +107,56 @@ def static_preflight(config_path: str | Path) -> dict:
     if report["source_count"] != 5 or report["training_runs"] != 0:
         raise RuntimeError("Task3 52.1 static preflight contract changed")
     return report
+
+
+def source_identity_preflight(config_path: str | Path) -> Path:
+    """Verify source config identity without opening result artifacts."""
+    spec = _load_spec(config_path)
+    sources = {}
+    for name, section in sorted(spec["sources"].items()):
+        root = Path(section["repo_root"])
+        config = Path(section["paths"]["config"])
+        config = config if config.is_absolute() else root / config
+        if not config.is_file():
+            raise FileNotFoundError(config)
+        actual = _canonical_text_sha256(config)
+        expected = str(section["expected_config_canonical_sha256"])
+        if actual != expected:
+            raise RuntimeError(
+                f"{name}: deployed config canonical SHA-256 differs: "
+                f"actual={actual}, expected={expected}"
+            )
+        overlay = yaml.safe_load(config.read_text(encoding="utf-8"))
+        experiment = str(overlay.get("experiment", ""))
+        if experiment != str(section["expected_experiment"]):
+            raise RuntimeError(f"{name}: deployed experiment identity differs")
+        sources[name] = {
+            "repo_root": str(root),
+            "config": str(config),
+            "experiment": experiment,
+            "canonical_sha256": actual,
+        }
+    payload = {
+        "schema": 1,
+        "experiment": spec["experiment"],
+        "config_sha256": spec["config_sha256"],
+        "confirmation_opened": False,
+        "performance_artifacts_read": False,
+        "source_count": len(sources),
+        "sources": sources,
+    }
+    target = Path(spec["output_root"]) / "source_identity_preflight.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        if json.loads(target.read_text(encoding="utf-8")) != payload:
+            raise RuntimeError("Task3 52.1 source identity preflight changed")
+    else:
+        target.write_text(
+            json.dumps(payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    print(target.read_text(encoding="utf-8"), end="")
+    return target
 
 
 def _copy_verified(source: Path, target: Path, expected_sha256: str) -> None:
@@ -173,11 +229,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True)
     parser.add_argument(
-        "--mode", choices=("static-preflight", "select"), required=True
+        "--mode",
+        choices=("static-preflight", "source-identity-preflight", "select"),
+        required=True,
     )
     args = parser.parse_args()
     if args.mode == "static-preflight":
         static_preflight(args.config)
+    elif args.mode == "source-identity-preflight":
+        source_identity_preflight(args.config)
     else:
         target = select(args.config)
         print(target.read_text(encoding="utf-8"))
