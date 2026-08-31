@@ -1057,6 +1057,60 @@ def _build_optimizer(training: dict, parameters):
     return optimizer, name, amsgrad
 
 
+def _auxiliary_learning_rate_multiplier(training=None):
+    """Validate the paired learning-rate multiplier for the auxiliary projection."""
+    training = {} if training is None else dict(training)
+    value = float(training.get("auxiliary_learning_rate_multiplier", 1.0))
+    if not np.isfinite(value) or value <= 0.0:
+        raise ValueError(
+            "auxiliary_learning_rate_multiplier must be finite and positive"
+        )
+    return value
+
+
+def _optimizer_parameter_spec(model, training):
+    """Return an exact control list or paired projection/head parameter groups.
+
+    Multiplier one deliberately returns the historical single flat parameter
+    list.  Non-control cells place only the trainable auxiliary projection in
+    a second optimizer group; all downstream residual parameters retain the
+    base learning rate.  The frozen Raw backbone is excluded in both cases.
+    """
+    multiplier = _auxiliary_learning_rate_multiplier(training)
+    trainable = [
+        parameter for parameter in model.parameters()
+        if parameter.requires_grad
+    ]
+    if not trainable:
+        raise ValueError("residual model has no trainable parameters")
+    if multiplier == 1.0:
+        return trainable, multiplier, 0
+
+    auxiliary = [
+        parameter for parameter in model.fmt_encoder.parameters()
+        if parameter.requires_grad
+    ]
+    auxiliary_ids = {id(parameter) for parameter in auxiliary}
+    downstream = [
+        parameter for parameter in trainable
+        if id(parameter) not in auxiliary_ids
+    ]
+    if not auxiliary or not downstream:
+        raise ValueError(
+            "auxiliary learning-rate groups require both projection and "
+            "downstream trainable parameters"
+        )
+    if len(auxiliary_ids) != len(auxiliary):
+        raise RuntimeError("auxiliary optimizer parameters are duplicated")
+    if len(downstream) + len(auxiliary) != len(trainable):
+        raise RuntimeError("optimizer parameter groups are not exhaustive")
+    auxiliary_rate = float(training["learning_rate"]) * multiplier
+    return [
+        {"params": downstream},
+        {"params": auxiliary, "lr": auxiliary_rate},
+    ], multiplier, 1
+
+
 def _warmup_parameters(training=None):
     """Validate epoch-level linear warmup while preserving a strict no-op."""
     training = {} if training is None else dict(training)
@@ -1185,12 +1239,13 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             "auxiliary supervision requires a configured auxiliary classifier, "
             "and an auxiliary classifier requires a positive supervision weight"
         )
+    (
+        optimizer_parameters,
+        auxiliary_learning_rate_multiplier,
+        auxiliary_optimizer_group_index,
+    ) = _optimizer_parameter_spec(model, spec["training"])
     optimizer, optimizer_name, optimizer_amsgrad = _build_optimizer(
-        spec["training"],
-        (
-            parameter for parameter in model.parameters()
-            if parameter.requires_grad
-        ),
+        spec["training"], optimizer_parameters,
     )
     optimizer_betas, _ = _optimizer_betas(spec["training"])
     optimizer_epsilon = _optimizer_epsilon(spec["training"])
@@ -1346,6 +1401,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             total_loss += float(loss.detach()) * len(labels)
             count += len(labels)
         current_learning_rate = float(optimizer.param_groups[0]["lr"])
+        current_auxiliary_learning_rate = float(
+            optimizer.param_groups[auxiliary_optimizer_group_index]["lr"]
+        )
         if scheduler is not None:
             scheduler.step()
         evaluation_parameters = (
@@ -1391,6 +1449,10 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             "validation_alpha": alpha, "is_best": int(improved),
             "stale_epochs": stale,
             "learning_rate": current_learning_rate,
+            "auxiliary_learning_rate": current_auxiliary_learning_rate,
+            "auxiliary_learning_rate_multiplier": (
+                auxiliary_learning_rate_multiplier
+            ),
             "training_alpha": training_alpha,
             "gradient_clip_norm": (
                 "" if gradient_clip_norm is None else gradient_clip_norm
@@ -1457,6 +1519,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "optimizer_amsgrad": optimizer_amsgrad,
         "optimizer_betas": optimizer_betas,
         "optimizer_epsilon": optimizer_epsilon,
+        "auxiliary_learning_rate_multiplier": (
+            auxiliary_learning_rate_multiplier
+        ),
         "scheduler": scheduler_name,
         "warmup_epochs": warmup_epochs,
         "warmup_start_ratio": warmup_start_ratio,
@@ -1549,6 +1614,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "training_optimizer_beta2": optimizer_betas[1],
         "training_optimizer_epsilon": (
             "" if optimizer_epsilon is None else optimizer_epsilon
+        ),
+        "training_auxiliary_learning_rate_multiplier": (
+            auxiliary_learning_rate_multiplier
         ),
         "training_scheduler": scheduler_name,
         "training_warmup_epochs": warmup_epochs,

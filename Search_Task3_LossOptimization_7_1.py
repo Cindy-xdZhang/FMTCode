@@ -34,6 +34,7 @@ from Search_Task3_FMTResidual_3D import (
 from Search_Task3_FMTResidual_Stage2_3D import _combined_candidate
 from Verify_Task3_FMTClassifier import _append_csv, _normalize_train_only
 from Verify_Task3_FMTResidual import (
+    _auxiliary_learning_rate_multiplier,
     _build_training_loss,
     _gradient_clip_norm,
     _load_raw_model,
@@ -568,6 +569,7 @@ def preflight(config_path: str) -> Path:
                 "fmt", Path(spec["output_root"]) / "preflight", fmt_dim,
             )
             _gradient_clip_norm(run_spec["training"])
+            _auxiliary_learning_rate_multiplier(run_spec["training"])
             _optimizer_betas(run_spec["training"])
             _warmup_parameters(run_spec["training"])
             _, loss_metadata = _build_training_loss(
