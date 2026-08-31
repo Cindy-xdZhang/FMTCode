@@ -42,6 +42,11 @@ Any winner still requires a fresh spatial-population confirmation.
 - Preflight: job `51020702`.
 - GPU array: job `51020733[0-79%24]`, strict `afterok:51020702`.
 - Selector: job `51020778`, strict `afterok:51020733_*`.
+- Evidence archive: job `51071279`, strict `afterok:51020778`. It will
+  archive and hash all 480 per-run CSV files while requiring all 480 temporary
+  checkpoints to remain present for 52.1; it never deletes a model. The local
+  and remote script SHA-256 is
+  `da5d84d733ae54f506c170f4bcc4cc95f0b93ce876008ab22027893968780b39`.
 - Local and remote 45.1/44.1/19.1 combination contracts: 10/10 passed.
   Remote Python compilation and all three Slurm-script syntax checks passed.
 - Preflight completed at `2026-08-30T11:43:58+03:00` with exit code 0 and
