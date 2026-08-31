@@ -66,4 +66,11 @@ empty stderr, producing a manifest with SHA-256
 GPU array `51069691` and selector `51069692` are deployed. The array is held by
 `afterany:51060469`, so it starts only after the already frozen 7.2 independent
 confirmation chain reaches a terminal state; the selector requires every
-array child to succeed. No 53.1 performance result has been produced or read.
+array child to succeed. Evidence job `51072617` is registered with strict
+`afterok:51069692`. It requires exactly 660 per-run CSV files and 660 temporary
+checkpoints, verifies a stable archive hash over 30 seconds, excludes model
+files from the archive, and retains all checkpoints for any downstream use.
+The local and remote evidence-script SHA-256 is
+`e26b584b209b82b7b7334fad717347466a8736bba9c9d186c6c742a4f1fbdcc1`, and
+the remote script passes `bash -n`. No 53.1 performance result has been
+produced or read.
