@@ -64,7 +64,10 @@ entry remains held and unchanged; 7.2 does not reuse its phase.
 4. Run source preflight, then generate caches and IVD-p95 labels.
 5. Run evaluation preflight, ten paired evaluations, and one final summary.
 6. Independently audit the complete summary before deleting temporary
-   checkpoints under the project retention protocol.
+   checkpoints under the project retention protocol. Job `51073430` is a
+   strict `afterok` successor of the summary and exits successfully whenever
+   the evidence is internally consistent, regardless of whether the measured
+   gain reaches either scientific target.
 
 Any failed or partial stage is recorded and cannot alter the frozen recipe.
 
@@ -74,5 +77,8 @@ Any failed or partial stage is recorded and cannot alter the frozen recipe.
 - `Build_Task3_AdaptiveTuned_Confirmation_7_2.py`
 - `Prepare_Task3_AdaptiveTuned_SourceManifest_7_2.py`
 - `Confirm_Task3_AdaptiveTuned_7_2.py`
+- `Audit_Task3_AdaptiveTuned_7_2.py`
 - `tests/test_mainexp_task3_3d_7_2.py`
+- `tests/test_audit_task3_adaptive_tuned_7_2.py`
 - `ibex_bash/mainexp_task3_3d_7.2_*.sh`
+- `ibex_bash/verify_task3_adaptive_tuned_7.2_evidence.sh`
