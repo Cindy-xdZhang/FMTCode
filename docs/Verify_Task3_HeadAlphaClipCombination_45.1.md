@@ -53,3 +53,49 @@ Any winner still requires a fresh spatial-population confirmation.
   empty stderr: 10 datasets, 8 candidates, 80 mappings, 480 paired trainings,
   and zero ineligible recipes. Manifest SHA-256:
   `169bf1ede723953b60b829ca15d3d534ab1df68974e12143b32120494a460b57`.
+
+## Completed development result
+
+All 80 array children and all 480 paired trainings completed successfully. The
+selector ran at `2026-08-31T07:25:12+03:00` and finished with empty stderr.
+
+- Raw-PCA/FMT dataset-macro F1: `0.68794798 / 0.88973008`.
+- Paired F1 gain: `+0.20178210`.
+- Raw-PCA/FMT dataset-macro Average Precision: `0.73148483 / 0.94815251`.
+- Paired Average Precision gain: `+0.21666768`.
+- Positive datasets: `10/10`; worst per-dataset F1 gain: `+0.05271726`.
+- Exact-control Raw-PCA/FMT F1: `0.69723722 / 0.88706248`; gain:
+  `+0.18982525`.
+
+The gain target (`>= +0.195`) passed. The absolute FMT target (`>= 0.893`)
+missed by `0.00326992`, so the preregistered joint target did not pass. This
+experiment is therefore a valid development ablation, not a replacement for
+44.1 and not a paper-level confirmation.
+
+Selected recipe by physical family:
+
+| Family | Recipe |
+|---|---|
+| Boeing 747 | `k02_alpha` |
+| Channel | `k03_clipping` |
+| Delta wing | `k00_feature_control` |
+| F-22 | `k07_head_alpha_clipping` |
+| Half-cylinder | `k07_head_alpha_clipping` |
+| Smoke buoyancy | `k03_clipping` |
+| Tangaroa | `k04_head_alpha` |
+
+## Evidence and independent audit
+
+Evidence job `51071279` completed at `2026-08-31T07:26:01+03:00` with exit
+code 0 and empty stderr. It archived all 480 per-run CSV files while retaining
+all 480 temporary checkpoints for 52.1.
+
+- Selection SHA-256: `cf80d0d62563da50a5b76b0b909079aa51af42fa3cf8b95bcd4fac4c9c1d43d9`.
+- Leaderboard SHA-256: `19606af4ef28316a2bdde416f238d2afec07b800c761cc6165a8ee75baf4afa8`.
+- Per-run archive SHA-256: `08e3788f91a338413b403d67080f3ea4d8ecb53d37713f7c4a229516fda51bcd`.
+- Independent-audit SHA-256: `58947d24cd306146b7f836fc45705f0f564aed768262ea774a013c9fd54280b2`.
+
+`Audit_Task3_ParameterSearch.py` independently reconstructed all family guards,
+candidate choices, and macro metrics from the 480 archived CSV files. It found
+equal paired parameter counts, consistent source hashes, and a maximum absolute
+difference of exactly `0.0` versus the selector. `confirmation_opened=false`.
