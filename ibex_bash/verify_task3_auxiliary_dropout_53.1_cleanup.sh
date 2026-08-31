@@ -21,15 +21,16 @@ archive="$output_root/per_run_csv.tar.gz"
 portfolio="$portfolio_root/outputs/Verify_Task3_ExtendedPortfolio_54.1/portfolio_selection.json"
 portfolio_audit="$portfolio_root/outputs/Verify_Task3_ExtendedPortfolio_54.1/independent_audit.json"
 
-resolved_repo="$(realpath -e "$repo_root")"
+resolved_outputs="$(realpath -e "$repo_root/outputs")"
+resolved_output_root="$(realpath -e "$output_root")"
 resolved_candidates="$(realpath -e "$candidate_root")"
-case "$resolved_candidates" in
-  "$resolved_repo"/outputs/Verify_Task3_AuxiliaryDropout_53.1/candidates) ;;
-  *)
-    echo "refusing cleanup outside the exact 53.1 candidate root: $resolved_candidates" >&2
-    exit 1
-    ;;
-esac
+expected_output_root="$resolved_outputs/Verify_Task3_AuxiliaryDropout_53.1"
+expected_candidates="$expected_output_root/candidates"
+if [[ "$resolved_output_root" != "$expected_output_root" ]] || \
+   [[ "$resolved_candidates" != "$expected_candidates" ]]; then
+  echo "refusing cleanup outside the exact resolved 53.1 output root: $resolved_candidates" >&2
+  exit 1
+fi
 
 for required in "$evidence" "$archive" "$portfolio" "$portfolio_audit"; do
   test -s "$required"
