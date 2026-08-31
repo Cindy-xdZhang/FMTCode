@@ -25,6 +25,7 @@ EXPECTED_EXPERIMENT = "mainExp_Task3_3D_8.1"
 EXPECTED_MODEL_COUNT = 40
 EXPECTED_DEPENDENCY_COUNT = 20
 MANIFEST_NAME = "raw_dependency_closure.json"
+CLEANUP_REPORT_NAME = "raw_dependency_cleanup.json"
 DEPENDENCY_DIR_NAME = "frozen_raw_dependencies"
 
 
@@ -303,15 +304,133 @@ def verify(config_path: str | Path) -> Path:
     return target
 
 
+def cleanup(config_path: str | Path) -> Path:
+    """Delete only the verified temporary dependency copies after final audit."""
+    spec, _, _ = _load_inputs(config_path)
+    output_root = Path(spec["output_root"]).resolve()
+    manifest_path = output_root / MANIFEST_NAME
+    report_path = output_root / CLEANUP_REPORT_NAME
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    dependency_root = Path(manifest["dependency_root"]).resolve()
+
+    summary_path = output_root / "summary.json"
+    per_run_path = output_root / "per_run.csv"
+    audit_path = output_root / "independent_audit.json"
+    for required in (summary_path, per_run_path, audit_path):
+        if not required.is_file():
+            raise RuntimeError(f"cannot clean before final evidence exists: {required}")
+    audit = json.loads(audit_path.read_text(encoding="utf-8"))
+    if (
+        audit.get("experiment") != EXPECTED_EXPERIMENT
+        or audit.get("status") != "passed"
+    ):
+        raise RuntimeError("cannot clean before the independent audit passes")
+    audit_hashes = audit.get("sha256", {})
+    if audit_hashes.get("summary") != _sha256(summary_path):
+        raise RuntimeError("summary changed after independent audit")
+    if audit_hashes.get("per_run_csv") != _sha256(per_run_path):
+        raise RuntimeError("per-run evidence changed after independent audit")
+
+    entries = list(manifest.get("entries", []))
+    if len(entries) != EXPECTED_DEPENDENCY_COUNT:
+        raise RuntimeError("Raw dependency cleanup entry count changed")
+    targets: list[tuple[Path, dict]] = []
+    for entry in entries:
+        target = Path(entry["frozen_path"]).resolve()
+        expected = (
+            dependency_root
+            / _safe_relative_path(str(entry["recorded_path"]))
+        ).resolve()
+        if target != expected:
+            raise RuntimeError(f"cleanup target mapping changed: {target}")
+        try:
+            target.relative_to(dependency_root)
+        except ValueError as error:
+            raise RuntimeError(f"cleanup target escaped dependency root: {target}") from error
+        source = Path(entry["source_path"]).resolve()
+        if source == target:
+            raise RuntimeError(f"cleanup target is the source checkpoint: {target}")
+        if not source.is_file() or _sha256(source) != entry["sha256"]:
+            raise RuntimeError(f"source dependency changed before cleanup: {source}")
+        targets.append((target, entry))
+
+    base_report = {
+        "schema": 1,
+        "experiment": EXPECTED_EXPERIMENT,
+        "cleanup_kind": "temporary_raw_dependency_copies_only",
+        "scientific_configuration_changed": False,
+        "training_runs": 0,
+        "manifest_sha256": _sha256(manifest_path),
+        "summary_sha256": _sha256(summary_path),
+        "per_run_csv_sha256": _sha256(per_run_path),
+        "independent_audit_sha256": _sha256(audit_path),
+        "dependency_root": str(dependency_root),
+        "deleted_checkpoint_count": len(targets),
+        "entries": [
+            {
+                "recorded_path": str(entry["recorded_path"]),
+                "deleted_path": str(target),
+                "source_path": str(entry["source_path"]),
+                "sha256": str(entry["sha256"]),
+            }
+            for target, entry in targets
+        ],
+    }
+    if report_path.exists():
+        existing = json.loads(report_path.read_text(encoding="utf-8"))
+        if existing.get("status") == "completed":
+            expected = dict(base_report, status="completed")
+            if existing != expected:
+                raise RuntimeError("Raw dependency cleanup report changed")
+            if any(target.exists() for target, _ in targets):
+                raise RuntimeError("completed cleanup still has checkpoint copies")
+            print(report_path)
+            return report_path
+        if existing != dict(base_report, status="started"):
+            raise RuntimeError("Raw dependency cleanup start record changed")
+    else:
+        temporary = report_path.with_suffix(".json.tmp")
+        temporary.write_text(
+            json.dumps(dict(base_report, status="started"), indent=2,
+                       sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        os.replace(temporary, report_path)
+
+    for target, entry in targets:
+        if target.exists():
+            if target.is_symlink() or not target.is_file():
+                raise RuntimeError(f"unsafe cleanup target type: {target}")
+            if _sha256(target) != entry["sha256"]:
+                raise RuntimeError(f"cleanup target changed: {target}")
+            target.unlink()
+        if target.exists():
+            raise RuntimeError(f"cleanup failed to delete: {target}")
+
+    temporary = report_path.with_suffix(".json.tmp")
+    temporary.write_text(
+        json.dumps(dict(base_report, status="completed"), indent=2,
+                   sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(temporary, report_path)
+    print(report_path)
+    return report_path
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True)
-    parser.add_argument("--mode", choices=("freeze", "verify"), required=True)
+    parser.add_argument(
+        "--mode", choices=("freeze", "verify", "cleanup"), required=True
+    )
     args = parser.parse_args()
     if args.mode == "freeze":
         freeze(args.config)
-    else:
+    elif args.mode == "verify":
         verify(args.config)
+    else:
+        cleanup(args.config)
 
 
 if __name__ == "__main__":

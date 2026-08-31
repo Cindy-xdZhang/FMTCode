@@ -2,9 +2,9 @@
 
 本页只合并已冻结 confirmation 结果，不重新选择任何 feature、VAE、checkpoint、
 cluster 映射或阈值。Task2/Task3 当前机器结果分别位于
-`outputs/mainExp_Task2_3D_5.2/` 和 `outputs/mainExp_Task3_3D_6.1/`。Task2
-冻结协议见 `docs/mainExp_Task2_3D_5.2.md`，Task3 anchored FMT 协议与哈希见
-`docs/mainExp_Task3_3D_6.1.md`；Task5 机器表位于
+`outputs/mainExp_Task2_3D_5.2/` 和 `outputs/mainExp_Task3_3D_8.1/`。Task2
+冻结协议见 `docs/mainExp_Task2_3D_5.2.md`；Task3 改进方法的两次独立空间确认见
+`docs/mainExp_Task3_3D_7.2.md` 与 `docs/mainExp_Task3_3D_8.1.md`；Task5 机器表位于
 `outputs/mainExp_Task5_3D_1.1_ibex_v100/outputs/mainExp_Task5_3D_1.1/final_confirmation/`。
 
 ## Task1：training-free FMT + KMeans
@@ -61,25 +61,35 @@ seed上的诊断，Task2-4.1 latent control 为 Raw/FMT `.4859/.6522`、增益`+
 
 | Flow | Raw-PCA F1 | Raw+FMT F1 | F1增益 | Raw-PCA AP | Raw+FMT AP | AP增益 |
 |---|---:|---:|---:|---:|---:|---:|
-| Channel observer | .1383±.0034 | .8407±.0042 | **+.7024±.0076** | .0865±.0037 | .9041±.0150 | **+.8176±.0113** |
-| Half-cylinder Re160 | .7189±.0097 | .8266±.0065 | **+.1077±.0161** | .7815±.0300 | .9318±.0039 | **+.1503±.0339** |
-| Half-cylinder Re640 | .6799±.0145 | .9006±.0044 | **+.2207±.0101** | .7518±.0095 | .9661±.0011 | **+.2143±.0084** |
-| Half-cylinder Re6400 | .5570±.0091 | .7975±.0021 | **+.2405±.0070** | .5807±.0117 | .8888±.0033 | **+.3081±.0150** |
-| Tangaroa | .7647±.0056 | .8471±.0048 | **+.0824±.0008** | .8273±.0048 | .9402±.0013 | **+.1129±.0035** |
-| Delta-wing resampled | .8565±.0012 | .9142±.0021 | **+.0577±.0008** | .9516±.0021 | .9767±.0003 | **+.0251±.0019** |
-| Delta-wing original LBM | .8539±.0015 | .9102±.0003 | **+.0563±.0018** | .9420±.0010 | .9767±.0002 | **+.0347±.0009** |
-| F-22 | .8049±.0138 | .9173±.0022 | **+.1124±.0116** | .8609±.0069 | .9764±.0000 | **+.1155±.0069** |
-| Boeing 747 | .7895±.0022 | .8676±.0021 | **+.0781±.0001** | .8658±.0015 | .9477±.0000 | **+.0819±.0015** |
-| Smoke buoyancy | .7844±.0072 | .8330±.0065 | **+.0485±.0006** | .8782±.0057 | .9381±.0018 | **+.0599±.0075** |
-| **Dataset macro** | **.6948** | **.8655** | **+.1707** | **.7526** | **.9447** | **+.1920** |
-| **Family-macro gain** | — | — | **+.1815** | — | — | **+.2060** |
+| Channel observer | .1182±.0065 | .8428±.0043 | **+.7246±.0109** | .0696±.0066 | .8847±.0095 | **+.8151±.0029** |
+| Half-cylinder Re160 | .7090±.0207 | .8672±.0118 | **+.1582±.0325** | .7827±.0007 | .9532±.0073 | **+.1704±.0066** |
+| Half-cylinder Re640 | .6739±.0005 | .8775±.0030 | **+.2036±.0035** | .7315±.0062 | .9490±.0054 | **+.2175±.0008** |
+| Half-cylinder Re6400 | .5365±.0122 | .7768±.0004 | **+.2403±.0126** | .5649±.0056 | .8787±.0008 | **+.3138±.0064** |
+| Tangaroa | .7494±.0102 | .8520±.0022 | **+.1026±.0079** | .7819±.0182 | .9305±.0061 | **+.1487±.0121** |
+| Delta-wing resampled | .8865±.0006 | .9269±.0005 | **+.0404±.0011** | .9616±.0005 | .9832±.0002 | **+.0216±.0006** |
+| Delta-wing original LBM | .8668±.0027 | .9031±.0021 | **+.0363±.0048** | .9491±.0010 | .9769±.0020 | **+.0278±.0010** |
+| F-22 | .7997±.0077 | .9218±.0019 | **+.1221±.0059** | .8812±.0030 | .9824±.0005 | **+.1011±.0025** |
+| Boeing 747 | .7623±.0029 | .8778±.0011 | **+.1155±.0040** | .8240±.0172 | .9440±.0004 | **+.1200±.0168** |
+| Smoke buoyancy | .8107±.0032 | .8676±.0028 | **+.0569±.0060** | .8926±.0035 | .9558±.0014 | **+.0631±.0049** |
+| **Dataset macro** | **.6913** | **.8714** | **+.1800** | **.7439** | **.9438** | **+.1999** |
+| **Family-macro gain** | — | — | **+.1944** | — | — | **+.2152** |
 
-这是 `mainExp_Task3_3D_6.1` 的第四空间 primitive population 独立确认：22.1
-选出的 feature、模型、checkpoint、阈值、residual scale、Raw normalization 和
-train-only Raw-PCA transform 均在生成确认数据前冻结；6.1 不训练、不调参。F1 与
-AP 均在 10/10 条目、7/7 family 为正；dataset-macro F1 增益 `+.1707` 同时达到
-预注册主目标 `+.15` 和扩展目标 `+.17`。最小条目 F1 增益为 Smoke 的 `+.0485`，
-因此宏平均结论并非只由 Channel 的大增益产生。
+这是 `mainExp_Task3_3D_8.1` 的第七空间 primitive population 独立确认。逐
+physical-family 的 feature 与训练配方只在 development 数据上选择；40个模型、
+阈值、residual scale、Raw normalization 和 train-only Raw-PCA transform 均在生成
+确认数据前冻结。确认阶段不训练、不调参。F1 在10/10条目、7/7 family和2/2 paired
+seeds均为正；最小条目增益为 Delta-wing original LBM 的`+.0363`，因此宏平均结论
+并非只由 Channel 的大增益产生。
+
+| 独立空间确认 | 方法状态 | Raw-PCA/FMT F1 | F1增益 | Raw-PCA/FMT AP | AP增益 |
+|---|---|---:|---:|---:|---:|
+| mainExp_Task3_3D_6.1，第四population | 早期 anchored FMT | .6948/.8655 | +.1707 | .7526/.9447 | +.1920 |
+| mainExp_Task3_3D_7.2，第六population | 改进后的冻结portfolio | .6858/.8611 | +.1752 | .7362/.9377 | +.2015 |
+| mainExp_Task3_3D_8.1，第七population | 同类扩展portfolio；当前主表 | .6913/.8714 | +.1800 | .7439/.9438 | +.1999 |
+
+同一改进方法的7.2与8.1在两套未见空间population上的平均F1增益为`+.1776`，
+平均AP增益为`+.2007`；两次都超过预注册`+.15`目标。6.1使用较早方法，作为独立
+旁证保留，不与7.2/8.1合并成同一方法的平均值。
 
 ## Task5：不同尺度监督 IVD 二分类
 
@@ -113,14 +123,13 @@ Re160 未超过 strongest Raw，Re160/Smoke 未超过 fixed-scale FMT transfer�
 
 ## 结果来源
 
-`Verify_Task23CoreGain_1.1` 使用 `Audit_Task23_CoreGain.py` 直接读取两项主实验的
-逐次 CSV，而不调用原汇总程序。它重新检查配对完整性并重算 dataset、family 和 seed
-平均：Task2 为 100 条 selected-recipe 记录，Task3 为 40 条冻结推理记录；两项均覆盖
-10 个数据条目和 7 个 physical family。重算得到 Task2/Task3 F1 增益分别为
-`+.2391553/+.1706578`，最小值仍为 `+.1706578 > +.15`；与正式汇总的最大数值差为
-`2.50e-16`。审计 JSON SHA-256 为 `909ee699…b4d1`。
+`Verify_Task23CoreGain_1.1` 使用 `Audit_Task23_CoreGain.py` 独立重算Task2逐次CSV，
+得到F1增益`+.2391553`。Task3-7.2与Task3-8.1各有不导入正式汇总代码的独立审计器，
+均从40条冻结推理记录重建dataset、family和seed宏平均；与正式汇总的最大差分别为
+`2.78e-17`和`1.11e-16`。8.1的per-run、summary和audit SHA-256分别为
+`78d19ec3…bc52`、`0066299c…07bd`和`eabc384a…edb3`。
 
 - Task1：`mainExp_Task1_3D_2.1` + `mainExp_Task1_3D_2.2_newflows`。
 - Task2：`mainExp_Task2_3D_5.2`（Ibex GTX 1080 Ti/P100；第五空间population，10条目×4切片×2 recipes×5 paired seeds；200/200唯一结果；summary/per-run SHA-256 `739b48ea…c3095`/`20d9de15…7111f`）。
-- Task3：`mainExp_Task3_3D_6.1`（Ibex GTX 1080 Ti/P100 生成第四空间population，CPU冻结推理；10条目×2 paired seeds×2 arms；summary SHA-256 `f46a307a…fb756`，`per_run.csv` SHA-256 `bc5a61b9…ef591`）。
+- Task3：当前主表`mainExp_Task3_3D_8.1`（Ibex混合GPU生成第七空间population，CPU冻结推理；10条目×2 paired seeds×2 arms；summary SHA-256 `0066299c…07bd`，`per_run.csv` SHA-256 `78d19ec3…bc52`）；同方法独立复现`mainExp_Task3_3D_7.2`的summary/per-run SHA-256为`e89751f9…5248`/`7c1ecc37…3901`。
 - Task5：`mainExp_Task5_3D_1.1`（Ibex V100；10条目×5训练seed×4 held-out confirmation时间片×9个未见尺度tuple；归档SHA-256 `6053ed15…c58ec`）。

@@ -110,6 +110,35 @@ class Task3RawDependencyClosureTests(unittest.TestCase):
                 for entry in payload["entries"]
             ), 40)
 
+            (output / "per_run.csv").write_text("dataset,f1\n", encoding="utf-8")
+            (output / "summary.json").write_text("{}\n", encoding="utf-8")
+            audit = {
+                "experiment": closure.EXPECTED_EXPERIMENT,
+                "status": "passed",
+                "sha256": {
+                    "per_run_csv": closure._sha256(output / "per_run.csv"),
+                    "summary": closure._sha256(output / "summary.json"),
+                },
+            }
+            (output / "independent_audit.json").write_text(
+                json.dumps(audit), encoding="utf-8"
+            )
+            cleanup_report = closure.cleanup(config)
+            cleanup_payload = json.loads(
+                cleanup_report.read_text(encoding="utf-8")
+            )
+            self.assertEqual(cleanup_payload["status"], "completed")
+            self.assertEqual(cleanup_payload["deleted_checkpoint_count"], 20)
+            self.assertTrue(all(
+                not Path(entry["deleted_path"]).exists()
+                for entry in cleanup_payload["entries"]
+            ))
+            self.assertTrue(all(
+                Path(entry["source_path"]).is_file()
+                for entry in cleanup_payload["entries"]
+            ))
+            self.assertEqual(closure.cleanup(config), cleanup_report)
+
 
 if __name__ == "__main__":
     unittest.main()
