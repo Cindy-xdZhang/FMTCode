@@ -1068,22 +1068,35 @@ def _auxiliary_learning_rate_multiplier(training=None):
     return value
 
 
+def _auxiliary_weight_decay_multiplier(training=None):
+    """Validate the paired weight-decay multiplier for the auxiliary projection."""
+    training = {} if training is None else dict(training)
+    value = float(training.get("auxiliary_weight_decay_multiplier", 1.0))
+    if not np.isfinite(value) or value < 0.0:
+        raise ValueError(
+            "auxiliary_weight_decay_multiplier must be finite and non-negative"
+        )
+    return value
+
+
 def _optimizer_parameter_spec(model, training):
     """Return an exact control list or paired projection/head parameter groups.
 
-    Multiplier one deliberately returns the historical single flat parameter
-    list.  Non-control cells place only the trainable auxiliary projection in
-    a second optimizer group; all downstream residual parameters retain the
-    base learning rate.  The frozen Raw backbone is excluded in both cases.
+    Unit learning-rate and weight-decay multipliers deliberately return the
+    historical single flat parameter list. Non-control cells place only the
+    trainable auxiliary projection in a second optimizer group; all downstream
+    residual parameters retain the base optimizer values. The frozen Raw
+    backbone is excluded in both cases.
     """
     multiplier = _auxiliary_learning_rate_multiplier(training)
+    weight_decay_multiplier = _auxiliary_weight_decay_multiplier(training)
     trainable = [
         parameter for parameter in model.parameters()
         if parameter.requires_grad
     ]
     if not trainable:
         raise ValueError("residual model has no trainable parameters")
-    if multiplier == 1.0:
+    if multiplier == 1.0 and weight_decay_multiplier == 1.0:
         return trainable, multiplier, 0
 
     auxiliary = [
@@ -1097,7 +1110,7 @@ def _optimizer_parameter_spec(model, training):
     ]
     if not auxiliary or not downstream:
         raise ValueError(
-            "auxiliary learning-rate groups require both projection and "
+            "auxiliary optimizer groups require both projection and "
             "downstream trainable parameters"
         )
     if len(auxiliary_ids) != len(auxiliary):
@@ -1105,9 +1118,16 @@ def _optimizer_parameter_spec(model, training):
     if len(downstream) + len(auxiliary) != len(trainable):
         raise RuntimeError("optimizer parameter groups are not exhaustive")
     auxiliary_rate = float(training["learning_rate"]) * multiplier
+    auxiliary_weight_decay = (
+        float(training["weight_decay"]) * weight_decay_multiplier
+    )
     return [
         {"params": downstream},
-        {"params": auxiliary, "lr": auxiliary_rate},
+        {
+            "params": auxiliary,
+            "lr": auxiliary_rate,
+            "weight_decay": auxiliary_weight_decay,
+        },
     ], multiplier, 1
 
 
@@ -1244,6 +1264,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         auxiliary_learning_rate_multiplier,
         auxiliary_optimizer_group_index,
     ) = _optimizer_parameter_spec(model, spec["training"])
+    auxiliary_weight_decay_multiplier = _auxiliary_weight_decay_multiplier(
+        spec["training"]
+    )
     optimizer, optimizer_name, optimizer_amsgrad = _build_optimizer(
         spec["training"], optimizer_parameters,
     )
@@ -1404,6 +1427,11 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         current_auxiliary_learning_rate = float(
             optimizer.param_groups[auxiliary_optimizer_group_index]["lr"]
         )
+        current_auxiliary_weight_decay = float(
+            optimizer.param_groups[auxiliary_optimizer_group_index][
+                "weight_decay"
+            ]
+        )
         if scheduler is not None:
             scheduler.step()
         evaluation_parameters = (
@@ -1452,6 +1480,10 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             "auxiliary_learning_rate": current_auxiliary_learning_rate,
             "auxiliary_learning_rate_multiplier": (
                 auxiliary_learning_rate_multiplier
+            ),
+            "auxiliary_weight_decay": current_auxiliary_weight_decay,
+            "auxiliary_weight_decay_multiplier": (
+                auxiliary_weight_decay_multiplier
             ),
             "training_alpha": training_alpha,
             "gradient_clip_norm": (
@@ -1521,6 +1553,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "optimizer_epsilon": optimizer_epsilon,
         "auxiliary_learning_rate_multiplier": (
             auxiliary_learning_rate_multiplier
+        ),
+        "auxiliary_weight_decay_multiplier": (
+            auxiliary_weight_decay_multiplier
         ),
         "scheduler": scheduler_name,
         "warmup_epochs": warmup_epochs,
@@ -1617,6 +1652,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         ),
         "training_auxiliary_learning_rate_multiplier": (
             auxiliary_learning_rate_multiplier
+        ),
+        "training_auxiliary_weight_decay_multiplier": (
+            auxiliary_weight_decay_multiplier
         ),
         "training_scheduler": scheduler_name,
         "training_warmup_epochs": warmup_epochs,

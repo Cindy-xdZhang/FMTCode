@@ -1,0 +1,60 @@
+experiment: Verify_Task3_AuxiliaryWeightDecay_57.1
+output_root: outputs/Verify_Task3_AuxiliaryWeightDecay_57.1
+task: Task3
+
+# Development-only sequential optimizer search. The audited 56.1 portfolio
+# supplies one frozen recipe per physical family. Only the weight decay of the
+# trainable auxiliary projection is multiplied; the downstream residual head
+# retains the source recipe's weight decay. Both paired arms use the same cell.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  portfolio:
+    kind: optimization
+    selection: outputs/Verify_Task3_AuxiliaryLearningRatePortfolio_56.1/portfolio_selection.json
+    expected_experiment: Verify_Task3_AuxiliaryLearningRatePortfolio_56.1
+
+# Log-spaced coverage around the exact source-recipe multiplier-one control.
+# c00 has no local override and therefore reproduces the 56.1 family recipe.
+optimization_candidates:
+  - {id: c00_control_auxwd1, sources: [portfolio]}
+  - {id: c01_auxwd0, sources: [portfolio], training: {auxiliary_weight_decay_multiplier: 0.0}}
+  - {id: c02_auxwd001, sources: [portfolio], training: {auxiliary_weight_decay_multiplier: 0.01}}
+  - {id: c03_auxwd005, sources: [portfolio], training: {auxiliary_weight_decay_multiplier: 0.05}}
+  - {id: c04_auxwd010, sources: [portfolio], training: {auxiliary_weight_decay_multiplier: 0.10}}
+  - {id: c05_auxwd025, sources: [portfolio], training: {auxiliary_weight_decay_multiplier: 0.25}}
+  - {id: c06_auxwd050, sources: [portfolio], training: {auxiliary_weight_decay_multiplier: 0.50}}
+  - {id: c07_auxwd200, sources: [portfolio], training: {auxiliary_weight_decay_multiplier: 2.0}}
+  - {id: c08_auxwd400, sources: [portfolio], training: {auxiliary_weight_decay_multiplier: 4.0}}
+  - {id: c09_auxwd1000, sources: [portfolio], training: {auxiliary_weight_decay_multiplier: 10.0}}
+  - {id: c10_auxwd10000, sources: [portfolio], training: {auxiliary_weight_decay_multiplier: 100.0}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: c00_control_auxwd1
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.207
+  target_absolute_fmt_f1: 0.893
+  confirmation_opened: false
