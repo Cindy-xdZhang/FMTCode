@@ -13,6 +13,13 @@ import yaml
 from Search_Task3_FMTResidual_3D import _read_csv
 
 
+EXPERIMENT = "Verify_Task3_AuxiliaryLearningRatePortfolio_56.1"
+CURRENT_SOURCE_NAME = "current_portfolio"
+AUXILIARY_SOURCE_NAME = "auxiliary_learning_rate"
+AUXILIARY_ARCHIVE_COUNT = 540
+CURRENT_SOURCE_LABEL = "54.1"
+AUXILIARY_SOURCE_LABEL = "55.1"
+PORTFOLIO_LABEL = "56.1"
 ARMS = ("fmt", "raw_pca")
 MACRO_FIELDS = {
     "development_dataset_macro_f1_gain_vs_raw_pca": "f1_gain",
@@ -89,36 +96,44 @@ def _source_config(name: str, section: dict) -> tuple[Path, Path, dict, dict]:
 
 
 def _current_source(section: dict) -> dict:
-    root, config, overlay, paths = _source_config("current_portfolio", section)
+    root, config, overlay, paths = _source_config(CURRENT_SOURCE_NAME, section)
     selection = _json(paths["selection"])
     audit = _json(paths["audit"])
     if selection.get("experiment") != overlay["experiment"] or bool(
         selection.get("confirmation_opened", True)
     ):
-        raise RuntimeError("54.1 source selection identity changed")
+        raise RuntimeError(
+            f"{CURRENT_SOURCE_LABEL} source selection identity changed"
+        )
     if audit.get("status") != "passed" or not audit.get("all_frozen_hashes_verified"):
-        raise RuntimeError("54.1 source audit failed")
+        raise RuntimeError(f"{CURRENT_SOURCE_LABEL} source audit failed")
     if audit["input_sha256"].get("config") != _sha256(config):
-        raise RuntimeError("54.1 audit config hash differs")
+        raise RuntimeError(f"{CURRENT_SOURCE_LABEL} audit config hash differs")
     if audit["input_sha256"].get("portfolio_selection") != _sha256(paths["selection"]):
-        raise RuntimeError("54.1 audit selection hash differs")
+        raise RuntimeError(
+            f"{CURRENT_SOURCE_LABEL} audit selection hash differs"
+        )
     frozen_root = paths["frozen_root"].resolve()
     model_map = {}
     for model in selection["models"]:
         key = (str(model["dataset"]), int(model["seed"]), str(model["source"]))
         if key in model_map:
-            raise RuntimeError(f"duplicate 54.1 model {key}")
+            raise RuntimeError(f"duplicate {CURRENT_SOURCE_LABEL} model {key}")
         for field in ("result", "checkpoint"):
             path = Path(model[field]).resolve()
             try:
                 path.relative_to(frozen_root)
             except ValueError as error:
-                raise RuntimeError(f"54.1 source {field} escaped frozen root") from error
+                raise RuntimeError(
+                    f"{CURRENT_SOURCE_LABEL} source {field} escaped frozen root"
+                ) from error
             if not path.is_file() or _sha256(path) != str(model[f"{field}_sha256"]):
-                raise RuntimeError(f"54.1 source {field} changed: {key}")
+                raise RuntimeError(
+                    f"{CURRENT_SOURCE_LABEL} source {field} changed: {key}"
+                )
         model_map[key] = dict(model)
     if len(model_map) != 40:
-        raise RuntimeError("54.1 model set is incomplete")
+        raise RuntimeError(f"{CURRENT_SOURCE_LABEL} model set is incomplete")
     return {
         "root": root, "overlay": overlay, "selection": selection,
         "models": model_map,
@@ -131,7 +146,7 @@ def _current_source(section: dict) -> dict:
 
 def _auxiliary_source(section: dict) -> dict:
     root, config, overlay, paths = _source_config(
-        "auxiliary_learning_rate", section
+        AUXILIARY_SOURCE_NAME, section
     )
     preflight = _json(paths["preflight"])
     selection = _json(paths["selection"])
@@ -142,15 +157,19 @@ def _auxiliary_source(section: dict) -> dict:
         str(payload.get("experiment")) != expected_experiment
         for payload in (preflight, selection)
     ):
-        raise RuntimeError("55.1 source selection identity changed")
+        raise RuntimeError(
+            f"{AUXILIARY_SOURCE_LABEL} source selection identity changed"
+        )
     if bool(preflight.get("confirmation_opened", True)) or bool(
         selection.get("confirmation_opened", True)
     ):
-        raise RuntimeError("55.1 source opened confirmation")
+        raise RuntimeError(
+            f"{AUXILIARY_SOURCE_LABEL} source opened confirmation"
+        )
     if audit.get("status") != "passed" or not audit.get(
         "all_source_hashes_consistent"
     ):
-        raise RuntimeError("55.1 source audit failed")
+        raise RuntimeError(f"{AUXILIARY_SOURCE_LABEL} source audit failed")
     input_hashes = audit["input_sha256"]
     required = {
         "optimization_selection": _sha256(paths["selection"]),
@@ -158,13 +177,15 @@ def _auxiliary_source(section: dict) -> dict:
         "per_run_csv_archive": _sha256(paths["archive"]),
     }
     if any(str(input_hashes.get(key)) != value for key, value in required.items()):
-        raise RuntimeError("55.1 source audit hashes differ")
+        raise RuntimeError(
+            f"{AUXILIARY_SOURCE_LABEL} source audit hashes differ"
+        )
     if evidence.get("status") != "passed" or int(
         evidence.get("archived_per_run_csv", -1)
-    ) != 540:
-        raise RuntimeError("55.1 evidence is incomplete")
+    ) != AUXILIARY_ARCHIVE_COUNT:
+        raise RuntimeError(f"{AUXILIARY_SOURCE_LABEL} evidence is incomplete")
     if evidence.get("stable_archive_sha256") != _sha256(paths["archive"]):
-        raise RuntimeError("55.1 archive hash differs")
+        raise RuntimeError(f"{AUXILIARY_SOURCE_LABEL} archive hash differs")
     return {
         "root": root, "overlay": overlay, "selection": selection,
         "candidate_root": paths["candidate_root"],
@@ -178,7 +199,7 @@ def _auxiliary_source(section: dict) -> dict:
 
 def _source_model(source_name: str, source: dict, row: dict,
                   family: str, dataset: str, seed: int, arm: str) -> dict:
-    if source_name == "current_portfolio":
+    if source_name == CURRENT_SOURCE_NAME:
         return source["models"][(dataset, seed, arm)]
     candidate = str(row["optimization_id"])
     result_path = (
@@ -187,7 +208,9 @@ def _source_model(source_name: str, source: dict, row: dict,
     )
     rows = _read_csv(result_path)
     if len(rows) != 1:
-        raise RuntimeError(f"55.1 missing source result {result_path}")
+        raise RuntimeError(
+            f"{AUXILIARY_SOURCE_LABEL} missing source result {result_path}"
+        )
     result = rows[0]
     expected_variant = "raw_fmt_residual" if arm == "fmt" else "raw_pca_residual"
     expected_fields = {
@@ -197,14 +220,18 @@ def _source_model(source_name: str, source: dict, row: dict,
     }
     for field, expected in expected_fields.items():
         if str(result.get(field, "")).lower() != str(expected).lower():
-            raise RuntimeError(f"55.1 source result changed: {field}")
+            raise RuntimeError(
+                f"{AUXILIARY_SOURCE_LABEL} source result changed: {field}"
+            )
     checkpoint = Path(result["checkpoint"])
     if not checkpoint.is_absolute():
         checkpoint = source["root"] / checkpoint
     if not checkpoint.is_file() or checkpoint.resolve().parent != (
         result_path.parent / "checkpoints"
     ).resolve():
-        raise RuntimeError(f"55.1 source checkpoint changed: {checkpoint}")
+        raise RuntimeError(
+            f"{AUXILIARY_SOURCE_LABEL} source checkpoint changed: {checkpoint}"
+        )
     return {
         "dataset": dataset, "seed": seed, "source": arm,
         "physical_family": family,
@@ -220,21 +247,21 @@ def _source_model(source_name: str, source: dict, row: dict,
 
 def audit(config_path: Path, artifact_dir: Path, output_path: Path) -> dict:
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    if config.get("experiment") != "Verify_Task3_AuxiliaryLearningRatePortfolio_56.1":
-        raise RuntimeError("56.1 experiment identity changed")
+    if config.get("experiment") != EXPERIMENT:
+        raise RuntimeError(f"{EXPERIMENT} experiment identity changed")
     if bool(config.get("confirmation_opened", True)):
-        raise RuntimeError("56.1 opened confirmation")
-    current = _current_source(config["sources"]["current_portfolio"])
-    auxiliary = _auxiliary_source(config["sources"]["auxiliary_learning_rate"])
-    sources = {"current_portfolio": current, "auxiliary_learning_rate": auxiliary}
+        raise RuntimeError(f"{EXPERIMENT} opened confirmation")
+    current = _current_source(config["sources"][CURRENT_SOURCE_NAME])
+    auxiliary = _auxiliary_source(config["sources"][AUXILIARY_SOURCE_NAME])
+    sources = {CURRENT_SOURCE_NAME: current, AUXILIARY_SOURCE_NAME: auxiliary}
     metrics = [
         str(config["selection"]["primary_metric"]),
         *[str(value) for value in config["selection"]["tie_breakers"]],
     ]
     maps = {name: _family_map(source["selection"]) for name, source in sources.items()}
-    reference = maps["current_portfolio"]
-    if maps["auxiliary_learning_rate"] != reference:
-        raise RuntimeError("56.1 source family maps differ")
+    reference = maps[CURRENT_SOURCE_NAME]
+    if maps[AUXILIARY_SOURCE_NAME] != reference:
+        raise RuntimeError(f"{EXPERIMENT} source family maps differ")
 
     winners = {}
     expected_details = {}
@@ -261,11 +288,11 @@ def audit(config_path: Path, artifact_dir: Path, output_path: Path) -> dict:
     portfolio_path = artifact_dir / "portfolio_selection.json"
     portfolio = _json(portfolio_path)
     if portfolio.get("config_sha256") != _sha256(config_path):
-        raise RuntimeError("56.1 portfolio/config hash mismatch")
+        raise RuntimeError(f"{EXPERIMENT} portfolio/config hash mismatch")
     if portfolio.get("source_artifact_sha256") != {
         name: source["hashes"] for name, source in sources.items()
     }:
-        raise RuntimeError("56.1 source artifact hashes differ")
+        raise RuntimeError(f"{EXPERIMENT} source artifact hashes differ")
 
     maximum_difference = 0.0
     reported_primary = portfolio["primary_by_group"]
@@ -285,7 +312,7 @@ def audit(config_path: Path, artifact_dir: Path, output_path: Path) -> dict:
         str(row["dataset"]): row for row in portfolio["dataset_details"]
     }
     if set(reported_details) != set(expected_details):
-        raise RuntimeError("56.1 dataset details differ")
+        raise RuntimeError(f"{EXPERIMENT} dataset details differ")
     for dataset, expected in expected_details.items():
         observed = reported_details[dataset]
         for route in MACRO_FIELDS.values():
@@ -307,7 +334,7 @@ def audit(config_path: Path, artifact_dir: Path, output_path: Path) -> dict:
     for model in portfolio["models"]:
         key = (str(model["dataset"]), int(model["seed"]), str(model["source"]))
         if key in model_map:
-            raise RuntimeError(f"duplicate 56.1 model {key}")
+            raise RuntimeError(f"duplicate {EXPERIMENT} model {key}")
         family = str(model["physical_family"])
         source_name, row = winners[family]
         if model.get("portfolio_source") != source_name:
@@ -337,10 +364,10 @@ def audit(config_path: Path, artifact_dir: Path, output_path: Path) -> dict:
         for seed in [40, 41] for arm in ARMS
     }
     if set(model_map) != expected_keys:
-        raise RuntimeError("56.1 frozen model keys differ")
+        raise RuntimeError(f"{EXPERIMENT} frozen model keys differ")
     actual_files = {path.resolve() for path in frozen_root.rglob("*") if path.is_file()}
     if actual_files != recorded_files or len(recorded_files) != 80:
-        raise RuntimeError("56.1 frozen artifact tree differs")
+        raise RuntimeError(f"{EXPERIMENT} frozen artifact tree differs")
 
     result = {
         "status": "passed" if maximum_difference <= 1e-12 else "failed",
