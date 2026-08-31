@@ -52,25 +52,26 @@ a negative result.
 - `tests/test_task3_auxiliary_dropout_53_1.py`
 - `ibex_bash/verify_task3_auxiliary_dropout_53.1_*.sh`
 
-## Status
+## Final result
 
-Implementation is complete. Local Python compilation and 56 directly related
-`unittest` contracts pass. The full local preflight also passes and records ten
-datasets, eleven candidates, three paired seeds, two arms, 110 array mappings,
-660 trainings, all capacity guards, and closed confirmation. Its manifest
-SHA-256 is `2a17ac826b302f616ae04e7f2840f1e344eef77c8bd781147b06521643e43ad8`.
-The three Slurm files are LF-encoded; their local and remote SHA-256 values
-match exactly. Ibex preflight job `51069690` completed with exit code 0 and an
-empty stderr, producing a manifest with SHA-256
-`bc4b60c644559be1b65208f55c1e5c4ae777652cab1a7eaf502903fed6cf8bc2`.
-GPU array `51069691` and selector `51069692` are deployed. The array is held by
-`afterany:51060469`, so it starts only after the already frozen 7.2 independent
-confirmation chain reaches a terminal state; the selector requires every
-array child to succeed. Evidence job `51072617` is registered with strict
-`afterok:51069692`. It requires exactly 660 per-run CSV files and 660 temporary
-checkpoints, verifies a stable archive hash over 30 seconds, excludes model
-files from the archive, and retains all checkpoints for any downstream use.
-The local and remote evidence-script SHA-256 is
-`e26b584b209b82b7b7334fad717347466a8736bba9c9d186c6c742a4f1fbdcc1`, and
-the remote script passes `bash -n`. No 53.1 performance result has been
-produced or read.
+Jobs `51069690`, `51069691`, `51069692`, and `51072617` all completed with
+exit code zero. The array produced all 660 paired trainings; selector and
+evidence stderr were empty. The stable per-run archive contains 660 CSV files,
+no model file, and has SHA-256
+`92dadd082eaac7433bb4c27b0d5d0c6b67e4143e53725d833a6ee317fe62f75e`.
+The selection and leaderboard hashes are `9fddfe44…d3ce` and
+`0ea3afc0…313`.
+
+`Audit_Task3_ParameterSearch.py` independently reconstructed all 77
+family-candidate rows and the seven family winners directly from the archive.
+Its maximum difference from the selector was `1.11e-16`; all source hashes and
+paired parameter counts agree. Dataset-macro Raw-PCA/FMT F1 is
+`0.69642/0.88775` (gain `+0.19133`), and Average Precision is
+`0.73957/0.94615` (gain `+0.20658`). All ten datasets have positive F1 gain;
+the worst is `+0.05409`.
+
+The exact no-dropout control has F1 `0.69738/0.88712` (gain `+0.18975`).
+Family-specific dropout therefore improves absolute FMT F1 by only `+0.00062`
+and paired gain by `+0.00158`. The registered `+0.20` F1-gain and `0.893`
+absolute-FMT targets both fail. The result is valid development evidence but
+does not support auxiliary dropout as the next main improvement.

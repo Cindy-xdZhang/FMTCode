@@ -1,0 +1,43 @@
+experiment: Verify_Task3_RawDependencyRebuild_8.1
+task: Task3
+
+# Infrastructure-only recovery for mainExp_Task3_3D_8.1.  The confirmation
+# shards all failed before writing metrics because the frozen residual models
+# referenced Raw checkpoints that had already been cleaned.  Rebuilding is
+# accepted only when two independent V100 runs agree tensor-for-tensor and
+# reproduce every preserved 3.2 validation metric to the registered tolerance.
+source_repo_root: /home/zhanx0o/FMT_Task12_3D_20260823
+target_repo_root: /home/zhanx0o/FMT_Task3_ExtendedTuned_8_1
+source_training_script: Verify_Task3_FMTClassifier.py
+source_training_script_sha256: e51366db5ded8ac66533c4844af4f91cde5f6c642af4addf29d4b17742067e9c
+source_model_module: FMT_Utils/PathlineClassifier_3D.py
+source_model_module_sha256: d9aa1154298d8027e9fc7534f54c0a3e3199f38500c4e7b5f9c36d802440c072
+
+target_confirmation_config: config/mainExp_Task3_3D_8.1.yaml
+target_output_root: outputs/mainExp_Task3_3D_8.1
+frozen_recipe_manifest: outputs/mainExp_Task3_3D_8.1/frozen_recipe_manifest.json
+rebuild_root: outputs/mainExp_Task3_3D_8.1/raw_dependency_rebuild
+replicas: [a, b]
+paired_seeds: [40, 41]
+variants: [raw]
+metric_tolerance: 1.0e-12
+
+groups:
+  old8:
+    source_config: config/mainExp_Task3_3D_3.2_global_ivd_baselines_old8.yaml
+    source_config_sha256: 53a06c6c4ed3d212edb163c0f15edb0e2340f4aa63b353f6745593dc4e93da36
+    reference_per_run: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/per_run.csv
+    reference_per_run_sha256: 3ce3314590f50c1a85fda44bdb9dbd811be7f43a1a2437fb19ef3cee835fe63d
+    target_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400, tangaroa,
+               deltaWing_resampled, deltaWing_LBM, f22raptor, channel]
+  new2:
+    source_config: config/mainExp_Task3_3D_3.2_global_ivd_baselines_new2.yaml
+    source_config_sha256: 157608b00f2eaa24afd91e26023fb5ce69dc5e2034590f6c78c9ed62fabef000
+    reference_per_run: outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/baselines/per_run.csv
+    reference_per_run_sha256: 089b12aaf7f261ce08c89a77cb142ebf154c8c76b8111384b9fc534a49487bc7
+    target_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/baselines/checkpoints
+    datasets: [boeing747, smokeBuoyancy]
+
+confirmation_metrics_opened: false
+confirmation_hyperparameters_changed: false

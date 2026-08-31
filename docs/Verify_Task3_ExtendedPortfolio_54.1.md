@@ -41,14 +41,22 @@ its own zero-tolerance absolute-FMT F1 and Average Precision guard.
 - `tests/test_task3_extended_portfolio_54_1.py`
 - `ibex_bash/verify_task3_extended_portfolio_54.1_*.sh`
 
-## Deployment status
+## Final development result
 
-Implementation commit `71313b0` and immutable deployment archive SHA-256
-`6f3fdc02d9762460991a600a5057270a533dd21e700d57b843f32d193ec65f13`
-are deployed at `/home/zhanx0o/FMT_Task3_ExtendedPortfolio_54_1`. Seven tests,
-Python compilation, all shell syntax checks, and static preflight pass.
-Source-identity job `51074578` completed with exit code zero and report SHA-256
-`890fac3110e21a46b32f4aae57c2a41f57b399f2b20d1b1f8f7d3a6ad88f38e9`;
-it records `performance_artifacts_read=false`. Selector `51074606` waits for
-the completed 53.1 selector and evidence job, and independent audit `51074616`
-waits for 54.1. No 54.1 performance result exists yet.
+Source gate `51074578`, selector `51074606`, and independent audit `51074616`
+all completed with exit code zero and empty stderr. The portfolio selection
+SHA-256 is `9dee26470e959b6c47d5c27140bd305c2682b6a9ee67d5c589358853a5c91428`.
+The independent auditor rebuilt all family choices, verified 80 frozen files
+covering 40 models and 40 results, and differed from the selector by at most
+`2.22e-16`.
+
+Development dataset-macro Raw-PCA/FMT F1 is `0.68470/0.89022`, giving
+`+0.20552`; Average Precision is `0.72858/0.94872`, giving `+0.22014`. All ten
+datasets have positive F1 gain. Boeing and Smoke use the 48.1 full-stack
+source, Tangaroa uses the 45.1 head/alpha/clip source, and the remaining four
+families use the 44.1 safe-factor source. No family selects 53.1 auxiliary
+dropout.
+
+The F1-gain target is reached, but the absolute FMT F1 target is not
+(`0.89022 < 0.893`), so `joint_target_reached=false`. This remains development
+evidence and cannot replace the independent 8.1 spatial confirmation.

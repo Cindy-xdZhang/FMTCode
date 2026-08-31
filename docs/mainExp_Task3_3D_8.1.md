@@ -62,13 +62,26 @@ The phase differs from all six previously declared populations.
 - `ibex_bash/mainexp_task3_3d_8.1_*.sh`
 - `ibex_bash/verify_task3_extended_tuned_8.1_evidence.sh`
 
-## Deployment status
+## Current status and infrastructure repair
 
-Implementation commit `b122c2c` and immutable deployment archive SHA-256
-`2a8da0f0ff85103f0f24955ed4c949ed399b76e7e6705fb4f6722bf1b283fe70`
-are deployed at `/home/zhanx0o/FMT_Task3_ExtendedTuned_8_1`. Nine local and
-remote tests, Python compilation, all shell syntax checks, and static preflight
-pass. The verified chain is `51074813 -> 51074814 -> 51074821 -> 51074834 ->
-51074835 -> 51074841 -> 51074843 -> 51074853 -> 51074863`; it remains blocked
-on the successful 54.1 independent audit. No seventh-population cache, label,
-or performance result exists yet.
+Jobs `51074813` through `51074841` completed successfully: the 54.1 recipe was
+frozen before data generation, all ten seventh-population caches and both IVD
+label groups were generated, and evaluation preflight verified the frozen
+recipe and data hashes. Evaluation array `51074843` then failed in all ten
+children before loading the first dataset model. Every traceback reports the
+same missing dependency: a frozen residual checkpoint references a historical
+3.2 Raw checkpoint that an earlier cleanup removed. No confirmation shard,
+`per_run.csv`, `summary.json`, or metric was written. Jobs `51074853` and
+`51074863` therefore did not run. This is an infrastructure failure and has no
+scientific sign.
+
+`Verify_Task3_RawDependencyRebuild_8.1` repairs only this missing dependency.
+It freezes the original 3.2 training script, model module, source configs,
+caches, labels, and preserved validation tables by SHA-256. Two independent
+V100 runs rebuild only the 20 Raw models for seeds 40 and 41. Installation is
+allowed only if both state dictionaries are tensor-identical, all preserved
+validation metrics differ by at most `1e-12`, and the Raw normalization agrees
+exactly with all 40 frozen residual checkpoints. The repair reads no seventh-
+population label or performance metric and changes no recipe, threshold,
+feature, scale, or hyperparameter. If any gate fails, 8.1 remains failed and no
+confirmation evaluation is launched.
