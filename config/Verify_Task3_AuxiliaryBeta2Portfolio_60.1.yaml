@@ -1,0 +1,49 @@
+experiment: Verify_Task3_AuxiliaryBeta2Portfolio_60.1
+task: Task3
+output_root: outputs/Verify_Task3_AuxiliaryBeta2Portfolio_60.1
+confirmation_opened: false
+
+# Frozen before 59.1 produces any performance metric. This training-free stage
+# compares the independently audited 58.1 family portfolio with the
+# independently selected 59.1 auxiliary-projection beta2 winner.
+sources:
+  current_portfolio:
+    repo_root: /home/zhanx0o/FMT_Task3_AuxiliaryRegularizationPortfolio_58_1
+    expected_experiment: Verify_Task3_AuxiliaryRegularizationPortfolio_58.1
+    expected_config_canonical_sha256: 693284e55be18a175b24144ed4c00bed3410b39bc951689410d62f41e896db23
+    paths:
+      config: config/Verify_Task3_AuxiliaryRegularizationPortfolio_58.1.yaml
+      selection: outputs/Verify_Task3_AuxiliaryRegularizationPortfolio_58.1/portfolio_selection.json
+      audit: outputs/Verify_Task3_AuxiliaryRegularizationPortfolio_58.1/independent_audit.json
+      frozen_root: outputs/Verify_Task3_AuxiliaryRegularizationPortfolio_58.1/frozen_artifacts
+  auxiliary_beta2:
+    repo_root: /home/zhanx0o/FMT_Task3_AuxiliaryBeta2_59_1
+    expected_experiment: Verify_Task3_AuxiliaryBeta2_59.1
+    expected_config_canonical_sha256: 2579e0de5b7153773bb8d99a04b31834dff824202abe2ca892320e8a27ff6d6d
+    paths:
+      config: config/Verify_Task3_AuxiliaryBeta2_59.1.yaml
+      preflight: outputs/Verify_Task3_AuxiliaryBeta2_59.1/preflight_manifest.json
+      selection: outputs/Verify_Task3_AuxiliaryBeta2_59.1/optimization_selection.json
+      audit: outputs/Verify_Task3_AuxiliaryBeta2_59.1/independent_audit.json
+      evidence: outputs/Verify_Task3_AuxiliaryBeta2_59.1/evidence_archive.json
+      archive: outputs/Verify_Task3_AuxiliaryBeta2_59.1/per_run_csv.tar.gz
+      candidate_root: outputs/Verify_Task3_AuxiliaryBeta2_59.1/candidates
+
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+source_paired_seeds: [40, 41, 42]
+frozen_confirmation_seeds: [40, 41]
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  require_source_absolute_fmt_guard: true
+  target_dataset_macro_f1_gain: 0.208
+  target_absolute_fmt_f1: 0.893
