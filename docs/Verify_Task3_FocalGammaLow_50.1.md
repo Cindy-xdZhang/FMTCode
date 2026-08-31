@@ -70,3 +70,12 @@ results have not been read and confirmation remains closed. Full preflight
 `51056257` ran on `cn604-07` from `21:00:53` to `21:02:02`, completed with
 exit code 0 and empty stderr, and produced remote manifest SHA-256
 `a83e431a...f5c0`. The GPU array is eligible and waiting for Slurm priority.
+
+To avoid delaying independent audit until 52.1 has copied the selected models,
+no-delete evidence job `51072242` was submitted with strict
+`afterok:51056263`. It archives all 480 per-run CSV files, requires all 480
+temporary checkpoints both before and after the archive, excludes model files
+from the archive, and publishes stable SHA-256 values. It does not train or
+select a candidate. Local and remote script SHA-256 is
+`94a448d82d922938dc0b881bb7829c7718d1f03631d850a1c0552fdeb5d52e7f`;
+remote `bash -n` passed.

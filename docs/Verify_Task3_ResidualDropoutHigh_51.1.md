@@ -73,3 +73,11 @@ array -> selector -> archive. Preflight ran on `cn604-10` from 22:29:50 to
 It confirmed ten datasets, eight candidates, 80 mappings, 480 paired
 trainings, all capacity guards, and closed confirmation. The GPU array is
 eligible and waiting for priority; no performance result has been read.
+
+No-delete evidence job `51072260` has strict `afterok:51058835`. It will make
+the 480 per-run CSV files independently auditable immediately after selection,
+while requiring all 480 temporary checkpoints to remain available for 52.1
+and excluding every model file from the archive. It does not train or select a
+candidate. Local and remote script SHA-256 is
+`3fc03e2d30c2c4c3f47fbd0891bd391deec9ce8d48922f61b503c8d4e4b6e0dc`;
+remote `bash -n` passed.
