@@ -46,3 +46,11 @@ the content hash and paired parameter count of every frozen result and model.
 The synthetic five-source contract also proves that checkpoint tampering is
 rejected. The independent audit is a required gate before 7.2 may open its
 fresh spatial confirmation population.
+
+The auditor and evidence script are frozen in commit `287acba`. Their local
+and remote SHA-256 values are respectively
+`1fd484d5ff9bd6117760a76a349761a5544e1b5335115e28164154d93d750c22`
+and `6b569f489f13afa74bf7c0780b1599c1d4bfc58e35a6dab8039e45a2bec82721`;
+remote Python compilation and `bash -n` pass. Ibex evidence job `51073078`
+waits strictly for selector `51059320`. The 7.2 entry job now waits for both
+the selector and this independent audit.

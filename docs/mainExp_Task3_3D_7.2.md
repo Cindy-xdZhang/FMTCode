@@ -1,8 +1,8 @@
 # mainExp_Task3_3D_7.2
 
-> Status: **SUBMITTED; waiting for the five development selectors and
-> training-free 52.1 adaptive portfolio.** No sixth-population primitive, IVD
-> label, or performance metric exists.
+> Status: **SUBMITTED; waiting for the five development selectors, the
+> training-free 52.1 adaptive portfolio, and its independent audit.** No
+> sixth-population primitive, IVD label, or performance metric exists.
 
 ## Scientific question
 
@@ -55,7 +55,9 @@ entry remains held and unchanged; 7.2 does not reuse its phase.
 ## Execution boundary
 
 1. All five source selectors finish on exposed development data; 52.1 selects
-   one guarded recipe per family and copies all 40 evaluation artifacts.
+   one guarded recipe per family and copies all 40 evaluation artifacts. An
+   implementation-independent audit must reconstruct every family choice and
+   verify all 80 frozen files before this confirmation can start.
 2. Derive the phase-independent temporal-source manifest and run static
    preflight while sixth-population artifact counts are zero.
 3. Freeze the 52.1 selection SHA-256 plus all result/checkpoint hashes.
