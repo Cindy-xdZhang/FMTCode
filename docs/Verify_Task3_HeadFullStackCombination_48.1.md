@@ -75,3 +75,57 @@ confirmation before replacing the current Task3 paper result.
 The preflight, GPU array, and selector were submitted before any 39.1--47.1
 final metric was read. The later evidence job cannot change candidates,
 training, or selection and was added only to preserve auditable CSV evidence.
+
+## Final development result
+
+All 160 GPU children completed with exit code zero, producing all 960 declared
+paired trainings. Selector `51041339` completed in 11 seconds with empty
+stderr. The family-specific selected Raw-PCA/FMT dataset-macro F1 is
+`0.6861681/0.8901764`, hence the paired F1 gain is `+0.2040084`. Raw-PCA/FMT
+Average Precision is `0.7284376/0.9490412`, hence the Average Precision gain is
+`+0.2206036`. All 10 dataset entries have positive F1 gain; the worst entry is
+deltaWing-resampled at `+0.0538466`.
+
+The exact feature control has Raw-PCA/FMT F1 `0.6974124/0.8870755`, giving
+`+0.1896631`. Selection therefore raises absolute FMT F1 by `+0.0031009` and
+paired F1 gain by `+0.0143453`, while Raw-PCA F1 falls by `0.0112443`. This is
+not solely a weaker-Raw result because absolute FMT also improves. Relative to
+the earlier 38.1 Dropout winner, absolute FMT F1 rises from `0.8883567` to
+`0.8901764` and paired gain rises from `+0.1964790` to `+0.2040084`.
+
+The preregistered `+0.20` gain target is reached. The absolute FMT target
+`0.893` is missed by `0.0028236`, so the joint development target is not
+reached and confirmation remains closed at this stage. The selected recipes
+are:
+
+| Physical family | Selected combination |
+|---|---|
+| Boeing 747 | `u06_head_optimizer_stack` |
+| channel | `u10_head_all` |
+| delta wing | `u07_head_loss_regularization_stack` |
+| F-22 Raptor | `u09_head_all_non_scheduler` |
+| half-cylinder | `u11_head_all_without_alpha` |
+| Smoke Buoyancy | `u02_horizon` |
+| Tangaroa | `u05_head_alpha_clipping_dropout` |
+
+## Independent audit and retention
+
+Evidence job `51071147` completed with empty stderr. It archived 960/960
+per-run CSV files, retained all 960 temporary checkpoints for 52.1, and
+published archive SHA-256
+`aebbaa7a9f7dd31d4d543143c7f1bb63b34eded12b245da7c7ab918476f591c0`.
+The independent audit does not import the selector implementation. It rebuilt
+all seven family decisions from the archived CSV files, confirmed equal
+paired parameter counts and all source hashes, and matched the selector to a
+maximum absolute difference of `3.33e-16`. Its SHA-256 is
+`0ec09b9a2dd4f7cc81841d4e8dab5928e27d6e57da9d561a7d57675333d39c0e`.
+
+Final selector artifact SHA-256 values are:
+
+- selection: `5693e802d2ec7c74656b750be30c04a5fb4603e803f1e8eebca72fa3edbea983`;
+- leaderboard: `0660706b6340e94889e9676e69b2fc1f72a253f3b6e5f3c5fa31c1aa1d1cac2e`;
+- preflight manifest: `ab4b4de684e730798345bcb16fc807804a1eedc6caa50cc17dc1929021984e32`.
+
+This remains a development result. Its winner may enter the preregistered
+52.1 portfolio, but only the later fresh spatial-population confirmation can
+replace the current paper result.
