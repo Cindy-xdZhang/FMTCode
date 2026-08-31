@@ -10,7 +10,7 @@ sources:
   safe_factor:
     repo_root: /home/zhanx0o/FMT_Task3_SafeFactorCombination_44_1
     expected_experiment: Verify_Task3_SafeFactorCombination_44.1
-    expected_config_canonical_sha256: ab8032e5536cac5fe0f23456561ee1279c07977ea5694f4f03c1572a018a1713
+    expected_config_canonical_sha256: cb278708c88823b07443c8cbbdc3deaa25555c7cdab6316297dd253494abaa40
     paths:
       config: config/Verify_Task3_SafeFactorCombination_44.1.yaml
       preflight: outputs/Verify_Task3_SafeFactorCombination_44.1/preflight_manifest.json
@@ -18,7 +18,7 @@ sources:
   head_alpha_clip:
     repo_root: /home/zhanx0o/FMT_Task3_HeadAlphaClipCombination_45_1
     expected_experiment: Verify_Task3_HeadAlphaClipCombination_45.1
-    expected_config_canonical_sha256: 8b27378355505edbc1a2cadbe3388645d9b4f660ca7ce12d8c5bd3c8cc1cbbb2
+    expected_config_canonical_sha256: 5dc8535491f8b7edc0cc5458f1ed5c81c502739b8c16e8c77a04f1c02e136b6f
     paths:
       config: config/Verify_Task3_HeadAlphaClipCombination_45.1.yaml
       preflight: outputs/Verify_Task3_HeadAlphaClipCombination_45.1/preflight_manifest.json
@@ -26,7 +26,7 @@ sources:
   full_stack:
     repo_root: /home/zhanx0o/FMT_Task3_HeadFullStackCombination_48_1
     expected_experiment: Verify_Task3_HeadFullStackCombination_48.1
-    expected_config_canonical_sha256: a7508abdae343af1397166e28e22e82942231f0685fa0aed1b25bf2dc82f00c7
+    expected_config_canonical_sha256: 90c47bc6531e8a88d4b144b4d05d1e8070a8dad722dadfcb089e2d991fe32dd4
     paths:
       config: config/Verify_Task3_HeadFullStackCombination_48.1.yaml
       preflight: outputs/Verify_Task3_HeadFullStackCombination_48.1/preflight_manifest.json
@@ -34,7 +34,7 @@ sources:
   focal_gamma_low:
     repo_root: /home/zhanx0o/FMT_Task3_FocalGammaLow_50_1
     expected_experiment: Verify_Task3_FocalGammaLow_50.1
-    expected_config_canonical_sha256: a0b706e867dd923ec7ee5b0f56f8c84e1d88708b8565646371626ae634eb5a58
+    expected_config_canonical_sha256: e37d7be09fc3719ece7c34b790d4e3aeb28527ae869321c5f0dc9f1b0f047888
     paths:
       config: config/Verify_Task3_FocalGammaLow_50.1.yaml
       preflight: outputs/Verify_Task3_FocalGammaLow_50.1/preflight_manifest.json

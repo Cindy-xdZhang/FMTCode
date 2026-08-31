@@ -45,16 +45,16 @@ class AdaptivePortfolioTests(unittest.TestCase):
         }
         self.assertEqual(observed_hashes, {
             "safe_factor": (
-                "ab8032e5536cac5fe0f23456561ee1279c07977ea5694f4f03c1572a018a1713"
+                "cb278708c88823b07443c8cbbdc3deaa25555c7cdab6316297dd253494abaa40"
             ),
             "head_alpha_clip": (
-                "8b27378355505edbc1a2cadbe3388645d9b4f660ca7ce12d8c5bd3c8cc1cbbb2"
+                "5dc8535491f8b7edc0cc5458f1ed5c81c502739b8c16e8c77a04f1c02e136b6f"
             ),
             "full_stack": (
-                "a7508abdae343af1397166e28e22e82942231f0685fa0aed1b25bf2dc82f00c7"
+                "90c47bc6531e8a88d4b144b4d05d1e8070a8dad722dadfcb089e2d991fe32dd4"
             ),
             "focal_gamma_low": (
-                "a0b706e867dd923ec7ee5b0f56f8c84e1d88708b8565646371626ae634eb5a58"
+                "e37d7be09fc3719ece7c34b790d4e3aeb28527ae869321c5f0dc9f1b0f047888"
             ),
             "dropout_high": (
                 "c57331663bf32011077706d0444c2aca1a6d76ca331c2a7b0c37cf28750153f3"
