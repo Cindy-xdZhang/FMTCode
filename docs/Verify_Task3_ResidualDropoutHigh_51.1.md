@@ -71,8 +71,18 @@ array -> selector -> archive. Preflight ran on `cn604-10` from 22:29:50 to
 22:31:05, exited zero with empty stderr, and produced remote manifest SHA-256
 `ec613eec5b4d41be3a4f2fb02bc082d448d65188c6c0db4dee1d12946ed38c5b`.
 It confirmed ten datasets, eight candidates, 80 mappings, 480 paired
-trainings, all capacity guards, and closed confirmation. The GPU array is
-eligible and waiting for priority; no performance result has been read.
+trainings, all capacity guards, and closed confirmation. The GPU array later
+completed all 80 children and all 480 paired trainings with exit code zero.
+Selector `51058835` completed at `2026-08-31T09:18:18+03:00`.
+
+The selected development result is Raw-PCA/FMT F1
+`0.6958204804/0.8877770243`, paired gain `+0.1919565438`; Raw-PCA/FMT
+Average Precision is `0.7397366703/0.9457688271`, gain `+0.2060321568`.
+High dropout improved F22 (`p=0.60`), Tangaroa (`p=0.55`), and Boeing
+(`p=0.50`) relative to their exact controls, while the other families retained
+the control. The registered `+0.195` gain and `0.893` absolute-FMT joint target
+was not reached, so this is a negative result for the joint target and
+confirmation remained closed.
 
 No-delete evidence job `51072260` has strict `afterok:51058835`. It will make
 the 480 per-run CSV files independently auditable immediately after selection,
@@ -80,9 +90,16 @@ while requiring all 480 temporary checkpoints to remain available for 52.1
 and excluding every model file from the archive. It does not train or select a
 candidate. Local and remote script SHA-256 is
 `3fc03e2d30c2c4c3f47fbd0891bd391deec9ce8d48922f61b503c8d4e4b6e0dc`;
-remote `bash -n` passed.
+remote `bash -n` passed. Evidence job `51072260` completed with exit code zero,
+archived all 480 per-run CSV files, retained all 480 checkpoints during the
+stability check, and produced archive SHA-256
+`89f6d257fb64cb5c2029b39943f81d6689cc24298924306d4589c17064aff5f5`.
+Selection SHA-256 is
+`97fea5a2c8c9f780844be7805b938685b333d710660613d7f07f7a0e59781404`.
 
 Cleanup job `51058838` was correspondingly hardened to wait for selector
 `51058835`, portfolio `51059320`, and evidence job `51072260`. It therefore
 cannot delete source checkpoints during the evidence stability check or before
-52.1 has copied its selected models.
+52.1 has copied its selected models. Cleanup job `51058838` then archived the
+same 480 CSV files, deleted exactly 480 temporary checkpoints, and verified
+that zero remained.

@@ -61,3 +61,14 @@ The phase differs from all six previously declared populations.
 - `tests/test_audit_task3_extended_tuned_8_1.py`
 - `ibex_bash/mainexp_task3_3d_8.1_*.sh`
 - `ibex_bash/verify_task3_extended_tuned_8.1_evidence.sh`
+
+## Deployment status
+
+Implementation commit `b122c2c` and immutable deployment archive SHA-256
+`2a8da0f0ff85103f0f24955ed4c949ed399b76e7e6705fb4f6722bf1b283fe70`
+are deployed at `/home/zhanx0o/FMT_Task3_ExtendedTuned_8_1`. Nine local and
+remote tests, Python compilation, all shell syntax checks, and static preflight
+pass. The verified chain is `51074813 -> 51074814 -> 51074821 -> 51074834 ->
+51074835 -> 51074841 -> 51074843 -> 51074853 -> 51074863`; it remains blocked
+on the successful 54.1 independent audit. No seventh-population cache, label,
+or performance result exists yet.

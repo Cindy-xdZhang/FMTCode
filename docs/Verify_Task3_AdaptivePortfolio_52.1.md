@@ -71,5 +71,25 @@ and remote SHA-256 values are respectively
 `1fd484d5ff9bd6117760a76a349761a5544e1b5335115e28164154d93d750c22`
 and `6b569f489f13afa74bf7c0780b1599c1d4bfc58e35a6dab8039e45a2bec82721`;
 remote Python compilation and `bash -n` pass. Ibex evidence job `51073078`
-waits strictly for selector `51059320`. The 7.2 entry job now waits for both
-the selector and this independent audit.
+waited strictly for selector `51059320`; the 7.2 entry job waited for both the
+selector and this independent audit.
+
+## Completed result
+
+Selector `51059320` completed at `2026-08-31T09:18:29+03:00` without training
+or opening confirmation data. Development Raw-PCA/FMT F1 is
+`0.6847011551/0.8902179682`, paired gain `+0.2055168131`; Raw-PCA/FMT Average
+Precision is `0.7285773718/0.9487193186`, gain `+0.2201419468`. All ten dataset
+gains are positive. The `+0.20` gain target passed, but absolute FMT F1 remained
+below `0.893`, so the joint target did not pass.
+
+The selected sources are full-stack for Boeing and Smoke, safe-factor for
+Channel, DeltaWing, F22, and halfcylinder, and head/alpha/clipping for
+Tangaroa. The selector copied 40 models and 40 result files. Independent audit
+job `51073078` verified all 80 file hashes, equal paired parameter counts, and
+independently reconstructed every family choice and macro metric. Its maximum
+absolute discrepancy was `2.220446049250313e-16`; portfolio-selection and
+audit SHA-256 values are respectively
+`257893ee754737c11d8b66a1d11b3e04edc084e8e340674540f55b6db3de4393`
+and `289de6cd7a2ceda807b33638750a57e1ff06b98856c0b4edda2f54452ec27600`.
+Only the subsequent 7.2 fresh spatial population is paper-level evidence.

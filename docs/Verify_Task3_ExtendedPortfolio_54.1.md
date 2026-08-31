@@ -40,3 +40,15 @@ its own zero-tolerance absolute-FMT F1 and Average Precision guard.
 - `Audit_Task3_AdaptivePortfolio.py`
 - `tests/test_task3_extended_portfolio_54_1.py`
 - `ibex_bash/verify_task3_extended_portfolio_54.1_*.sh`
+
+## Deployment status
+
+Implementation commit `71313b0` and immutable deployment archive SHA-256
+`6f3fdc02d9762460991a600a5057270a533dd21e700d57b843f32d193ec65f13`
+are deployed at `/home/zhanx0o/FMT_Task3_ExtendedPortfolio_54_1`. Seven tests,
+Python compilation, all shell syntax checks, and static preflight pass.
+Source-identity job `51074578` completed with exit code zero and report SHA-256
+`890fac3110e21a46b32f4aae57c2a41f57b399f2b20d1b1f8f7d3a6ad88f38e9`;
+it records `performance_artifacts_read=false`. Selector `51074606` waits for
+the completed 53.1 selector and evidence job, and independent audit `51074616`
+waits for 54.1. No 54.1 performance result exists yet.

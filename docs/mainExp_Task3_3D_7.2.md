@@ -1,8 +1,7 @@
 # mainExp_Task3_3D_7.2
 
-> Status: **SUBMITTED; waiting for the five development selectors, the
-> training-free 52.1 adaptive portfolio, and its independent audit.** No
-> sixth-population primitive, IVD label, or performance metric exists.
+> Status: **COMPLETED and independently audited.** The primary `+0.15`
+> dataset-macro F1-gain target passed; the aspirational `+0.20` target did not.
 
 ## Scientific question
 
@@ -90,3 +89,29 @@ candidate, data, label, seed, metric, or selection rule and occurred before
 - `tests/test_audit_task3_adaptive_tuned_7_2.py`
 - `ibex_bash/mainexp_task3_3d_7.2_*.sh`
 - `ibex_bash/verify_task3_adaptive_tuned_7.2_evidence.sh`
+
+## Result
+
+The full chain `51060409 -> 51060410 -> 51060411 -> 51060464 -> 51060466 ->
+51060467 -> 51060468 -> 51060469 -> 51073430` completed with exit code zero.
+No model was trained or selected on the sixth population.
+
+- Dataset-macro Raw-PCA/FMT F1: `0.6858401976/0.8610638409`.
+- Dataset-macro F1 gain: `+0.1752236433`.
+- Dataset-macro Raw-PCA/FMT Average Precision:
+  `0.7362398343/0.9376975160`; gain `+0.2014576817`.
+- Family-macro F1/Average Precision gain:
+  `+0.1892631563/+0.2208998833`.
+- Positive counts: `10/10` datasets, `7/7` families, and both paired seeds.
+- Worst dataset: `deltaWing_LBM`, F1 gain `+0.0385682579`.
+
+The independent auditor reconstructed all metrics from 40 unique per-run rows,
+verified 40 frozen models and all evidence hashes, and differed from the formal
+summary by at most `2.7755575615628914e-17`. Summary, per-run, and independent
+audit SHA-256 values are
+`e89751f9b0f2c5085005a4d80c9925f7c3e4aa17430a551c350ee5f53a565248`,
+`7c1ecc37d326969793e7f5205e2fc25820bdff2ed8ba50c51a3aac9998733901`,
+and `cdadc4d61bf634278655bf3b119f430d9324550b90b10297dfe1858659266350`.
+This supports the paper claim that FMT improves supervised IVD-p95 vortex
+classification on the current ten 3D data entries by more than 15 percentage
+points on a previously unused spatial population.
