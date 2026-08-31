@@ -35,3 +35,14 @@ version is frozen.
 - Both the selector and its test module pass Python byte-code compilation.
 - The config raw SHA-256 at implementation time is
   `fc33380b1af18d2869d3eb18ff0bf8646797dc66f7d3951448a0628f69d091b0`.
+
+## Independent evidence gate
+
+`Audit_Task3_AdaptivePortfolio.py` does not import either portfolio selector.
+It independently reloads all five registered source selections, reconstructs
+the physical-family winners using the frozen metric order, recomputes all six
+dataset-macro quantities, verifies source/config/preflight hashes, and checks
+the content hash and paired parameter count of every frozen result and model.
+The synthetic five-source contract also proves that checkpoint tampering is
+rejected. The independent audit is a required gate before 7.2 may open its
+fresh spatial confirmation population.

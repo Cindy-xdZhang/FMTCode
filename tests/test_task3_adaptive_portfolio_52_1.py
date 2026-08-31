@@ -1,12 +1,16 @@
 import hashlib
+import io
 import json
 from pathlib import Path
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 
 import yaml
 
+import Audit_Task3_AdaptivePortfolio as audit_module
 import Select_Task3_AdaptivePortfolio_52_1 as portfolio
+from tests.test_task3_final_portfolio_49_1 import _fake_source
 
 
 CONFIG = Path("config/Verify_Task3_AdaptivePortfolio_52.1.yaml")
@@ -116,6 +120,66 @@ class AdaptivePortfolioTests(unittest.TestCase):
         self.assertNotIn("_train_one", text)
         self.assertIn("confirmation data", text)
         self.assertNotIn("Confirm_Task3", text)
+
+    def test_independent_audit_reconstructs_winners_and_frozen_hashes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            tmp_path = Path(temporary)
+            spec = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))
+            families = {
+                "channel": ["channel"],
+                "halfcylinder": [
+                    "cylinder3d", "halfcylinderRe640",
+                    "halfcylinderRe6400",
+                ],
+                "tangaroa": ["tangaroa"],
+                "deltaWing": ["deltaWing_resampled", "deltaWing_LBM"],
+                "f22raptor": ["f22raptor"],
+                "boeing747": ["boeing747"],
+                "smokeBuoyancy": ["smokeBuoyancy"],
+            }
+            for rank, (name, source) in enumerate(
+                spec["sources"].items(), 1
+            ):
+                root = tmp_path / name
+                source["repo_root"] = str(root)
+                _fake_source(
+                    root, source, spec["datasets"], families, rank
+                )
+            artifact_dir = tmp_path / "portfolio_output"
+            spec["output_root"] = str(artifact_dir)
+            config_path = tmp_path / "portfolio.yaml"
+            config_path.write_text(
+                yaml.safe_dump(spec, sort_keys=False), encoding="utf-8"
+            )
+
+            with redirect_stdout(io.StringIO()):
+                selection_path = portfolio.select(config_path)
+            result = audit_module.audit(
+                config_path,
+                selection_path.parent,
+                selection_path.parent / "independent_audit.json",
+            )
+            self.assertEqual(result["status"], "passed")
+            self.assertEqual(result["counts"]["sources"], 5)
+            self.assertEqual(result["counts"]["frozen_models"], 40)
+            self.assertEqual(result["counts"]["frozen_artifact_files"], 80)
+            self.assertLessEqual(
+                result["maximum_absolute_difference_vs_portfolio"], 1e-12
+            )
+            self.assertEqual(
+                set(result["selected_source_by_family"].values()),
+                {"dropout_high"},
+            )
+
+            payload = json.loads(selection_path.read_text(encoding="utf-8"))
+            checkpoint = Path(payload["models"][0]["checkpoint"])
+            checkpoint.write_bytes(checkpoint.read_bytes() + b"tampered")
+            with self.assertRaisesRegex(RuntimeError, "checkpoint hash differs"):
+                audit_module.audit(
+                    config_path,
+                    selection_path.parent,
+                    selection_path.parent / "tampered_audit.json",
+                )
 
 
 if __name__ == "__main__":
