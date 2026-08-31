@@ -180,37 +180,53 @@ def _auxiliary_projection(input_dim, output_dim, architecture,
     raise ValueError(f"unknown auxiliary projection {architecture!r}")
 
 
-def _initialize_auxiliary_normalization(module, initial_scale=None):
-    """Optionally initialize only normalization scales in an auxiliary encoder.
+def _initialize_auxiliary_normalization(
+        module, initial_scale=None, initial_bias=None):
+    """Optionally initialize normalization affine values in an auxiliary encoder.
 
-    ``None`` is an exact historical control.  An explicit value changes every
-    trainable LayerNorm/RMSNorm affine weight inside ``module`` without
-    consuming random numbers or touching linear layers and downstream heads.
+    ``None`` for both fields is an exact historical control.  Explicit values
+    change trainable LayerNorm/RMSNorm affine parameters inside ``module``
+    without consuming random numbers or touching linear/downstream layers.
     """
-    if initial_scale is None:
-        return 0
-    initial_scale = float(initial_scale)
-    if not math.isfinite(initial_scale) or initial_scale < 0.0:
-        raise ValueError(
-            "auxiliary_normalization_initial_scale must be finite and "
-            "non-negative"
-        )
-    initialized = 0
+    if initial_scale is not None:
+        initial_scale = float(initial_scale)
+        if not math.isfinite(initial_scale) or initial_scale < 0.0:
+            raise ValueError(
+                "auxiliary_normalization_initial_scale must be finite and "
+                "non-negative"
+            )
+    if initial_bias is not None:
+        initial_bias = float(initial_bias)
+        if not math.isfinite(initial_bias):
+            raise ValueError(
+                "auxiliary_normalization_initial_bias must be finite"
+            )
+    scale_count = 0
+    bias_count = 0
     with torch.no_grad():
         for child in module.modules():
             if isinstance(child, nn.LayerNorm):
-                if child.weight is not None:
+                if initial_scale is not None and child.weight is not None:
                     child.weight.fill_(initial_scale)
-                    initialized += 1
+                    scale_count += 1
+                if initial_bias is not None and child.bias is not None:
+                    child.bias.fill_(initial_bias)
+                    bias_count += 1
             elif isinstance(child, _RMSNorm):
-                child.weight.fill_(initial_scale)
-                initialized += 1
-    if initialized == 0:
+                if initial_scale is not None:
+                    child.weight.fill_(initial_scale)
+                    scale_count += 1
+    if initial_scale is not None and scale_count == 0:
         raise ValueError(
             "auxiliary_normalization_initial_scale requires an auxiliary "
             "projection with trainable LayerNorm or RMSNorm"
         )
-    return initialized
+    if initial_bias is not None and bias_count == 0:
+        raise ValueError(
+            "auxiliary_normalization_initial_bias requires an auxiliary "
+            "projection with trainable LayerNorm bias"
+        )
+    return scale_count, bias_count
 
 
 class _ResidualMLPBlock(nn.Module):
@@ -579,6 +595,7 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  auxiliary_projection="linear_layernorm_gelu",
                  auxiliary_hidden_dim=64, auxiliary_block_dims=None,
                  auxiliary_normalization_initial_scale=None,
+                 auxiliary_normalization_initial_bias=None,
                  auxiliary_dropout=0.0,
                  auxiliary_classifier_architecture="none",
                  auxiliary_classifier_hidden_dim=64,
@@ -641,11 +658,17 @@ class PathlineFMTResidualClassifier3D(nn.Module):
             None if auxiliary_normalization_initial_scale is None
             else float(auxiliary_normalization_initial_scale)
         )
-        self.auxiliary_normalization_layer_count = (
-            _initialize_auxiliary_normalization(
-                self.fmt_encoder,
-                self.auxiliary_normalization_initial_scale,
-            )
+        self.auxiliary_normalization_initial_bias = (
+            None if auxiliary_normalization_initial_bias is None
+            else float(auxiliary_normalization_initial_bias)
+        )
+        (
+            self.auxiliary_normalization_layer_count,
+            self.auxiliary_normalization_bias_layer_count,
+        ) = _initialize_auxiliary_normalization(
+            self.fmt_encoder,
+            self.auxiliary_normalization_initial_scale,
+            self.auxiliary_normalization_initial_bias,
         )
         auxiliary_dropout = float(auxiliary_dropout)
         if not 0.0 <= auxiliary_dropout < 1.0:
@@ -820,6 +843,11 @@ def residual_model_kwargs(model_spec):
             None
             if model_spec.get("auxiliary_normalization_initial_scale") is None
             else float(model_spec["auxiliary_normalization_initial_scale"])
+        ),
+        "auxiliary_normalization_initial_bias": (
+            None
+            if model_spec.get("auxiliary_normalization_initial_bias") is None
+            else float(model_spec["auxiliary_normalization_initial_bias"])
         ),
         "auxiliary_dropout": float(model_spec.get("auxiliary_dropout", 0.0)),
         "auxiliary_classifier_architecture": str(model_spec.get(
