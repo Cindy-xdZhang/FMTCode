@@ -1,0 +1,75 @@
+experiment: Verify_Task3_ExtendedPortfolio_54.1
+task: Task3
+output_root: outputs/Verify_Task3_ExtendedPortfolio_54.1
+confirmation_opened: false
+
+# Frozen before 53.1 produced any performance metric. This training-free stage
+# extends 52.1 with the independently preregistered auxiliary-dropout search.
+sources:
+  safe_factor:
+    repo_root: /home/zhanx0o/FMT_Task3_SafeFactorCombination_44_1
+    expected_experiment: Verify_Task3_SafeFactorCombination_44.1
+    expected_config_canonical_sha256: cb278708c88823b07443c8cbbdc3deaa25555c7cdab6316297dd253494abaa40
+    paths:
+      config: config/Verify_Task3_SafeFactorCombination_44.1.yaml
+      preflight: outputs/Verify_Task3_SafeFactorCombination_44.1/preflight_manifest.json
+      selection: outputs/Verify_Task3_SafeFactorCombination_44.1/optimization_selection.json
+  head_alpha_clip:
+    repo_root: /home/zhanx0o/FMT_Task3_HeadAlphaClipCombination_45_1
+    expected_experiment: Verify_Task3_HeadAlphaClipCombination_45.1
+    expected_config_canonical_sha256: 5dc8535491f8b7edc0cc5458f1ed5c81c502739b8c16e8c77a04f1c02e136b6f
+    paths:
+      config: config/Verify_Task3_HeadAlphaClipCombination_45.1.yaml
+      preflight: outputs/Verify_Task3_HeadAlphaClipCombination_45.1/preflight_manifest.json
+      selection: outputs/Verify_Task3_HeadAlphaClipCombination_45.1/optimization_selection.json
+  full_stack:
+    repo_root: /home/zhanx0o/FMT_Task3_HeadFullStackCombination_48_1
+    expected_experiment: Verify_Task3_HeadFullStackCombination_48.1
+    expected_config_canonical_sha256: 90c47bc6531e8a88d4b144b4d05d1e8070a8dad722dadfcb089e2d991fe32dd4
+    paths:
+      config: config/Verify_Task3_HeadFullStackCombination_48.1.yaml
+      preflight: outputs/Verify_Task3_HeadFullStackCombination_48.1/preflight_manifest.json
+      selection: outputs/Verify_Task3_HeadFullStackCombination_48.1/optimization_selection.json
+  focal_gamma_low:
+    repo_root: /home/zhanx0o/FMT_Task3_FocalGammaLow_50_1
+    expected_experiment: Verify_Task3_FocalGammaLow_50.1
+    expected_config_canonical_sha256: e37d7be09fc3719ece7c34b790d4e3aeb28527ae869321c5f0dc9f1b0f047888
+    paths:
+      config: config/Verify_Task3_FocalGammaLow_50.1.yaml
+      preflight: outputs/Verify_Task3_FocalGammaLow_50.1/preflight_manifest.json
+      selection: outputs/Verify_Task3_FocalGammaLow_50.1/optimization_selection.json
+  dropout_high:
+    repo_root: /home/zhanx0o/FMT_Task3_DropoutHigh_51_1
+    expected_experiment: Verify_Task3_ResidualDropoutHigh_51.1
+    expected_config_canonical_sha256: c57331663bf32011077706d0444c2aca1a6d76ca331c2a7b0c37cf28750153f3
+    paths:
+      config: config/Verify_Task3_ResidualDropoutHigh_51.1.yaml
+      preflight: outputs/Verify_Task3_ResidualDropoutHigh_51.1/preflight_manifest.json
+      selection: outputs/Verify_Task3_ResidualDropoutHigh_51.1/optimization_selection.json
+  auxiliary_dropout:
+    repo_root: /home/zhanx0o/FMT_Task3_AuxiliaryDropout_53_1
+    expected_experiment: Verify_Task3_AuxiliaryDropout_53.1
+    expected_config_canonical_sha256: 58936cd1460cb5f8359c58af6408f73b9fd354b94f9e13a5a8c2a2050aa17e7b
+    paths:
+      config: config/Verify_Task3_AuxiliaryDropout_53.1.yaml
+      preflight: outputs/Verify_Task3_AuxiliaryDropout_53.1/preflight_manifest.json
+      selection: outputs/Verify_Task3_AuxiliaryDropout_53.1/optimization_selection.json
+
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+source_paired_seeds: [40, 41, 42]
+frozen_confirmation_seeds: [40, 41]
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  require_source_absolute_fmt_guard: true
+  target_dataset_macro_f1_gain: 0.20
+  target_absolute_fmt_f1: 0.893
