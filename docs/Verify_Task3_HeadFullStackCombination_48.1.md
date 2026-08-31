@@ -66,5 +66,12 @@ confirmation before replacing the current Task3 paper result.
   selectors 39.1, 40.1, 41.1, 42.1, 43.1, and 47.1.
 - GPU array `51041338[0-159%24]` has strict `afterok:51041336`.
 - Selector `51041339` has strict `afterok:51041338_*`.
+- Evidence archive job `51071147` has strict `afterok:51041339`. It archives
+  and hashes all 960 per-run CSV files while requiring all 960 temporary
+  checkpoints to remain present for the downstream 52.1 portfolio. It never
+  deletes a model. The local and remote script SHA-256 is
+  `244567198cb48197275dcf804664d23168ef12d53edc2717923b7770decd3812`.
 
-All three jobs were submitted before any 39.1--47.1 final metric was read.
+The preflight, GPU array, and selector were submitted before any 39.1--47.1
+final metric was read. The later evidence job cannot change candidates,
+training, or selection and was added only to preserve auditable CSV evidence.
