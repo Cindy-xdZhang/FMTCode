@@ -23,7 +23,8 @@ population?
   Boeing 747 6, smoke buoyancy 24.
 - The Task2 4.1 latent dimensions are evaluated as a diagnostic control on
   the same samples and seeds. The control cannot replace the selected primary
-  method after confirmation is opened.
+  method after confirmation is opened. Its metrics are a 5.2-population
+  rerun of the 4.1 recipe, not the historical Task2-4.1 result.
 - VAE training uses development ordinals 0--7. Ordinals 8--9 calibrate only
   which anonymous KMeans cluster denotes vortex. No confirmation label is
   used in training, normalization, KMeans fitting or cluster-ID calibration.
@@ -63,7 +64,7 @@ ten datasets, two recipes, five seeds and both Raw/FMT arms.
 | Frozen recipe | Raw+VAE F1 | FMT+VAE F1 | Dataset-macro gain | Family-macro gain | Positive datasets/families | Worst dataset gain |
 |---|---:|---:|---:|---:|---:|---:|
 | **Selected latent (primary)** | `.39227` | `.63143` | **`+.23916`** | **`+.26598`** | **10/10; 7/7** | **`+.05812`** |
-| Task2-4.1 latent (diagnostic control) | `.48594` | `.65216` | `+.16622` | `+.15676` | 9/10; 6/7 | `-.07432` |
+| 4.1 recipe rerun on 5.2 population (diagnostic control) | `.48594` | `.65216` | `+.16622` | `+.15676` | 9/10; 6/7 | `-.07432` |
 
 The primary result exceeds both the preregistered `+.15` target and the
 aspirational `+.22` target. All five seed-macro gains are positive

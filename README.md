@@ -25,7 +25,7 @@
 | [docs/mainExp_Task2_3D_2.4_newflows.md](docs/mainExp_Task2_3D_2.4_newflows.md) | Boeing747与SmokeBuoyancy的Task2 same-VAE独立confirmation |
 | [docs/mainExp_Task3Universality_2.2.md](docs/mainExp_Task3Universality_2.2.md) | Task3 跨流场监督分类：冻结协议、失败版本、最终 8/8 结果与适用边界 |
 | [docs/mainExp_Task3NewFlows_2.3.md](docs/mainExp_Task3NewFlows_2.3.md) | Boeing747与SmokeBuoyancy的Task3独立confirmation及A100结果 |
-| [docs/mainExp_Task23_3D_4.1.md](docs/mainExp_Task23_3D_4.1.md) | Task2 same-VAE 新空间确认，以及已被6.1取代的Task3-4.1结果 |
+| [docs/mainExp_Task23_3D_4.1.md](docs/mainExp_Task23_3D_4.1.md) | 历史Task2/Task3 4.1确认；两者均已被当前主表取代 |
 | [docs/mainExp_Task2_3D_5.2.md](docs/mainExp_Task2_3D_5.2.md) | 当前Task2主表：latent瓶颈冻结后在第五空间population独立确认，10/10条目正增益 |
 | [docs/mainExp_Task3_3D_7.2.md](docs/mainExp_Task3_3D_7.2.md) | Task3改进方法的第六空间population独立确认：F1增益`+.17522` |
 | [docs/mainExp_Task3_3D_8.1.md](docs/mainExp_Task3_3D_8.1.md) | 当前Task3主表与第七空间population独立确认：F1增益`+.18005`，10/10条目正增益 |

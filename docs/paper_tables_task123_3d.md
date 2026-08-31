@@ -7,6 +7,32 @@ cluster 映射或阈值。Task2/Task3 当前机器结果分别位于
 `docs/mainExp_Task3_3D_7.2.md` 与 `docs/mainExp_Task3_3D_8.1.md`；Task5 机器表位于
 `outputs/mainExp_Task5_3D_1.1_ibex_v100/outputs/mainExp_Task5_3D_1.1/final_confirmation/`。
 
+## Task2/Task3 历史确认总览
+
+下表把旧确认、同样本诊断对照和当前主结果放在一起。所有数值均由逐次
+`per_run.csv` 重新计算；“正条目/family”按配对 F1 增益是否大于零计数。VAE是
+变分自编码器（Variational Autoencoder）；Average Precision（AP）衡量按预测分数
+排序后的precision-recall性能。
+
+| Task2 证据 | 角色与评估数据 | Raw+VAE F1 | FMT+VAE F1 | F1增益 | Family-macro增益 | 正条目/family |
+|---|---|---:|---:|---:|---:|---:|
+| mainExp_Task2_3D_4.1 | 历史4.1确认；seeds 9080–9084 | .4617 | .6308 | **+.1691** | +.1613 | 9/10；6/7 |
+| mainExp_Task2_3D_5.2/control | 4.1 VAE配方在第五population和seeds 9090–9094上的诊断复测 | .4859 | .6522 | **+.1662** | +.1568 | 9/10；6/7 |
+| mainExp_Task2_3D_5.2/selected | 当前论文主表；与上一行完全相同的population和seeds | .3923 | .6314 | **+.2392** | +.2660 | 10/10；7/7 |
+
+| Task3 证据 | 方法与空间population | Raw-PCA/FMT F1 | F1增益 | Raw-PCA/FMT AP | AP增益 | 正条目/family |
+|---|---|---:|---:|---:|---:|---:|
+| mainExp_Task3_3D_4.1 | 早期FMT residual；4.1 population | .7141/.8141 | **+.1000** | .7834/.9024 | **+.1190** | 10/10；7/7 |
+| mainExp_Task3_3D_6.1 | anchored FMT；第四population | .6948/.8655 | **+.1707** | .7526/.9447 | **+.1920** | 10/10；7/7 |
+| mainExp_Task3_3D_7.2 | 当前冻结模型组合；第六population | .6858/.8611 | **+.1752** | .7362/.9377 | **+.2015** | 10/10；7/7 |
+| mainExp_Task3_3D_8.1 | 同一冻结模型组合；第七population；当前主表 | .6913/.8714 | **+.1800** | .7439/.9438 | **+.1999** | 10/10；7/7 |
+
+这些行不是一条可直接比较的调参曲线：Task2-4.1与Task2-5.2使用不同空间
+population和训练seed；只有5.2的control与selected是严格同数据、同seed对照。
+Task3-7.2与8.1的40个`(dataset, seed, source)` checkpoint、feature、阈值和residual
+scale身份逐项相同，因此可以作为同一方法的两次空间复现；4.1和6.1使用较早方法，
+不得与7.2/8.1合并平均。
+
 ## Task1：training-free FMT + KMeans
 
 | Flow | FMT feature / PCA | FMT F1 | Raw F1 | FMT−Raw F1 | ARI | NMI |
@@ -48,9 +74,11 @@ FMT 的条目平均 F1 为 `0.6130`；9/10 条目高于 Raw。
 
 第五空间 primitive population 上，10/10 条目、7/7 family、5/5 seed macro
 均为正；dataset-macro 增益同时达到预注册 `+.15` 和期望 `+.22`。作为同一数据和
-seed上的诊断，Task2-4.1 latent control 为 Raw/FMT `.4859/.6522`、增益`+.1662`，
-仍达到`.15`，但F-22为`−.0743`。selected FMT绝对F1比control低`.0207`；因此主表
-证明的是冻结共享瓶颈下FMT输入优势扩大，不声称latent选择提高FMT绝对准确率。
+seed上的诊断，5.2 control复用4.1 VAE配方，得到Raw/FMT `.4859/.6522`、增益
+`+.1662`，仍达到`.15`，但F-22为`−.0743`。这不是Task2-4.1历史结果；后者在旧
+population上为`.4617/.6308`、增益`+.1691`。selected FMT绝对F1比同population
+control低`.0207`；因此主表证明的是冻结共享瓶颈下FMT输入优势扩大，不声称latent
+选择提高FMT绝对准确率。
 
 ## Task3：监督 IVD 二分类
 
@@ -80,12 +108,6 @@ physical-family 的 feature 与训练配方只在 development 数据上选择；
 确认数据前冻结。确认阶段不训练、不调参。F1 在10/10条目、7/7 family和2/2 paired
 seeds均为正；最小条目增益为 Delta-wing original LBM 的`+.0363`，因此宏平均结论
 并非只由 Channel 的大增益产生。
-
-| 独立空间确认 | 方法状态 | Raw-PCA/FMT F1 | F1增益 | Raw-PCA/FMT AP | AP增益 |
-|---|---|---:|---:|---:|---:|
-| mainExp_Task3_3D_6.1，第四population | 早期 anchored FMT | .6948/.8655 | +.1707 | .7526/.9447 | +.1920 |
-| mainExp_Task3_3D_7.2，第六population | 改进后的冻结portfolio | .6858/.8611 | +.1752 | .7362/.9377 | +.2015 |
-| mainExp_Task3_3D_8.1，第七population | 同类扩展portfolio；当前主表 | .6913/.8714 | +.1800 | .7439/.9438 | +.1999 |
 
 同一改进方法的7.2与8.1在两套未见空间population上的平均F1增益为`+.1776`，
 平均AP增益为`+.2007`；两次都超过预注册`+.15`目标。6.1使用较早方法，作为独立
@@ -128,6 +150,14 @@ Re160 未超过 strongest Raw，Re160/Smoke 未超过 fixed-scale FMT transfer�
 均从40条冻结推理记录重建dataset、family和seed宏平均；与正式汇总的最大差分别为
 `2.78e-17`和`1.11e-16`。8.1的per-run、summary和audit SHA-256分别为
 `78d19ec3…bc52`、`0066299c…07bd`和`eabc384a…edb3`。
+
+`Verify_Task23PaperTableConsistency_1.1` 使用
+`Audit_Task23_PaperHistory.py` 对上述Task2三行和Task3四行共520条核心比较记录
+重新配对汇总。逐数据集结果与七份正式summary的最大绝对差为`2.22e-16`；7.2与
+8.1的40个逐次模型身份及冻结manifest身份完全相同；合并表135个显示值也全部
+通过四位小数舍入检查，最大舍入差为`4.97e-5`。审计发现并修正了旧文档中
+将5.2/control误称为Task2-4.1实跑结果、以及把历史Task3结果仍标作“当前”的文字
+问题；未发现数值矛盾。
 
 - Task1：`mainExp_Task1_3D_2.1` + `mainExp_Task1_3D_2.2_newflows`。
 - Task2：`mainExp_Task2_3D_5.2`（Ibex GTX 1080 Ti/P100；第五空间population，10条目×4切片×2 recipes×5 paired seeds；200/200唯一结果；summary/per-run SHA-256 `739b48ea…c3095`/`20d9de15…7111f`）。

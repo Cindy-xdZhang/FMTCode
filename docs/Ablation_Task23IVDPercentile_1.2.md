@@ -1,5 +1,9 @@
 # Ablation_Task23IVDPercentile_1.2
 
+> 历史状态说明（2026-08-31）：下文“当前论文主表”指本消融实验冻结时的4.1
+> 主表。现行主结果已更新为Task2-5.2和Task3-8.1；本消融没有用新模型重跑，
+> 因此不能把4.1的绝对F1误写成5.2/8.1结果。
+
 ## 问题与固定协议
 
 本实验复现当前论文主表 `mainExp_Task2_3D_4.1` 与 `mainExp_Task3_3D_4.1`，比较 whole-field IVD 的 p80、p85、p87.5、p90、p92.5 标签；原 p95 作为已发表主表参考，不与旧版 `Ablation_Task23IVDPercentile_1.1` 混用。
