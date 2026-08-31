@@ -801,3 +801,20 @@ throttle仍为10/14。45.1、50.1、51.1分别保持54/80、5/80、0/80完成，
 个child为`JobHeldUser`。selectors `51018923`,`51041339`、release helper `51063875`、
 adaptive portfolio `51059320`及第六空间确认入口`51060409`均保持`PENDING (Dependency)`。
 本次只读取Slurm状态，未读取运行中CSV、日志指标、checkpoint或partial performance metric。
+
+05:09–05:11新增development搜索53.1部署：使用commit `6ab3c98`的
+`Verify_Task3_AuxiliaryDropout_53.1`，在投影后的同宽FMT/Raw-PCA辅助表示上比较
+Dropout `p={0,.025,.05,.10,.15,.20,.30,.40,.50,.60,.70}`。preflight job
+`51069690`于05:09:51–05:11:33完成、exit 0、stderr为空；远端manifest SHA为
+`bc4b60c6…8bc2`，确认10 datasets、110 mappings、660 paired trainings、容量guard和
+closed confirmation。GPU array `51069691`为0–109、24并发、1h、1 GPU/child，selector
+`51069692`严格afterok全部array children；两者提交后均未运行。array另设
+`afterany:51060469`，只在当前7.2独立确认链终态后开放，避免抢占44.1/48.1与已冻结确认，
+且53.1结果不会回写7.2。远端config及三个Slurm脚本SHA与本地逐项一致；未读取任何运行中
+搜索的partial metric，尚无53.1性能结果。
+
+05:18运行里程碑：44.1数组`51018920`达到180/280 children完成、10运行、90等待；
+48.1数组`51041338`达到92/160 children完成、13运行、55等待。两组均未出现
+`FAILED/TIMEOUT/CANCELLED/OUT_OF_MEMORY/NODE_FAIL`。selectors `51018923`与
+`51041339`及自动release helper `51063875`继续正确等待Dependency；未读取运行中实验的
+partial metric、日志指标或checkpoint，也未改变候选、seed、模型、epoch、配对和选择协议。

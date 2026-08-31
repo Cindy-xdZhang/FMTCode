@@ -59,6 +59,11 @@ Implementation is complete. Local Python compilation and 56 directly related
 datasets, eleven candidates, three paired seeds, two arms, 110 array mappings,
 660 trainings, all capacity guards, and closed confirmation. Its manifest
 SHA-256 is `2a17ac826b302f616ae04e7f2840f1e344eef77c8bd781147b06521643e43ad8`.
-The three Slurm files are LF-encoded and pass structural checks; their final
-`bash -n` check will run on Ibex because the local Windows Subsystem for Linux
-launcher is unavailable. No performance result has been produced or read.
+The three Slurm files are LF-encoded; their local and remote SHA-256 values
+match exactly. Ibex preflight job `51069690` completed with exit code 0 and an
+empty stderr, producing a manifest with SHA-256
+`bc4b60c644559be1b65208f55c1e5c4ae777652cab1a7eaf502903fed6cf8bc2`.
+GPU array `51069691` and selector `51069692` are deployed. The array is held by
+`afterany:51060469`, so it starts only after the already frozen 7.2 independent
+confirmation chain reaches a terminal state; the selector requires every
+array child to succeed. No 53.1 performance result has been produced or read.
