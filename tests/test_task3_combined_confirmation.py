@@ -1,7 +1,9 @@
 import copy
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import yaml
 
@@ -35,6 +37,35 @@ class Task3CombinedConfirmationTests(unittest.TestCase):
                     "outputs/main/checkpoints/missing.pt",
                     Path(directory) / "optimization",
                 )
+
+    def test_explicit_frozen_dependency_root_is_authoritative(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "closure"
+            relative = Path("outputs/main/checkpoints/raw_seed40.pt")
+            expected = root / relative
+            expected.parent.mkdir(parents=True)
+            expected.write_bytes(b"sealed-raw-dependency")
+            mutable_root = Path(directory) / "optimization"
+            mutable = mutable_root / relative
+            mutable.parent.mkdir(parents=True)
+            mutable.write_bytes(b"different-mutable-checkpoint")
+            with patch.dict(
+                os.environ,
+                {"TASK3_FROZEN_RAW_DEPENDENCY_ROOT": str(root)},
+            ):
+                self.assertEqual(
+                    _resolve_raw_checkpoint_path(relative, mutable_root),
+                    expected.resolve(),
+                )
+
+    def test_explicit_frozen_dependency_root_rejects_escape(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.dict(
+                os.environ,
+                {"TASK3_FROZEN_RAW_DEPENDENCY_ROOT": directory},
+            ):
+                with self.assertRaisesRegex(ValueError, "escapes"):
+                    _resolve_raw_checkpoint_path("../outside.pt")
 
     def test_paired_summary_uses_fmt_minus_raw_pca(self):
         rows = []

@@ -14,6 +14,9 @@ source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
 
 artifact_dir="outputs/mainExp_Task3_3D_8.1"
+python Freeze_Task3_RawDependencyClosure_8_1.py \
+  --config config/mainExp_Task3_3D_8.1.yaml \
+  --mode verify
 python Audit_Task3_ExtendedTuned_8_1.py \
   --config config/mainExp_Task3_3D_8.1.yaml \
   --artifact-dir "$artifact_dir" \
@@ -23,6 +26,7 @@ test -s "$artifact_dir/per_run.csv"
 test -s "$artifact_dir/summary.json"
 test -s "$artifact_dir/frozen_recipe_manifest.json"
 test -s "$artifact_dir/evaluation_preflight.json"
+test -s "$artifact_dir/raw_dependency_closure.json"
 test -s "$artifact_dir/independent_audit.json"
 
 sha256sum \
@@ -30,5 +34,6 @@ sha256sum \
   "$artifact_dir/summary.json" \
   "$artifact_dir/frozen_recipe_manifest.json" \
   "$artifact_dir/evaluation_preflight.json" \
+  "$artifact_dir/raw_dependency_closure.json" \
   "$artifact_dir/independent_audit.json" \
   > "$artifact_dir/evidence_sha256.txt"

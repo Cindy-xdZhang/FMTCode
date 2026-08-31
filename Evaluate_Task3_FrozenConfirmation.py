@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -90,6 +91,28 @@ def _resolve_raw_checkpoint_path(recorded_path, checkpoint_root=None):
     than requiring a mutable symlink or rewriting the frozen checkpoint.
     """
     raw_path = Path(recorded_path)
+
+    # A sealed confirmation may copy the Raw checkpoints needed by residual
+    # models into a separately hashed dependency closure.  When this explicit
+    # root is set it is authoritative: silently falling back to a mutable
+    # optimization checkout would defeat the closure's provenance guarantee.
+    dependency_root = os.environ.get("TASK3_FROZEN_RAW_DEPENDENCY_ROOT")
+    if dependency_root and not raw_path.is_absolute():
+        root = Path(dependency_root).resolve()
+        candidate = (root / raw_path).resolve()
+        try:
+            candidate.relative_to(root)
+        except ValueError as error:
+            raise ValueError(
+                "residual checkpoint Raw path escapes the frozen dependency root: "
+                f"{raw_path}"
+            ) from error
+        if not candidate.is_file():
+            raise FileNotFoundError(
+                "frozen Raw dependency is missing: " f"{candidate}"
+            )
+        return candidate
+
     candidates = [raw_path]
     if checkpoint_root is not None and not raw_path.is_absolute():
         candidates.append(Path(checkpoint_root) / raw_path)
