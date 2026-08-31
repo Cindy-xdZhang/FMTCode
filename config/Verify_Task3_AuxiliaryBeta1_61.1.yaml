@@ -1,0 +1,60 @@
+experiment: Verify_Task3_AuxiliaryBeta1_61.1
+output_root: outputs/Verify_Task3_AuxiliaryBeta1_61.1
+task: Task3
+
+# Development-only sequential optimizer search. The independently audited
+# 60.1 portfolio supplies one frozen recipe per physical family. Only Adam's
+# first-moment beta for the trainable auxiliary projection changes; the
+# downstream residual head retains the source recipe's optimizer betas.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  portfolio:
+    kind: optimization
+    selection: outputs/Verify_Task3_AuxiliaryBeta2Portfolio_60.1/portfolio_selection.json
+    expected_experiment: Verify_Task3_AuxiliaryBeta2Portfolio_60.1
+
+# c00 exactly reproduces the source recipe. Other cells replace only the
+# auxiliary projection's beta1 and inherit its beta2 from the source recipe.
+optimization_candidates:
+  - {id: c00_control_auxbeta1, sources: [portfolio]}
+  - {id: c01_auxbeta1_000, sources: [portfolio], training: {auxiliary_optimizer_beta1: 0.0}}
+  - {id: c02_auxbeta1_025, sources: [portfolio], training: {auxiliary_optimizer_beta1: 0.25}}
+  - {id: c03_auxbeta1_050, sources: [portfolio], training: {auxiliary_optimizer_beta1: 0.5}}
+  - {id: c04_auxbeta1_070, sources: [portfolio], training: {auxiliary_optimizer_beta1: 0.7}}
+  - {id: c05_auxbeta1_080, sources: [portfolio], training: {auxiliary_optimizer_beta1: 0.8}}
+  - {id: c06_auxbeta1_085, sources: [portfolio], training: {auxiliary_optimizer_beta1: 0.85}}
+  - {id: c07_auxbeta1_090, sources: [portfolio], training: {auxiliary_optimizer_beta1: 0.9}}
+  - {id: c08_auxbeta1_095, sources: [portfolio], training: {auxiliary_optimizer_beta1: 0.95}}
+  - {id: c09_auxbeta1_098, sources: [portfolio], training: {auxiliary_optimizer_beta1: 0.98}}
+  - {id: c10_auxbeta1_099, sources: [portfolio], training: {auxiliary_optimizer_beta1: 0.99}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: c00_control_auxbeta1
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.209
+  target_absolute_fmt_f1: 0.893
+  confirmation_opened: false
