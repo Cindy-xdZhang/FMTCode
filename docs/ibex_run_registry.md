@@ -787,3 +787,9 @@ Priority后，为按剩余工作量共享当前GPU配额，把44.1/48.1未启动
 throttle仍为10/14。`51018923`与`51041339`仍为Dependency，自动release helper
 `51063875`及后续52.1/7.2链均未启动；45.1、50.1、51.1继续保持JobHeldUser。此次只读取
 Slurm状态和调度字段，未读取任何运行中的CSV、日志指标或checkpoint。
+
+04:16运行里程碑：44.1数组`51018920`达到140/280 children完成、8运行、132等待，
+即完成50%；48.1数组`51041338`达到40/160 children完成、14运行、106等待，即完成25%。
+两组均未出现`FAILED/TIMEOUT/CANCELLED/OUT_OF_MEMORY/NODE_FAIL`，live throttle继续为
+10/14。selectors `51018923`与`51041339`、自动release helper `51063875`及后续
+52.1/7.2依赖链保持等待；没有读取任何运行中实验的partial metric，也没有重复提交训练。
