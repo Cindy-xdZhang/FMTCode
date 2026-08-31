@@ -42,7 +42,7 @@ sources:
   dropout_high:
     repo_root: /home/zhanx0o/FMT_Task3_DropoutHigh_51_1
     expected_experiment: Verify_Task3_ResidualDropoutHigh_51.1
-    expected_config_canonical_sha256: 4f67ee6fbbe9baf779b990eab6515ec18e472f6a3026aa4dad0a5a0aad0713ae
+    expected_config_canonical_sha256: c57331663bf32011077706d0444c2aca1a6d76ca331c2a7b0c37cf28750153f3
     paths:
       config: config/Verify_Task3_ResidualDropoutHigh_51.1.yaml
       preflight: outputs/Verify_Task3_ResidualDropoutHigh_51.1/preflight_manifest.json

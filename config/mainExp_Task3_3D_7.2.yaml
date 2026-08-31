@@ -11,7 +11,7 @@ source_model:
   repo_root: /home/zhanx0o/FMT_Task3_AdaptivePortfolio_52_1
   environment: TASK72_SOURCE_MODEL_ROOT
   expected_experiment: Verify_Task3_AdaptivePortfolio_52.1
-  expected_config_canonical_sha256: 92ee6d9d3d283af8017dce52104b28580634cf6f06cdcfd8cb28588ff85505c3
+  expected_config_canonical_sha256: 6e7fac97bb6580eb2cecc9916a38218b37937d2d10528d8d0c236ad4d47779d0
   paths:
     config: config/Verify_Task3_AdaptivePortfolio_52.1.yaml
     selection: outputs/Verify_Task3_AdaptivePortfolio_52.1/portfolio_selection.json

@@ -57,7 +57,7 @@ class AdaptivePortfolioTests(unittest.TestCase):
                 "a0b706e867dd923ec7ee5b0f56f8c84e1d88708b8565646371626ae634eb5a58"
             ),
             "dropout_high": (
-                "4f67ee6fbbe9baf779b990eab6515ec18e472f6a3026aa4dad0a5a0aad0713ae"
+                "c57331663bf32011077706d0444c2aca1a6d76ca331c2a7b0c37cf28750153f3"
             ),
         })
 
