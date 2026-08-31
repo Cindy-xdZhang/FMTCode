@@ -1097,6 +1097,22 @@ def _auxiliary_optimizer_betas(training=None):
     return (beta1, beta2), overridden
 
 
+def _auxiliary_optimizer_epsilon(training=None):
+    """Return an optional Adam denominator epsilon for the auxiliary group."""
+    training = {} if training is None else dict(training)
+    global_epsilon = _optimizer_epsilon(training)
+    if global_epsilon is None:
+        global_epsilon = 1e-8
+    value = training.get("auxiliary_optimizer_epsilon")
+    overridden = value is not None
+    epsilon = global_epsilon if value is None else float(value)
+    if not np.isfinite(epsilon) or epsilon <= 0.0:
+        raise ValueError(
+            "auxiliary_optimizer_epsilon must be finite and positive"
+        )
+    return epsilon, overridden
+
+
 def _optimizer_parameter_spec(model, training):
     """Return an exact control list or paired projection/head parameter groups.
 
@@ -1111,6 +1127,9 @@ def _optimizer_parameter_spec(model, training):
     auxiliary_betas, auxiliary_betas_overridden = _auxiliary_optimizer_betas(
         training
     )
+    auxiliary_epsilon, auxiliary_epsilon_overridden = (
+        _auxiliary_optimizer_epsilon(training)
+    )
     trainable = [
         parameter for parameter in model.parameters()
         if parameter.requires_grad
@@ -1121,6 +1140,7 @@ def _optimizer_parameter_spec(model, training):
         multiplier == 1.0
         and weight_decay_multiplier == 1.0
         and not auxiliary_betas_overridden
+        and not auxiliary_epsilon_overridden
     ):
         return trainable, multiplier, 0
 
@@ -1153,6 +1173,8 @@ def _optimizer_parameter_spec(model, training):
     }
     if auxiliary_betas_overridden:
         auxiliary_group["betas"] = auxiliary_betas
+    if auxiliary_epsilon_overridden:
+        auxiliary_group["eps"] = auxiliary_epsilon
     return [
         {"params": downstream},
         auxiliary_group,
@@ -1296,6 +1318,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         spec["training"]
     )
     auxiliary_optimizer_betas, _ = _auxiliary_optimizer_betas(
+        spec["training"]
+    )
+    auxiliary_optimizer_epsilon, _ = _auxiliary_optimizer_epsilon(
         spec["training"]
     )
     optimizer, optimizer_name, optimizer_amsgrad = _build_optimizer(
@@ -1467,6 +1492,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             float(value) for value in
             optimizer.param_groups[auxiliary_optimizer_group_index]["betas"]
         )
+        current_auxiliary_epsilon = float(
+            optimizer.param_groups[auxiliary_optimizer_group_index]["eps"]
+        )
         if scheduler is not None:
             scheduler.step()
         evaluation_parameters = (
@@ -1522,6 +1550,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             ),
             "auxiliary_optimizer_beta1": current_auxiliary_betas[0],
             "auxiliary_optimizer_beta2": current_auxiliary_betas[1],
+            "auxiliary_optimizer_epsilon": current_auxiliary_epsilon,
             "training_alpha": training_alpha,
             "gradient_clip_norm": (
                 "" if gradient_clip_norm is None else gradient_clip_norm
@@ -1595,6 +1624,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             auxiliary_weight_decay_multiplier
         ),
         "auxiliary_optimizer_betas": auxiliary_optimizer_betas,
+        "auxiliary_optimizer_epsilon": auxiliary_optimizer_epsilon,
         "scheduler": scheduler_name,
         "warmup_epochs": warmup_epochs,
         "warmup_start_ratio": warmup_start_ratio,
@@ -1696,6 +1726,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         ),
         "training_auxiliary_optimizer_beta1": auxiliary_optimizer_betas[0],
         "training_auxiliary_optimizer_beta2": auxiliary_optimizer_betas[1],
+        "training_auxiliary_optimizer_epsilon": (
+            auxiliary_optimizer_epsilon
+        ),
         "training_scheduler": scheduler_name,
         "training_warmup_epochs": warmup_epochs,
         "training_warmup_start_ratio": warmup_start_ratio,
