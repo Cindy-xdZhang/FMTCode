@@ -69,5 +69,10 @@ a fresh spatial-population confirmation before it can support a paper claim.
   36.1--43.1 selector jobs.
 - GPU array: `51018920[0-279%24]`, strict `afterok:51018914`.
 - Selector: `51018923`, strict `afterok:51018920_*`.
+- Evidence archive: `51071240`, strict `afterok:51018923`. It will archive
+  and hash all 1,680 per-run CSV files while requiring all 1,680 temporary
+  checkpoints to remain present for 52.1; it never deletes a model. The local
+  and remote script SHA-256 is
+  `e463529b2ecaa2ec60560232acc261ecfd945b7241684204350d4eba2cb2e28e`.
 - Local and remote combination contracts: 7/7 passed. Remote Python
   compilation and all three Slurm-script syntax checks passed.
