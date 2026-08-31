@@ -51,36 +51,35 @@ as paper-level evidence.
 
 ## Status
 
-Local Python compilation and 13 relevant contract/audit tests pass. Static
-preflight confirms 10 datasets, 7 physical families, 8 candidates, 3 paired
-seeds, 2 arms, and 480 trainings. Full local preflight also passes all cache,
-label, feature-width, parameter-capacity, and frozen-checkpoint checks; its
-manifest SHA-256 is `b9bf269a...5ec3d`. No performance result has been read,
-and confirmation is closed.
+Completed. Full preflight `51056257`, all 80 GPU children in `51056260`,
+selector `51056263`, and no-delete evidence job `51072242` exited successfully
+with empty stderr. The array contains all 480 paired trainings. The evidence
+archive contains all 480 per-run CSV files, no model files, and its SHA-256 is
+`ff85edf2...f973e`; all 480 temporary checkpoints remain available for the
+training-free 52.1 portfolio.
 
-Implementation commit `cf85a72` was pushed before deployment. The immutable
-archive SHA-256 is `e23cf300...1c8b1`, identical locally and remotely; the
-remote canonical config SHA-256 is `a0b706e8...b5a58`. Remote Python
-compilation, the same 13 tests, static preflight, and all four `bash -n`
-checks pass. Jobs submitted at `2026-08-30T21:00:51+03:00` are full preflight
-`51056257`, GPU array `51056260[0-79%24]`, selector `51056263`, and artifact
-job `51056264`. Their dependencies are respectively none,
-`afterok:51056257`, `afterok:51056260_*`, and `afterok:51056263`. Performance
-results have not been read and confirmation remains closed. Full preflight
-`51056257` ran on `cn604-07` from `21:00:53` to `21:02:02`, completed with
-exit code 0 and empty stderr, and produced remote manifest SHA-256
-`a83e431a...f5c0`. The GPU array is eligible and waiting for Slurm priority.
+The selected development result is:
 
-To avoid delaying independent audit until 52.1 has copied the selected models,
-no-delete evidence job `51072242` was submitted with strict
-`afterok:51056263`. It archives all 480 per-run CSV files, requires all 480
-temporary checkpoints both before and after the archive, excludes model files
-from the archive, and publishes stable SHA-256 values. It does not train or
-select a candidate. Local and remote script SHA-256 is
-`94a448d82d922938dc0b881bb7829c7718d1f03631d850a1c0552fdeb5d52e7f`;
-remote `bash -n` passed.
+- Raw-PCA/FMT F1: `0.69743 / 0.88757`; gain `+0.19014`.
+- Raw-PCA/FMT Average Precision: `0.74048 / 0.94652`; gain `+0.20604`.
+- Positive F1 gain on 10/10 datasets; worst dataset gain `+0.05272`.
+- Channel and half-cylinder select gamma `0.075`; F22 selects `0.01`;
+  Tangaroa, Delta Wing, Boeing 747, and Smoke Buoyancy retain the exact
+  weighted-binary-cross-entropy control.
 
-The destructive archive/cleanup job `51056264` now also has strict
-`afterok:51072242`, in addition to its selector and 52.1 dependencies. This
-prevents cleanup from racing the evidence job's 30-second archive-stability
-check.
+Relative to the exact control, selection raises absolute FMT F1 by only
+`+0.00045` and paired F1 gain by `+0.00036`. It misses the registered gain
+target by `0.00486` and the absolute FMT F1 target by `0.00543`. Therefore the
+search resolves the lower boundary for three families but does not support a
+new overall winner and does not open confirmation.
+
+An implementation-independent audit reconstructed all candidate/seed/arm
+records, absolute-FMT guards, family choices, and macro metrics. Its maximum
+difference from the selector is `4.44e-16`; all paired parameter counts and
+source hashes pass. Selection, leaderboard, evidence archive, and audit
+SHA-256 values are respectively `22b4b46f...f4ab8`, `0f8500b0...99930`,
+`ff85edf2...f973e`, and `dbe33bc7...1bcfe`.
+
+Cleanup job `51056264` remains dependency-gated on the selector, 52.1 model
+copy, and evidence completion. It cannot delete source checkpoints before
+52.1 has frozen any selected family models.
