@@ -113,6 +113,13 @@ Re160 未超过 strongest Raw，Re160/Smoke 未超过 fixed-scale FMT transfer�
 
 ## 结果来源
 
+`Verify_Task23CoreGain_1.1` 使用 `Audit_Task23_CoreGain.py` 直接读取两项主实验的
+逐次 CSV，而不调用原汇总程序。它重新检查配对完整性并重算 dataset、family 和 seed
+平均：Task2 为 100 条 selected-recipe 记录，Task3 为 40 条冻结推理记录；两项均覆盖
+10 个数据条目和 7 个 physical family。重算得到 Task2/Task3 F1 增益分别为
+`+.2391553/+.1706578`，最小值仍为 `+.1706578 > +.15`；与正式汇总的最大数值差为
+`2.50e-16`。审计 JSON SHA-256 为 `909ee699…b4d1`。
+
 - Task1：`mainExp_Task1_3D_2.1` + `mainExp_Task1_3D_2.2_newflows`。
 - Task2：`mainExp_Task2_3D_5.2`（Ibex GTX 1080 Ti/P100；第五空间population，10条目×4切片×2 recipes×5 paired seeds；200/200唯一结果；summary/per-run SHA-256 `739b48ea…c3095`/`20d9de15…7111f`）。
 - Task3：`mainExp_Task3_3D_6.1`（Ibex GTX 1080 Ti/P100 生成第四空间population，CPU冻结推理；10条目×2 paired seeds×2 arms；summary SHA-256 `f46a307a…fb756`，`per_run.csv` SHA-256 `bc5a61b9…ef591`）。
