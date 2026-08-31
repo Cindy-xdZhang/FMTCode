@@ -110,3 +110,12 @@ A concurrently prepared double-V100 reconstruction was not used. Its
 preflight job `51088368` started after this exact-copy evaluation had already
 completed and correctly failed because confirmation artifacts existed; no GPU
 reconstruction job was submitted and no 8.1 artifact was modified.
+
+After the independent audit and local evidence download, artifact job
+`51089166` verified the summary, per-run CSV, audit, closure manifest, all 20
+temporary checkpoint copies, and their original sources by SHA-256. It then
+deleted only those 20 temporary copies and confirmed that none remained. The
+original source checkpoints were not touched. The cleanup report SHA-256 is
+`a5e1f6e4b6485a737623d98cff9486d00dcde44e6ec41295620d4840bc5b1d35`;
+the report is included in `output/mainExp_Task3_3D_8.1_ibex/` and contains no
+model weights.
