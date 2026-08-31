@@ -229,6 +229,34 @@ def _initialize_auxiliary_normalization(
     return scale_count, bias_count
 
 
+def _set_auxiliary_normalization_epsilon(module, epsilon=None):
+    """Optionally set the denominator epsilon of auxiliary normalizers.
+
+    ``None`` is the exact historical control and preserves each module's native
+    default.  An explicit positive value is shared by every LayerNorm/RMSNorm
+    inside the paired auxiliary projection without changing checkpoint state or
+    consuming random numbers.
+    """
+    if epsilon is None:
+        return 0
+    epsilon = float(epsilon)
+    if not math.isfinite(epsilon) or epsilon <= 0.0:
+        raise ValueError(
+            "auxiliary_normalization_epsilon must be finite and positive"
+        )
+    layer_count = 0
+    for child in module.modules():
+        if isinstance(child, (nn.LayerNorm, _RMSNorm)):
+            child.eps = epsilon
+            layer_count += 1
+    if layer_count == 0:
+        raise ValueError(
+            "auxiliary_normalization_epsilon requires an auxiliary "
+            "projection with LayerNorm or RMSNorm"
+        )
+    return layer_count
+
+
 class _ResidualMLPBlock(nn.Module):
     def __init__(self, width, dropout=0.0):
         super().__init__()
@@ -600,7 +628,8 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  auxiliary_classifier_architecture="none",
                  auxiliary_classifier_hidden_dim=64,
                  residual_output_initialization="default",
-                 residual_output_initialization_scale=1.0):
+                 residual_output_initialization_scale=1.0,
+                 auxiliary_normalization_epsilon=None):
         super().__init__()
         if not isinstance(raw_model, PathlineBinaryClassifier3D):
             raise TypeError("raw_model must be PathlineBinaryClassifier3D")
@@ -661,6 +690,15 @@ class PathlineFMTResidualClassifier3D(nn.Module):
         self.auxiliary_normalization_initial_bias = (
             None if auxiliary_normalization_initial_bias is None
             else float(auxiliary_normalization_initial_bias)
+        )
+        self.auxiliary_normalization_epsilon = (
+            None if auxiliary_normalization_epsilon is None
+            else float(auxiliary_normalization_epsilon)
+        )
+        self.auxiliary_normalization_epsilon_layer_count = (
+            _set_auxiliary_normalization_epsilon(
+                self.fmt_encoder, self.auxiliary_normalization_epsilon
+            )
         )
         (
             self.auxiliary_normalization_layer_count,
@@ -848,6 +886,11 @@ def residual_model_kwargs(model_spec):
             None
             if model_spec.get("auxiliary_normalization_initial_bias") is None
             else float(model_spec["auxiliary_normalization_initial_bias"])
+        ),
+        "auxiliary_normalization_epsilon": (
+            None
+            if model_spec.get("auxiliary_normalization_epsilon") is None
+            else float(model_spec["auxiliary_normalization_epsilon"])
         ),
         "auxiliary_dropout": float(model_spec.get("auxiliary_dropout", 0.0)),
         "auxiliary_classifier_architecture": str(model_spec.get(
