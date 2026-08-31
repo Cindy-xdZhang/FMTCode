@@ -71,6 +71,14 @@ entry remains held and unchanged; 7.2 does not reuse its phase.
 
 Any failed or partial stage is recorded and cannot alter the frozen recipe.
 
+The deployed source binding was revalidated after the 52.1 source-identity
+gate exposed a raw-byte versus normalized-text hash naming error. Commit
+`48e7ddb` freezes the corrected 52.1 canonical config hash
+`fc33380b1af18d2869d3eb18ff0bf8646797dc66f7d3951448a0628f69d091b0`;
+all eight 7.2 deployment tests pass on Ibex. This correction changed no model,
+candidate, data, label, seed, metric, or selection rule and occurred before
+52.1 selection or any sixth-population artifact existed.
+
 ## Main artifacts
 
 - `config/mainExp_Task3_3D_7.2.yaml`

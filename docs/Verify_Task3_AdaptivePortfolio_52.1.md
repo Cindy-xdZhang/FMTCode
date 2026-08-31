@@ -36,6 +36,25 @@ version is frozen.
 - The config raw SHA-256 at implementation time is
   `fc33380b1af18d2869d3eb18ff0bf8646797dc66f7d3951448a0628f69d091b0`.
 
+## Deployed source-identity gate
+
+The selector now has a separate precondition that reads only the five deployed
+source config files. It checks each experiment identity and the SHA-256 of text
+after normalizing CRLF/LF line endings; it does not open a selection, result,
+checkpoint, or performance metric. The first two jobs (`51074003`, `51074118`)
+failed closed because the initial whitelist contained remote raw-byte hashes
+while the field and verifier required normalized-text hashes. No selector ran
+and both reports stopped before reading performance artifacts.
+
+Commit `48e7ddb` replaces all five values with normalized-text hashes and binds
+7.2 to the resulting 52.1 config hash
+`fc33380b1af18d2869d3eb18ff0bf8646797dc66f7d3951448a0628f69d091b0`.
+Recovery job `51074226` completed with exit 0 and empty stderr. Its report
+records `performance_artifacts_read=false`, all five source identities, and
+SHA-256 `e84de56450899b32ad82afd9a478e179ed8990120c8dc1baafc2c36e2a8c9706`.
+The completed gate was added to selector `51059320` without removing its
+remaining `afterok:51058835` dependency.
+
 ## Independent evidence gate
 
 `Audit_Task3_AdaptivePortfolio.py` does not import either portfolio selector.
