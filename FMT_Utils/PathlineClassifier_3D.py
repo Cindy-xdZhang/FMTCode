@@ -180,6 +180,39 @@ def _auxiliary_projection(input_dim, output_dim, architecture,
     raise ValueError(f"unknown auxiliary projection {architecture!r}")
 
 
+def _initialize_auxiliary_normalization(module, initial_scale=None):
+    """Optionally initialize only normalization scales in an auxiliary encoder.
+
+    ``None`` is an exact historical control.  An explicit value changes every
+    trainable LayerNorm/RMSNorm affine weight inside ``module`` without
+    consuming random numbers or touching linear layers and downstream heads.
+    """
+    if initial_scale is None:
+        return 0
+    initial_scale = float(initial_scale)
+    if not math.isfinite(initial_scale) or initial_scale < 0.0:
+        raise ValueError(
+            "auxiliary_normalization_initial_scale must be finite and "
+            "non-negative"
+        )
+    initialized = 0
+    with torch.no_grad():
+        for child in module.modules():
+            if isinstance(child, nn.LayerNorm):
+                if child.weight is not None:
+                    child.weight.fill_(initial_scale)
+                    initialized += 1
+            elif isinstance(child, _RMSNorm):
+                child.weight.fill_(initial_scale)
+                initialized += 1
+    if initialized == 0:
+        raise ValueError(
+            "auxiliary_normalization_initial_scale requires an auxiliary "
+            "projection with trainable LayerNorm or RMSNorm"
+        )
+    return initialized
+
+
 class _ResidualMLPBlock(nn.Module):
     def __init__(self, width, dropout=0.0):
         super().__init__()
@@ -545,6 +578,7 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  head_activation="gelu",
                  auxiliary_projection="linear_layernorm_gelu",
                  auxiliary_hidden_dim=64, auxiliary_block_dims=None,
+                 auxiliary_normalization_initial_scale=None,
                  auxiliary_dropout=0.0,
                  auxiliary_classifier_architecture="none",
                  auxiliary_classifier_hidden_dim=64,
@@ -602,6 +636,16 @@ class PathlineFMTResidualClassifier3D(nn.Module):
         self.fmt_encoder = _auxiliary_projection(
             int(fmt_dim), auxiliary_dim, self.auxiliary_projection,
             self.auxiliary_hidden_dim, self.auxiliary_block_dims,
+        )
+        self.auxiliary_normalization_initial_scale = (
+            None if auxiliary_normalization_initial_scale is None
+            else float(auxiliary_normalization_initial_scale)
+        )
+        self.auxiliary_normalization_layer_count = (
+            _initialize_auxiliary_normalization(
+                self.fmt_encoder,
+                self.auxiliary_normalization_initial_scale,
+            )
         )
         auxiliary_dropout = float(auxiliary_dropout)
         if not 0.0 <= auxiliary_dropout < 1.0:
@@ -771,6 +815,11 @@ def residual_model_kwargs(model_spec):
         "auxiliary_block_dims": (
             None if model_spec.get("auxiliary_block_dims") is None
             else [int(value) for value in model_spec["auxiliary_block_dims"]]
+        ),
+        "auxiliary_normalization_initial_scale": (
+            None
+            if model_spec.get("auxiliary_normalization_initial_scale") is None
+            else float(model_spec["auxiliary_normalization_initial_scale"])
         ),
         "auxiliary_dropout": float(model_spec.get("auxiliary_dropout", 0.0)),
         "auxiliary_classifier_architecture": str(model_spec.get(
