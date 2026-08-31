@@ -276,6 +276,38 @@ class _TrainingGaussianNoise(nn.Module):
         return values + torch.randn_like(values) * self.standard_deviation
 
 
+class _FixedAuxiliaryNormalization(nn.Module):
+    """Normalize projected auxiliary features without parameters or state."""
+
+    VALID_MODES = {"none", "center", "rms", "layer"}
+
+    def __init__(self, mode="none", epsilon=1e-5):
+        super().__init__()
+        self.mode = str(mode).lower()
+        if self.mode not in self.VALID_MODES:
+            raise ValueError(
+                "auxiliary_post_normalization must be 'none', 'center', "
+                "'rms', or 'layer'"
+            )
+        self.epsilon = float(epsilon)
+
+    def forward(self, values):
+        if self.mode == "none":
+            return values
+        if self.mode == "center":
+            return values - values.mean(dim=-1, keepdim=True)
+        if self.mode == "rms":
+            inverse_rms = torch.rsqrt(
+                values.square().mean(dim=-1, keepdim=True) + self.epsilon
+            )
+            return values * inverse_rms
+        centered = values - values.mean(dim=-1, keepdim=True)
+        inverse_std = torch.rsqrt(
+            centered.square().mean(dim=-1, keepdim=True) + self.epsilon
+        )
+        return centered * inverse_std
+
+
 class _ResidualMLPBlock(nn.Module):
     def __init__(self, width, dropout=0.0):
         super().__init__()
@@ -650,7 +682,8 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  residual_output_initialization_scale=1.0,
                  auxiliary_normalization_epsilon=None,
                  auxiliary_noise_std=0.0,
-                 auxiliary_feature_scale=1.0):
+                 auxiliary_feature_scale=1.0,
+                 auxiliary_post_normalization="none"):
         super().__init__()
         if not isinstance(raw_model, PathlineBinaryClassifier3D):
             raise TypeError("raw_model must be PathlineBinaryClassifier3D")
@@ -703,6 +736,12 @@ class PathlineFMTResidualClassifier3D(nn.Module):
         self.fmt_encoder = _auxiliary_projection(
             int(fmt_dim), auxiliary_dim, self.auxiliary_projection,
             self.auxiliary_hidden_dim, self.auxiliary_block_dims,
+        )
+        self.auxiliary_post_normalization = str(
+            auxiliary_post_normalization
+        ).lower()
+        self.auxiliary_post_normalizer = _FixedAuxiliaryNormalization(
+            self.auxiliary_post_normalization
         )
         self.auxiliary_normalization_initial_scale = (
             None if auxiliary_normalization_initial_scale is None
@@ -837,9 +876,10 @@ class PathlineFMTResidualClassifier3D(nn.Module):
         with torch.no_grad():
             geometry = self.raw_model.geometry(pathlines)
             raw_logit = self.raw_model.head(geometry).squeeze(-1)
-        auxiliary = self.auxiliary_noise(
-            self.auxiliary_dropout(self.fmt_encoder(fmt_features))
+        auxiliary = self.auxiliary_post_normalizer(
+            self.fmt_encoder(fmt_features)
         )
+        auxiliary = self.auxiliary_noise(self.auxiliary_dropout(auxiliary))
         # Preserve the historical graph exactly for the registered control.
         if self.auxiliary_feature_scale != 1.0:
             auxiliary = auxiliary * self.auxiliary_feature_scale
@@ -929,6 +969,9 @@ def residual_model_kwargs(model_spec):
         "auxiliary_noise_std": float(model_spec.get("auxiliary_noise_std", 0.0)),
         "auxiliary_feature_scale": float(
             model_spec.get("auxiliary_feature_scale", 1.0)
+        ),
+        "auxiliary_post_normalization": str(
+            model_spec.get("auxiliary_post_normalization", "none")
         ),
         "auxiliary_dropout": float(model_spec.get("auxiliary_dropout", 0.0)),
         "auxiliary_classifier_architecture": str(model_spec.get(
