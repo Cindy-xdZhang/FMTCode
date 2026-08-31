@@ -2,11 +2,13 @@
 
 ## Purpose
 
-This is an infrastructure repair for `mainExp_Task3_3D_8.1`, not a model or
-hyperparameter experiment. All ten original evaluation children failed before
-model inference because their frozen residual checkpoints referenced Raw 3.2
-checkpoints that had already been removed by cleanup. No confirmation metric
-was produced or read.
+This was a proposed infrastructure fallback for `mainExp_Task3_3D_8.1`, not a
+model or hyperparameter experiment. All ten original evaluation children
+failed before model inference because the portable 54.1 package omitted the
+Raw 3.2 checkpoints referenced by its residual checkpoints. The initial
+diagnosis incorrectly concluded that cleanup had removed the original files;
+read-only inspection later showed that all 20 originals were still intact in
+the canonical 3.2 output.
 
 ## Frozen reconstruction contract
 
@@ -36,5 +38,14 @@ reproducibility only; it does not support FMT performance.
 
 ## Status
 
-Implementation and four focused unit tests pass locally. Ibex deployment and
-the strict reconstruction gate are pending.
+Rejected. The safer exact-copy dependency closure in commit `a38a102` completed
+first and preserved every original checkpoint SHA-256 without retraining. Its
+evaluation, summary, and independent audit jobs `51088068 -> 51088083 ->
+51088109 -> 51088124` all completed successfully.
+
+The stale reconstruction preflight `51088368` was nevertheless submitted by a
+concurrent process. Its own strict gate detected the already complete 8.1
+shards and summary and stopped with exit code 1 before any V100 job was
+submitted. No model, metric, or confirmation artifact was changed. The code is
+retained only to document the rejected fallback; it must not be used to replace
+the exact original checkpoints or the audited 8.1 result.

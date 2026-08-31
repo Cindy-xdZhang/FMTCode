@@ -2,10 +2,10 @@ experiment: Verify_Task3_RawDependencyRebuild_8.1
 task: Task3
 
 # Infrastructure-only recovery for mainExp_Task3_3D_8.1.  The confirmation
-# shards all failed before writing metrics because the frozen residual models
-# referenced Raw checkpoints that had already been cleaned.  Rebuilding is
-# accepted only when two independent V100 runs agree tensor-for-tensor and
-# reproduce every preserved 3.2 validation metric to the registered tolerance.
+# initial shards all failed before writing metrics because the portable frozen
+# package omitted Raw checkpoints referenced by its residual models. The
+# originals were later found intact and copied exactly, so this reconstruction
+# fallback was rejected and must not replace the audited exact-copy result.
 source_repo_root: /home/zhanx0o/FMT_Task12_3D_20260823
 target_repo_root: /home/zhanx0o/FMT_Task3_ExtendedTuned_8_1
 source_training_script: Verify_Task3_FMTClassifier.py

@@ -1,7 +1,8 @@
 # mainExp_Task3_3D_8.1
 
-> Status: preregistered before 53.1 produced any performance metric. The job
-> chain may start only after 54.1 selection and its independent audit succeed.
+> Status: completed and independently audited. The experiment was
+> preregistered before 53.1 produced any performance metric and started only
+> after 54.1 selection and its independent audit succeeded.
 
 ## Scientific question
 
@@ -62,26 +63,50 @@ The phase differs from all six previously declared populations.
 - `ibex_bash/mainexp_task3_3d_8.1_*.sh`
 - `ibex_bash/verify_task3_extended_tuned_8.1_evidence.sh`
 
-## Current status and infrastructure repair
+## Dependency repair
 
 Jobs `51074813` through `51074841` completed successfully: the 54.1 recipe was
 frozen before data generation, all ten seventh-population caches and both IVD
 label groups were generated, and evaluation preflight verified the frozen
 recipe and data hashes. Evaluation array `51074843` then failed in all ten
-children before loading the first dataset model. Every traceback reports the
-same missing dependency: a frozen residual checkpoint references a historical
-3.2 Raw checkpoint that an earlier cleanup removed. No confirmation shard,
-`per_run.csv`, `summary.json`, or metric was written. Jobs `51074853` and
-`51074863` therefore did not run. This is an infrastructure failure and has no
-scientific sign.
+children before model inference because the 54.1 frozen package copied each
+residual checkpoint but not the Raw checkpoint it references. The original 20
+Raw checkpoints were still intact in the canonical 3.2 source output; the
+failure was a missing transitive dependency in the portable package, not a
+deleted model or a numerical result. No confirmation shard or metric was
+written, and the blocked summary/audit jobs were cancelled.
 
-`Verify_Task3_RawDependencyRebuild_8.1` repairs only this missing dependency.
-It freezes the original 3.2 training script, model module, source configs,
-caches, labels, and preserved validation tables by SHA-256. Two independent
-V100 runs rebuild only the 20 Raw models for seeds 40 and 41. Installation is
-allowed only if both state dictionaries are tensor-identical, all preserved
-validation metrics differ by at most `1e-12`, and the Raw normalization agrees
-exactly with all 40 frozen residual checkpoints. The repair reads no seventh-
-population label or performance metric and changes no recipe, threshold,
-feature, scale, or hyperparameter. If any gate fails, 8.1 remains failed and no
-confirmation evaluation is launched.
+Operational repair commit `a38a102` adds an exact dependency closure. It reads
+the literal `raw_checkpoint` field by pickle opcode disassembly without
+unpickling code, copies the original 20 files, verifies their SHA-256 values,
+and records which paired FMT/Raw-PCA residuals share each Raw model. The closure
+contains 40 residual references, 20 Raw files, zero training run, no read
+confirmation metric, and `scientific_configuration_changed=false`. Its SHA-256
+is `2e5881bff9726c78ca1d6f4a2a1a4d4390294812c1266a8a2447e45f685e59b5`.
+Local and Ibex runs of 35 related tests passed. This exact-copy route was used
+instead of retraining because all original Raw checkpoints were available.
+
+## Final result
+
+Repair/evaluation/summary/audit jobs `51088068 -> 51088083 -> 51088109 ->
+51088124` all completed with exit code zero. Dataset-macro Raw-PCA/FMT F1 is
+`0.69131/0.87136`, an improvement of `+0.18005`. Average Precision is
+`0.74392/0.94383`, an improvement of `+0.19991`. Family-macro F1 and Average
+Precision gains are `+0.19440` and `+0.21523`.
+
+All ten datasets, all seven physical families, and both paired seeds have
+positive F1 gain. The minimum dataset is DeltaWing-LBM at `+0.03633`; seed-40
+and seed-41 gains are `+0.18192` and `+0.17818`. The preregistered `+0.15`
+primary target passes; the `+0.20` aspirational F1 target does not.
+
+The independent auditor rebuilt all aggregates from 40 rows, checked the 40
+frozen model identities, and differed from the summary by at most `1.11e-16`.
+Summary, per-run CSV, and audit SHA-256 values are respectively
+`0066299c…07bd`, `78d19ec3…bc52`, and `eabc384a…edb3`. The evidence bundle in
+`output/mainExp_Task3_3D_8.1_ibex/` contains no model weights and matches every
+registered hash.
+
+A concurrently prepared double-V100 reconstruction was not used. Its
+preflight job `51088368` started after this exact-copy evaluation had already
+completed and correctly failed because confirmation artifacts existed; no GPU
+reconstruction job was submitted and no 8.1 artifact was modified.
