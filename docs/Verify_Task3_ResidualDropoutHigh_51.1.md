@@ -81,3 +81,8 @@ and excluding every model file from the archive. It does not train or select a
 candidate. Local and remote script SHA-256 is
 `3fc03e2d30c2c4c3f47fbd0891bd391deec9ce8d48922f61b503c8d4e4b6e0dc`;
 remote `bash -n` passed.
+
+Cleanup job `51058838` was correspondingly hardened to wait for selector
+`51058835`, portfolio `51059320`, and evidence job `51072260`. It therefore
+cannot delete source checkpoints during the evidence stability check or before
+52.1 has copied its selected models.

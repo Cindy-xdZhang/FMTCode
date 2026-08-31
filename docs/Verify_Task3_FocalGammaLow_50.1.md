@@ -79,3 +79,8 @@ from the archive, and publishes stable SHA-256 values. It does not train or
 select a candidate. Local and remote script SHA-256 is
 `94a448d82d922938dc0b881bb7829c7718d1f03631d850a1c0552fdeb5d52e7f`;
 remote `bash -n` passed.
+
+The destructive archive/cleanup job `51056264` now also has strict
+`afterok:51072242`, in addition to its selector and 52.1 dependencies. This
+prevents cleanup from racing the evidence job's 30-second archive-stability
+check.
