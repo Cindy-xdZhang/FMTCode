@@ -76,3 +76,55 @@ a fresh spatial-population confirmation before it can support a paper claim.
   `e463529b2ecaa2ec60560232acc261ecfd945b7241684204350d4eba2cb2e28e`.
 - Local and remote combination contracts: 7/7 passed. Remote Python
   compilation and all three Slurm-script syntax checks passed.
+
+## Final development result
+
+All 280 GPU children completed with exit code zero, producing all 1,680
+declared paired trainings. Selector `51018923` completed in 17 seconds with
+empty stderr. The family-specific selected Raw-PCA/FMT dataset-macro F1 is
+`0.6856919/0.8904569`, hence the paired F1 gain is `+0.2047649`. Raw-PCA/FMT
+Average Precision is `0.7298719/0.9490535`, hence the Average Precision gain is
+`+0.2191816`. All 10 dataset entries have positive F1 gain; the worst entry is
+deltaWing-resampled at `+0.0538466`.
+
+The exact anchored-feature control has Raw-PCA/FMT F1
+`0.6972269/0.8871248`, giving `+0.1898980`. Selection therefore raises
+absolute FMT F1 by `+0.0033320` and paired F1 gain by `+0.0148670`, while
+Raw-PCA F1 falls by `0.0115350`. Relative to the earlier 38.1 Dropout winner,
+absolute FMT F1 rises by `+0.0021002` and paired F1 gain rises by `+0.0082859`.
+The improvement is therefore not solely produced by weakening Raw-PCA.
+
+The preregistered `+0.195` gain target is reached. The absolute FMT target
+`0.893` is missed by `0.0025431`, so the joint target is not reached and this
+remains a development result. The selected recipes are:
+
+| Physical family | Selected combination |
+|---|---|
+| Boeing 747 | `k13_alpha_betas` |
+| channel | `k26_all` |
+| delta wing | `k05_positive_weight` |
+| F-22 Raptor | `k25_all_non_scheduler` |
+| half-cylinder | `k06_dropout` |
+| Smoke Buoyancy | `k25_all_non_scheduler` |
+| Tangaroa | `k18_alpha_ema` |
+
+## Independent audit and retention
+
+Evidence job `51071240` completed with empty stderr. It archived 1,680/1,680
+per-run CSV files, retained all 1,680 temporary checkpoints for 52.1, and
+published archive SHA-256
+`ac55850ef26fd9b79f7301314025190abc61fcea3aba7dc7f6f7bd4aadae82e4`.
+The independent audit does not import the selector implementation. It rebuilt
+all seven family decisions, confirmed equal paired parameter counts and all
+source hashes, and matched the selector to a maximum absolute difference of
+`1.11e-16`. Its SHA-256 is
+`f1fcff66125993b8b1b846ef9e5fd85b626099fcbea4008b48bd63532f7bf0ac`.
+
+Final selector artifact SHA-256 values are:
+
+- selection: `48dfa466ddb21a4faee2eaa071e1a204615ba2e7f2354944f57bfdc54ad55f12`;
+- leaderboard: `b9e96f9e8cbf68baeb48ba4e88dd79792f49066c36514b328f0e8e8f872dbaad`;
+- preflight manifest: `b9b0cbcfae89cd987cfcfb9dedb1085efc75658d19efefbf76d81e360377629b`.
+
+The winner is an eligible source for 52.1, but only the later fresh
+spatial-population confirmation can replace the current paper result.
