@@ -1079,24 +1079,49 @@ def _auxiliary_weight_decay_multiplier(training=None):
     return value
 
 
+def _auxiliary_optimizer_betas(training=None):
+    """Return optional Adam-family betas for only the auxiliary projection."""
+    training = {} if training is None else dict(training)
+    global_betas, _ = _optimizer_betas(training)
+    beta1_value = training.get("auxiliary_optimizer_beta1")
+    beta2_value = training.get("auxiliary_optimizer_beta2")
+    overridden = beta1_value is not None or beta2_value is not None
+    beta1 = global_betas[0] if beta1_value is None else float(beta1_value)
+    beta2 = global_betas[1] if beta2_value is None else float(beta2_value)
+    for name, value in (
+        ("auxiliary_optimizer_beta1", beta1),
+        ("auxiliary_optimizer_beta2", beta2),
+    ):
+        if not np.isfinite(value) or not 0.0 <= value < 1.0:
+            raise ValueError(f"{name} must be finite and in [0, 1)")
+    return (beta1, beta2), overridden
+
+
 def _optimizer_parameter_spec(model, training):
     """Return an exact control list or paired projection/head parameter groups.
 
-    Unit learning-rate and weight-decay multipliers deliberately return the
-    historical single flat parameter list. Non-control cells place only the
-    trainable auxiliary projection in a second optimizer group; all downstream
-    residual parameters retain the base optimizer values. The frozen Raw
-    backbone is excluded in both cases.
+    A strict no-override control deliberately returns the historical single
+    flat parameter list. Non-control cells place only the trainable auxiliary
+    projection in a second optimizer group; all downstream residual parameters
+    retain the base optimizer values. The frozen Raw backbone is excluded in
+    both cases.
     """
     multiplier = _auxiliary_learning_rate_multiplier(training)
     weight_decay_multiplier = _auxiliary_weight_decay_multiplier(training)
+    auxiliary_betas, auxiliary_betas_overridden = _auxiliary_optimizer_betas(
+        training
+    )
     trainable = [
         parameter for parameter in model.parameters()
         if parameter.requires_grad
     ]
     if not trainable:
         raise ValueError("residual model has no trainable parameters")
-    if multiplier == 1.0 and weight_decay_multiplier == 1.0:
+    if (
+        multiplier == 1.0
+        and weight_decay_multiplier == 1.0
+        and not auxiliary_betas_overridden
+    ):
         return trainable, multiplier, 0
 
     auxiliary = [
@@ -1121,13 +1146,16 @@ def _optimizer_parameter_spec(model, training):
     auxiliary_weight_decay = (
         float(training["weight_decay"]) * weight_decay_multiplier
     )
+    auxiliary_group = {
+        "params": auxiliary,
+        "lr": auxiliary_rate,
+        "weight_decay": auxiliary_weight_decay,
+    }
+    if auxiliary_betas_overridden:
+        auxiliary_group["betas"] = auxiliary_betas
     return [
         {"params": downstream},
-        {
-            "params": auxiliary,
-            "lr": auxiliary_rate,
-            "weight_decay": auxiliary_weight_decay,
-        },
+        auxiliary_group,
     ], multiplier, 1
 
 
@@ -1265,6 +1293,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         auxiliary_optimizer_group_index,
     ) = _optimizer_parameter_spec(model, spec["training"])
     auxiliary_weight_decay_multiplier = _auxiliary_weight_decay_multiplier(
+        spec["training"]
+    )
+    auxiliary_optimizer_betas, _ = _auxiliary_optimizer_betas(
         spec["training"]
     )
     optimizer, optimizer_name, optimizer_amsgrad = _build_optimizer(
@@ -1432,6 +1463,10 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
                 "weight_decay"
             ]
         )
+        current_auxiliary_betas = tuple(
+            float(value) for value in
+            optimizer.param_groups[auxiliary_optimizer_group_index]["betas"]
+        )
         if scheduler is not None:
             scheduler.step()
         evaluation_parameters = (
@@ -1485,6 +1520,8 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             "auxiliary_weight_decay_multiplier": (
                 auxiliary_weight_decay_multiplier
             ),
+            "auxiliary_optimizer_beta1": current_auxiliary_betas[0],
+            "auxiliary_optimizer_beta2": current_auxiliary_betas[1],
             "training_alpha": training_alpha,
             "gradient_clip_norm": (
                 "" if gradient_clip_norm is None else gradient_clip_norm
@@ -1557,6 +1594,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "auxiliary_weight_decay_multiplier": (
             auxiliary_weight_decay_multiplier
         ),
+        "auxiliary_optimizer_betas": auxiliary_optimizer_betas,
         "scheduler": scheduler_name,
         "warmup_epochs": warmup_epochs,
         "warmup_start_ratio": warmup_start_ratio,
@@ -1656,6 +1694,8 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "training_auxiliary_weight_decay_multiplier": (
             auxiliary_weight_decay_multiplier
         ),
+        "training_auxiliary_optimizer_beta1": auxiliary_optimizer_betas[0],
+        "training_auxiliary_optimizer_beta2": auxiliary_optimizer_betas[1],
         "training_scheduler": scheduler_name,
         "training_warmup_epochs": warmup_epochs,
         "training_warmup_start_ratio": warmup_start_ratio,
