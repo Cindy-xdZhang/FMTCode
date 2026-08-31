@@ -1,0 +1,60 @@
+experiment: Verify_Task3_AuxiliaryGaussianNoise_71.1
+output_root: outputs/Verify_Task3_AuxiliaryGaussianNoise_71.1
+task: Task3
+
+# Development-only single-factor regularization search.  The independently
+# audited 70.1 portfolio supplies one frozen recipe per physical family.  The
+# exact control adds no module-side randomness; candidate cells add zero-mean
+# Gaussian noise only to the projected auxiliary representation during train.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  portfolio:
+    kind: optimization
+    selection: outputs/Verify_Task3_AuxiliaryNormEpsilonPortfolio_70.1/portfolio_selection.json
+    expected_experiment: Verify_Task3_AuxiliaryNormEpsilonPortfolio_70.1
+
+# c00 exactly reproduces the source recipe (noise std=0).  Noise is disabled in
+# eval mode for every candidate and has no parameters or checkpoint state.
+optimization_candidates:
+  - {id: c00_control_noise000, sources: [portfolio]}
+  - {id: c01_noise0005, sources: [portfolio], model: {auxiliary_noise_std: 0.005}}
+  - {id: c02_noise0010, sources: [portfolio], model: {auxiliary_noise_std: 0.010}}
+  - {id: c03_noise0025, sources: [portfolio], model: {auxiliary_noise_std: 0.025}}
+  - {id: c04_noise0050, sources: [portfolio], model: {auxiliary_noise_std: 0.050}}
+  - {id: c05_noise0100, sources: [portfolio], model: {auxiliary_noise_std: 0.100}}
+  - {id: c06_noise0200, sources: [portfolio], model: {auxiliary_noise_std: 0.200}}
+  - {id: c07_noise0300, sources: [portfolio], model: {auxiliary_noise_std: 0.300}}
+  - {id: c08_noise0500, sources: [portfolio], model: {auxiliary_noise_std: 0.500}}
+  - {id: c09_noise0750, sources: [portfolio], model: {auxiliary_noise_std: 0.750}}
+  - {id: c10_noise1000, sources: [portfolio], model: {auxiliary_noise_std: 1.000}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: c00_control_noise000
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.214
+  target_absolute_fmt_f1: 0.893
+  confirmation_opened: false
