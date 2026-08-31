@@ -441,6 +441,9 @@ def _candidate_spec(spec: dict, group: dict, candidate: dict, dataset: str,
                 None if candidate.get("auxiliary_block_dims") is None
                 else [int(value) for value in candidate["auxiliary_block_dims"]]
             ),
+            "auxiliary_dropout": float(candidate.get(
+                "auxiliary_dropout", 0.0
+            )),
             "auxiliary_classifier_architecture": str(candidate.get(
                 "auxiliary_classifier_architecture", "none"
             )),

@@ -1,0 +1,62 @@
+experiment: Verify_Task3_AuxiliaryDropout_53.1
+output_root: outputs/Verify_Task3_AuxiliaryDropout_53.1
+task: Task3
+
+# Development-only single-factor search. Auxiliary dropout is applied after
+# the matched FMT/Raw-PCA projection and before fusion with frozen Raw geometry.
+# It is therefore distinct from residual-head dropout, which regularizes the
+# already fused hidden representation.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+  auxiliary_dropout: 0.0
+
+combination_sources:
+  feature:
+    kind: stage1_feature
+    selection: outputs/Verify_Task3_AnchoredFeatureDecomposition_22.1/stage1_selection.json
+    expected_experiment: Verify_Task3_AnchoredFeatureDecomposition_22.1
+
+# a00 has no local override and is the exact historical p=0 control. Every
+# non-control cell changes only the auxiliary dropout probability. Both arms
+# receive the same probability, auxiliary width, initialization, and budget.
+optimization_candidates:
+  - {id: a00_control_auxdrop0000, sources: [feature]}
+  - {id: a01_auxdrop0025, sources: [feature], model: {auxiliary_dropout: 0.025}}
+  - {id: a02_auxdrop0050, sources: [feature], model: {auxiliary_dropout: 0.050}}
+  - {id: a03_auxdrop0100, sources: [feature], model: {auxiliary_dropout: 0.100}}
+  - {id: a04_auxdrop0150, sources: [feature], model: {auxiliary_dropout: 0.150}}
+  - {id: a05_auxdrop0200, sources: [feature], model: {auxiliary_dropout: 0.200}}
+  - {id: a06_auxdrop0300, sources: [feature], model: {auxiliary_dropout: 0.300}}
+  - {id: a07_auxdrop0400, sources: [feature], model: {auxiliary_dropout: 0.400}}
+  - {id: a08_auxdrop0500, sources: [feature], model: {auxiliary_dropout: 0.500}}
+  - {id: a09_auxdrop0600, sources: [feature], model: {auxiliary_dropout: 0.600}}
+  - {id: a10_auxdrop0700, sources: [feature], model: {auxiliary_dropout: 0.700}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: a00_control_auxdrop0000
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.200
+  target_absolute_fmt_f1: 0.893
+  confirmation_opened: false

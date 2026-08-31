@@ -545,6 +545,7 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  head_activation="gelu",
                  auxiliary_projection="linear_layernorm_gelu",
                  auxiliary_hidden_dim=64, auxiliary_block_dims=None,
+                 auxiliary_dropout=0.0,
                  auxiliary_classifier_architecture="none",
                  auxiliary_classifier_hidden_dim=64,
                  residual_output_initialization="default",
@@ -602,6 +603,14 @@ class PathlineFMTResidualClassifier3D(nn.Module):
             int(fmt_dim), auxiliary_dim, self.auxiliary_projection,
             self.auxiliary_hidden_dim, self.auxiliary_block_dims,
         )
+        auxiliary_dropout = float(auxiliary_dropout)
+        if not 0.0 <= auxiliary_dropout < 1.0:
+            raise ValueError("auxiliary_dropout must be in [0, 1)")
+        # This regularizer acts only on the projected auxiliary representation,
+        # before it is fused with the frozen Raw geometry.  Dropout has no
+        # parameters or checkpoint state, so p=0 remains byte-compatible with
+        # historical residual checkpoints.
+        self.auxiliary_dropout = nn.Dropout(auxiliary_dropout)
         residual_width = (
             embedding_dim + auxiliary_dim
             if self.residual_input in {"geometry_fmt", "dual"} else auxiliary_dim
@@ -694,7 +703,7 @@ class PathlineFMTResidualClassifier3D(nn.Module):
         with torch.no_grad():
             geometry = self.raw_model.geometry(pathlines)
             raw_logit = self.raw_model.head(geometry).squeeze(-1)
-        auxiliary = self.fmt_encoder(fmt_features)
+        auxiliary = self.auxiliary_dropout(self.fmt_encoder(fmt_features))
         residual_input = (
             torch.cat((geometry.detach(), auxiliary), dim=-1)
             if self.residual_input in {"geometry_fmt", "dual"} else auxiliary
@@ -763,6 +772,7 @@ def residual_model_kwargs(model_spec):
             None if model_spec.get("auxiliary_block_dims") is None
             else [int(value) for value in model_spec["auxiliary_block_dims"]]
         ),
+        "auxiliary_dropout": float(model_spec.get("auxiliary_dropout", 0.0)),
         "auxiliary_classifier_architecture": str(model_spec.get(
             "auxiliary_classifier_architecture", "none"
         )),
