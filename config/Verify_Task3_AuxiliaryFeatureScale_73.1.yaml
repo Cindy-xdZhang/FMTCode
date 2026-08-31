@@ -1,0 +1,59 @@
+experiment: Verify_Task3_AuxiliaryFeatureScale_73.1
+output_root: outputs/Verify_Task3_AuxiliaryFeatureScale_73.1
+task: Task3
+
+# Development-only single-factor search.  The independently audited 72.1
+# portfolio supplies one frozen recipe per physical family.  Candidates change
+# only the fixed post-projection auxiliary amplitude before residual fusion.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  portfolio:
+    kind: optimization
+    selection: outputs/Verify_Task3_AuxiliaryGaussianNoisePortfolio_72.1/portfolio_selection.json
+    expected_experiment: Verify_Task3_AuxiliaryGaussianNoisePortfolio_72.1
+
+# c00 exactly reproduces the source recipe.  The fixed scale has no parameters,
+# checkpoint state, or random-number consumption; 1.0 bypasses multiplication.
+optimization_candidates:
+  - {id: c00_control_scale100, sources: [portfolio]}
+  - {id: c01_scale000, sources: [portfolio], model: {auxiliary_feature_scale: 0.00}}
+  - {id: c02_scale001, sources: [portfolio], model: {auxiliary_feature_scale: 0.01}}
+  - {id: c03_scale003, sources: [portfolio], model: {auxiliary_feature_scale: 0.03}}
+  - {id: c04_scale010, sources: [portfolio], model: {auxiliary_feature_scale: 0.10}}
+  - {id: c05_scale025, sources: [portfolio], model: {auxiliary_feature_scale: 0.25}}
+  - {id: c06_scale050, sources: [portfolio], model: {auxiliary_feature_scale: 0.50}}
+  - {id: c07_scale075, sources: [portfolio], model: {auxiliary_feature_scale: 0.75}}
+  - {id: c08_scale150, sources: [portfolio], model: {auxiliary_feature_scale: 1.50}}
+  - {id: c09_scale200, sources: [portfolio], model: {auxiliary_feature_scale: 2.00}}
+  - {id: c10_scale400, sources: [portfolio], model: {auxiliary_feature_scale: 4.00}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: c00_control_scale100
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.215
+  target_absolute_fmt_f1: 0.893
+  confirmation_opened: false

@@ -649,7 +649,8 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  residual_output_initialization="default",
                  residual_output_initialization_scale=1.0,
                  auxiliary_normalization_epsilon=None,
-                 auxiliary_noise_std=0.0):
+                 auxiliary_noise_std=0.0,
+                 auxiliary_feature_scale=1.0):
         super().__init__()
         if not isinstance(raw_model, PathlineBinaryClassifier3D):
             raise TypeError("raw_model must be PathlineBinaryClassifier3D")
@@ -738,6 +739,12 @@ class PathlineFMTResidualClassifier3D(nn.Module):
         self.auxiliary_dropout = nn.Dropout(auxiliary_dropout)
         self.auxiliary_noise_std = float(auxiliary_noise_std)
         self.auxiliary_noise = _TrainingGaussianNoise(self.auxiliary_noise_std)
+        self.auxiliary_feature_scale = float(auxiliary_feature_scale)
+        if (not math.isfinite(self.auxiliary_feature_scale)
+                or self.auxiliary_feature_scale < 0.0):
+            raise ValueError(
+                "auxiliary_feature_scale must be finite and non-negative"
+            )
         residual_width = (
             embedding_dim + auxiliary_dim
             if self.residual_input in {"geometry_fmt", "dual"} else auxiliary_dim
@@ -833,6 +840,9 @@ class PathlineFMTResidualClassifier3D(nn.Module):
         auxiliary = self.auxiliary_noise(
             self.auxiliary_dropout(self.fmt_encoder(fmt_features))
         )
+        # Preserve the historical graph exactly for the registered control.
+        if self.auxiliary_feature_scale != 1.0:
+            auxiliary = auxiliary * self.auxiliary_feature_scale
         residual_input = (
             torch.cat((geometry.detach(), auxiliary), dim=-1)
             if self.residual_input in {"geometry_fmt", "dual"} else auxiliary
@@ -917,6 +927,9 @@ def residual_model_kwargs(model_spec):
             else float(model_spec["auxiliary_normalization_epsilon"])
         ),
         "auxiliary_noise_std": float(model_spec.get("auxiliary_noise_std", 0.0)),
+        "auxiliary_feature_scale": float(
+            model_spec.get("auxiliary_feature_scale", 1.0)
+        ),
         "auxiliary_dropout": float(model_spec.get("auxiliary_dropout", 0.0)),
         "auxiliary_classifier_architecture": str(model_spec.get(
             "auxiliary_classifier_architecture", "none"
