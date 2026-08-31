@@ -27,4 +27,22 @@ result. Reaching them does not open a new confirmation population.
 
 ## Status
 
-Preregistered. No 55.1 or 56.1 performance artifact has been read.
+Completed and independently audited on Ibex.
+
+- Selector `51091889` and independent audit `51091892` completed with exit
+  code zero and empty stderr.
+- All seven physical families retain the 54.1 `current_portfolio`; no 55.1
+  auxiliary-learning-rate winner survives the registered comparison.
+- The resulting development macro remains Raw-PCA/FMT F1
+  `0.684701/0.890218`, gain `+0.205517`, with Average Precision gain
+  `+0.220142`.
+- Exactly 40 result files and 40 paired checkpoints are frozen. The independent
+  auditor verifies every content hash and paired parameter count and has zero
+  metric difference from the selector.
+- Selection and audit SHA-256 values are
+  `e9acac4133fe01327be466fc76aa69c218f9df1ddec75b2df10711a98174c40d`
+  and `d1eb81649572a77f69849c8d9983e97235ac29824162382a14448b7df41643e9`.
+
+The exact F1 gain is slightly below the preregistered rounded threshold
+`0.20552`, and absolute FMT F1 remains below `0.893`; therefore both the
+absolute and joint targets are false. Confirmation remains closed.

@@ -55,4 +55,29 @@ Failure of either target is retained as a negative result.
 
 ## Status
 
-Preregistered. No 55.1 performance result has been generated or read.
+Completed and independently audited on Ibex.
+
+- Jobs `51091862[0-89]`, `51091865`, and `51091883` completed with exit code
+  zero and empty stderr. All 90 array cells and 540 paired trainings finished.
+- The selected development result is Raw-PCA/FMT F1
+  `0.696707/0.887717`, a gain of `+0.191010`. The Average Precision gain is
+  `+0.206293`; all ten datasets are positive and the worst dataset F1 gain is
+  `+0.049498`.
+- Relative to the exact multiplier-one control, the family-specific search
+  improves F1 gain by only `+0.001622` and absolute FMT F1 by `+0.000655`.
+  It does not reach the registered `+0.200/0.893` joint target and remains
+  weaker than the completed 54.1 portfolio (`+0.205517/0.890218`).
+- Selected multipliers are `4` for channel, deltaWing, and f22raptor; `0.25`
+  for halfcylinder; `16` for tangaroa; and the control `1` for boeing747 and
+  smokeBuoyancy.
+- The remote independent audit differs from the selector by at most
+  `2.22e-16`. The downloaded archive SHA-256 is
+  `3c043032088f8088f11d8f84f3ce59691bde90a15cb69f3b6d3fd72b6ed02921`;
+  extracting all 540 per-run CSV files and rerunning the auditor locally
+  reproduces the selected recipes and macro metrics exactly.
+- After the 56.1 portfolio audit, cleanup job `51092670` deleted exactly 540
+  temporary checkpoints and left zero; the CSV archive and summaries remain.
+
+Conclusion: assigning the auxiliary projection a distinct learning rate is a
+valid but small local effect and does not improve the current best development
+portfolio. This negative result is retained; confirmation was not opened.
