@@ -70,6 +70,16 @@ class MainExpTask3_7_2Tests(unittest.TestCase):
         self.assertEqual(spec["aspirational_dataset_macro_f1_gain"], 0.20)
         self.assertEqual(spec["confirmation_count"], 4)
         self.assertEqual(len(spec["datasets"]), 10)
+        source_config = Path(
+            "config/Verify_Task3_AdaptivePortfolio_52.1.yaml"
+        )
+        canonical = source_config.read_text(encoding="utf-8").replace(
+            "\r\n", "\n"
+        ).replace("\r", "\n")
+        self.assertEqual(
+            spec["source_model"]["expected_config_canonical_sha256"],
+            hashlib.sha256(canonical.encode("utf-8")).hexdigest(),
+        )
 
     def test_builder_scope_restores_completed_7_1(self):
         original = {

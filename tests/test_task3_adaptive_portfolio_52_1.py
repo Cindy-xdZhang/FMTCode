@@ -39,10 +39,27 @@ class AdaptivePortfolioTests(unittest.TestCase):
             "focal_gamma_low": "Verify_Task3_FocalGammaLow_50.1",
             "dropout_high": "Verify_Task3_ResidualDropoutHigh_51.1",
         })
-        self.assertTrue(all(
-            len(row["expected_config_canonical_sha256"]) == 64
-            for row in spec["sources"].values()
-        ))
+        observed_hashes = {
+            name: row["expected_config_canonical_sha256"]
+            for name, row in spec["sources"].items()
+        }
+        self.assertEqual(observed_hashes, {
+            "safe_factor": (
+                "ab8032e5536cac5fe0f23456561ee1279c07977ea5694f4f03c1572a018a1713"
+            ),
+            "head_alpha_clip": (
+                "8b27378355505edbc1a2cadbe3388645d9b4f660ca7ce12d8c5bd3c8cc1cbbb2"
+            ),
+            "full_stack": (
+                "a7508abdae343af1397166e28e22e82942231f0685fa0aed1b25bf2dc82f00c7"
+            ),
+            "focal_gamma_low": (
+                "a0b706e867dd923ec7ee5b0f56f8c84e1d88708b8565646371626ae634eb5a58"
+            ),
+            "dropout_high": (
+                "4f67ee6fbbe9baf779b990eab6515ec18e472f6a3026aa4dad0a5a0aad0713ae"
+            ),
+        })
 
     def test_base_loader_is_restored_after_scoped_use(self):
         original = portfolio._base._load_spec
