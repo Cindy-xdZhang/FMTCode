@@ -46,3 +46,8 @@ registered robustness tie-breakers.  The joint target is F1 gain at least
 
 Preregistered while 57.1 was incomplete and before 58.1--74.1 produced
 performance results.  No 75.1 performance artifact has been generated or read.
+Because Slurm no longer accepted a new dependency on completed historical job
+`51096759`, a committed read-only upstream gate verifies that job's terminal
+state plus the passed 74.1 audit and all 80 frozen-file identities. The 75.1
+preflight must depend strictly on this gate; the scientific protocol is
+unchanged.
