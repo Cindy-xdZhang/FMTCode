@@ -1,0 +1,60 @@
+experiment: Verify_Task3_AuxiliaryActivationInputScale_89.1
+output_root: outputs/Verify_Task3_AuxiliaryActivationInputScale_89.1
+task: Task3
+
+# Development-only single-factor search frozen while 77.1 remains incomplete,
+# before any 88.1 portfolio metric exists. The independently audited 88.1
+# portfolio supplies one complete recipe per physical family. Candidates scale
+# only values entering activation modules already present in fmt_encoder.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  portfolio:
+    kind: optimization
+    selection: outputs/Verify_Task3_AuxiliaryProjectionActivationPortfolio_88.1/portfolio_selection.json
+    expected_experiment: Verify_Task3_AuxiliaryProjectionActivationPortfolio_88.1
+
+allowed_source_overrides: [model.auxiliary_projection_activation_input_scale]
+
+# s00 preserves every source operation exactly. Other cells multiply the input
+# of every existing projection activation by one common positive scalar. They
+# add no parameters or stochastic operations.
+optimization_candidates:
+  - {id: s00_control_source, sources: [portfolio]}
+  - {id: s01_actin0125, sources: [portfolio], model: {auxiliary_projection_activation_input_scale: 0.125}}
+  - {id: s02_actin0250, sources: [portfolio], model: {auxiliary_projection_activation_input_scale: 0.25}}
+  - {id: s03_actin0500, sources: [portfolio], model: {auxiliary_projection_activation_input_scale: 0.5}}
+  - {id: s04_actin0750, sources: [portfolio], model: {auxiliary_projection_activation_input_scale: 0.75}}
+  - {id: s05_actin1500, sources: [portfolio], model: {auxiliary_projection_activation_input_scale: 1.5}}
+  - {id: s06_actin2000, sources: [portfolio], model: {auxiliary_projection_activation_input_scale: 2.0}}
+  - {id: s07_actin4000, sources: [portfolio], model: {auxiliary_projection_activation_input_scale: 4.0}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: s00_control_source
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.228
+  target_absolute_fmt_f1: 0.897
+  confirmation_opened: false
