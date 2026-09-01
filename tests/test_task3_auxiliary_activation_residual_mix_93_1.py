@@ -236,7 +236,7 @@ class AuxiliaryActivationResidualMixTests(unittest.TestCase):
 
     def test_invalid_and_activation_free_mixes_are_rejected(self):
         for value in (-0.1, 1.1, float("nan"), float("inf")):
-            with self.assertRaisesRegex(ValueError, "in \[0, 1\]"):
+            with self.assertRaisesRegex(ValueError, r"in \[0, 1\]"):
                 _model(auxiliary_projection_activation_residual_mix=value)
         with self.assertRaisesRegex(ValueError, "requires at least one"):
             _model(
