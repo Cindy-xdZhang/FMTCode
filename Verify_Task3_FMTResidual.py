@@ -1130,6 +1130,23 @@ def _residual_head_learning_rate_multiplier(training=None):
     return value
 
 
+def _residual_head_weight_decay_multiplier(training=None):
+    """Validate the weight-decay multiplier for downstream residual heads.
+
+    The multiplier is applied to every trainable parameter outside
+    ``fmt_encoder``. The auxiliary projection keeps its independently
+    registered weight decay, and the frozen Raw backbone is never optimized.
+    """
+    training = {} if training is None else dict(training)
+    value = float(training.get("residual_head_weight_decay_multiplier", 1.0))
+    if not np.isfinite(value) or value < 0.0:
+        raise ValueError(
+            "residual_head_weight_decay_multiplier must be finite and "
+            "non-negative"
+        )
+    return value
+
+
 def _auxiliary_weight_decay_multiplier(training=None):
     """Validate the paired weight-decay multiplier for the auxiliary projection."""
     training = {} if training is None else dict(training)
@@ -1186,6 +1203,9 @@ def _optimizer_parameter_spec(model, training):
     """
     multiplier = _auxiliary_learning_rate_multiplier(training)
     head_multiplier = _residual_head_learning_rate_multiplier(training)
+    head_weight_decay_multiplier = (
+        _residual_head_weight_decay_multiplier(training)
+    )
     weight_decay_multiplier = _auxiliary_weight_decay_multiplier(training)
     auxiliary_betas, auxiliary_betas_overridden = _auxiliary_optimizer_betas(
         training
@@ -1202,6 +1222,7 @@ def _optimizer_parameter_spec(model, training):
     if (
         multiplier == 1.0
         and head_multiplier == 1.0
+        and head_weight_decay_multiplier == 1.0
         and weight_decay_multiplier == 1.0
         and not auxiliary_betas_overridden
         and not auxiliary_epsilon_overridden
@@ -1234,6 +1255,10 @@ def _optimizer_parameter_spec(model, training):
     if head_multiplier != 1.0:
         downstream_group["lr"] = (
             float(training["learning_rate"]) * head_multiplier
+        )
+    if head_weight_decay_multiplier != 1.0:
+        downstream_group["weight_decay"] = (
+            float(training["weight_decay"]) * head_weight_decay_multiplier
         )
     auxiliary_group = {
         "params": auxiliary,
@@ -1385,6 +1410,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
     ) = _optimizer_parameter_spec(model, spec["training"])
     residual_head_learning_rate_multiplier = (
         _residual_head_learning_rate_multiplier(spec["training"])
+    )
+    residual_head_weight_decay_multiplier = (
+        _residual_head_weight_decay_multiplier(spec["training"])
     )
     auxiliary_weight_decay_multiplier = _auxiliary_weight_decay_multiplier(
         spec["training"]
@@ -1566,6 +1594,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             total_loss += float(loss.detach()) * len(labels)
             count += len(labels)
         current_learning_rate = float(optimizer.param_groups[0]["lr"])
+        current_residual_head_weight_decay = float(
+            optimizer.param_groups[0]["weight_decay"]
+        )
         current_auxiliary_learning_rate = float(
             optimizer.param_groups[auxiliary_optimizer_group_index]["lr"]
         )
@@ -1628,6 +1659,12 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             "learning_rate": current_learning_rate,
             "residual_head_learning_rate_multiplier": (
                 residual_head_learning_rate_multiplier
+            ),
+            "residual_head_weight_decay": (
+                current_residual_head_weight_decay
+            ),
+            "residual_head_weight_decay_multiplier": (
+                residual_head_weight_decay_multiplier
             ),
             "auxiliary_learning_rate": current_auxiliary_learning_rate,
             "auxiliary_learning_rate_multiplier": (
@@ -1719,6 +1756,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         ),
         "residual_head_learning_rate_multiplier": (
             residual_head_learning_rate_multiplier
+        ),
+        "residual_head_weight_decay_multiplier": (
+            residual_head_weight_decay_multiplier
         ),
         "auxiliary_weight_decay_multiplier": (
             auxiliary_weight_decay_multiplier
@@ -1824,6 +1864,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         ),
         "training_residual_head_learning_rate_multiplier": (
             residual_head_learning_rate_multiplier
+        ),
+        "training_residual_head_weight_decay_multiplier": (
+            residual_head_weight_decay_multiplier
         ),
         "training_auxiliary_weight_decay_multiplier": (
             auxiliary_weight_decay_multiplier
