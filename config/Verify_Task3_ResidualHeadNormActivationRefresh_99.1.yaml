@@ -1,0 +1,61 @@
+experiment: Verify_Task3_ResidualHeadNormActivationRefresh_99.1
+output_root: outputs/Verify_Task3_ResidualHeadNormActivationRefresh_99.1
+task: Task3
+
+# Frozen while 77.1 remains incomplete and before 98.1 can produce any
+# portfolio metric. The independently audited 98.1 portfolio supplies one
+# complete recipe per physical family. The exact source is the control; the
+# remaining candidates replace only residual-head normalization and activation.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  portfolio:
+    kind: optimization
+    selection: outputs/Verify_Task3_ResidualHeadCapacityRefreshPortfolio_98.1/portfolio_selection.json
+    expected_experiment: Verify_Task3_ResidualHeadCapacityRefreshPortfolio_98.1
+
+allowed_source_overrides: [model.head_normalization, model.head_activation]
+
+# n00 preserves the complete 98.1 source recipe. The remaining rows repeat the
+# complete 29.1 3x3 factorial after the newer representation and capacity stack.
+optimization_candidates:
+  - {id: n00_control_source, sources: [portfolio]}
+  - {id: n01_layernorm_gelu, sources: [portfolio], model: {head_normalization: layernorm, head_activation: gelu}}
+  - {id: n02_layernorm_silu, sources: [portfolio], model: {head_normalization: layernorm, head_activation: silu}}
+  - {id: n03_layernorm_relu, sources: [portfolio], model: {head_normalization: layernorm, head_activation: relu}}
+  - {id: n04_rmsnorm_gelu, sources: [portfolio], model: {head_normalization: rmsnorm, head_activation: gelu}}
+  - {id: n05_rmsnorm_silu, sources: [portfolio], model: {head_normalization: rmsnorm, head_activation: silu}}
+  - {id: n06_rmsnorm_relu, sources: [portfolio], model: {head_normalization: rmsnorm, head_activation: relu}}
+  - {id: n07_none_gelu, sources: [portfolio], model: {head_normalization: none, head_activation: gelu}}
+  - {id: n08_none_silu, sources: [portfolio], model: {head_normalization: none, head_activation: silu}}
+  - {id: n09_none_relu, sources: [portfolio], model: {head_normalization: none, head_activation: relu}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: n00_control_source
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.238
+  target_absolute_fmt_f1: 0.902
+  confirmation_opened: false
