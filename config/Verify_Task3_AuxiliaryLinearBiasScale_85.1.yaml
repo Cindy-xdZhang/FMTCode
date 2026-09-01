@@ -1,0 +1,60 @@
+experiment: Verify_Task3_AuxiliaryLinearBiasScale_85.1
+output_root: outputs/Verify_Task3_AuxiliaryLinearBiasScale_85.1
+task: Task3
+
+# Development-only single-factor search frozen while 77.1 remains incomplete,
+# before any 84.1 portfolio metric exists. The independently audited 84.1
+# portfolio supplies one complete recipe per physical family. Candidates scale
+# only the existing nn.Linear initialization biases inside fmt_encoder.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  portfolio:
+    kind: optimization
+    selection: outputs/Verify_Task3_AuxiliaryLinearWeightInitializationPortfolio_84.1/portfolio_selection.json
+    expected_experiment: Verify_Task3_AuxiliaryLinearWeightInitializationPortfolio_84.1
+
+allowed_source_overrides: [model.auxiliary_linear_bias_initial_scale]
+
+# b00 preserves every source value. Other cells multiply all existing
+# fmt_encoder Linear biases by one common non-negative scale after all modules
+# are built. Weights, parameter count and the random-number stream are fixed.
+optimization_candidates:
+  - {id: b00_control_source, sources: [portfolio]}
+  - {id: b01_bias000, sources: [portfolio], model: {auxiliary_linear_bias_initial_scale: 0.0}}
+  - {id: b02_bias010, sources: [portfolio], model: {auxiliary_linear_bias_initial_scale: 0.1}}
+  - {id: b03_bias025, sources: [portfolio], model: {auxiliary_linear_bias_initial_scale: 0.25}}
+  - {id: b04_bias050, sources: [portfolio], model: {auxiliary_linear_bias_initial_scale: 0.5}}
+  - {id: b05_bias200, sources: [portfolio], model: {auxiliary_linear_bias_initial_scale: 2.0}}
+  - {id: b06_bias400, sources: [portfolio], model: {auxiliary_linear_bias_initial_scale: 4.0}}
+  - {id: b07_bias800, sources: [portfolio], model: {auxiliary_linear_bias_initial_scale: 8.0}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: b00_control_source
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.224
+  target_absolute_fmt_f1: 0.895
+  confirmation_opened: false

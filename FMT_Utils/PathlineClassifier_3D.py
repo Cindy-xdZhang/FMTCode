@@ -228,6 +228,35 @@ def _initialize_auxiliary_linear_weights(module, initialization="default",
     return len(linear_layers)
 
 
+def _scale_auxiliary_linear_biases(module, scale=1.0):
+    """Scale only existing auxiliary ``nn.Linear`` initialization biases.
+
+    A scale of one is an exact historical no-op.  The operation is
+    deterministic, consumes no random numbers, and preserves parameter count.
+    """
+    scale = float(scale)
+    if not math.isfinite(scale) or scale < 0.0:
+        raise ValueError(
+            "auxiliary_linear_bias_initial_scale must be finite and "
+            "non-negative"
+        )
+    if scale == 1.0:
+        return 0
+    linear_biases = [
+        child.bias for child in module.modules()
+        if isinstance(child, nn.Linear) and child.bias is not None
+    ]
+    if not linear_biases:
+        raise ValueError(
+            "auxiliary linear bias scaling requires an auxiliary projection "
+            "containing nn.Linear bias"
+        )
+    with torch.no_grad():
+        for bias in linear_biases:
+            bias.mul_(scale)
+    return len(linear_biases)
+
+
 def _initialize_auxiliary_normalization(
         module, initial_scale=None, initial_bias=None):
     """Optionally initialize normalization affine values in an auxiliary encoder.
@@ -723,6 +752,7 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  auxiliary_hidden_dim=64, auxiliary_block_dims=None,
                  auxiliary_linear_weight_initialization="default",
                  auxiliary_linear_weight_initialization_gain=1.0,
+                 auxiliary_linear_bias_initial_scale=1.0,
                  auxiliary_normalization_initial_scale=None,
                  auxiliary_normalization_initial_bias=None,
                  auxiliary_dropout=0.0,
@@ -931,6 +961,14 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                 self.auxiliary_linear_weight_initialization_gain,
             )
         )
+        self.auxiliary_linear_bias_initial_scale = float(
+            auxiliary_linear_bias_initial_scale
+        )
+        self.auxiliary_linear_bias_layer_count = (
+            _scale_auxiliary_linear_biases(
+                self.fmt_encoder, self.auxiliary_linear_bias_initial_scale
+            )
+        )
 
     def forward_components(self, pathlines, fmt_features,
                            return_auxiliary=False):
@@ -1019,6 +1057,9 @@ def residual_model_kwargs(model_spec):
         )),
         "auxiliary_linear_weight_initialization_gain": float(model_spec.get(
             "auxiliary_linear_weight_initialization_gain", 1.0
+        )),
+        "auxiliary_linear_bias_initial_scale": float(model_spec.get(
+            "auxiliary_linear_bias_initial_scale", 1.0
         )),
         "auxiliary_normalization_initial_scale": (
             None

@@ -1,0 +1,47 @@
+experiment: Verify_Task3_AuxiliaryLinearBiasScalePortfolio_86.1
+task: Task3
+output_root: outputs/Verify_Task3_AuxiliaryLinearBiasScalePortfolio_86.1
+confirmation_opened: false
+
+# Frozen before 85.1 produces any performance metric.
+sources:
+  current_portfolio:
+    repo_root: /home/zhanx0o/FMT_Task3_AuxiliaryLinearWeightInitializationPortfolio_84_1
+    expected_experiment: Verify_Task3_AuxiliaryLinearWeightInitializationPortfolio_84.1
+    expected_config_canonical_sha256: a761c073a89c90d323eb8cdbc01c01f947b1e66f4aa393fa9591507e246bd4eb
+    paths:
+      config: config/Verify_Task3_AuxiliaryLinearWeightInitializationPortfolio_84.1.yaml
+      selection: outputs/Verify_Task3_AuxiliaryLinearWeightInitializationPortfolio_84.1/portfolio_selection.json
+      audit: outputs/Verify_Task3_AuxiliaryLinearWeightInitializationPortfolio_84.1/independent_audit.json
+      frozen_root: outputs/Verify_Task3_AuxiliaryLinearWeightInitializationPortfolio_84.1/frozen_artifacts
+  auxiliary_linear_bias_scale:
+    repo_root: /home/zhanx0o/FMT_Task3_AuxiliaryLinearBiasScale_85_1
+    expected_experiment: Verify_Task3_AuxiliaryLinearBiasScale_85.1
+    expected_config_canonical_sha256: c8e7cc647e10862d8dba077ed2d1d439c5754f783742974dd61302f756e6e69f
+    paths:
+      config: config/Verify_Task3_AuxiliaryLinearBiasScale_85.1.yaml
+      preflight: outputs/Verify_Task3_AuxiliaryLinearBiasScale_85.1/preflight_manifest.json
+      selection: outputs/Verify_Task3_AuxiliaryLinearBiasScale_85.1/optimization_selection.json
+      audit: outputs/Verify_Task3_AuxiliaryLinearBiasScale_85.1/independent_audit.json
+      evidence: outputs/Verify_Task3_AuxiliaryLinearBiasScale_85.1/evidence_archive.json
+      archive: outputs/Verify_Task3_AuxiliaryLinearBiasScale_85.1/per_run_csv.tar.gz
+      candidate_root: outputs/Verify_Task3_AuxiliaryLinearBiasScale_85.1/candidates
+
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+source_paired_seeds: [40, 41, 42]
+frozen_confirmation_seeds: [40, 41]
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  require_source_absolute_fmt_guard: true
+  target_dataset_macro_f1_gain: 0.224
+  target_absolute_fmt_f1: 0.895
