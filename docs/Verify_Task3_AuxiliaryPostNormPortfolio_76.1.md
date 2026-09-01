@@ -29,6 +29,31 @@ Preregistered before 75.1 produced any performance artifact. No 75.1 or 76.1
 performance result has been read.
 
 Deployed on Ibex from commit `84ec1c3`. Source identity job `51139435`
-completed with `performance_artifacts_read=false`; selector/audit are
-`51139436/51139437`, and 75.1 cleanup is `51139440`. All remain strictly gated
-behind complete upstream evidence.
+completed with `performance_artifacts_read=false`.  Selector `51139436`,
+independent audit `51139437`, and the downstream 75.1 cleanup `51139440` all
+completed with exit code zero and empty stderr after their strict dependencies
+were satisfied.
+
+## Results
+
+The portfolio selector retained the existing 74.1 source for all seven
+physical families; no 75.1 post-normalization source entered the portfolio.
+The resulting dataset-macro Raw-PCA/FMT F1 was `0.683459/0.890572`, F1 gain
+was `+0.207113`, and Average Precision gain was `+0.223384`.  These are the
+existing 74.1 portfolio metrics rather than a new improvement.  The portfolio
+missed both registered targets (`+0.216` F1 gain and `0.893` absolute FMT F1),
+so no confirmation population was opened.
+
+## Evidence
+
+- portfolio-selection, independent-audit, source-identity, and evidence-list
+  SHA-256: `f8da77b7...65a4`, `a2fd86c0...31ad`,
+  `4515ffca...d1c7`, and `6313fa6f...daf2`;
+- the independent implementation reconstructed all seven choices with maximum
+  numerical difference `0`, verified equal paired parameter counts, and
+  checked all 40 frozen models plus 40 frozen result files by content hash;
+- the source selector chose `current_portfolio` for Boeing 747, channel,
+  DeltaWing, F22, halfcylinder, SmokeBuoyancy, and Tangaroa;
+- model checkpoints were not downloaded locally.  Their identities were
+  verified by the Ibex independent audit before the source checkpoints were
+  removed under the retention protocol.

@@ -54,4 +54,42 @@ unchanged.
 
 Deployed on Ibex from commit `84ec1c3`: upstream gate `51139428` completed;
 preflight/array/selector/evidence are `51139429/51139431/51139432/51139434`.
-No incomplete-array performance metric has been read.
+The array completed before any candidate metric was read.  All 40 array
+children and all 240 paired trainings exited zero.  The selector, independent
+evidence job, and downstream cleanup also exited zero; every recorded stderr
+file is empty.  The GPU children used 31 GTX 1080 Ti, 6 P100, 2 V100, and 1
+RTX 2080 Ti allocation.
+
+## Results
+
+The exact `none` control produced dataset-macro Raw-PCA/FMT F1
+`0.684115/0.890836`, F1 gain `+0.206721`, and Average Precision gain
+`+0.222986`.  The registered family-wise selector chose `rms` for DeltaWing
+and `layer` for F22; Boeing 747, channel, halfcylinder, SmokeBuoyancy, and
+Tangaroa retained `none`.  The resulting Raw-PCA/FMT F1 was
+`0.683970/0.890863`, F1 gain was `+0.206893`, and Average Precision gain was
+`+0.223263`.  All ten dataset gains were positive and the worst dataset F1
+gain was `+0.055787`.
+
+The selected transform therefore changed the control by only `+0.000172` F1
+gain and `+0.000027` absolute FMT F1.  It did not reach either the registered
+F1-gain target `+0.216` or the absolute FMT-F1 target `0.893`.  This is a valid
+negative development result: post-activation fixed normalization is not a new
+overall Task3 winner.
+
+## Evidence
+
+- selection, leaderboard, per-run archive, and remote independent-audit
+  SHA-256: `2f9d7df3...58077`, `d0b69383...ba14a`,
+  `e5b76cf3...8fe49`, and `8fdddcf7...590`;
+- the remote independent audit reconstructed 240 rows, four candidates, ten
+  datasets, seven families, three seeds, and both arms, with maximum selector
+  difference `4.44e-16`;
+- a separately downloaded checkpoint-free archive passed every published
+  SHA-256 check.  A second local invocation of
+  `Audit_Task3_ParameterSearch.py` reproduced the same seven family choices
+  and all dataset-macro metrics within `2.22e-16` (local audit SHA-256
+  `83f994ca...b3fc`);
+- evidence archive metadata SHA-256 is `a32f605d...351b`;
+- cleanup job `51139440` ran only after the 76.1 independent audit, deleting
+  exactly 240 temporary checkpoints and confirming zero remained.
