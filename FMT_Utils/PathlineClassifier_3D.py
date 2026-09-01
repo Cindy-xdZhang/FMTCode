@@ -303,6 +303,46 @@ def _shift_auxiliary_projection_activation_inputs(module, shift=0.0):
     return wrap(module)
 
 
+class _ActivationResidualMix(nn.Module):
+    """Mix one existing activation with its unchanged input."""
+
+    def __init__(self, activation, mix):
+        super().__init__()
+        self.activation = activation
+        self.mix = float(mix)
+
+    def forward(self, values):
+        return (1.0 - self.mix) * self.activation(values) + self.mix * values
+
+
+def _mix_auxiliary_projection_activation_residuals(module, mix=0.0):
+    """Add a fixed activation bypass without parameters or random draws."""
+    mix = float(mix)
+    if not math.isfinite(mix) or not 0.0 <= mix <= 1.0:
+        raise ValueError(
+            "auxiliary_projection_activation_residual_mix must be finite "
+            "and in [0, 1]"
+        )
+    if mix == 0.0:
+        return 0
+    activation_types = (
+        nn.Identity, nn.GELU, nn.SiLU, nn.ReLU, nn.LeakyReLU, nn.ELU,
+        nn.Mish, nn.Tanh, nn.Softsign,
+    )
+
+    def wrap(parent):
+        wrapped = 0
+        for name, child in tuple(parent.named_children()):
+            if isinstance(child, activation_types):
+                setattr(parent, name, _ActivationResidualMix(child, mix))
+                wrapped += 1
+            else:
+                wrapped += wrap(child)
+        return wrapped
+
+    return wrap(module)
+
+
 def _initialize_auxiliary_linear_weights(module, initialization="default",
                                          gain=1.0):
     """Optionally reinitialize only auxiliary ``nn.Linear`` weights.
@@ -879,6 +919,7 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  auxiliary_projection_activation_override="source",
                  auxiliary_projection_activation_input_scale=1.0,
                  auxiliary_projection_activation_input_shift=0.0,
+                 auxiliary_projection_activation_residual_mix=0.0,
                  auxiliary_normalization_initial_scale=None,
                  auxiliary_normalization_initial_bias=None,
                  auxiliary_dropout=0.0,
@@ -993,6 +1034,24 @@ class PathlineFMTResidualClassifier3D(nn.Module):
         ):
             raise ValueError(
                 "auxiliary projection activation input shift requires at "
+                "least one existing activation layer"
+            )
+        self.auxiliary_projection_activation_residual_mix = float(
+            auxiliary_projection_activation_residual_mix
+        )
+        self.auxiliary_projection_activation_residual_mix_layer_count = (
+            _mix_auxiliary_projection_activation_residuals(
+                self.fmt_encoder,
+                self.auxiliary_projection_activation_residual_mix,
+            )
+        )
+        if (
+            self.auxiliary_projection_activation_residual_mix != 0.0
+            and self.auxiliary_projection_activation_residual_mix_layer_count
+            == 0
+        ):
+            raise ValueError(
+                "auxiliary projection activation residual mix requires at "
                 "least one existing activation layer"
             )
         self.auxiliary_post_normalization = str(
@@ -1247,6 +1306,9 @@ def residual_model_kwargs(model_spec):
         )),
         "auxiliary_projection_activation_input_shift": float(model_spec.get(
             "auxiliary_projection_activation_input_shift", 0.0
+        )),
+        "auxiliary_projection_activation_residual_mix": float(model_spec.get(
+            "auxiliary_projection_activation_residual_mix", 0.0
         )),
         "auxiliary_normalization_initial_scale": (
             None
