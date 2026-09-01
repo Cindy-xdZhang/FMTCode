@@ -1,0 +1,61 @@
+experiment: Verify_Task3_AuxiliaryActivationInputShift_91.1
+output_root: outputs/Verify_Task3_AuxiliaryActivationInputShift_91.1
+task: Task3
+
+# Frozen while 77.1 remains incomplete and before 90.1 can produce any
+# portfolio metric. The independently audited 90.1 portfolio supplies one
+# complete recipe per physical family. Candidates add one fixed scalar after
+# the optional 89.1 input scale and immediately before every activation that
+# already exists in fmt_encoder.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  portfolio:
+    kind: optimization
+    selection: outputs/Verify_Task3_AuxiliaryActivationInputScalePortfolio_90.1/portfolio_selection.json
+    expected_experiment: Verify_Task3_AuxiliaryActivationInputScalePortfolio_90.1
+
+allowed_source_overrides: [model.auxiliary_projection_activation_input_shift]
+
+# b00 is the exact source. The symmetric nonzero grid changes activation
+# thresholds without trainable parameters, buffers, or random-number draws.
+optimization_candidates:
+  - {id: b00_control_source, sources: [portfolio]}
+  - {id: b01_actinshift_m200, sources: [portfolio], model: {auxiliary_projection_activation_input_shift: -2.0}}
+  - {id: b02_actinshift_m100, sources: [portfolio], model: {auxiliary_projection_activation_input_shift: -1.0}}
+  - {id: b03_actinshift_m050, sources: [portfolio], model: {auxiliary_projection_activation_input_shift: -0.5}}
+  - {id: b04_actinshift_m025, sources: [portfolio], model: {auxiliary_projection_activation_input_shift: -0.25}}
+  - {id: b05_actinshift_p025, sources: [portfolio], model: {auxiliary_projection_activation_input_shift: 0.25}}
+  - {id: b06_actinshift_p050, sources: [portfolio], model: {auxiliary_projection_activation_input_shift: 0.5}}
+  - {id: b07_actinshift_p100, sources: [portfolio], model: {auxiliary_projection_activation_input_shift: 1.0}}
+  - {id: b08_actinshift_p200, sources: [portfolio], model: {auxiliary_projection_activation_input_shift: 2.0}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: b00_control_source
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.230
+  target_absolute_fmt_f1: 0.898
+  confirmation_opened: false

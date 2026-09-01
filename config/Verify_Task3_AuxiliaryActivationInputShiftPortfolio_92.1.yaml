@@ -1,0 +1,47 @@
+experiment: Verify_Task3_AuxiliaryActivationInputShiftPortfolio_92.1
+task: Task3
+output_root: outputs/Verify_Task3_AuxiliaryActivationInputShiftPortfolio_92.1
+confirmation_opened: false
+
+# Frozen before 91.1 produces any performance metric.
+sources:
+  current_portfolio:
+    repo_root: /home/zhanx0o/FMT_Task3_AuxiliaryActivationInputScalePortfolio_90_1
+    expected_experiment: Verify_Task3_AuxiliaryActivationInputScalePortfolio_90.1
+    expected_config_canonical_sha256: 0c4c2a81dce39e3b86e7672b14ed3d00322fc90e4d6cac1e87a53c27e15f4d2b
+    paths:
+      config: config/Verify_Task3_AuxiliaryActivationInputScalePortfolio_90.1.yaml
+      selection: outputs/Verify_Task3_AuxiliaryActivationInputScalePortfolio_90.1/portfolio_selection.json
+      audit: outputs/Verify_Task3_AuxiliaryActivationInputScalePortfolio_90.1/independent_audit.json
+      frozen_root: outputs/Verify_Task3_AuxiliaryActivationInputScalePortfolio_90.1/frozen_artifacts
+  auxiliary_activation_input_shift:
+    repo_root: /home/zhanx0o/FMT_Task3_AuxiliaryActivationInputShift_91_1
+    expected_experiment: Verify_Task3_AuxiliaryActivationInputShift_91.1
+    expected_config_canonical_sha256: 9135a5bac0f28a5e5de416ffb95224f957aa5ae9991ed7e6c25b63ee515ffeaf
+    paths:
+      config: config/Verify_Task3_AuxiliaryActivationInputShift_91.1.yaml
+      preflight: outputs/Verify_Task3_AuxiliaryActivationInputShift_91.1/preflight_manifest.json
+      selection: outputs/Verify_Task3_AuxiliaryActivationInputShift_91.1/optimization_selection.json
+      audit: outputs/Verify_Task3_AuxiliaryActivationInputShift_91.1/independent_audit.json
+      evidence: outputs/Verify_Task3_AuxiliaryActivationInputShift_91.1/evidence_archive.json
+      archive: outputs/Verify_Task3_AuxiliaryActivationInputShift_91.1/per_run_csv.tar.gz
+      candidate_root: outputs/Verify_Task3_AuxiliaryActivationInputShift_91.1/candidates
+
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+source_paired_seeds: [40, 41, 42]
+frozen_confirmation_seeds: [40, 41]
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  require_source_absolute_fmt_guard: true
+  target_dataset_macro_f1_gain: 0.230
+  target_absolute_fmt_f1: 0.898
