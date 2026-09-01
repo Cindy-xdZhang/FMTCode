@@ -1,0 +1,66 @@
+experiment: Verify_Task3_AuxiliaryLinearWeightInitialization_83.1
+output_root: outputs/Verify_Task3_AuxiliaryLinearWeightInitialization_83.1
+task: Task3
+
+# Development-only single-factor search frozen before 82.1 produces any
+# performance metric. The independently audited 82.1 portfolio supplies one
+# complete recipe per physical family. Candidates change only the initial
+# weights of nn.Linear layers inside the paired auxiliary projection.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  portfolio:
+    kind: optimization
+    selection: outputs/Verify_Task3_EarlyStoppingMinDeltaPortfolio_82.1/portfolio_selection.json
+    expected_experiment: Verify_Task3_EarlyStoppingMinDeltaPortfolio_82.1
+
+# A source recipe may explicitly carry historical default values. Only these
+# two preregistered fields may be replaced; every other source field is frozen.
+allowed_source_overrides:
+  - model.auxiliary_linear_weight_initialization
+  - model.auxiliary_linear_weight_initialization_gain
+
+# i00 is the exact source recipe and consumes no new random numbers. Candidate
+# schemes modify weights only: auxiliary biases, capacity, loss, optimizer and
+# all downstream initializations remain identical. The initialization helper
+# restores the RNG state after changing the weights.
+optimization_candidates:
+  - {id: i00_control_source, sources: [portfolio]}
+  - {id: i01_xavier025, sources: [portfolio], model: {auxiliary_linear_weight_initialization: xavier_uniform, auxiliary_linear_weight_initialization_gain: 0.25}}
+  - {id: i02_xavier050, sources: [portfolio], model: {auxiliary_linear_weight_initialization: xavier_uniform, auxiliary_linear_weight_initialization_gain: 0.5}}
+  - {id: i03_xavier100, sources: [portfolio], model: {auxiliary_linear_weight_initialization: xavier_uniform, auxiliary_linear_weight_initialization_gain: 1.0}}
+  - {id: i04_xavier1414, sources: [portfolio], model: {auxiliary_linear_weight_initialization: xavier_uniform, auxiliary_linear_weight_initialization_gain: 1.4142135623730951}}
+  - {id: i05_orthogonal025, sources: [portfolio], model: {auxiliary_linear_weight_initialization: orthogonal, auxiliary_linear_weight_initialization_gain: 0.25}}
+  - {id: i06_orthogonal050, sources: [portfolio], model: {auxiliary_linear_weight_initialization: orthogonal, auxiliary_linear_weight_initialization_gain: 0.5}}
+  - {id: i07_orthogonal100, sources: [portfolio], model: {auxiliary_linear_weight_initialization: orthogonal, auxiliary_linear_weight_initialization_gain: 1.0}}
+  - {id: i08_orthogonal1414, sources: [portfolio], model: {auxiliary_linear_weight_initialization: orthogonal, auxiliary_linear_weight_initialization_gain: 1.4142135623730951}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: i00_control_source
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.222
+  target_absolute_fmt_f1: 0.894
+  confirmation_opened: false

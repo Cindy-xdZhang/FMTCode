@@ -180,6 +180,54 @@ def _auxiliary_projection(input_dim, output_dim, architecture,
     raise ValueError(f"unknown auxiliary projection {architecture!r}")
 
 
+def _initialize_auxiliary_linear_weights(module, initialization="default",
+                                         gain=1.0):
+    """Optionally reinitialize only auxiliary ``nn.Linear`` weights.
+
+    ``default`` is an exact no-op.  Alternative schemes leave biases and all
+    downstream modules untouched.  The temporary random-number stream is
+    restored on exit so a candidate cannot change later data shuffling,
+    dropout, or other stochastic training operations merely by consuming a
+    different number of initialization draws.
+    """
+    initialization = str(initialization).lower()
+    if initialization not in {"default", "xavier_uniform", "orthogonal"}:
+        raise ValueError(
+            "auxiliary_linear_weight_initialization must be 'default', "
+            "'xavier_uniform', or 'orthogonal'"
+        )
+    gain = float(gain)
+    if not math.isfinite(gain) or gain <= 0.0:
+        raise ValueError(
+            "auxiliary_linear_weight_initialization_gain must be finite and "
+            "positive"
+        )
+    if initialization == "default":
+        return 0
+
+    linear_layers = [
+        child for child in module.modules() if isinstance(child, nn.Linear)
+    ]
+    if not linear_layers:
+        raise ValueError(
+            "auxiliary linear weight initialization requires an auxiliary "
+            "projection containing nn.Linear"
+        )
+    cuda_devices = sorted({
+        int(child.weight.device.index)
+        for child in linear_layers
+        if child.weight.is_cuda and child.weight.device.index is not None
+    })
+    with torch.random.fork_rng(devices=cuda_devices, enabled=True):
+        with torch.no_grad():
+            for child in linear_layers:
+                if initialization == "xavier_uniform":
+                    nn.init.xavier_uniform_(child.weight, gain=gain)
+                else:
+                    nn.init.orthogonal_(child.weight, gain=gain)
+    return len(linear_layers)
+
+
 def _initialize_auxiliary_normalization(
         module, initial_scale=None, initial_bias=None):
     """Optionally initialize normalization affine values in an auxiliary encoder.
@@ -673,6 +721,8 @@ class PathlineFMTResidualClassifier3D(nn.Module):
                  head_activation="gelu",
                  auxiliary_projection="linear_layernorm_gelu",
                  auxiliary_hidden_dim=64, auxiliary_block_dims=None,
+                 auxiliary_linear_weight_initialization="default",
+                 auxiliary_linear_weight_initialization_gain=1.0,
                  auxiliary_normalization_initial_scale=None,
                  auxiliary_normalization_initial_bias=None,
                  auxiliary_dropout=0.0,
@@ -868,6 +918,19 @@ class PathlineFMTResidualClassifier3D(nn.Module):
             self.residual_output_initialization,
             self.residual_output_initialization_scale,
         )
+        self.auxiliary_linear_weight_initialization = str(
+            auxiliary_linear_weight_initialization
+        ).lower()
+        self.auxiliary_linear_weight_initialization_gain = float(
+            auxiliary_linear_weight_initialization_gain
+        )
+        self.auxiliary_linear_weight_layer_count = (
+            _initialize_auxiliary_linear_weights(
+                self.fmt_encoder,
+                self.auxiliary_linear_weight_initialization,
+                self.auxiliary_linear_weight_initialization_gain,
+            )
+        )
 
     def forward_components(self, pathlines, fmt_features,
                            return_auxiliary=False):
@@ -951,6 +1014,12 @@ def residual_model_kwargs(model_spec):
             None if model_spec.get("auxiliary_block_dims") is None
             else [int(value) for value in model_spec["auxiliary_block_dims"]]
         ),
+        "auxiliary_linear_weight_initialization": str(model_spec.get(
+            "auxiliary_linear_weight_initialization", "default"
+        )),
+        "auxiliary_linear_weight_initialization_gain": float(model_spec.get(
+            "auxiliary_linear_weight_initialization_gain", 1.0
+        )),
         "auxiliary_normalization_initial_scale": (
             None
             if model_spec.get("auxiliary_normalization_initial_scale") is None
