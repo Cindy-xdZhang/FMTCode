@@ -145,6 +145,19 @@ def _load_optimization_spec(path: str | Path) -> dict:
                 raise ValueError(
                     f"duplicate combination source for {candidate['id']}"
                 )
+    allowed_source_overrides = [
+        str(value) for value in overlay.get("allowed_source_overrides", [])
+    ]
+    if len(allowed_source_overrides) != len(set(allowed_source_overrides)):
+        raise ValueError("allowed_source_overrides must be unique")
+    for dotted_key in allowed_source_overrides:
+        parts = dotted_key.split(".")
+        if len(parts) != 2 or parts[0] not in {"training", "model"} \
+                or not parts[1]:
+            raise ValueError(
+                "allowed_source_overrides entries must be explicit "
+                "'training.<key>' or 'model.<key>' paths"
+            )
     spec = dict(base)
     spec.update({
         "experiment": str(overlay["experiment"]),
@@ -163,6 +176,7 @@ def _load_optimization_spec(path: str | Path) -> dict:
         "optimization_candidates": candidates,
         "optimization_selection": selection,
         "combination_sources": combination_sources,
+        "allowed_source_overrides": allowed_source_overrides,
     })
     return spec
 
@@ -220,8 +234,10 @@ def _merge_combination_recipe(candidate_id: str, source_names: list[str],
     return merged
 
 
-def _merge_candidate_overrides(merged: dict, candidate: dict) -> dict:
-    """Add locally declared knobs without overwriting frozen source values."""
+def _merge_candidate_overrides(merged: dict, candidate: dict,
+                               allowed_source_overrides=()) -> dict:
+    """Add local knobs, permitting only preregistered source replacements."""
+    allowed_source_overrides = set(allowed_source_overrides)
     unsupported = sorted(
         set(candidate) - {"id", "sources", "training", "model", "fmt_feature"}
     )
@@ -234,7 +250,9 @@ def _merge_candidate_overrides(merged: dict, candidate: dict) -> dict:
     for section in ("training", "model"):
         source_values = dict(result.get(section, {}))
         for key, value in dict(candidate.get(section, {})).items():
-            if key in source_values and source_values[key] != value:
+            dotted_key = f"{section}.{key}"
+            if (key in source_values and source_values[key] != value
+                    and dotted_key not in allowed_source_overrides):
                 raise ValueError(
                     f"local candidate conflicts with frozen {section}.{key}: "
                     f"{source_values[key]!r} vs {value!r}"
@@ -309,7 +327,10 @@ def _resolve_combination_candidates(spec: dict) -> tuple[dict, dict]:
                 source_rows,
             )
             resolved[group_name].append(
-                _merge_candidate_overrides(merged, candidate)
+                _merge_candidate_overrides(
+                    merged, candidate,
+                    spec.get("allowed_source_overrides", ()),
+                )
             )
     return resolved, hashes
 
@@ -467,6 +488,7 @@ def static_preflight(config_path: str) -> None:
         ),
         "confirmation_opened": False,
         "combination_source_count": len(spec.get("combination_sources", {})),
+        "allowed_source_overrides": spec.get("allowed_source_overrides", []),
     }
     print(json.dumps(payload, indent=2))
 
@@ -621,6 +643,7 @@ def preflight(config_path: str) -> Path:
         "base_candidate_by_group": base_candidates,
         "optimization_candidates_by_group": resolved_candidates,
         "combination_source_selection_sha256": source_hashes,
+        "allowed_source_overrides": spec.get("allowed_source_overrides", []),
         "confirmation_opened": False,
         "dataset_count": len(spec["datasets"]),
         "optimization_candidate_count": len(spec["optimization_candidates"]),
