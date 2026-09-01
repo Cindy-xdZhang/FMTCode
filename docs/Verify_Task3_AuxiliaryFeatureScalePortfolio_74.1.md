@@ -25,5 +25,8 @@ a new confirmation population.
 
 ## Status
 
-Preregistered before 73.1 produced any performance artifact.  No 73.1 or 74.1
-performance result has been read.
+Completed and independently audited on 2026-09-01. No 73.1 family replaces its
+72.1 source under the zero-tolerance guard; the portfolio remains Raw-PCA/FMT
+F1 `0.683459/0.890572` (gain `+0.207113`) with Average Precision gain
+`+0.223384`. All 40 models and 40 result files pass SHA-256 verification. This
+audited 74.1 portfolio is the frozen source for 75.1.

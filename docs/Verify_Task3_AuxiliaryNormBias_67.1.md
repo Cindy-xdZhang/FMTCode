@@ -44,5 +44,8 @@ registered robustness tie-breakers.  The joint target is F1 gain at least
 
 ## Status
 
-Preregistered while 57.1 was incomplete and before 58.1--66.1 produced
-performance results.  No 67.1 performance artifact has been generated or read.
+Completed and independently re-audited on 2026-09-01. Dataset-macro Raw-PCA/FMT
+F1 is `0.683964/0.890836` (gain `+0.206872`); Average Precision gain is
+`+0.223047`. The search does not satisfy the zero-tolerance portfolio guard or
+the joint target. All 660 paired results were archived (SHA-256
+`2ab072a2...3490`) and checkpoints were deleted only after 68.1 audit.

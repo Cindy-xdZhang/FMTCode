@@ -27,5 +27,8 @@ new confirmation population.
 
 ## Status
 
-Preregistered before 63.1 produced any performance artifact. No 63.1 or 64.1
-performance result has been read.
+Completed and independently audited on 2026-09-01. The guarded portfolio gives
+dataset-macro Raw-PCA/FMT F1 `0.683459/0.890572` (gain `+0.207113`) and Average
+Precision gain `+0.223384`. It is the best audited development portfolio in
+58.1--74.1. All 40 models and 40 result files pass SHA-256 verification. The
+joint target is not reached because absolute FMT F1 remains below `0.893`.

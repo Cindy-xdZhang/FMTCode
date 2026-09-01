@@ -48,5 +48,8 @@ is retained as a negative result.
 
 ## Status
 
-Preregistered while 57.1 was still incomplete and before 58.1--64.1 produced
-performance results.  No 65.1 performance artifact has been generated or read.
+Completed and independently re-audited on 2026-09-01. Dataset-macro Raw-PCA/FMT
+F1 is `0.683970/0.890863` (gain `+0.206893`); Average Precision gain is
+`+0.223263`. The search does not satisfy the zero-tolerance portfolio guard or
+the joint target. All 660 paired results were archived (SHA-256
+`df542f59...05a2`) and checkpoints were deleted only after 66.1 audit.

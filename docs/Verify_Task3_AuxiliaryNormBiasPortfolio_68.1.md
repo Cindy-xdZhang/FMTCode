@@ -25,5 +25,7 @@ a new confirmation population.
 
 ## Status
 
-Preregistered before 67.1 produced any performance artifact.  No 67.1 or 68.1
-performance result has been read.
+Completed and independently audited on 2026-09-01. No 67.1 family replaces its
+66.1 source under the zero-tolerance guard; the portfolio remains Raw-PCA/FMT
+F1 `0.683459/0.890572` (gain `+0.207113`) with Average Precision gain
+`+0.223384`. All 80 frozen files pass SHA-256 verification.

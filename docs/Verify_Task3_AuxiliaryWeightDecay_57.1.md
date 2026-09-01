@@ -56,5 +56,9 @@ population.
 
 ## Status
 
-Preregistered in code before 55.1 or 56.1 produced any performance result.
-There is no 57.1 performance conclusion yet.
+Completed and independently re-audited on 2026-09-01. Dataset-macro Raw-PCA/FMT
+F1 is `0.685623/0.890239` (gain `+0.204616`); Average Precision gain is
+`+0.220076`. Only Boeing selects non-control `c09_auxwd1000`; all other
+families retain the exact control. The joint target is not reached. All 660
+paired results were archived (SHA-256 `41621e2a...97a`) and 660 temporary
+checkpoints were deleted only after the 58.1 independent audit passed.

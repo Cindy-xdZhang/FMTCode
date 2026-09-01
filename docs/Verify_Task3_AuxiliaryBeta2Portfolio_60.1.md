@@ -28,4 +28,7 @@ open a new confirmation population.
 
 ## Status
 
-Preregistered. No 59.1 or 60.1 performance artifact has been read.
+Completed and independently audited on 2026-09-01. The guarded portfolio gives
+dataset-macro Raw-PCA/FMT F1 `0.683555/0.890469` (gain `+0.206914`) and Average
+Precision gain `+0.222423`. All 40 models and 40 result files pass SHA-256
+verification. The joint target is not reached.

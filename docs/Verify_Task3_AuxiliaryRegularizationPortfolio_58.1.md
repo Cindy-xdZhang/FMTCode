@@ -28,4 +28,8 @@ open a new confirmation population.
 
 ## Status
 
-Preregistered. No 57.1 or 58.1 performance artifact has been read.
+Completed and independently audited on 2026-09-01. The guarded portfolio gives
+dataset-macro Raw-PCA/FMT F1 `0.684650/0.890234` (gain `+0.205584`) and Average
+Precision gain `+0.220115`. It admits 57.1 only for Boeing and retains the
+56.1/control lineage for the other family choices. All 40 models and 40 result
+files pass SHA-256 verification. The joint target is not reached.

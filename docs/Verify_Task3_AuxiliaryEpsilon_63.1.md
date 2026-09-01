@@ -47,5 +47,8 @@ either target is retained as a negative result.
 
 ## Status
 
-Preregistered before 57.1--62.1 produced performance results. No 63.1
-performance artifact has been generated or read.
+Completed and independently re-audited on 2026-09-01. Dataset-macro Raw-PCA/FMT
+F1 is `0.683463/0.890570` (gain `+0.207107`); Average Precision gain is
+`+0.223371`. Ten of ten datasets have positive F1 gain, but the joint target is
+not reached. All 660 paired results were archived (SHA-256
+`8d6ac736...10e3`) and checkpoints were deleted only after 64.1 audit.

@@ -58,5 +58,8 @@ experiment cannot open a new confirmation population.
 
 ## Status
 
-Preregistered before 57.1 or 58.1 produced any performance result. There is no
-59.1 performance conclusion yet.
+Completed and independently re-audited on 2026-09-01. Dataset-macro Raw-PCA/FMT
+F1 is `0.683555/0.890469` (gain `+0.206914`); Average Precision gain is
+`+0.222423`. Ten of ten datasets have positive F1 gain, but the joint target is
+not reached. All 660 paired results were archived (SHA-256
+`43ca5dcf...37d6`) and checkpoints were deleted only after 60.1 audit.

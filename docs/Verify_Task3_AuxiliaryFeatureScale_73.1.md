@@ -46,5 +46,8 @@ registered robustness tie-breakers.  The joint target is F1 gain at least
 
 ## Status
 
-Preregistered while 57.1 was incomplete and before 58.1--72.1 produced
-performance results.  No 73.1 performance artifact has been generated or read.
+Completed and independently re-audited on 2026-09-01. Dataset-macro Raw-PCA/FMT
+F1 is `0.684115/0.890836` (gain `+0.206721`); Average Precision gain is
+`+0.222986`. Fixed auxiliary scaling does not satisfy the zero-tolerance
+portfolio guard or the joint target. All 660 paired results were archived
+(SHA-256 `4215b07b...9dc`) and checkpoints were deleted after 74.1 audit.
