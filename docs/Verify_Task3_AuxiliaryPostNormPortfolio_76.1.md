@@ -27,3 +27,8 @@ a new confirmation population.
 
 Preregistered before 75.1 produced any performance artifact. No 75.1 or 76.1
 performance result has been read.
+
+Deployed on Ibex from commit `84ec1c3`. Source identity job `51139435`
+completed with `performance_artifacts_read=false`; selector/audit are
+`51139436/51139437`, and 75.1 cleanup is `51139440`. All remain strictly gated
+behind complete upstream evidence.

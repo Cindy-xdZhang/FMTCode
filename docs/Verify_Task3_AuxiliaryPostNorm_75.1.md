@@ -51,3 +51,7 @@ Because Slurm no longer accepted a new dependency on completed historical job
 state plus the passed 74.1 audit and all 80 frozen-file identities. The 75.1
 preflight must depend strictly on this gate; the scientific protocol is
 unchanged.
+
+Deployed on Ibex from commit `84ec1c3`: upstream gate `51139428` completed;
+preflight/array/selector/evidence are `51139429/51139431/51139432/51139434`.
+No incomplete-array performance metric has been read.
