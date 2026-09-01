@@ -1,0 +1,62 @@
+experiment: Verify_Task3_ResidualHeadLearningRateRefresh_101.1
+output_root: outputs/Verify_Task3_ResidualHeadLearningRateRefresh_101.1
+task: Task3
+
+# Frozen while 77.1 remains incomplete and before 100.1 can produce any
+# portfolio metric. The independently audited 100.1 portfolio supplies one
+# complete recipe per physical family. The exact source is the control; the
+# remaining candidates change only the downstream residual-head learning rate.
+base_search_config: config/Verify_Task3_SpatialRobust_5.2.yaml
+base_search_config_sha256: c942fec55d841274c6850bc147d450c03b389609c130aa11bc4620b74361294f
+upstream_selection: outputs/Verify_Task3_SpatialRobust_5.2/stage2_selection.json
+upstream_selector_job_id: 50958095
+
+paired_seeds: [40, 41, 42]
+
+model_override:
+  head_architecture: deep_mlp
+  head_hidden_dim: 64
+  head_depth: 2
+  head_dropout: 0.0
+  head_normalization: layernorm
+  head_activation: gelu
+
+combination_sources:
+  portfolio:
+    kind: optimization
+    selection: outputs/Verify_Task3_ResidualHeadNormActivationRefreshPortfolio_100.1/portfolio_selection.json
+    expected_experiment: Verify_Task3_ResidualHeadNormActivationRefreshPortfolio_100.1
+
+allowed_source_overrides: [training.residual_head_learning_rate_multiplier]
+
+# r00 preserves the complete 100.1 source recipe. Each remaining cell scales
+# the optimizer learning rate of all trainable parameters outside fmt_encoder;
+# the frozen Raw backbone remains excluded and the source auxiliary-projection
+# optimizer settings remain unchanged.
+optimization_candidates:
+  - {id: r00_control_source, sources: [portfolio]}
+  - {id: r01_headlr005, sources: [portfolio], training: {residual_head_learning_rate_multiplier: 0.05}}
+  - {id: r02_headlr010, sources: [portfolio], training: {residual_head_learning_rate_multiplier: 0.10}}
+  - {id: r03_headlr025, sources: [portfolio], training: {residual_head_learning_rate_multiplier: 0.25}}
+  - {id: r04_headlr050, sources: [portfolio], training: {residual_head_learning_rate_multiplier: 0.50}}
+  - {id: r05_headlr200, sources: [portfolio], training: {residual_head_learning_rate_multiplier: 2.00}}
+  - {id: r06_headlr400, sources: [portfolio], training: {residual_head_learning_rate_multiplier: 4.00}}
+  - {id: r07_headlr800, sources: [portfolio], training: {residual_head_learning_rate_multiplier: 8.00}}
+  - {id: r08_headlr1600, sources: [portfolio], training: {residual_head_learning_rate_multiplier: 16.00}}
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  absolute_fmt_guard:
+    control_optimization_id: r00_control_source
+    f1_tolerance: 0.0
+    average_precision_tolerance: 0.0
+  target_dataset_macro_f1_gain: 0.240
+  target_absolute_fmt_f1: 0.903
+  confirmation_opened: false

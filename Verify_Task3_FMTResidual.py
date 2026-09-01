@@ -1113,6 +1113,23 @@ def _auxiliary_learning_rate_multiplier(training=None):
     return value
 
 
+def _residual_head_learning_rate_multiplier(training=None):
+    """Validate the learning-rate multiplier for downstream residual heads.
+
+    The multiplier is applied to every trainable parameter outside
+    ``fmt_encoder``. The frozen Raw backbone is never optimized. A value of
+    one is a strict historical no-op, including preservation of the original
+    flat optimizer parameter list when no auxiliary-group override is active.
+    """
+    training = {} if training is None else dict(training)
+    value = float(training.get("residual_head_learning_rate_multiplier", 1.0))
+    if not np.isfinite(value) or value <= 0.0:
+        raise ValueError(
+            "residual_head_learning_rate_multiplier must be finite and positive"
+        )
+    return value
+
+
 def _auxiliary_weight_decay_multiplier(training=None):
     """Validate the paired weight-decay multiplier for the auxiliary projection."""
     training = {} if training is None else dict(training)
@@ -1162,12 +1179,13 @@ def _optimizer_parameter_spec(model, training):
     """Return an exact control list or paired projection/head parameter groups.
 
     A strict no-override control deliberately returns the historical single
-    flat parameter list. Non-control cells place only the trainable auxiliary
-    projection in a second optimizer group; all downstream residual parameters
-    retain the base optimizer values. The frozen Raw backbone is excluded in
-    both cases.
+    flat parameter list. Non-control cells separate the trainable auxiliary
+    projection from all downstream residual parameters. Each group keeps the
+    base optimizer values unless its registered multiplier or auxiliary-only
+    override changes them. The frozen Raw backbone is excluded in both cases.
     """
     multiplier = _auxiliary_learning_rate_multiplier(training)
+    head_multiplier = _residual_head_learning_rate_multiplier(training)
     weight_decay_multiplier = _auxiliary_weight_decay_multiplier(training)
     auxiliary_betas, auxiliary_betas_overridden = _auxiliary_optimizer_betas(
         training
@@ -1183,6 +1201,7 @@ def _optimizer_parameter_spec(model, training):
         raise ValueError("residual model has no trainable parameters")
     if (
         multiplier == 1.0
+        and head_multiplier == 1.0
         and weight_decay_multiplier == 1.0
         and not auxiliary_betas_overridden
         and not auxiliary_epsilon_overridden
@@ -1200,7 +1219,7 @@ def _optimizer_parameter_spec(model, training):
     ]
     if not auxiliary or not downstream:
         raise ValueError(
-            "auxiliary optimizer groups require both projection and "
+            "split optimizer groups require both projection and "
             "downstream trainable parameters"
         )
     if len(auxiliary_ids) != len(auxiliary):
@@ -1211,6 +1230,11 @@ def _optimizer_parameter_spec(model, training):
     auxiliary_weight_decay = (
         float(training["weight_decay"]) * weight_decay_multiplier
     )
+    downstream_group = {"params": downstream}
+    if head_multiplier != 1.0:
+        downstream_group["lr"] = (
+            float(training["learning_rate"]) * head_multiplier
+        )
     auxiliary_group = {
         "params": auxiliary,
         "lr": auxiliary_rate,
@@ -1221,7 +1245,7 @@ def _optimizer_parameter_spec(model, training):
     if auxiliary_epsilon_overridden:
         auxiliary_group["eps"] = auxiliary_epsilon
     return [
-        {"params": downstream},
+        downstream_group,
         auxiliary_group,
     ], multiplier, 1
 
@@ -1359,6 +1383,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         auxiliary_learning_rate_multiplier,
         auxiliary_optimizer_group_index,
     ) = _optimizer_parameter_spec(model, spec["training"])
+    residual_head_learning_rate_multiplier = (
+        _residual_head_learning_rate_multiplier(spec["training"])
+    )
     auxiliary_weight_decay_multiplier = _auxiliary_weight_decay_multiplier(
         spec["training"]
     )
@@ -1599,6 +1626,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             "validation_alpha": alpha, "is_best": int(improved),
             "stale_epochs": stale,
             "learning_rate": current_learning_rate,
+            "residual_head_learning_rate_multiplier": (
+                residual_head_learning_rate_multiplier
+            ),
             "auxiliary_learning_rate": current_auxiliary_learning_rate,
             "auxiliary_learning_rate_multiplier": (
                 auxiliary_learning_rate_multiplier
@@ -1686,6 +1716,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         "optimizer_epsilon": optimizer_epsilon,
         "auxiliary_learning_rate_multiplier": (
             auxiliary_learning_rate_multiplier
+        ),
+        "residual_head_learning_rate_multiplier": (
+            residual_head_learning_rate_multiplier
         ),
         "auxiliary_weight_decay_multiplier": (
             auxiliary_weight_decay_multiplier
@@ -1788,6 +1821,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         ),
         "training_auxiliary_learning_rate_multiplier": (
             auxiliary_learning_rate_multiplier
+        ),
+        "training_residual_head_learning_rate_multiplier": (
+            residual_head_learning_rate_multiplier
         ),
         "training_auxiliary_weight_decay_multiplier": (
             auxiliary_weight_decay_multiplier

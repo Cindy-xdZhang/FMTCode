@@ -1,0 +1,47 @@
+experiment: Verify_Task3_ResidualHeadLearningRateRefreshPortfolio_102.1
+task: Task3
+output_root: outputs/Verify_Task3_ResidualHeadLearningRateRefreshPortfolio_102.1
+confirmation_opened: false
+
+# Frozen before 101.1 produces any performance metric.
+sources:
+  current_portfolio:
+    repo_root: /home/zhanx0o/FMT_Task3_ResidualHeadNormActivationRefreshPortfolio_100_1
+    expected_experiment: Verify_Task3_ResidualHeadNormActivationRefreshPortfolio_100.1
+    expected_config_canonical_sha256: f4d4dd2dff8b2601058da13fc9b2874a559119a82b0f681242d92e3482ef540e
+    paths:
+      config: config/Verify_Task3_ResidualHeadNormActivationRefreshPortfolio_100.1.yaml
+      selection: outputs/Verify_Task3_ResidualHeadNormActivationRefreshPortfolio_100.1/portfolio_selection.json
+      audit: outputs/Verify_Task3_ResidualHeadNormActivationRefreshPortfolio_100.1/independent_audit.json
+      frozen_root: outputs/Verify_Task3_ResidualHeadNormActivationRefreshPortfolio_100.1/frozen_artifacts
+  residual_head_learning_rate_refresh:
+    repo_root: /home/zhanx0o/FMT_Task3_ResidualHeadLearningRateRefresh_101_1
+    expected_experiment: Verify_Task3_ResidualHeadLearningRateRefresh_101.1
+    expected_config_canonical_sha256: d1b07663c2450cdc1f382c02efc1c1cf7373823952051ac7dcb1852827195ec8
+    paths:
+      config: config/Verify_Task3_ResidualHeadLearningRateRefresh_101.1.yaml
+      preflight: outputs/Verify_Task3_ResidualHeadLearningRateRefresh_101.1/preflight_manifest.json
+      selection: outputs/Verify_Task3_ResidualHeadLearningRateRefresh_101.1/optimization_selection.json
+      audit: outputs/Verify_Task3_ResidualHeadLearningRateRefresh_101.1/independent_audit.json
+      evidence: outputs/Verify_Task3_ResidualHeadLearningRateRefresh_101.1/evidence_archive.json
+      archive: outputs/Verify_Task3_ResidualHeadLearningRateRefresh_101.1/per_run_csv.tar.gz
+      candidate_root: outputs/Verify_Task3_ResidualHeadLearningRateRefresh_101.1/candidates
+
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+source_paired_seeds: [40, 41, 42]
+frozen_confirmation_seeds: [40, 41]
+
+selection:
+  primary_metric: dataset_macro_f1_gain_vs_raw_pca
+  tie_breakers:
+    - dataset_macro_fmt_f1
+    - dataset_macro_average_precision_gain_vs_raw_pca
+    - dataset_macro_fmt_average_precision
+    - positive_dataset_count
+    - worst_dataset_f1_gain
+    - worst_seed_f1_gain
+  require_source_absolute_fmt_guard: true
+  target_dataset_macro_f1_gain: 0.240
+  target_absolute_fmt_f1: 0.903
