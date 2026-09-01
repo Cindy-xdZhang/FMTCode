@@ -39,6 +39,7 @@ from Verify_Task3_FMTResidual import (
     _residual_head_learning_rate_multiplier,
     _residual_head_weight_decay_multiplier,
     _residual_head_optimizer_betas,
+    _residual_head_optimizer_epsilon,
     _auxiliary_optimizer_betas,
     _auxiliary_optimizer_epsilon,
     _auxiliary_weight_decay_multiplier,
@@ -603,6 +604,7 @@ def preflight(config_path: str) -> Path:
             _residual_head_learning_rate_multiplier(run_spec["training"])
             _residual_head_weight_decay_multiplier(run_spec["training"])
             _residual_head_optimizer_betas(run_spec["training"])
+            _residual_head_optimizer_epsilon(run_spec["training"])
             _auxiliary_weight_decay_multiplier(run_spec["training"])
             _auxiliary_optimizer_betas(run_spec["training"])
             _auxiliary_optimizer_epsilon(run_spec["training"])

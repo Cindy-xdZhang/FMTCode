@@ -1165,6 +1165,22 @@ def _residual_head_optimizer_betas(training=None):
     return (beta1, beta2), overridden
 
 
+def _residual_head_optimizer_epsilon(training=None):
+    """Return an optional Adam denominator epsilon for residual heads."""
+    training = {} if training is None else dict(training)
+    global_epsilon = _optimizer_epsilon(training)
+    if global_epsilon is None:
+        global_epsilon = 1e-8
+    value = training.get("residual_head_optimizer_epsilon")
+    overridden = value is not None
+    epsilon = global_epsilon if value is None else float(value)
+    if not np.isfinite(epsilon) or epsilon <= 0.0:
+        raise ValueError(
+            "residual_head_optimizer_epsilon must be finite and positive"
+        )
+    return epsilon, overridden
+
+
 def _auxiliary_weight_decay_multiplier(training=None):
     """Validate the paired weight-decay multiplier for the auxiliary projection."""
     training = {} if training is None else dict(training)
@@ -1227,6 +1243,9 @@ def _optimizer_parameter_spec(model, training):
     head_betas, head_betas_overridden = _residual_head_optimizer_betas(
         training
     )
+    head_epsilon, head_epsilon_overridden = (
+        _residual_head_optimizer_epsilon(training)
+    )
     weight_decay_multiplier = _auxiliary_weight_decay_multiplier(training)
     auxiliary_betas, auxiliary_betas_overridden = _auxiliary_optimizer_betas(
         training
@@ -1245,6 +1264,7 @@ def _optimizer_parameter_spec(model, training):
         and head_multiplier == 1.0
         and head_weight_decay_multiplier == 1.0
         and not head_betas_overridden
+        and not head_epsilon_overridden
         and weight_decay_multiplier == 1.0
         and not auxiliary_betas_overridden
         and not auxiliary_epsilon_overridden
@@ -1284,6 +1304,8 @@ def _optimizer_parameter_spec(model, training):
         )
     if head_betas_overridden:
         downstream_group["betas"] = head_betas
+    if head_epsilon_overridden:
+        downstream_group["eps"] = head_epsilon
     auxiliary_group = {
         "params": auxiliary,
         "lr": auxiliary_rate,
@@ -1440,6 +1462,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
     )
     residual_head_optimizer_betas, _ = _residual_head_optimizer_betas(
         spec["training"]
+    )
+    residual_head_optimizer_epsilon, _ = (
+        _residual_head_optimizer_epsilon(spec["training"])
     )
     auxiliary_weight_decay_multiplier = _auxiliary_weight_decay_multiplier(
         spec["training"]
@@ -1627,6 +1652,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         current_residual_head_betas = tuple(
             float(value) for value in optimizer.param_groups[0]["betas"]
         )
+        current_residual_head_epsilon = float(
+            optimizer.param_groups[0]["eps"]
+        )
         current_auxiliary_learning_rate = float(
             optimizer.param_groups[auxiliary_optimizer_group_index]["lr"]
         )
@@ -1698,6 +1726,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             ),
             "residual_head_optimizer_beta1": current_residual_head_betas[0],
             "residual_head_optimizer_beta2": current_residual_head_betas[1],
+            "residual_head_optimizer_epsilon": (
+                current_residual_head_epsilon
+            ),
             "auxiliary_learning_rate": current_auxiliary_learning_rate,
             "auxiliary_learning_rate_multiplier": (
                 auxiliary_learning_rate_multiplier
@@ -1793,6 +1824,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
             residual_head_weight_decay_multiplier
         ),
         "residual_head_optimizer_betas": residual_head_optimizer_betas,
+        "residual_head_optimizer_epsilon": (
+            residual_head_optimizer_epsilon
+        ),
         "auxiliary_weight_decay_multiplier": (
             auxiliary_weight_decay_multiplier
         ),
@@ -1906,6 +1940,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
         ),
         "training_residual_head_optimizer_beta2": (
             residual_head_optimizer_betas[1]
+        ),
+        "training_residual_head_optimizer_epsilon": (
+            residual_head_optimizer_epsilon
         ),
         "training_auxiliary_weight_decay_multiplier": (
             auxiliary_weight_decay_multiplier
