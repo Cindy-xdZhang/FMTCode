@@ -1,0 +1,67 @@
+experiment: Verify_Task123_StrongBaselines_1.1
+status: preregistered_development_selection_and_frozen_confirmation
+output_root: outputs/Verify_Task123_StrongBaselines_1.1
+
+task1:
+  source_config: config/mainExp_Task1_3D_4.1_uniform.yaml
+  main_summary: outputs/mainExp_Task1_3D_4.1_ibex/summary.json
+  development_ordinals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  selection_train: [0, 1, 2, 3, 4, 5]
+  selection_validation: [6, 7]
+  final_train: [0, 1, 2, 3, 4, 5, 6, 7]
+  cluster_calibration: [8, 9]
+  pca_dims: [null, 2, 8, 16, 32, 64]
+  representations:
+    - {id: raw_center_relative, name: center_relative, family: time_domain}
+    - {id: raw_dynamics, name: dynamics, family: time_domain}
+    - {id: raw_pair_distance, name: pair_distance, family: time_domain}
+    - {id: raw_invariant_dynamics, name: invariant_dynamics, family: time_domain}
+    - {id: plain_dft_complex, name: plain_dft_complex, family: plain_fourier}
+    - {id: plain_dft_magnitude, name: plain_dft_magnitude, family: plain_fourier}
+    - {id: pair_distance_dft, name: pair_distance_dft, family: plain_fourier}
+  num_freq: 6
+  selection_seed: 7068
+  selection_kmeans_n_init: 20
+  final_kmeans_seeds: [7080, 7081, 7082, 7083, 7084]
+  final_kmeans_n_init: 20
+  selection_rule: >-
+    Freeze both the best time-domain baseline and best ordinary-Fourier
+    baseline by development dataset-macro F1, then worst-dataset F1 and ARI.
+    Confirmation is never used to choose representation or PCA width.
+
+task2:
+  source_config: config/Verify_Task2_UniformFMT_6.1.yaml
+  source_selection: outputs/Verify_Task2_UniformFMT_6.1/global_selection.json
+  source_selection_audit: outputs/Verify_Task2_UniformFMT_6.1/independent_selection_audit.json
+  main_summary: outputs/mainExp_Task2_3D_6.2_uniform_confirmation/confirmation/summary.json
+  train: [0, 1, 2, 3, 4, 5]
+  cluster_calibration: [6, 7]
+  confirmation: [8, 9]
+  training_seeds: [100, 101, 102, 103, 104]
+  kmeans_seed: 7068
+  kmeans_n_init: 20
+  arms:
+    # This architecture is the strongest Raw arm in the already completed
+    # four-architecture development grid.  It is an appendix pressure test;
+    # it does not replace the same-VAE main comparison.
+    - {id: raw_tuned, representation: center_relative,
+       architecture: m256_l16_lr3e-4, category: strongest_time_domain_raw}
+    # PCA is train-only and projects 672 Raw coordinates to the canonical
+    # 189-wide FMT+kin4 input before the unchanged main VAE.
+    - {id: raw_pca189_same_vae, representation: center_relative_pca189,
+       architecture: l512_l64_b1e-6, category: dimension_matched_raw}
+    - {id: plain_dft_same_vae, representation: plain_dft_complex,
+       architecture: l512_l64_b1e-6, category: ordinary_fourier}
+    - {id: pair_distance_dft_same_vae, representation: pair_distance_dft,
+       architecture: l512_l64_b1e-6, category: invariant_fourier}
+  num_freq: 6
+  checkpoint_policy: no_checkpoints_written
+
+task3:
+  source_config: config/Verify_Task3_UniformFMT_9.1.yaml
+  main_summary: outputs/mainExp_Task3_3D_9.2_uniform_confirmation/confirmation/summary.json
+  confirmation: [8, 9]
+  seeds: [40, 41, 42, 43, 44]
+  baselines: [raw, raw_wide]
+  checkpoint_policy: read_existing_frozen_baselines_only
+
