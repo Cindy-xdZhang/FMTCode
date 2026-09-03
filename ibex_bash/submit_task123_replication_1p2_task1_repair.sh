@@ -10,6 +10,11 @@
 # the pre-fix code are moved aside (never deleted) for the audit trail.
 # Task2 (51277934) and Task3 (51277935) arrays are untouched and the new
 # summary depends on them exactly as the original launcher did.
+# History: the first run of this launcher (2026-09-03T15:25) submitted the
+# selection/freeze/confirmation/merge jobs but its summary/audit sbatch calls
+# failed with "Job dependency problem" because the Task3 array had already
+# completed; those two jobs were then submitted by hand with the same actions
+# and the manifest rows were filled in.  The loop below prevents a repeat.
 
 set -euo pipefail
 
@@ -69,7 +74,21 @@ R3="$(submit_cpu SB12r_T1Confirm "$STRONG_ROOT" "afterok:$R2" strong_task1_run '
 record Verify_Task123_StrongBaselines_1.2 task1_confirmation_array_repair "$R3"
 R4="$(submit_cpu SB12r_T1Merge "$STRONG_ROOT" "afterok:$R3" strong_task1_merge)"
 record Verify_Task123_StrongBaselines_1.2 task1_merge_repair "$R4"
-R5="$(submit_cpu SB12r_Summary "$STRONG_ROOT" "afterok:$R4:$TASK2_ARRAY:$TASK3_ARRAY" strong_summarize)"
+# Slurm rejects afterok dependencies on jobs that already left the queue, so
+# finished arrays are verified COMPLETED and dropped from the dependency list.
+SUMMARY_DEP="afterok:$R4"
+for upstream in "$TASK2_ARRAY" "$TASK3_ARRAY"; do
+  if squeue -j "$upstream" -h -o %i 2>/dev/null | grep -q .; then
+    SUMMARY_DEP="$SUMMARY_DEP:$upstream"
+  else
+    states="$(sacct -j "$upstream" -X -n -o State | tr -d ' ' | sort -u | paste -sd, -)"
+    if [[ "$states" != "COMPLETED" ]]; then
+      echo "upstream array $upstream is not uniformly COMPLETED: $states" >&2
+      exit 3
+    fi
+  fi
+done
+R5="$(submit_cpu SB12r_Summary "$STRONG_ROOT" "$SUMMARY_DEP" strong_summarize)"
 record Verify_Task123_StrongBaselines_1.2 summary_repair "$R5"
 R6="$(submit_cpu SB12r_Audit "$STRONG_ROOT" "afterok:$R5" strong_audit)"
 record Verify_Task123_StrongBaselines_1.2 independent_audit_repair "$R6"
