@@ -111,6 +111,25 @@ def pair_distance_dft_features_3d(
     return result
 
 
+_FLOAT32_SAFE_LIMIT = 1e30
+
+
+def _safe_divide(numerator: np.ndarray, denominator: np.ndarray) -> np.ndarray:
+    """Elementwise ratio that returns 0 wherever the denominator is 0."""
+    numerator = np.asarray(numerator, dtype=np.float64)
+    denominator = np.asarray(denominator, dtype=np.float64)
+    result = np.zeros(np.broadcast(numerator, denominator).shape, dtype=np.float64)
+    np.divide(numerator, denominator, out=result, where=denominator > 0.0)
+    return result
+
+
+def _finite_float32(values: np.ndarray) -> np.ndarray:
+    """Zero non-finite entries and clip to a float32-representable range."""
+    values = np.asarray(values, dtype=np.float64)
+    values = np.where(np.isfinite(values), values, 0.0)
+    return np.clip(values, -_FLOAT32_SAFE_LIMIT, _FLOAT32_SAFE_LIMIT).astype(np.float32)
+
+
 def pathline_geometric_quantities_3d(
     raw: np.ndarray,
     *,
@@ -124,9 +143,11 @@ def pathline_geometric_quantities_3d(
     taken as the mean of the two adjacent displacement vectors.  Torsion is
     ``((v x a) . j) / |v x a|^2`` at the ``L-3`` samples where the jerk ``j``
     exists.  Denominators receive ``relative_eps`` times the primitive's mean
-    speed (cubed or squared accordingly) so stagnant lines give zero rather
-    than non-finite values.  All three quantities are invariant to proper
-    rigid motions; the signed torsion flips under reflections.
+    speed (cubed or squared accordingly); samples whose denominator is still
+    zero (fully stagnant primitives, e.g. inside obstacles) yield exactly zero,
+    and every value is clipped to a float32-representable range, so the output
+    is always finite.  All three quantities are invariant to proper rigid
+    motions; the signed torsion flips under reflections.
     """
     xyz = reshape_cached_primitives(raw).astype(np.float64)
     velocity = np.diff(xyz, axis=2)                      # [N,7,L-1,3]
@@ -139,15 +160,16 @@ def pathline_geometric_quantities_3d(
     cross = np.cross(v_mid, acceleration)                              # [N,7,L-2,3]
     cross_norm = np.linalg.norm(cross, axis=-1)
     v_norm = np.linalg.norm(v_mid, axis=-1)
-    curvature = cross_norm / (v_norm ** 3 + eps ** 3)                  # [N,7,L-2]
+    curvature = _safe_divide(cross_norm, v_norm ** 3 + eps ** 3)       # [N,7,L-2]
     cross_mid = 0.5 * (cross[:, :, :-1] + cross[:, :, 1:])             # [N,7,L-3,3]
-    torsion = np.einsum("nktc,nktc->nkt", cross_mid, jerk) / (
-        np.sum(cross_mid * cross_mid, axis=-1) + eps ** 4
+    torsion = _safe_divide(
+        np.einsum("nktc,nktc->nkt", cross_mid, jerk),
+        np.sum(cross_mid * cross_mid, axis=-1) + eps ** 4,
     )                                                                  # [N,7,L-3]
     out = {
-        "speed": speed.astype(np.float32),
-        "curvature": curvature.astype(np.float32),
-        "torsion": torsion.astype(np.float32),
+        "speed": _finite_float32(speed),
+        "curvature": _finite_float32(curvature),
+        "torsion": _finite_float32(torsion),
     }
     for name, value in out.items():
         if not np.isfinite(value).all():
@@ -163,15 +185,17 @@ def pathline_geometric_statistics_3d(raw: np.ndarray) -> np.ndarray:
 
     Per line: speed mean/std/min/max, path length, net displacement,
     curvature mean/std/max, signed torsion mean/std, absolute torsion mean/max,
-    and the fraction of samples with positive torsion.  With seven lines the
-    representation is ``7 x 14 = 98`` wide, label-free, and invariant to
-    proper rigid motions.
+    and the fraction of samples with positive torsion.  Curvature and torsion
+    enter the statistics through ``arcsinh`` (as in the sequence variant) so a
+    few near-straight samples with huge values cannot dominate the train-only
+    standardisation.  With seven lines the representation is ``7 x 14 = 98``
+    wide, label-free, and invariant to proper rigid motions.
     """
     xyz = reshape_cached_primitives(raw).astype(np.float64)
     q = pathline_geometric_quantities_3d(raw)
     speed = q["speed"].astype(np.float64)
-    curvature = q["curvature"].astype(np.float64)
-    torsion = q["torsion"].astype(np.float64)
+    curvature = np.arcsinh(q["curvature"].astype(np.float64))
+    torsion = np.arcsinh(q["torsion"].astype(np.float64))
     displacement = np.linalg.norm(xyz[:, :, -1] - xyz[:, :, 0], axis=-1)
     columns = [
         speed.mean(axis=2), speed.std(axis=2), speed.min(axis=2), speed.max(axis=2),

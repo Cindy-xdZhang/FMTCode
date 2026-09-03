@@ -172,6 +172,22 @@ class RobustnessFeatures3DTest(unittest.TestCase):
         np.testing.assert_array_equal(quantities["curvature"][:, 1:], 0.0)
         np.testing.assert_array_equal(quantities["torsion"], 0.0)
 
+    def test_fully_stagnant_and_tiny_motion_primitives_stay_finite(self):
+        # Obstacle-interior primitives: every line is motionless -> all zero.
+        frozen = np.zeros((3, 7, 32, 3), dtype=np.float32)
+        frozen[:, :, :, 0] = 2.0
+        quantities = pathline_geometric_quantities_3d(frozen)
+        for name in ("speed", "curvature", "torsion"):
+            np.testing.assert_array_equal(quantities[name], 0.0)
+        # Sub-normal motion must not overflow float32 after division.
+        tiny = (self.pathlines * np.float32(1e-30)).astype(np.float32)
+        statistics = pathline_geometric_statistics_3d(tiny)
+        sequences = pathline_geometric_sequences_3d(tiny)
+        self.assertTrue(np.isfinite(statistics).all())
+        self.assertTrue(np.isfinite(sequences).all())
+        mixed = np.concatenate((frozen, self.pathlines[:3]), axis=0)
+        self.assertTrue(np.isfinite(pathline_geometric_statistics_3d(mixed)).all())
+
 
 if __name__ == "__main__":
     unittest.main()
