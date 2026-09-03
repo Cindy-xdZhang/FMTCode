@@ -1,0 +1,81 @@
+experiment: Verify_Task123_NoiseTypes_1.1
+status: preregistered_clean_train_corrupted_confirmation_noise_type_sweep
+output_root: outputs/Verify_Task123_NoiseTypes_1.1
+# Preregistered sweep over noise TYPES (not only levels) for the FMT and
+# original Raw arms; the stronger baselines run on the identical realizations
+# in Verify_Task123_NoiseTypesStrong_1.1.  All 22 corrupted conditions are
+# reported regardless of outcome.  Levels: gaussian/gaussian_smooth/
+# common_mode/line_offset are standard deviations in units of the neighbour
+# offset distance; rigid_rotation is an angle in degrees about a random axis
+# through the seed point; impulse is the fraction of displaced samples (jump
+# std = 1.0 offset); time_warp is the relative deviation of the sample spacing
+# from uniform.  Training, normalization, PCA, KMeans centers, cluster-name
+# calibration, epoch selection, fusion alpha and thresholds are fitted on
+# clean data only; corruption is applied to confirmation pathlines only.
+corruptions:
+  - {id: clean, kind: clean, level: 0.0}
+  - {id: gaussian_0005, kind: gaussian, level: 0.005}
+  - {id: gaussian_001, kind: gaussian, level: 0.01}
+  - {id: gaussian_002, kind: gaussian, level: 0.02}
+  - {id: gaussian_003, kind: gaussian, level: 0.03}
+  - {id: gaussian_smooth_005, kind: gaussian_smooth, level: 0.05}
+  - {id: gaussian_smooth_010, kind: gaussian_smooth, level: 0.10}
+  - {id: gaussian_smooth_020, kind: gaussian_smooth, level: 0.20}
+  - {id: common_mode_005, kind: common_mode, level: 0.05}
+  - {id: common_mode_010, kind: common_mode, level: 0.10}
+  - {id: common_mode_020, kind: common_mode, level: 0.20}
+  - {id: line_offset_005, kind: line_offset, level: 0.05}
+  - {id: line_offset_010, kind: line_offset, level: 0.10}
+  - {id: line_offset_020, kind: line_offset, level: 0.20}
+  - {id: rigid_rotation_015, kind: rigid_rotation, level: 15.0}
+  - {id: rigid_rotation_045, kind: rigid_rotation, level: 45.0}
+  - {id: rigid_rotation_090, kind: rigid_rotation, level: 90.0}
+  - {id: impulse_002, kind: impulse, level: 0.02}
+  - {id: impulse_005, kind: impulse, level: 0.05}
+  - {id: impulse_010, kind: impulse, level: 0.10}
+  - {id: time_warp_010, kind: time_warp, level: 0.10}
+  - {id: time_warp_025, kind: time_warp, level: 0.25}
+  - {id: time_warp_050, kind: time_warp, level: 0.50}
+
+task1:
+  source_config: config/mainExp_Task1_3D_4.1_uniform.yaml
+  selected_config: outputs/mainExp_Task1_3D_4.1_ibex/selected_config.json
+  main_summary: outputs/mainExp_Task1_3D_4.1_ibex/summary.json
+  final_train: [0, 1, 2, 3, 4, 5, 6, 7]
+  cluster_calibration: [8, 9]
+  arms:
+    - {id: raw, feature: raw, pca_dim: 2}
+    - {id: fmt, feature: fmt_all+kin4, pca_dim: 8}
+  kmeans_seeds: [7080, 7081, 7082, 7083, 7084]
+  kmeans_n_init: 20
+
+task2:
+  source_config: config/Verify_Task2_UniformFMT_6.1.yaml
+  selected_config: outputs/Verify_Task2_UniformFMT_6.1/global_selection.json
+  main_summary: outputs/mainExp_Task2_3D_6.2_uniform_confirmation/confirmation/summary.json
+  train: [0, 1, 2, 3, 4, 5]
+  cluster_calibration: [6, 7]
+  confirmation: [8, 9]
+  arms: [raw, fmt]
+  training_seeds: [100, 101, 102, 103, 104]
+  kmeans_seed: 7068
+  kmeans_n_init: 20
+  checkpoint_policy: in_memory_only
+
+task3:
+  source_config: config/Verify_Task3_UniformFMT_9.1.yaml
+  selected_config: outputs/Verify_Task3_UniformFMT_9.1/global_selection.json
+  main_summary: outputs/mainExp_Task3_3D_9.2_uniform_confirmation/confirmation/summary.json
+  train: [0, 1, 2, 3, 4, 5]
+  validation: [6, 7]
+  confirmation: [8, 9]
+  arms: [raw_pca, fmt]
+  training_seeds: [40, 41, 42, 43, 44]
+  checkpoint_policy: temporary_until_independent_audit
+
+randomization:
+  corruption_seed: 17068
+  realization_is_paired_across_arms: true
+  gaussian_scale: primitive_offset
+  frame_dropout_scope: one_random_time_mask_per_slice_and_repeat
+  short_track_policy: leading_fraction_resampled_to_32_points

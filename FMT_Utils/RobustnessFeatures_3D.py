@@ -332,6 +332,25 @@ def corrupt_pathline_primitives_3d(
     random set of temporal frames (endpoints retained) and linearly fills the
     original time grid.  ``short_track`` retains the leading ``level`` fraction
     of the trajectory and resamples that shorter physical window back to L.
+
+    Structured kinds (all deterministic in ``random_state``):
+
+    * ``gaussian_smooth``: white noise smoothed along time with a 5-sample
+      moving average and rescaled so its standard deviation is
+      ``level * spatial_scale`` (temporally correlated drift-like error).
+    * ``common_mode``: one random 3-vector per primitive and time step, added
+      to all seven lines (observer jitter); relative displacements unchanged.
+    * ``line_offset``: one constant random 3-vector per neighbour line with
+      standard deviation ``level * spatial_scale`` (seed placement error);
+      the center line is untouched.
+    * ``rigid_rotation``: rotates the whole primitive about its seed point by
+      ``level`` degrees around a random axis (frame change; every pairwise
+      distance is preserved).
+    * ``impulse``: a fraction ``level`` of (line, time) samples is displaced
+      by isotropic noise with standard deviation ``1.0 * spatial_scale``.
+    * ``time_warp``: one random smooth monotone re-parameterisation of time
+      per primitive, shared by its seven lines; ``level`` scales the relative
+      deviation of the sample spacing from uniform (endpoints fixed).
     """
     primitives = reshape_cached_primitives(raw)
     kind = str(kind)
@@ -373,5 +392,83 @@ def corrupt_pathline_primitives_3d(
         return np.einsum(
             "ts,nksc->nktc", weights, primitives, optimize=True
         ).astype(np.float32)
+    if kind in {"gaussian_smooth", "common_mode", "line_offset", "impulse"}:
+        if level < 0.0 or not np.isfinite(spatial_scale) or spatial_scale <= 0.0:
+            raise ValueError(f"{kind} requires nonnegative level and positive scale")
+        sigma = level * float(spatial_scale)
+        if kind == "gaussian_smooth":
+            white = rng.normal(0.0, 1.0, size=primitives.shape)
+            smooth = _moving_average_time(white, 5)
+            smooth *= sigma / max(float(smooth.std()), 1e-12)
+            return np.ascontiguousarray(primitives + smooth.astype(np.float32))
+        if kind == "common_mode":
+            shared = rng.normal(0.0, sigma, size=(primitives.shape[0], 1, length, 3))
+            return np.ascontiguousarray(primitives + shared.astype(np.float32))
+        if kind == "line_offset":
+            offset = rng.normal(0.0, sigma, size=(primitives.shape[0], primitives.shape[1], 1, 3))
+            offset[:, 0] = 0.0
+            return np.ascontiguousarray(primitives + offset.astype(np.float32))
+        if level > 1.0:
+            raise ValueError("impulse level is a sample fraction in [0,1]")
+        hit = rng.random(size=primitives.shape[:3]) < level
+        jump = rng.normal(0.0, 1.0 * float(spatial_scale), size=primitives.shape)
+        return np.ascontiguousarray(
+            primitives + (hit[..., None] * jump).astype(np.float32)
+        )
+    if kind == "rigid_rotation":
+        if not 0.0 <= level <= 180.0:
+            raise ValueError("rigid_rotation level is an angle in degrees within [0,180]")
+        axis = rng.normal(size=(primitives.shape[0], 3))
+        axis /= np.maximum(np.linalg.norm(axis, axis=1, keepdims=True), 1e-12)
+        angle = np.deg2rad(level)
+        rotation = _rodrigues(axis, angle)                                # [N,3,3]
+        pivot = primitives[:, :1, :1].astype(np.float64)                  # seed point
+        centered = primitives.astype(np.float64) - pivot
+        rotated = np.einsum("nij,nktj->nkti", rotation, centered) + pivot
+        return np.ascontiguousarray(rotated.astype(np.float32))
+    if kind == "time_warp":
+        if not 0.0 <= level < 1.0:
+            raise ValueError("time_warp level must be in [0,1)")
+        count = primitives.shape[0]
+        white = rng.normal(0.0, 1.0, size=(count, length - 1))
+        smooth = _moving_average_time(white[:, None, :, None], 5)[:, 0, :, 0]
+        smooth /= max(float(smooth.std()), 1e-12)
+        increments = np.clip(1.0 + level * smooth, 0.05, None)
+        warped = np.concatenate(
+            (np.zeros((count, 1)), np.cumsum(increments, axis=1)), axis=1
+        )
+        warped *= (length - 1) / warped[:, -1:]
+        warped = np.clip(warped, 0.0, float(length - 1))  # guard the last sample against rounding
+        weights = np.stack([
+            _linear_interpolation_matrix(original_grid, row) for row in warped
+        ])                                                                # [N,L,L]
+        return np.einsum(
+            "nts,nksc->nktc", weights, primitives, optimize=True
+        ).astype(np.float32)
     raise ValueError(f"unknown pathline corruption: {kind!r}")
+
+
+def _moving_average_time(values: np.ndarray, window: int) -> np.ndarray:
+    """Edge-padded moving average along axis 2 of ``[N,K,L,C]`` arrays."""
+    values = np.asarray(values, dtype=np.float64)
+    half = int(window) // 2
+    padded = np.pad(values, ((0, 0), (0, 0), (half, half), (0, 0)), mode="edge")
+    cumulative = np.cumsum(padded, axis=2)
+    cumulative = np.concatenate(
+        (np.zeros_like(cumulative[:, :, :1]), cumulative), axis=2
+    )
+    return (cumulative[:, :, window:] - cumulative[:, :, :-window]) / float(window)
+
+
+def _rodrigues(axis: np.ndarray, angle: float) -> np.ndarray:
+    """Rotation matrices ``[N,3,3]`` for unit axes ``[N,3]`` and one angle."""
+    x, y, z = axis[:, 0], axis[:, 1], axis[:, 2]
+    zero = np.zeros_like(x)
+    cross = np.stack([
+        np.stack([zero, -z, y], axis=1),
+        np.stack([z, zero, -x], axis=1),
+        np.stack([-y, x, zero], axis=1),
+    ], axis=1)
+    eye = np.eye(3)[None]
+    return eye + np.sin(angle) * cross + (1.0 - np.cos(angle)) * (cross @ cross)
 

@@ -1,0 +1,94 @@
+experiment: Verify_Task123_NoiseTypesStrong_1.1
+status: preregistered_clean_train_corrupted_confirmation_noise_type_sweep_stronger_baselines
+output_root: outputs/Verify_Task123_NoiseTypesStrong_1.1
+# Stronger non-FMT baselines on exactly the corrupted realizations of
+# Verify_Task123_NoiseTypes_1.1 (same corruption seed, conditions, repeat and
+# training seeds, splits).  The FMT/Raw rows of that experiment are merged into
+# the combined table after their SHA-256 digests are verified against its
+# independent audit.  Arms, PCA widths and architectures come from the
+# pre-confirmation frozen manifests of Verify_Task123_StrongBaselines_1.1/1.2.
+reference_experiment: outputs/Verify_Task123_NoiseTypes_1.1
+
+corruptions:
+  - {id: clean, kind: clean, level: 0.0}
+  - {id: gaussian_0005, kind: gaussian, level: 0.005}
+  - {id: gaussian_001, kind: gaussian, level: 0.01}
+  - {id: gaussian_002, kind: gaussian, level: 0.02}
+  - {id: gaussian_003, kind: gaussian, level: 0.03}
+  - {id: gaussian_smooth_005, kind: gaussian_smooth, level: 0.05}
+  - {id: gaussian_smooth_010, kind: gaussian_smooth, level: 0.10}
+  - {id: gaussian_smooth_020, kind: gaussian_smooth, level: 0.20}
+  - {id: common_mode_005, kind: common_mode, level: 0.05}
+  - {id: common_mode_010, kind: common_mode, level: 0.10}
+  - {id: common_mode_020, kind: common_mode, level: 0.20}
+  - {id: line_offset_005, kind: line_offset, level: 0.05}
+  - {id: line_offset_010, kind: line_offset, level: 0.10}
+  - {id: line_offset_020, kind: line_offset, level: 0.20}
+  - {id: rigid_rotation_015, kind: rigid_rotation, level: 15.0}
+  - {id: rigid_rotation_045, kind: rigid_rotation, level: 45.0}
+  - {id: rigid_rotation_090, kind: rigid_rotation, level: 90.0}
+  - {id: impulse_002, kind: impulse, level: 0.02}
+  - {id: impulse_005, kind: impulse, level: 0.05}
+  - {id: impulse_010, kind: impulse, level: 0.10}
+  - {id: time_warp_010, kind: time_warp, level: 0.10}
+  - {id: time_warp_025, kind: time_warp, level: 0.25}
+  - {id: time_warp_050, kind: time_warp, level: 0.50}
+
+task1:
+  source_config: config/mainExp_Task1_3D_4.1_uniform.yaml
+  main_summary: outputs/mainExp_Task1_3D_4.1_ibex/summary.json
+  final_train: [0, 1, 2, 3, 4, 5, 6, 7]
+  cluster_calibration: [8, 9]
+  num_freq: 6
+  arms:
+    - {id: plain_dft, representation: plain_dft_magnitude, pca_dim: 64,
+       family: plain_fourier,
+       frozen_from: outputs/Verify_Task123_StrongBaselines_1.1/task1/frozen_baselines.json,
+       clean_reference: outputs/Verify_Task123_StrongBaselines_1.1/summary.json,
+       clean_reference_key: task1_plain_fourier_f1}
+    - {id: geometric, representation: geometric_sequences, pca_dim: 2,
+       family: geometric_statistics,
+       frozen_from: outputs/Verify_Task123_StrongBaselines_1.2/task1/frozen_baselines.json,
+       clean_reference: outputs/Verify_Task123_StrongBaselines_1.2/summary.json,
+       clean_reference_key: task1_geometric_statistics_f1}
+  kmeans_seeds: [7080, 7081, 7082, 7083, 7084]
+  kmeans_n_init: 20
+
+task2:
+  source_config: config/Verify_Task2_UniformFMT_6.1.yaml
+  frozen_from: outputs/Verify_Task123_StrongBaselines_1.1/task2/frozen_baselines.json
+  clean_reference: outputs/Verify_Task123_StrongBaselines_1.1/summary.json
+  train: [0, 1, 2, 3, 4, 5]
+  cluster_calibration: [6, 7]
+  confirmation: [8, 9]
+  num_freq: 6
+  pca_random_state: 7068
+  arms:
+    - {id: raw_pca189_same_vae, representation: center_relative_pca189,
+       architecture: l512_l64_b1e-6, clean_reference_key: task2_raw_pca189_same_vae_f1}
+    - {id: raw_tuned, representation: center_relative,
+       architecture: m256_l16_lr3e-4, clean_reference_key: task2_raw_tuned_f1}
+    - {id: plain_dft_same_vae, representation: plain_dft_complex,
+       architecture: l512_l64_b1e-6, clean_reference_key: task2_plain_dft_same_vae_f1}
+  training_seeds: [100, 101, 102, 103, 104]
+  kmeans_seed: 7068
+  kmeans_n_init: 20
+  checkpoint_policy: in_memory_only
+
+task3:
+  source_config: config/Verify_Task3_UniformFMT_9.1.yaml
+  selected_config: outputs/Verify_Task3_UniformFMT_9.1/global_selection.json
+  clean_reference: outputs/Verify_Task123_StrongBaselines_1.1/summary.json
+  confirmation: [8, 9]
+  arms: [raw, raw_wide]
+  training_seeds: [40, 41, 42, 43, 44]
+  checkpoint_policy: read_existing_frozen_baselines_only
+
+randomization:
+  corruption_seed: 17068
+  realization_is_paired_across_arms: true
+  gaussian_scale: primitive_offset
+  frame_dropout_scope: one_random_time_mask_per_slice_and_repeat
+  short_track_policy: leading_fraction_resampled_to_32_points
+
+replay_tolerance: 0.02

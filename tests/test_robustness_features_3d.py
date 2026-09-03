@@ -188,6 +188,49 @@ class RobustnessFeatures3DTest(unittest.TestCase):
         mixed = np.concatenate((frozen, self.pathlines[:3]), axis=0)
         self.assertTrue(np.isfinite(pathline_geometric_statistics_3d(mixed)).all())
 
+    def test_structured_corruptions_keep_contract_and_invariants(self):
+        scale = 0.2
+        base = self.pathlines
+        # rigid rotation: every pairwise distance and the seed point unchanged
+        rotated = corrupt_pathline_primitives_3d(base, "rigid_rotation", 45.0, spatial_scale=scale, random_state=3)
+        self.assertEqual(rotated.shape, base.shape)
+        np.testing.assert_allclose(rotated[:, 0, 0], base[:, 0, 0], atol=1e-5)
+        flat_b = base.reshape(9, -1, 3); flat_r = rotated.reshape(9, -1, 3)
+        d_b = np.linalg.norm(flat_b[:, :, None] - flat_b[:, None], axis=-1)
+        d_r = np.linalg.norm(flat_r[:, :, None] - flat_r[:, None], axis=-1)
+        np.testing.assert_allclose(d_r, d_b, rtol=1e-4, atol=1e-4)
+        self.assertGreater(float(np.abs(rotated - base).max()), 0.1)
+        # common mode: neighbour-minus-center displacements unchanged
+        common = corrupt_pathline_primitives_3d(base, "common_mode", 0.2, spatial_scale=scale, random_state=3)
+        np.testing.assert_allclose(common[:, 1:] - common[:, :1], base[:, 1:] - base[:, :1], atol=1e-5)
+        self.assertFalse(np.allclose(common, base))
+        # line offset: center untouched, each neighbour shifted by a constant
+        shifted = corrupt_pathline_primitives_3d(base, "line_offset", 0.2, spatial_scale=scale, random_state=3)
+        np.testing.assert_array_equal(shifted[:, 0], base[:, 0])
+        delta = shifted[:, 1:] - base[:, 1:]
+        np.testing.assert_allclose(delta, np.broadcast_to(delta[:, :, :1], delta.shape), atol=2e-5)
+        # smooth gaussian: requested amplitude and temporal correlation
+        smooth = corrupt_pathline_primitives_3d(base, "gaussian_smooth", 0.5, spatial_scale=scale, random_state=3) - base
+        self.assertAlmostEqual(float(smooth.std()), 0.5 * scale, places=3)
+        lag = np.mean(smooth[:, :, 1:] * smooth[:, :, :-1]) / np.mean(smooth * smooth)
+        self.assertGreater(lag, 0.5)
+        # impulse: roughly the requested fraction of samples moved
+        impulse = corrupt_pathline_primitives_3d(base, "impulse", 0.1, spatial_scale=scale, random_state=3)
+        moved = np.any(impulse != base, axis=-1).mean()
+        self.assertTrue(0.05 < moved < 0.15, moved)
+        # time warp: endpoints fixed, shape kept, interior changed, deterministic
+        warped = corrupt_pathline_primitives_3d(base, "time_warp", 0.5, spatial_scale=scale, random_state=3)
+        np.testing.assert_allclose(warped[:, :, 0], base[:, :, 0], atol=1e-5)
+        np.testing.assert_allclose(warped[:, :, -1], base[:, :, -1], atol=1e-4)
+        self.assertFalse(np.allclose(warped[:, :, 1:-1], base[:, :, 1:-1]))
+        again = corrupt_pathline_primitives_3d(base, "time_warp", 0.5, spatial_scale=scale, random_state=3)
+        np.testing.assert_array_equal(warped, again)
+        for kind, level in (("gaussian_smooth", 0.1), ("common_mode", 0.1), ("line_offset", 0.1),
+                            ("rigid_rotation", 15.0), ("impulse", 0.02), ("time_warp", 0.1)):
+            out = corrupt_pathline_primitives_3d(base, kind, level, spatial_scale=scale, random_state=5)
+            self.assertEqual(out.shape, base.shape); self.assertEqual(out.dtype, np.float32)
+            self.assertTrue(np.isfinite(out).all())
+
 
 if __name__ == "__main__":
     unittest.main()
