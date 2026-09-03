@@ -271,8 +271,14 @@ def run_task3(config_path: str | Path, job_index: int) -> Path:
     train = task3_search._stack_split(records, task["train"])
     validation = task3_search._stack_split(records, task["validation"])
     confirmation = task3_search._stack_split(records, task["confirmation"])
+    # Residual-head training seeds may differ from the frozen Raw backbone
+    # seeds (position-paired ``backbone_seeds``); 1.1 used identical lists.
+    seeds = [int(value) for value in task["seeds"]]
+    backbone_seeds = [int(value) for value in task.get("backbone_seeds", seeds)]
+    if len(backbone_seeds) != len(seeds):
+        raise ValueError("task3.backbone_seeds must pair one-to-one with task3.seeds")
     raw_stats = task3_search._frozen_raw_normalization(
-        group, dataset, int(task["seeds"][0])
+        group, dataset, backbone_seeds[0]
     )
     train, validation, confirmation, stats = task3_search._normalize_train_only(
         train, validation, confirmation, raw_stats=raw_stats
@@ -284,8 +290,7 @@ def run_task3(config_path: str | Path, job_index: int) -> Path:
     )
     rows = _read_csv(target)
     completed = {(row["source"], int(row["seed"])) for row in rows}
-    for seed_value in task["seeds"]:
-        seed = int(seed_value)
+    for seed, backbone_seed in zip(seeds, backbone_seeds):
         for auxiliary_source in task["paired_sources"]:
             if (auxiliary_source, seed) in completed:
                 continue
@@ -305,6 +310,7 @@ def run_task3(config_path: str | Path, job_index: int) -> Path:
                 "test_ordinals": list(task["confirmation"]),
             }
             run_spec["evaluation"] = {"test_enabled": True}
+            run_spec["raw_backbone_seed"] = backbone_seed
             row = task3_search._train_one(
                 run_spec, dataset, seed, (train, validation, confirmation),
                 stats, device, output_dir,
@@ -315,6 +321,7 @@ def run_task3(config_path: str | Path, job_index: int) -> Path:
                 "interpretation": variant["interpretation"],
                 "source": auxiliary_source,
                 "fmt_feature": candidate["fmt_feature"], "fmt_dim": fmt_dim,
+                "raw_backbone_seed": backbone_seed,
             })
             rows.append(row)
             _write_csv(target, rows)

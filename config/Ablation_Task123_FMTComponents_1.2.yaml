@@ -1,0 +1,66 @@
+experiment: Ablation_Task123_FMTComponents_1.2
+status: preregistered_replication_of_1_1_with_new_seeds
+output_root: outputs/Ablation_Task123_FMTComponents_1.2
+replication_of: Ablation_Task123_FMTComponents_1.1
+# Differences from 1.1:
+#   * Task1 KMeans seeds 7080-7084 -> 7180-7184.
+#   * Task2 VAE training seeds 100-104 -> 110-114; latent KMeans seed 7068 -> 7168.
+#   * Task3 residual heads are retrained with seeds 140-144, each paired with
+#     the frozen Raw backbone of seed 40-44 (only these backbones exist); FMT
+#     and Raw-PCA arms still share backbone, width, architecture and budget.
+#   * replay_tolerance 0.02 -> 0.03: the audit compares the full-recipe replay
+#     with the main summaries, which used different seeds; 0.03 is roughly two
+#     standard deviations of a five-seed dataset-macro difference.
+# 1.1 outputs remain untouched under outputs/Ablation_Task123_FMTComponents_1.1.
+replay_tolerance: 0.03
+
+task1:
+  source_config: config/mainExp_Task1_3D_4.1_uniform.yaml
+  main_summary: outputs/mainExp_Task1_3D_4.1_ibex/summary.json
+  final_train: [0, 1, 2, 3, 4, 5, 6, 7]
+  cluster_calibration: [8, 9]
+  pca_dim: 8
+  kmeans_seeds: [7180, 7181, 7182, 7183, 7184]
+  kmeans_n_init: 20
+
+task2:
+  source_config: config/Verify_Task2_UniformFMT_6.1.yaml
+  main_summary: outputs/mainExp_Task2_3D_6.2_uniform_confirmation/confirmation/summary.json
+  architecture: l512_l64_b1e-6
+  train: [0, 1, 2, 3, 4, 5]
+  cluster_calibration: [6, 7]
+  confirmation: [8, 9]
+  training_seeds: [110, 111, 112, 113, 114]
+  kmeans_seed: 7168
+  kmeans_n_init: 20
+  checkpoint_policy: no_checkpoints_written
+
+# Every Task1/Task2 variant remains 189-dimensional. Removed information is
+# replaced by zeros before train-only StandardScaler, so VAE architecture,
+# latent width, optimizer, steps, and nominal parameter count remain exact.
+canonical_variants:
+  - {id: full, removes: nothing}
+  - {id: without_chirality, removes: SO3_handedness_triple_products}
+  - {id: without_cosine, removes: real_imaginary_angle_cosines}
+  - {id: without_neighbor_fourier, removes: six_sorted_neighbor_Fourier_blocks}
+  - {id: without_center_fourier, removes: center_pathline_Fourier_block}
+  - {id: without_kinematic, removes: four_local_velocity_gradient_DFT_channels}
+  - {id: kinematic_only, removes: all_161_Fourier_features}
+
+task3:
+  source_config: config/Verify_Task3_UniformFMT_9.1.yaml
+  main_summary: outputs/mainExp_Task3_3D_9.2_uniform_confirmation/confirmation/summary.json
+  train: [0, 1, 2, 3, 4, 5]
+  validation: [6, 7]
+  confirmation: [8, 9]
+  seeds: [140, 141, 142, 143, 144]
+  backbone_seeds: [40, 41, 42, 43, 44]
+  variants:
+    - {id: first, source_candidate: g03_aivd1w3_first,
+       interpretation: seed_time_IVD_like_value_without_Fourier}
+    - {id: early, source_candidate: g07_aivd1w3_early,
+       interpretation: first_and_early_mean_without_Fourier}
+    - {id: dft, source_candidate: g08_aivd1w3_dft,
+       interpretation: selected_one_bin_Fourier_summary}
+  paired_sources: [fmt, raw_pca]
+  checkpoint_policy: temporary_until_independent_audit_then_delete

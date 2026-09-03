@@ -61,7 +61,10 @@ def _assert_unique(name: str, rows: list[dict], fields: tuple[str, ...]) -> None
 
 def _assert_metric(rows: list[dict], field: str) -> None:
     values = np.asarray([float(row[field]) for row in rows], dtype=np.float64)
-    if not np.isfinite(values).all() or np.any(values < 0.0) or np.any(values > 1.0):
+    # F1/AP are probabilities in [0, 1].  Adjusted Rand Index is chance
+    # corrected and can legitimately be negative, with range [-1, 1].
+    lower = -1.0 if field == "ari" else 0.0
+    if not np.isfinite(values).all() or np.any(values < lower) or np.any(values > 1.0):
         raise RuntimeError(f"invalid {field} values")
 
 
@@ -81,6 +84,27 @@ def _dataset_macro(rows: list[dict], arm_field: str, arm: str, metric: str) -> f
 def _close(name: str, observed: float, expected: float, tolerance: float = 1e-10) -> None:
     if not np.isclose(float(observed), float(expected), rtol=0.0, atol=tolerance):
         raise RuntimeError(f"{name}: {observed} != {expected} (tol={tolerance})")
+
+
+def _task1_families(spec: dict) -> list[str]:
+    task = spec["task1"]
+    families = [
+        str(value) for value in task.get(
+            "baseline_families", ("time_domain", "plain_fourier")
+        )
+    ]
+    declared = {str(row["family"]) for row in task["representations"]}
+    if len(set(families)) != len(families) or declared != set(families):
+        raise RuntimeError("task1 baseline families disagree with representations")
+    return families
+
+
+def _replay_tolerance(spec: dict) -> float:
+    """Recipe-drift tolerance for replaying a main result with new seeds."""
+    value = float(spec.get("replay_tolerance", 0.02))
+    if not 0.0 < value <= 0.05:
+        raise RuntimeError(f"replay_tolerance {value} outside (0, 0.05]")
+    return value
 
 
 def _hashes(paths: list[Path]) -> dict[str, str]:
@@ -128,7 +152,8 @@ def audit_strong(config_path: str | Path) -> Path:
     for field in ("f1", "ari"):
         _assert_metric(selection, field)
     independent_winners = {}
-    for family in ("time_domain", "plain_fourier"):
+    families = _task1_families(spec)
+    for family in families:
         candidates = sorted({
             (row["baseline_id"], row["representation"], row["pca_dim"])
             for row in selection if row["baseline_family"] == family
@@ -165,7 +190,8 @@ def audit_strong(config_path: str | Path) -> Path:
     task1_path = root / "task1" / "confirmation_runs.csv"
     task1 = _read_csv(task1_path)
     _assert_count("Task1 confirmation", task1,
-                  len(datasets) * 2 * len(spec["task1"]["final_kmeans_seeds"]))
+                  len(datasets) * len(families)
+                  * len(spec["task1"]["final_kmeans_seeds"]))
     _assert_unique("Task1 confirmation", task1,
                    ("dataset", "baseline_family", "kmeans_seed"))
     _assert_metric(task1, "f1")
@@ -193,8 +219,10 @@ def audit_strong(config_path: str | Path) -> Path:
         _assert_metric(task3, field)
 
     macro = {
-        "task1_time_domain_f1": _dataset_macro(task1, "baseline_family", "time_domain", "f1"),
-        "task1_plain_fourier_f1": _dataset_macro(task1, "baseline_family", "plain_fourier", "f1"),
+        **{
+            f"task1_{family}_f1": _dataset_macro(task1, "baseline_family", family, "f1")
+            for family in families
+        },
         **{
             f"task2_{arm['id']}_f1": _dataset_macro(task2, "arm", arm["id"], "f1")
             for arm in spec["task2"]["arms"]
@@ -318,10 +346,12 @@ def audit_ablation(config_path: str | Path) -> Path:
     }
     # GPU kernels can differ slightly across the old main run and this new
     # replay; these checks detect recipe drift, not bitwise device identity.
+    tolerance = _replay_tolerance(spec)
     for name, (observed, reference) in full_checks.items():
-        _close(name, observed, reference, tolerance=0.02)
+        _close(name, observed, reference, tolerance=tolerance)
     return _write_audit(spec, {
         "record_counts": expected,
+        "replay_tolerance": tolerance,
         "paired_task3_capacity_equal": True,
         "independently_reconstructed_rows": reconstructed,
         "full_recipe_replay_checks": {

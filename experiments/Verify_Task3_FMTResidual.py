@@ -975,8 +975,12 @@ def _strong_validation_baseline(spec, dataset, seed, validation_loader,
     metrics = [_classification_metrics(
         targets, probabilities, raw_checkpoint["threshold"]
     )]
+    # ``raw_backbone_seed`` (default: the training seed) names the frozen Raw
+    # checkpoints so a replication can retrain residual heads with new seeds
+    # on the same frozen backbones.
+    backbone_seed = int(spec.get("raw_backbone_seed", seed))
     wide_path = (
-        Path(spec["raw_checkpoint_dir"]) / f"{dataset}_raw_wide_seed{seed}.pt"
+        Path(spec["raw_checkpoint_dir"]) / f"{dataset}_raw_wide_seed{backbone_seed}.pt"
     )
     wide_checkpoint = torch.load(
         wide_path, map_location="cpu", weights_only=False
@@ -1455,8 +1459,9 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
     test_loader = None if test is None else _loader(
         test, batch_size, False, seed, pin
     )
+    backbone_seed = int(spec.get("raw_backbone_seed", seed))
     raw_checkpoint_path = (
-        Path(spec["raw_checkpoint_dir"]) / f"{dataset}_raw_seed{seed}.pt"
+        Path(spec["raw_checkpoint_dir"]) / f"{dataset}_raw_seed{backbone_seed}.pt"
     )
     raw_model, raw_checkpoint = _load_raw_model(
         raw_checkpoint_path, train[1].shape[1], device
@@ -1925,6 +1930,7 @@ def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
     }, checkpoint_path)
     result = {
         "dataset": dataset, "variant": variant, "seed": seed,
+        "raw_backbone_seed": backbone_seed,
         "parameter_count": total_parameters,
         "trainable_residual_parameter_count": trainable_parameters,
         "raw_best_epoch": int(raw_checkpoint["best_epoch"]),

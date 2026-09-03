@@ -111,6 +111,104 @@ def pair_distance_dft_features_3d(
     return result
 
 
+def pathline_geometric_quantities_3d(
+    raw: np.ndarray,
+    *,
+    relative_eps: float = 1e-6,
+) -> dict[str, np.ndarray]:
+    """Per-line speed, curvature and signed torsion sequences.
+
+    The unit time step between samples is absorbed into the finite
+    differences, so ``speed`` is the per-step displacement norm.  Curvature is
+    ``|v x a| / |v|^3`` evaluated at the ``L-2`` interior samples with ``v``
+    taken as the mean of the two adjacent displacement vectors.  Torsion is
+    ``((v x a) . j) / |v x a|^2`` at the ``L-3`` samples where the jerk ``j``
+    exists.  Denominators receive ``relative_eps`` times the primitive's mean
+    speed (cubed or squared accordingly) so stagnant lines give zero rather
+    than non-finite values.  All three quantities are invariant to proper
+    rigid motions; the signed torsion flips under reflections.
+    """
+    xyz = reshape_cached_primitives(raw).astype(np.float64)
+    velocity = np.diff(xyz, axis=2)                      # [N,7,L-1,3]
+    speed = np.linalg.norm(velocity, axis=-1)            # [N,7,L-1]
+    acceleration = np.diff(velocity, axis=2)             # [N,7,L-2,3]
+    jerk = np.diff(acceleration, axis=2)                 # [N,7,L-3,3]
+    scale = speed.mean(axis=(1, 2), keepdims=True)       # [N,1,1]
+    eps = float(relative_eps) * scale + 1e-300
+    v_mid = 0.5 * (velocity[:, :, :-1] + velocity[:, :, 1:])          # [N,7,L-2,3]
+    cross = np.cross(v_mid, acceleration)                              # [N,7,L-2,3]
+    cross_norm = np.linalg.norm(cross, axis=-1)
+    v_norm = np.linalg.norm(v_mid, axis=-1)
+    curvature = cross_norm / (v_norm ** 3 + eps ** 3)                  # [N,7,L-2]
+    cross_mid = 0.5 * (cross[:, :, :-1] + cross[:, :, 1:])             # [N,7,L-3,3]
+    torsion = np.einsum("nktc,nktc->nkt", cross_mid, jerk) / (
+        np.sum(cross_mid * cross_mid, axis=-1) + eps ** 4
+    )                                                                  # [N,7,L-3]
+    out = {
+        "speed": speed.astype(np.float32),
+        "curvature": curvature.astype(np.float32),
+        "torsion": torsion.astype(np.float32),
+    }
+    for name, value in out.items():
+        if not np.isfinite(value).all():
+            raise ValueError(f"geometric quantity {name} produced non-finite values")
+    return out
+
+
+GEOMETRIC_STATISTICS_PER_LINE = 14
+
+
+def pathline_geometric_statistics_3d(raw: np.ndarray) -> np.ndarray:
+    """Curvature, torsion and speed statistics baseline (14 values per line).
+
+    Per line: speed mean/std/min/max, path length, net displacement,
+    curvature mean/std/max, signed torsion mean/std, absolute torsion mean/max,
+    and the fraction of samples with positive torsion.  With seven lines the
+    representation is ``7 x 14 = 98`` wide, label-free, and invariant to
+    proper rigid motions.
+    """
+    xyz = reshape_cached_primitives(raw).astype(np.float64)
+    q = pathline_geometric_quantities_3d(raw)
+    speed = q["speed"].astype(np.float64)
+    curvature = q["curvature"].astype(np.float64)
+    torsion = q["torsion"].astype(np.float64)
+    displacement = np.linalg.norm(xyz[:, :, -1] - xyz[:, :, 0], axis=-1)
+    columns = [
+        speed.mean(axis=2), speed.std(axis=2), speed.min(axis=2), speed.max(axis=2),
+        speed.sum(axis=2), displacement,
+        curvature.mean(axis=2), curvature.std(axis=2), curvature.max(axis=2),
+        torsion.mean(axis=2), torsion.std(axis=2),
+        np.abs(torsion).mean(axis=2), np.abs(torsion).max(axis=2),
+        (torsion > 0.0).mean(axis=2),
+    ]
+    assert len(columns) == GEOMETRIC_STATISTICS_PER_LINE
+    result = np.stack(columns, axis=-1).reshape(len(xyz), -1).astype(np.float32)
+    if not np.isfinite(result).all():
+        raise ValueError("geometric statistics produced non-finite values")
+    return result
+
+
+def pathline_geometric_sequences_3d(raw: np.ndarray) -> np.ndarray:
+    """Full per-sample speed, curvature and torsion sequences per line.
+
+    Curvature and torsion are squashed with ``arcsinh`` so heavy tails at
+    near-straight samples do not dominate the train-only standardisation.  With
+    ``L`` samples the width is ``7 x ((L-1) + (L-2) + (L-3))``.
+    """
+    q = pathline_geometric_quantities_3d(raw)
+    parts = (
+        q["speed"],
+        np.arcsinh(q["curvature"]),
+        np.arcsinh(q["torsion"]),
+    )
+    result = np.concatenate(
+        [part.reshape(len(part), -1) for part in parts], axis=1
+    ).astype(np.float32)
+    if not np.isfinite(result).all():
+        raise ValueError("geometric sequences produced non-finite values")
+    return result
+
+
 def non_fmt_feature_matrix(
     raw: np.ndarray,
     name: str,
@@ -125,6 +223,10 @@ def non_fmt_feature_matrix(
         return plain_pathline_dft_features_3d(raw, num_freq, mode="magnitude")
     if name == "pair_distance_dft":
         return pair_distance_dft_features_3d(raw, num_freq)
+    if name == "geometric_statistics":
+        return pathline_geometric_statistics_3d(raw)
+    if name == "geometric_sequences":
+        return pathline_geometric_sequences_3d(raw)
     return raw_pathline_representation(raw, name)
 
 

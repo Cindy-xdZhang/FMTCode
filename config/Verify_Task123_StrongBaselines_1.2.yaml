@@ -1,0 +1,82 @@
+experiment: Verify_Task123_StrongBaselines_1.2
+status: preregistered_replication_of_1_1_with_new_seeds_and_geometric_statistics_family
+output_root: outputs/Verify_Task123_StrongBaselines_1.2
+replication_of: Verify_Task123_StrongBaselines_1.1
+# Differences from 1.1 (everything else is byte-identical in role):
+#   * Task1 KMeans selection seed 7068 -> 7168; final KMeans seeds 7080-7084 -> 7180-7184.
+#   * Task1 adds a third frozen family ``geometric_statistics`` (curvature /
+#     torsion / speed statistics and their full sequences), answering the
+#     audit request for a stronger geometric baseline.  Each family still
+#     freezes exactly one development winner before confirmation opens.
+#   * Task2 VAE training seeds 100-104 -> 110-114; latent KMeans seed and
+#     train-only PCA189 random state 7068 -> 7168.
+#   * Task3 has no trainable stage here: it re-evaluates the frozen Raw and
+#     Raw-wide checkpoints (seeds 40-44) on confirmation, so it is a pure
+#     reproducibility replay; no other frozen backbones exist.
+# 1.1 outputs remain untouched under outputs/Verify_Task123_StrongBaselines_1.1.
+
+task1:
+  source_config: config/mainExp_Task1_3D_4.1_uniform.yaml
+  main_summary: outputs/mainExp_Task1_3D_4.1_ibex/summary.json
+  development_ordinals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  selection_train: [0, 1, 2, 3, 4, 5]
+  selection_validation: [6, 7]
+  final_train: [0, 1, 2, 3, 4, 5, 6, 7]
+  cluster_calibration: [8, 9]
+  pca_dims: [null, 2, 8, 16, 32, 64]
+  baseline_families: [time_domain, plain_fourier, geometric_statistics]
+  representations:
+    - {id: raw_center_relative, name: center_relative, family: time_domain}
+    - {id: raw_dynamics, name: dynamics, family: time_domain}
+    - {id: raw_pair_distance, name: pair_distance, family: time_domain}
+    - {id: raw_invariant_dynamics, name: invariant_dynamics, family: time_domain}
+    - {id: plain_dft_complex, name: plain_dft_complex, family: plain_fourier}
+    - {id: plain_dft_magnitude, name: plain_dft_magnitude, family: plain_fourier}
+    - {id: pair_distance_dft, name: pair_distance_dft, family: plain_fourier}
+    # 98-D per-line speed/curvature/torsion statistics (14 per line).
+    - {id: geometric_statistics, name: geometric_statistics, family: geometric_statistics}
+    # 630-D per-sample speed, arcsinh(curvature), arcsinh(torsion) sequences.
+    - {id: geometric_sequences, name: geometric_sequences, family: geometric_statistics}
+  num_freq: 6
+  selection_seed: 7168
+  selection_kmeans_n_init: 20
+  final_kmeans_seeds: [7180, 7181, 7182, 7183, 7184]
+  final_kmeans_n_init: 20
+  selection_rule: >-
+    Freeze the best time-domain, best ordinary-Fourier and best
+    geometric-statistics baseline by development dataset-macro F1, then
+    worst-dataset F1 and ARI. Confirmation is never used to choose
+    representation or PCA width.
+
+task2:
+  source_config: config/Verify_Task2_UniformFMT_6.1.yaml
+  source_selection: outputs/Verify_Task2_UniformFMT_6.1/global_selection.json
+  source_selection_audit: outputs/Verify_Task2_UniformFMT_6.1/independent_selection_audit.json
+  main_summary: outputs/mainExp_Task2_3D_6.2_uniform_confirmation/confirmation/summary.json
+  train: [0, 1, 2, 3, 4, 5]
+  cluster_calibration: [6, 7]
+  confirmation: [8, 9]
+  training_seeds: [110, 111, 112, 113, 114]
+  kmeans_seed: 7168
+  pca_random_state: 7168
+  kmeans_n_init: 20
+  arms:
+    - {id: raw_tuned, representation: center_relative,
+       architecture: m256_l16_lr3e-4, category: strongest_time_domain_raw}
+    - {id: raw_pca189_same_vae, representation: center_relative_pca189,
+       architecture: l512_l64_b1e-6, category: dimension_matched_raw}
+    - {id: plain_dft_same_vae, representation: plain_dft_complex,
+       architecture: l512_l64_b1e-6, category: ordinary_fourier}
+    - {id: pair_distance_dft_same_vae, representation: pair_distance_dft,
+       architecture: l512_l64_b1e-6, category: invariant_fourier}
+  num_freq: 6
+  checkpoint_policy: no_checkpoints_written
+
+task3:
+  source_config: config/Verify_Task3_UniformFMT_9.1.yaml
+  main_summary: outputs/mainExp_Task3_3D_9.2_uniform_confirmation/confirmation/summary.json
+  confirmation: [8, 9]
+  seeds: [40, 41, 42, 43, 44]
+  baselines: [raw, raw_wide]
+  checkpoint_policy: read_existing_frozen_baselines_only
+  note: inference-only replay of frozen checkpoints; identical seeds by necessity

@@ -76,6 +76,23 @@ def _task1_source(task: dict) -> dict:
     return yaml.safe_load(Path(task["source_config"]).read_text(encoding="utf-8"))
 
 
+DEFAULT_TASK1_FAMILIES = ("time_domain", "plain_fourier")
+
+
+def _task1_families(task: dict) -> list[str]:
+    """Return the baseline families that each freeze one confirmation winner."""
+    families = [str(value) for value in task.get("baseline_families", DEFAULT_TASK1_FAMILIES)]
+    if len(set(families)) != len(families) or not families:
+        raise ValueError("task1.baseline_families must be a non-empty unique list")
+    declared = {str(row["family"]) for row in task["representations"]}
+    if declared != set(families):
+        raise ValueError(
+            f"task1 representations declare families {sorted(declared)}, "
+            f"config freezes {families}"
+        )
+    return families
+
+
 def _task1_source_for_dataset(source: dict, dataset: str) -> dict:
     matches = [
         value for value in source["sources"].values()
@@ -192,7 +209,7 @@ def task1_freeze(config_path: str | Path) -> Path:
     winners = {}
     leaderboard = []
     datasets = list(source["datasets"])
-    for family in ("time_domain", "plain_fourier"):
+    for family in _task1_families(task):
         candidates = sorted({
             (row["baseline_id"], row["representation"], row["pca_dim"])
             for row in rows if row["baseline_family"] == family
@@ -318,7 +335,10 @@ def task1_merge(config_path: str | Path) -> Path:
     rows = []
     for dataset in source["datasets"]:
         rows.extend(_read_csv(output / "confirmation_shards" / f"{dataset}.csv"))
-    expected = len(source["datasets"]) * 2 * len(task["final_kmeans_seeds"])
+    expected = (
+        len(source["datasets"]) * len(_task1_families(task))
+        * len(task["final_kmeans_seeds"])
+    )
     if len(rows) != expected:
         raise RuntimeError(f"incomplete Task1 confirmation: {len(rows)} != {expected}")
     target = output / "confirmation_runs.csv"
@@ -397,7 +417,8 @@ def _standardize(train: np.ndarray, evaluate: np.ndarray):
     )
 
 
-def _task2_inputs(train_records, evaluate_records, representation, num_freq, device):
+def _task2_inputs(train_records, evaluate_records, representation, num_freq, device,
+                  pca_random_state=7068):
     if representation == "center_relative":
         return _prepare_inputs(
             train_records, evaluate_records, "raw", "fmt_all+kin4", device
@@ -406,7 +427,10 @@ def _task2_inputs(train_records, evaluate_records, representation, num_freq, dev
         train, evaluate = _prepare_inputs(
             train_records, evaluate_records, "raw", "fmt_all+kin4", device
         )
-        pca = PCA(n_components=189, svd_solver="randomized", random_state=7068)
+        pca = PCA(
+            n_components=189, svd_solver="randomized",
+            random_state=int(pca_random_state),
+        )
         train = pca.fit_transform(train).astype(np.float32)
         evaluate = pca.transform(evaluate).astype(np.float32)
         return _standardize(train, evaluate)
@@ -462,6 +486,7 @@ def task2_run(config_path: str | Path, job_index: int) -> Path:
     train_x, evaluate_x = _task2_inputs(
         train_records, evaluation_records, arm["representation"],
         int(task["num_freq"]), device,
+        pca_random_state=int(task.get("pca_random_state", 7068)),
     )
     architecture = _task2_architecture(source, arm["architecture"])
     source_config = EasyConfig(group["source_config"])
@@ -630,8 +655,10 @@ def summarize(config_path: str | Path) -> Path:
         task3_rows.extend(_read_csv(
             output / "task3" / "shards" / f"{dataset}.csv"
         ))
+    task1_families = _task1_families(spec["task1"])
     expected = {
-        "task1": len(source2["datasets"]) * 2 * len(spec["task1"]["final_kmeans_seeds"]),
+        "task1": len(source2["datasets"]) * len(task1_families)
+        * len(spec["task1"]["final_kmeans_seeds"]),
         "task2": len(source2["datasets"]) * len(spec["task2"]["arms"])
         * len(spec["task2"]["training_seeds"]),
         "task3": len(source3["datasets"]) * len(spec["task3"]["baselines"])
@@ -654,8 +681,8 @@ def summarize(config_path: str | Path) -> Path:
         "dataset_macro": {
             name: float(np.mean([row[f"{metric}_mean"] for row in table]))
             for name, table, metric in (
-                ("task1_time_domain_f1", [r for r in tables["task1"] if r["arm"] == "time_domain"], "f1"),
-                ("task1_plain_fourier_f1", [r for r in tables["task1"] if r["arm"] == "plain_fourier"], "f1"),
+                *[(f"task1_{family}_f1", [r for r in tables["task1"] if r["arm"] == family], "f1")
+                  for family in task1_families],
                 *[(f"task2_{arm['id']}_f1", [r for r in tables["task2"] if r["arm"] == arm["id"]], "f1") for arm in spec["task2"]["arms"]],
                 ("task3_raw_f1", [r for r in tables["task3_f1"] if r["arm"] == "raw"], "f1"),
                 ("task3_raw_wide_f1", [r for r in tables["task3_f1"] if r["arm"] == "raw_wide"], "f1"),
