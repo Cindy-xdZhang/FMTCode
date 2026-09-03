@@ -1,0 +1,93 @@
+experiment: Verify_Task123_NoiseRobustness_1.2
+status: preregistered_clean_train_corrupted_confirmation_stronger_baselines
+output_root: outputs/Verify_Task123_NoiseRobustness_1.2
+# Extends 1.1 (FMT vs. original Raw arms, audited PASS) with the stronger
+# non-FMT baselines frozen by Verify_Task123_StrongBaselines_1.1/1.2.  The
+# corruption seed, conditions, repeat/training seeds and splits are identical
+# to 1.1, so every corrupted confirmation realization is bitwise the one the
+# FMT/Raw arms were already scored on; the audited 1.1 per-run rows are merged
+# into the combined table (SHA-256 checked against the 1.1 audit) instead of
+# being rerun.  No recipe is selected here: every representation, PCA width
+# and VAE architecture is read from a pre-confirmation frozen manifest.
+reference_experiment: outputs/Verify_Task123_NoiseRobustness_1.1
+
+corruptions:
+  - {id: clean, kind: clean, level: 0.0}
+  - {id: gaussian_005, kind: gaussian, level: 0.05}
+  - {id: gaussian_010, kind: gaussian, level: 0.10}
+  - {id: gaussian_020, kind: gaussian, level: 0.20}
+  - {id: gaussian_040, kind: gaussian, level: 0.40}
+  - {id: frame_dropout_010, kind: frame_dropout, level: 0.10}
+  - {id: frame_dropout_025, kind: frame_dropout, level: 0.25}
+  - {id: frame_dropout_040, kind: frame_dropout, level: 0.40}
+  - {id: short_track_075, kind: short_track, level: 0.75}
+  - {id: short_track_050, kind: short_track, level: 0.50}
+
+task1:
+  source_config: config/mainExp_Task1_3D_4.1_uniform.yaml
+  main_summary: outputs/mainExp_Task1_3D_4.1_ibex/summary.json
+  final_train: [0, 1, 2, 3, 4, 5, 6, 7]
+  cluster_calibration: [8, 9]
+  num_freq: 6
+  arms:
+    # Strongest ordinary-Fourier baseline frozen in StrongBaselines 1.1
+    # (confirmation F1 .584665); 1.2 re-froze the same representation.
+    - {id: plain_dft, representation: plain_dft_magnitude, pca_dim: 64,
+       family: plain_fourier,
+       frozen_from: outputs/Verify_Task123_StrongBaselines_1.1/task1/frozen_baselines.json,
+       clean_reference: outputs/Verify_Task123_StrongBaselines_1.1/summary.json,
+       clean_reference_key: task1_plain_fourier_f1}
+    # Curvature/torsion/speed baseline frozen in StrongBaselines 1.2
+    # (confirmation F1 .447063 with KMeans seeds 7180-7184).
+    - {id: geometric, representation: geometric_sequences, pca_dim: 2,
+       family: geometric_statistics,
+       frozen_from: outputs/Verify_Task123_StrongBaselines_1.2/task1/frozen_baselines.json,
+       clean_reference: outputs/Verify_Task123_StrongBaselines_1.2/summary.json,
+       clean_reference_key: task1_geometric_statistics_f1}
+  kmeans_seeds: [7080, 7081, 7082, 7083, 7084]
+  kmeans_n_init: 20
+
+task2:
+  source_config: config/Verify_Task2_UniformFMT_6.1.yaml
+  frozen_from: outputs/Verify_Task123_StrongBaselines_1.1/task2/frozen_baselines.json
+  clean_reference: outputs/Verify_Task123_StrongBaselines_1.1/summary.json
+  train: [0, 1, 2, 3, 4, 5]
+  cluster_calibration: [6, 7]
+  confirmation: [8, 9]
+  num_freq: 6
+  pca_random_state: 7068
+  arms:
+    - {id: raw_pca189_same_vae, representation: center_relative_pca189,
+       architecture: l512_l64_b1e-6, clean_reference_key: task2_raw_pca189_same_vae_f1}
+    - {id: raw_tuned, representation: center_relative,
+       architecture: m256_l16_lr3e-4, clean_reference_key: task2_raw_tuned_f1}
+    - {id: plain_dft_same_vae, representation: plain_dft_complex,
+       architecture: l512_l64_b1e-6, clean_reference_key: task2_plain_dft_same_vae_f1}
+  training_seeds: [100, 101, 102, 103, 104]
+  kmeans_seed: 7068
+  kmeans_n_init: 20
+  checkpoint_policy: in_memory_only
+
+task3:
+  source_config: config/Verify_Task3_UniformFMT_9.1.yaml
+  selected_config: outputs/Verify_Task3_UniformFMT_9.1/global_selection.json
+  clean_reference: outputs/Verify_Task123_StrongBaselines_1.1/summary.json
+  confirmation: [8, 9]
+  # Frozen Raw and Raw-wide supervised networks (seeds 40-44); inference only.
+  arms: [raw, raw_wide]
+  training_seeds: [40, 41, 42, 43, 44]
+  checkpoint_policy: read_existing_frozen_baselines_only
+
+randomization:
+  corruption_seed: 17068
+  realization_is_paired_across_arms: true
+  gaussian_scale: primitive_offset
+  frame_dropout_scope: one_random_time_mask_per_slice_and_repeat
+  short_track_policy: leading_fraction_resampled_to_32_points
+
+# Independent-audit tolerance for the clean-condition replay of each new arm
+# against its strong-baseline confirmation value.  Task1 plain DFT and all
+# Task3 arms reuse the same seeds/models and should agree to ~1e-5; Task1
+# geometric uses KMeans seeds 7080-7084 instead of 7180-7184; Task2 VAE
+# training is seed-identical but GPU-model dependent.
+replay_tolerance: 0.02

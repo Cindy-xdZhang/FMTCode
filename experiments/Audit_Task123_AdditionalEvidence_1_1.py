@@ -462,15 +462,185 @@ def audit_noise(config_path: str | Path) -> Path:
     }, [Path(config_path), *paths, summary_path])
 
 
+def _noise_strong_rows(spec: dict, root: Path, arms_by_task: dict, seeds_by_task: dict,
+                       datasets: list):
+    """Collect per-run rows of a noise experiment root (own or reference)."""
+    paths = [root / "task1" / "per_run.csv"]
+    rows = {"Task1": _read_csv(paths[0]), "Task2": [], "Task3": []}
+    for task_name in ("Task2", "Task3"):
+        for dataset in datasets:
+            for seed in seeds_by_task[task_name]:
+                path = root / task_name.lower() / "shards" / f"{dataset}_seed{int(seed)}.csv"
+                paths.append(path)
+                rows[task_name].extend(_read_csv(path))
+    conditions = [row["id"] for row in spec["corruptions"]]
+    for task_name, values in rows.items():
+        expected = (
+            len(datasets) * len(arms_by_task[task_name]) * len(conditions)
+            * len(seeds_by_task[task_name])
+        )
+        _assert_count(f"{root.name} {task_name}", values, expected)
+        if sorted({row["arm"] for row in values}) != sorted(arms_by_task[task_name]):
+            raise RuntimeError(f"{root.name} {task_name}: unexpected arms")
+        seed_field = "seed" if task_name == "Task1" else "training_seed"
+        _assert_unique(f"{root.name} {task_name}", values,
+                       ("dataset", "arm", seed_field, "condition"))
+        _assert_metric(values, "f1")
+        if task_name == "Task3":
+            _assert_metric(values, "average_precision")
+    return rows, paths
+
+
+def audit_noise_strong(config_path) -> Path:
+    spec = _load_yaml(config_path)
+    root = Path(spec["output_root"])
+    source = _load_yaml(spec["task1"]["source_config"])
+    datasets = list(source["datasets"])
+    own_arms = {
+        "Task1": [arm["id"] for arm in spec["task1"]["arms"]],
+        "Task2": [arm["id"] for arm in spec["task2"]["arms"]],
+        "Task3": list(spec["task3"]["arms"]),
+    }
+    seeds = {
+        "Task1": [int(v) for v in spec["task1"]["kmeans_seeds"]],
+        "Task2": [int(v) for v in spec["task2"]["training_seeds"]],
+        "Task3": [int(v) for v in spec["task3"]["training_seeds"]],
+    }
+    own, own_paths = _noise_strong_rows(spec, root, own_arms, seeds, datasets)
+
+    # Reference (1.1) rows must be the audited evidence, byte for byte, and the
+    # corruption contract must be identical so realizations are shared.
+    reference_root = Path(spec["reference_experiment"])
+    reference_audit = json.loads(
+        (reference_root / "independent_audit.json").read_text(encoding="utf-8")
+    )
+    if reference_audit.get("status") != "PASS":
+        raise RuntimeError("reference noise audit is not PASS")
+    reference_config = _load_yaml(Path("config") / f"{reference_root.name}.yaml")
+    if reference_config["randomization"] != spec["randomization"]:
+        raise RuntimeError("randomization differs from the reference experiment")
+    if [r["id"] for r in reference_config["corruptions"]] != [r["id"] for r in spec["corruptions"]]:
+        raise RuntimeError("corruption conditions differ from the reference experiment")
+    for task_name in ("Task2", "Task3"):
+        if [int(v) for v in reference_config[task_name.lower()]["training_seeds"]] != seeds[task_name]:
+            raise RuntimeError(f"{task_name} training seeds differ from the reference experiment")
+    if [int(v) for v in reference_config["task1"]["kmeans_seeds"]] != seeds["Task1"]:
+        raise RuntimeError("Task1 KMeans seeds differ from the reference experiment")
+    reference_arms = {
+        "Task1": [a["id"] for a in reference_config["task1"]["arms"]],
+        "Task2": list(reference_config["task2"]["arms"]),
+        "Task3": list(reference_config["task3"]["arms"]),
+    }
+    reference, reference_paths = _noise_strong_rows(
+        spec, reference_root, reference_arms, seeds, datasets
+    )
+    evidence = {}
+    for remote, digest in reference_audit["evidence_sha256"].items():
+        local = (
+            Path("outputs") / remote.split("/outputs/", 1)[1]
+            if "/outputs/" in remote else Path(remote)
+        )
+        evidence[local.resolve()] = digest
+    for path in reference_paths:
+        if evidence.get(path.resolve()) != _sha256(path):
+            raise RuntimeError(f"reference evidence changed or unlisted: {path}")
+    for task_name in reference_arms:
+        if set(reference_arms[task_name]) & set(own_arms[task_name]):
+            raise RuntimeError(f"{task_name}: arm identifiers overlap with the reference")
+
+    conditions = [row["id"] for row in spec["corruptions"]]
+    table = {}
+    for task_name in ("Task1", "Task2", "Task3"):
+        for rows, arms in ((reference[task_name], reference_arms[task_name]),
+                           (own[task_name], own_arms[task_name])):
+            for arm in arms:
+                for condition in conditions:
+                    selected = [
+                        {**row, "audit_arm": "x"} for row in rows
+                        if row["arm"] == arm and row["condition"] == condition
+                    ]
+                    key = f"{task_name}|{condition}|{arm}"
+                    table[key] = {
+                        "dataset_macro_f1": _dataset_macro(selected, "audit_arm", "x", "f1")
+                    }
+                    if task_name == "Task3":
+                        table[key]["dataset_macro_average_precision"] = _dataset_macro(
+                            selected, "audit_arm", "x", "average_precision"
+                        )
+    summary_path = root / "summary.json"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    formal = {f"{row['task']}|{row['condition']}|{row['arm']}": row for row in summary["table"]}
+    if set(formal) != set(table):
+        raise RuntimeError("noise-strong summary keys differ from independent reconstruction")
+    for key, metrics in table.items():
+        for metric, value in metrics.items():
+            _close(f"noise-strong {key}/{metric}", formal[key][metric], value)
+    gains = {(g["task"], g["baseline"], g["condition"]): g for g in summary["paired_gains"]}
+    for task_name in ("Task1", "Task2", "Task3"):
+        for arm in reference_arms[task_name] + own_arms[task_name]:
+            if arm == "fmt":
+                continue
+            for condition in conditions:
+                expected = (table[f"{task_name}|{condition}|fmt"]["dataset_macro_f1"]
+                            - table[f"{task_name}|{condition}|{arm}"]["dataset_macro_f1"])
+                _close(f"gain {task_name}/{arm}/{condition}",
+                       gains[(task_name, arm, condition)]["fmt_minus_baseline_f1"], expected)
+
+    tolerance = _replay_tolerance(spec)
+    clean_checks = {}
+    for arm in spec["task1"]["arms"]:
+        reference_summary = json.loads(Path(arm["clean_reference"]).read_text(encoding="utf-8"))
+        clean_checks[f"Task1 {arm['id']}"] = (
+            table[f"Task1|clean|{arm['id']}"]["dataset_macro_f1"],
+            reference_summary["dataset_macro"][arm["clean_reference_key"]],
+        )
+    task2_reference = json.loads(Path(spec["task2"]["clean_reference"]).read_text(encoding="utf-8"))
+    for arm in spec["task2"]["arms"]:
+        clean_checks[f"Task2 {arm['id']}"] = (
+            table[f"Task2|clean|{arm['id']}"]["dataset_macro_f1"],
+            task2_reference["dataset_macro"][arm["clean_reference_key"]],
+        )
+    task3_reference = json.loads(Path(spec["task3"]["clean_reference"]).read_text(encoding="utf-8"))
+    for arm in spec["task3"]["arms"]:
+        clean_checks[f"Task3 {arm} F1"] = (
+            table[f"Task3|clean|{arm}"]["dataset_macro_f1"],
+            task3_reference["dataset_macro"][f"task3_{arm}_f1"],
+        )
+        clean_checks[f"Task3 {arm} AP"] = (
+            table[f"Task3|clean|{arm}"]["dataset_macro_average_precision"],
+            task3_reference["dataset_macro"][f"task3_{arm}_ap"],
+        )
+    for name, (observed, reference_value) in clean_checks.items():
+        _close(name, observed, reference_value, tolerance=tolerance)
+    return _write_audit(spec, {
+        "record_counts": {name: len(rows) for name, rows in own.items()},
+        "reference_record_counts": {name: len(rows) for name, rows in reference.items()},
+        "reference_experiment": spec["reference_experiment"],
+        "reference_evidence_verified": len(reference_paths),
+        "replay_tolerance": tolerance,
+        "clean_train_corrupted_confirmation": True,
+        "independently_reconstructed_table": table,
+        "clean_recipe_replay_checks": {
+            key: {"observed": value[0], "strong_baseline_reference": value[1]}
+            for key, value in clean_checks.items()
+        },
+    }, [Path(config_path), *own_paths, *reference_paths, summary_path,
+        reference_root / "independent_audit.json"])
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--kind", required=True, choices=("strong", "ablation", "noise"))
+    parser.add_argument(
+        "--kind", required=True, choices=("strong", "ablation", "noise", "noise-strong")
+    )
     parser.add_argument("--config", required=True)
     args = parser.parse_args()
     if args.kind == "strong":
         audit_strong(args.config)
     elif args.kind == "ablation":
         audit_ablation(args.config)
+    elif args.kind == "noise-strong":
+        audit_noise_strong(args.config)
     else:
         audit_noise(args.config)
 
