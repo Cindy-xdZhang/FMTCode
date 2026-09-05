@@ -1,0 +1,73 @@
+experiment: Verify_Task135_GeometricControls_1.1
+paired_robustness_experiment: Verify_Task135_PairedRobustness_1.1
+status: preregistered_before_new_confirmation_evaluation
+output_root: outputs/Verify_Task135_GeometricControls_1.1
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor, boeing747, smokeBuoyancy]
+tasks: [Task1, Task3, Task5]
+seeds: [40, 41, 42, 43, 44]
+corruption_seeds: [17068, 27068, 37068]
+arms: [geometry_ivd, plain_dft, plain_magnitude, geometry_no_fourier, fmt]
+auxiliary_input_width: 268
+roots:
+  fixed: /home/zhanx0o/FMT_Uniform_3D_20260901
+  multiscale: /home/zhanx0o/FMT_Task12_3D_20260823
+task1:
+  train: [0, 1, 2, 3, 4, 5, 6, 7]
+  validation: [8, 9]
+  confirmation: [0, 1, 2, 3]
+  kmeans_seeds: [7080, 7081, 7082, 7083, 7084]
+  kmeans_n_init: 20
+  pca_dims: {geometry_ivd: null, plain_dft: 64, plain_magnitude: 64, geometry_no_fourier: 8, fmt: 8}
+task3:
+  train: [0, 1, 2, 3, 4, 5]
+  validation: [6, 7]
+  confirmation: [8, 9]
+task5:
+  train: [0, 1, 2, 3]
+  validation: [4, 5]
+  confirmation: [0, 1, 2, 3]
+model: {embedding_dim: 128, auxiliary_dim: 64, residual_input: geometry_fmt}
+fusion: {fixed_alpha: 1.0, selection_metric: average_precision}
+training:
+  device: cuda
+  batch_size: 512
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  max_epochs: 100
+  patience: 20
+  min_delta: 0.0001
+corruptions:
+  - {id: clean, kind: clean, level: 0.0}
+  - {id: gaussian_0001, kind: gaussian, level: 0.001}
+  - {id: gaussian_0005, kind: gaussian, level: 0.005}
+  - {id: gaussian_001, kind: gaussian, level: 0.01}
+  - {id: gaussian_002, kind: gaussian, level: 0.02}
+  - {id: gaussian_005, kind: gaussian, level: 0.05}
+  - {id: gaussian_010, kind: gaussian, level: 0.1}
+  - {id: dropout_10, kind: frame_dropout, level: 0.1}
+  - {id: dropout_25, kind: frame_dropout, level: 0.25}
+  - {id: dropout_40, kind: frame_dropout, level: 0.4}
+  - {id: prefix_75, kind: short_track, level: 0.75}
+  - {id: prefix_50, kind: short_track, level: 0.5}
+protocol:
+  labels: existing_whole_field_IVD_p95_unchanged
+  direct_threshold: maximize_validation_F1_positive_high_ties_lowest_threshold
+  geometric_ivd: seed_time_physical_seven_line_velocity_gradient_minus_unlabelled_sample_mean
+  geometry_no_fourier: four_physical_kinematic_channels_at_all_32_samples_flattened_no_DFT
+  task3_fmt: frozen_aivd1w3_dft_one_DC_coefficient
+  task1_fmt: frozen_fmt_all_plus_kin4
+  task5_fmt: frozen_all_plus_gram2_plus_index_kin6
+  feature_comparison: task_specific_FMT_recipes_not_a_claim_that_all_tasks_share_one_encoder
+  capacity: lossless_zero_padding_to_268_then_identical_residual_network_and_frozen_Raw_backbone
+  historical_main_table: do_not_overwrite_or_mix_with_new_capacity_matched_comparison
+  invalid_rows: verify_explicit_original_grid_mask_and_all_seven_complete_line_lengths_abort_on_failure
+  corruption: all_methods_share_identical_coordinates_times_and_rows_independent_of_training_seed
+  dropout: independent_per_primitive_common_across_seven_lines_endpoints_retained_physical_time_interpolation
+  truncation: prefix_only_no_discarded_future_points_physical_times_updated
+  noise_units: per_primitive_clean_initial_neighbour_offset
+  selection: clean_training_and_validation_only_all_models_frozen_before_confirmation_opened
+  checkpoint_policy: temporary_local_to_shard_delete_after_predictions_and_metrics_are_written
+  raw_backbone_policy: read_existing_frozen_backbones_never_delete_shared_dependencies
+  reporting: per_run_absolute_F1_AP_IoU_and_drop_from_clean_per_dataset_and_Task5_scale
+  confirmation_use: previously_used_confirmation_sets_new_predeclared_diagnostic_comparisons_not_fresh_unseen_study
