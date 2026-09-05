@@ -42,5 +42,5 @@ output="outputs/Ablation_Task23IVDPercentile_1.1/task3/${tag}/development_${grou
 
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Verify_Task3_FMTResidual.py \
+python -m experiments.Verify_Task3_FMTResidual \
   --config "$config" --dataset "$dataset" --output-dir "$output"

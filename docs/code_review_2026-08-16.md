@@ -1,6 +1,6 @@
 # Code Review 记录（2026-08-16）
 
-**范围**：本仓库从 PyflowVis 复制的全部代码（FLowUtils / FMT_Utils / pnn / DeepUtils / FMT_Clustering.py / FittingVatistasParam.py / VatistasFlowDatasetGenerator.py / config）。
+**范围**：本仓库从 PyflowVis 复制的全部代码（FLowUtils / FMT_Utils / pnn / DeepUtils / experiments/FMT_Clustering.py / experiments/FittingVatistasParam.py / experiments/VatistasFlowDatasetGenerator.py / config）。
 **方法**：8 个独立视角扫描（Task1 主链路逐行、积分与 CUDA 内核、数据加载与判据、Vatistas 标签管线、pnn 与工具、复制边界完整性、跨文件张量契约、清理/效率/规范）→ 约 40 个候选 → 逐条独立验证（含数值实验），结论分 CONFIRMED（确认）/ PLAUSIBLE（成立但依赖触发条件）/ REFUTED（驳回）。
 **好消息先说**：四个核心契约逐位验证一致——种子网格 nx/ny 排列、5 线顺序 (center,x+,x−,y+,y−)、flatten=line·L+t 约定、AngleAwareSampling 维度语义；IVD/Q 的 gradient 物理间距与轴序正确；Vatistas 形变正逆互洽、标签与场的仿射一致、t0 恒等成立、随机种子齐全。
 
@@ -8,22 +8,22 @@
 
 | # | 位置 | 结论 | 要点 |
 |---|---|---|---|
-| 1 | `VatistasFlowDatasetGenerator.py:281` | CONFIRMED（数值实验） | 观察者速度变换的平移速率项用 `(−a,−b)`，正确应为 `−Q(t)·(a,b)`（对 `c(t)=Os−Q·p` 求导，交叉项精确抵消）。数值实验：修正式对真值误差 3.4e-8；代码式误差=\|(Q−I)(a,b)\|，观察者采样范围 MC：典型 ~10%、p90 22%、最坏 74% 的伪均匀背景流；"观察者看自己的 Killing 场应为零"残差 0.524；落盘的 (场, 观察者6标量) 互不自洽。t0 切片不受影响 |
+| 1 | `experiments/VatistasFlowDatasetGenerator.py:281` | CONFIRMED（数值实验） | 观察者速度变换的平移速率项用 `(−a,−b)`，正确应为 `−Q(t)·(a,b)`（对 `c(t)=Os−Q·p` 求导，交叉项精确抵消）。数值实验：修正式对真值误差 3.4e-8；代码式误差=\|(Q−I)(a,b)\|，观察者采样范围 MC：典型 ~10%、p90 22%、最坏 74% 的伪均匀背景流；"观察者看自己的 Killing 场应为零"残差 0.524；落盘的 (场, 观察者6标量) 互不自洽。t0 切片不受影响 |
 | 2 | `FLowUtils/ScalarField2d.py:51,101` | CONFIRMED | 2D IVD 建立在 `np.abs(curl)` 上，算的是 \|\|ω\|−mean\|ω\|\| 而非定义 \|ω−mean(ω)\|；反号涡被折叠、阈值零点偏移。3D 版（ScalarField3d.py:81）是有号的、正确——两版不一致证明 2D 是笔误。**这是 Task1 定量协议计划用的参考标签，必须先修** |
 | 3 | `FLowUtils/flowDatasetUtils/NetCDF_AmiraLoader.py:324-343` | CONFIRMED（内存内复现） | 真实 AmiraMesh 的数据段是 `# Data section follows\n@1\n<binary>`，主分支正则不吃 `@1\n`，np.frombuffer 从这 3 个 ASCII 字节开始按 float32 解释，整场错位且 count 校验必然通过。本仓库自写文件走 fallback 恰好正确 → 往返自测掩盖 bug |
-| 4 | `FMT_Clustering.py:96` | CONFIRMED | `AngleAwareSampling` 在有效性过滤**之前**对全批调用；未积满的线在零填充段贡献恒定 π/2 转角，污染全局显著性 topk，所有保留 primitive 的采样时刻被垃圾数据决定。修法：先 `valid_index` 过滤再采样 |
-| 5 | `FMT_Clustering.py:159-160` | CONFIRMED | encoder 从未 `.eval()`；Pooling 内 BatchNorm 以 train 模式用当前批统计量（`torch.no_grad` 不切换模式），特征依赖同批其他 primitive，running stats 跨组/跨视图漂移；聚类结果依赖遍历顺序与批组成 |
+| 4 | `experiments/FMT_Clustering.py:96` | CONFIRMED | `AngleAwareSampling` 在有效性过滤**之前**对全批调用；未积满的线在零填充段贡献恒定 π/2 转角，污染全局显著性 topk，所有保留 primitive 的采样时刻被垃圾数据决定。修法：先 `valid_index` 过滤再采样 |
+| 5 | `experiments/FMT_Clustering.py:159-160` | CONFIRMED | encoder 从未 `.eval()`；Pooling 内 BatchNorm 以 train 模式用当前批统计量（`torch.no_grad` 不切换模式），特征依赖同批其他 primitive，running stats 跨组/跨视图漂移；聚类结果依赖遍历顺序与批组成 |
 | 6 | `FLowUtils/flowlineIntegral.py:789`（伞形） | CONFIRMED | CPU 与 CUDA 后端语义不一致，同一 config 产出不同数据集：(a) GPU 对 t0 零速度种子早退 valid=1（涡心 primitive 被整组丢弃），CPU 无此判据（涡心变成 300 步全同点的"静止 primitive"进 KMeans）；(b) CPU 先判旧点后无条件写新点，提前终止的线多带一个域外点；(c) GPU 对 t_target 做 `np.clip(tmin,tmax)`，CPU 不裁剪（越界后在冻结末帧场里外推且判满长度）；(d) CPU fallback 把种子降为 float32 累加（GPU 全程 double）；(e) CPU fallback 对 `method="euler"` 因大小写落到 `raise ValueError` 直接崩（当前调用点全为 "rk4"，潜伏） |
 | 7 | `NetCDF_AmiraLoader.py:82-99` | CONFIRMED | 分量名候选 `['x','y']` 排在 `['a','b']`/`['Component1','Component2']`/`['velocity_x','velocity_y']` 之前，而能走到这一步的文件必含 x/y 坐标变量 → 用后三种命名的文件把坐标轴当速度读（T≥X==Y 时静默成功且 y 铺错轴；否则 ValueError 被上层 except 吞掉、场无声消失）。全部候选不匹配时 `field=None` 无任何报错（3D 版有 raise，2D 漏了） |
-| 8 | `FittingVatistasParam.py:178-184` | CONFIRMED | `zip(field_specs, fields)` 无长度校验，而 loader 加载失败是 continue 不 append（`if vf is None` 是死分支）；Amira 目录分支还会一个 name 追加 N 个场。任何缺失/目录数据集都让 spec（含时间窗）与场错位，meta 标错场名，拟合分布静默污染 |
-| 9 | `FittingVatistasParam.py:116-120` | CONFIRMED | `p2n.clamp(max=30)` 使 `2n·ln(r/rc)>30` 后 g 冻结、速度随 r **线性增长**（正确远场 ~1/(2πr)）；边界参数 (rc=0.05,n=6) 下 71.7% 的渲染网格落入线性区，拉回放大后更大。修法：softplus 恒等式 `relu(p2n)+log1p(exp(−|p2n|))`，已验证数值安全 |
+| 8 | `experiments/FittingVatistasParam.py:178-184` | CONFIRMED | `zip(field_specs, fields)` 无长度校验，而 loader 加载失败是 continue 不 append（`if vf is None` 是死分支）；Amira 目录分支还会一个 name 追加 N 个场。任何缺失/目录数据集都让 spec（含时间窗）与场错位，meta 标错场名，拟合分布静默污染 |
+| 9 | `experiments/FittingVatistasParam.py:116-120` | CONFIRMED | `p2n.clamp(max=30)` 使 `2n·ln(r/rc)>30` 后 g 冻结、速度随 r **线性增长**（正确远场 ~1/(2πr)）；边界参数 (rc=0.05,n=6) 下 71.7% 的渲染网格落入线性区，拉回放大后更大。修法：softplus 恒等式 `relu(p2n)+log1p(exp(−&#124;p2n&#124;))`，已验证数值安全 |
 | 10 | `requirements_fmt.txt:74` | CONFIRMED | `pointnet2_ops @ file:///C:/Users/xingdi/sources/PyflowVis/...` 指向仓库外绝对路径，换机器 `pip install -r` 必失败；运行期实际不需要它（仅两个死文件 import） |
 
 ## B. 其余已验证发现（按主题）
 
 **Task1 主链路（跑 mainExp_1.1 前须知）**
-- `FMT_Clustering.py:176`：整片切片当一个 batch，B≈3200 时 stage-2 峰值 ≈6.8 GB，8 GB 卡临界 OOM（PLAUSIBLE，逐张量估算）。`config` 里 `batch_size: 12` 无人读取；`dataset.t_target` 在 timesliceCount=1 时失效；`pathlines.num_cross_points_per_seeding` 全链路无人读取（5 是硬编码）。
-- `FMT_Clustering.py:168-170` + `FlowlinePostProcessing.py:49`：`normalizeLines(LocLines(x))` 组合在数学上不成立——对已局部化的位移量再减绝对 domain min 并做各向异性缩放（cylinder2d x/8 vs y/1），送进对平移/缩放敏感的 PosE 后，"4 视图对比"的结论不可解释（CONFIRMED as design flaw）。
+- `experiments/FMT_Clustering.py:176`：整片切片当一个 batch，B≈3200 时 stage-2 峰值 ≈6.8 GB，8 GB 卡临界 OOM（PLAUSIBLE，逐张量估算）。`config` 里 `batch_size: 12` 无人读取；`dataset.t_target` 在 timesliceCount=1 时失效；`pathlines.num_cross_points_per_seeding` 全链路无人读取（5 是硬编码）。
+- `experiments/FMT_Clustering.py:168-170` + `FlowlinePostProcessing.py:49`：`normalizeLines(LocLines(x))` 组合在数学上不成立——对已局部化的位移量再减绝对 domain min 并做各向异性缩放（cylinder2d x/8 vs y/1），送进对平移/缩放敏感的 PosE 后，"4 视图对比"的结论不可解释（CONFIRMED as design flaw）。
 - 时间窗守卫缺失：`t_start+dt·max_iterations` 无人校验 ≤ tmax；当前 4 个场恰好放得下（0.4·T ≥ 1.5），改任一参数或换短时间窗场即触发 A6(c) 的后端分叉。建议在 `generate_Flowmap_SLICE` 加显式 assert。
 - `FTLE_fitting_utils.py:126`：对带符号 `dx0/dy0` 用 `clamp_min(1e-12)`，邻序颠倒或零填充时产出 ~1e12 的假 Jacobian 而非报错（CONFIRMED，当前调用序恰好为正）。
 - `FTLE_fitting_utils.py:435`：`compute_ivd_2D` 未导入 → `generate_IVD_SLICE` 一执行即 NameError（CONFIRMED；IVD 评测路径端到端断裂，连同 §A2 一起修）。
@@ -36,7 +36,7 @@
 - `stable_hash.py` + `FTLE_fitting_utils` 缓存键：键漏 `dat_dir` 与积分方法；ndarray 落到截断 repr（大数组必碰撞）；set 迭代序不稳定（PLAUSIBLE）。`EasyConfig`：空 yaml → DispatchError；与 dict 方法同名的键（hash/update/get…）被方法遮蔽（PLAUSIBLE）。
 
 **Vatistas 管线（除 A1/A8/A9 外）**
-- `FittingVatistasParam.py:609-616`：间距判据用未形变 rc（应为 max(sx,sy)·rc），m=2 场中"判据通过但形变椭圆重叠"占 9.6%~71%（依分布）；50 次重试耗尽后静默 append（CONFIRMED）。
+- `experiments/FittingVatistasParam.py:609-616`：间距判据用未形变 rc（应为 max(sx,sy)·rc），m=2 场中"判据通过但形变椭圆重叠"占 9.6%~71%（依分布）；50 次重试耗尽后静默 append（CONFIRMED）。
 - 涡核可整体落在渲染域外（bounds t=1.5 vs 域 [-1,1]²）：标签按定义是"正确的空"，但构成未声明的额外负样本，占比 0.7%~7.2%（PLAUSIBLE，定性经对抗验证修正）。
 - θ 统计：模型对 θ→θ+π 规范对称 → 拟合分布双峰；圆均值配线性 std 采样 ≈ 均匀取向（CONFIRMED as statistics flaw）。
 - 旋转角积分是一阶右矩形和（漏 i=0 项恰好保住 t0 恒等），与 RK4 世界线、解析 Q̇ 阶数不一致，t=1 处 ~0.75° 系统偏差（CONFIRMED，低危）。

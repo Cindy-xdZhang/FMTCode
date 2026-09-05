@@ -2,9 +2,9 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
+#SBATCH --mem=16G
 #SBATCH --gres=gpu:1
-#SBATCH --time=12:00:00
+#SBATCH --time=00:30:00
 
 set -euo pipefail
 
@@ -25,42 +25,42 @@ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 
 case "$ACTION" in
   strong_task2)
-    python experiments/Run_Task123_StrongBaselines_1_1.py \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 \
       --config config/Verify_Task123_StrongBaselines_1.1.yaml \
       --mode task2-run --job-index "$INDEX"
     ;;
   strong_task3)
-    python experiments/Run_Task123_StrongBaselines_1_1.py \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 \
       --config config/Verify_Task123_StrongBaselines_1.1.yaml \
       --mode task3-run --job-index "$INDEX"
     ;;
   ablation_task1)
-    python experiments/Run_Task123_FMTComponentAblation_1_1.py \
+    python -m experiments.Run_Task123_FMTComponentAblation_1_1 \
       --config config/Ablation_Task123_FMTComponents_1.1.yaml \
       --mode task1 --job-index "$INDEX"
     ;;
   ablation_task2)
-    python experiments/Run_Task123_FMTComponentAblation_1_1.py \
+    python -m experiments.Run_Task123_FMTComponentAblation_1_1 \
       --config config/Ablation_Task123_FMTComponents_1.1.yaml \
       --mode task2 --job-index "$INDEX"
     ;;
   ablation_task3)
-    python experiments/Run_Task123_FMTComponentAblation_1_1.py \
+    python -m experiments.Run_Task123_FMTComponentAblation_1_1 \
       --config config/Ablation_Task123_FMTComponents_1.1.yaml \
       --mode task3 --job-index "$INDEX"
     ;;
   noise_task1)
-    python experiments/Run_Task123_NoiseRobustness_1_1.py \
+    python -m experiments.Run_Task123_NoiseRobustness_1_1 \
       --config config/Verify_Task123_NoiseRobustness_1.1.yaml \
       --mode task1 --job-index "$INDEX"
     ;;
   noise_task2)
-    python experiments/Run_Task123_NoiseRobustness_1_1.py \
+    python -m experiments.Run_Task123_NoiseRobustness_1_1 \
       --config config/Verify_Task123_NoiseRobustness_1.1.yaml \
       --mode task2 --job-index "$INDEX"
     ;;
   noise_task3)
-    python experiments/Run_Task123_NoiseRobustness_1_1.py \
+    python -m experiments.Run_Task123_NoiseRobustness_1_1 \
       --config config/Verify_Task123_NoiseRobustness_1.1.yaml \
       --mode task3 --job-index "$INDEX"
     ;;

@@ -24,6 +24,6 @@ datasets=(channel cylinder3d halfcylinderRe640 halfcylinderRe6400 tangaroa \
           deltaWing_resampled deltaWing_LBM f22raptor boeing747 smokeBuoyancy)
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Run_Task2_IVDPercentile_Frozen_4_1.py \
+python -m experiments.Run_Task2_IVDPercentile_Frozen_4_1 \
   --config config/Ablation_Task23IVDPercentile_1.2.yaml \
   --mode dataset --dataset "${datasets[$SLURM_ARRAY_TASK_ID]}" --resume

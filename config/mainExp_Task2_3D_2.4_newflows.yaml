@@ -1,0 +1,40 @@
+experiment: mainExp_Task2_3D_2.4_newflows
+source_config: config/mainExp_Task123NewFlows_1.1_development_cache.yaml
+output_dir: outputs/mainExp_Task2_3D_2.4_newflows
+
+cache_roots:
+  development: outputs/mainExp_Task123NewFlows_1.1/development_cache
+  confirmation: outputs/mainExp_Task123NewFlows_1.1/confirmation_cache
+
+# FMT blocks were selected by Task1 using development slices only. Each group
+# selects a VAE using FMT validation F1, then freezes that same VAE for Raw/FMT.
+groups:
+  boeing747:
+    datasets: [boeing747]
+    fmt_feature: kin2
+    same_vae_from_fmt_validation: true
+  smokeBuoyancy:
+    datasets: [smokeBuoyancy]
+    fmt_feature: fmt_all
+    same_vae_from_fmt_validation: true
+
+splits:
+  selection_train: [0, 1, 2, 3, 4, 5]
+  selection_validation: [6, 7]
+  final_train: [0, 1, 2, 3, 4, 5, 6, 7]
+  cluster_calibration: [8, 9]
+
+architectures:
+  - {id: linear2_b1e-5, hidden_dims: [], latent_dim: 2, beta: 0.00001,
+     optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: linear8_b1e-5, hidden_dims: [], latent_dim: 8, beta: 0.00001,
+     optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: mlp8_b1e-4, hidden_dims: [128, 64], latent_dim: 8, beta: 0.0001,
+     optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: mlp16_b1e-3, hidden_dims: [256, 128], latent_dim: 16, beta: 0.001,
+     optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+
+selection_seeds: [7068]
+final_training_seeds: [7068, 7069, 7070]
+kmeans_seed: 7068
+kmeans_n_init: 20

@@ -14,5 +14,5 @@ mkdir -p slurm_logs
 source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
 groups=(old8 new2)
-python Build_Task3_AnchoredRobust_Confirmation_5_1.py \
+python -m experiments.Build_Task3_AnchoredRobust_Confirmation_5_1 \
   --mode labels --group "${groups[$SLURM_ARRAY_TASK_ID]}"

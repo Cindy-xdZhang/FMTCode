@@ -1,0 +1,29 @@
+experiment: mainExp_Task3Universality_2.2_evaluate
+source_cache_root: outputs/mainExp_Task3Universality_2.2/confirmation_cache
+label_cache_root: outputs/mainExp_Task3Universality_2.2/labels
+output_dir: outputs/mainExp_Task3Universality_2.2/final_confirmation
+datasets:
+  - cylinder3d
+  - halfcylinderRe640
+  - halfcylinderRe6400
+  - tangaroa
+  - deltaWing_resampled
+  - deltaWing_LBM
+  - f22raptor
+  - channel
+sampled_steps: 32
+fmt_subset: all_plus_gram_kinematic
+fmt_gram_num_freq: 2
+expected_slices: 4
+seeds: [20, 21, 22]
+batch_size: 1024
+device: auto
+minimum_obvious_gain: 0.02
+baseline_checkpoint_roots:
+  - outputs/Verify_Task3Universality_1.1/classifier_seed20/checkpoints
+  - outputs/Confirm_Task3Universality_1.1/baselines_seed21_22/checkpoints
+residual_checkpoint_roots:
+  - outputs/Verify_Task3ConstrainedAPSelection_1.1/seed20_validation_only/checkpoints
+  - outputs/Verify_Task3ConstrainedAPSelection_1.2/seeds21_22_validation_only/checkpoints
+  - outputs/mainExp_Task3Universality_2.2/residual_training_seed20/checkpoints
+  - outputs/mainExp_Task3Universality_2.2/residual_training_seeds21_22/checkpoints

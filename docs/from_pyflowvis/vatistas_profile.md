@@ -6,7 +6,7 @@ Hadwiger, 2025) to synthesize steady flow fields for training-label generation.
 It corresponds to **Eq. (2)–(10)** of the paper (Section 3.1.1) and to the
 Vatistas experimental vortex model [VKM91], as also used by [KG19] and [BCG20].
 
-The implementation lives in [`FittingVatistasParam.py`](../FittingVatistasParam.py),
+The implementation lives in [`experiments/FittingVatistasParam.py`](../../experiments/FittingVatistasParam.py),
 which fits these parameters to real flow patches and re-samples them to generate
 new synthetic steady fields.
 
@@ -200,9 +200,10 @@ into an **unsteady** one by *observing it from a moving, rotating reference fram
 profile is nonlinear in the radius (§3), no such observer can cancel the vortex,
 so the transported label stays an **objective** ground truth.
 
-The generator [`VatistasFlowDatasetGenerator.py`](../VatistasFlowDatasetGenerator.py)
+The generator [`experiments/VatistasFlowDatasetGenerator.py`](../../experiments/VatistasFlowDatasetGenerator.py)
 implements this as a faithful port of the C++ reference
-[`CppProjects/src/transformation.cpp::killingABCtransformation`](../CppProjects/src/transformation.cpp).
+the historical PyflowVis reference `CppProjects/src/transformation.cpp::killingABCtransformation`,
+which was not copied into this repository.
 
 ### Killing observer field
 
@@ -245,8 +246,8 @@ frame (verified numerically: max error $0$).
 
 ### What the generator produces (Section 3.1 pipeline, paper-exact totals)
 
-[`VatistasFlowDatasetGenerator.py`](../VatistasFlowDatasetGenerator.py) reuses the
-best-tuned fit from [`FittingVatistasParam.py`](../FittingVatistasParam.py) (loads the
+[`experiments/VatistasFlowDatasetGenerator.py`](../../experiments/VatistasFlowDatasetGenerator.py) reuses the
+best-tuned fit from [`experiments/FittingVatistasParam.py`](../../experiments/FittingVatistasParam.py) (loads the
 cached distribution + fitted patch params, mean velocity MSE $0.0094 \approx 34.7$ dB)
 and reproduces the paper's dataset at its **exact reported size** (dissertation Ch. 9,
 p. 117):

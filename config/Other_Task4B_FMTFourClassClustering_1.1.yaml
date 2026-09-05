@@ -1,0 +1,75 @@
+experiment: Other_Task4B_FMTFourClassClustering_1.1
+status: invalid_for_formal_evaluation_superseded_by_1.2
+task: Task4-b frozen Task1-FMT four-cluster diagnostic
+seed: 7068
+
+input:
+  proxy_label_result: outputs/Verify_Task4B_ProxyLabels_1.1/channel_GTs/task4b_proxy_labels.npz
+  flow_path_candidates:
+    - "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel.vtk"
+    - "/home/zhanx0o/DeepVortex/FLowDataFolder/channel.vtk"
+
+splits:
+  hairpin: whole VortexId lists frozen by Verify_Task4B_ProxyLabels_1.1
+  ordinary: buffered non-overlapping x intervals in one periodic channel box
+  ordinary_x_intervals:
+    train: [0.05, 0.55]
+    validation: [0.60, 0.75]
+    test: [0.80, 0.95]
+  excluded_buffers:
+    - [0.00, 0.05]
+    - [0.55, 0.60]
+    - [0.75, 0.80]
+    - [0.95, 1.00]
+  caveat: complete VortexId identities are held out, but cross-split primitive spatial overlap remains; use 1.2
+
+cache:
+  path: outputs/Other_Task4B_FMTFourClassClustering_1.1/channel_GTs/cache/task4b_four_class_cache.npz
+  sampling:
+    ordinary_oversample_factor: 1.25
+    minimum_per_class_per_split: 64
+    max_per_class_per_split:
+      ordinary_streamwise: {train: 3000, validation: 1000, test: 1000}
+      ordinary_spanwise: {train: 3000, validation: 1000, test: 1000}
+      hairpin_head: {train: null, validation: null, test: null}
+      hairpin_limb: {train: null, validation: null, test: null}
+
+streamlines:
+  method: bidirectional_RK4_unit_velocity
+  periodic_axes: [x, y]
+  steps_per_direction: 16
+  spatial_step_mean_voxel_scale: 0.5
+  offset_min_voxel_scale: 0.25
+  minimum_speed: 1.0e-6
+  chunk_size: 8192
+
+encoder:
+  source_protocol: config/PathlineFMTclustering3D.yaml
+  num_freq: 6
+  mode: gram
+  include_chirality: true
+  neighbor_pool: sort
+  neighbor_scale: 100.0
+  neighbor_weight_after_train_standardization: 0.5
+  expected_feature_dim: 161
+  limitation: SO(3) invariants plus sorted neighbours remove fixed channel-axis identity
+
+clustering:
+  n_clusters: 4
+  fit_population: all cached training cubes, without class-balanced resampling
+  standardization: train only
+  init: k-means++
+  n_init: 20
+  max_iter: 500
+  tol: 1.0e-4
+  algorithm: lloyd
+  semantic_mapping: all 24 permutations selected once on validation macro-F1
+  test_oracle_mapping: report_only_non_deployable_upper_bound
+
+visualization:
+  output_dir: outputs/Other_Task4B_FMTFourClassClustering_1.1/channel_GTs
+  surface_mode: interfaces
+  shrink: 0.90
+  opacity: 1.0
+  image_size: [1400, 900]
+  views: [isometric, "+y"]

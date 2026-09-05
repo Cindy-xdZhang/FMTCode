@@ -19,5 +19,5 @@ conda activate deepvortex
 export PYTHONUNBUFFERED=1
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Search_Task5_CylinderHyperparams.py \
+python -m experiments.Search_Task5_CylinderHyperparams \
   --config config/Verify_Task5_CylinderHyperparams_1.1.yaml --mode outer

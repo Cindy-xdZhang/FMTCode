@@ -18,6 +18,6 @@ conda activate deepvortex
 export PYTHONUNBUFFERED=1
 datasets=(channel cylinder3d halfcylinderRe640 halfcylinderRe6400 tangaroa deltaWing_resampled deltaWing_LBM f22raptor boeing747 smokeBuoyancy)
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
-python Run_Task3_FMTResidual_Frozen_5_1.py \
+python -m experiments.Run_Task3_FMTResidual_Frozen_5_1 \
   --config config/mainExp_Task3_3D_5.1.yaml --mode dataset \
   --dataset "${datasets[$SLURM_ARRAY_TASK_ID]}"

@@ -33,6 +33,6 @@ else
 fi
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Build_Task5_Multiscale_Cache.py \
+python -m experiments.Build_Task5_Multiscale_Cache \
   --config config/mainExp_Task5_3D_1.1.yaml \
   --phase "$phase" --dataset "$dataset"

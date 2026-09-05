@@ -22,6 +22,6 @@ export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
 export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
 datasets=(channel cylinder3d halfcylinderRe640 halfcylinderRe6400 tangaroa deltaWing_resampled deltaWing_LBM f22raptor boeing747 smokeBuoyancy)
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
-python Confirm_Task2_LatentBottleneck_5_2.py \
+python -m experiments.Confirm_Task2_LatentBottleneck_5_2 \
   --config config/mainExp_Task2_3D_5.2.yaml --mode dataset \
   --dataset "${datasets[$SLURM_ARRAY_TASK_ID]}"

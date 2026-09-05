@@ -15,6 +15,6 @@ source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
 tags=(p80 p85 p87p5 p90 p92p5)
 tag=${tags[$SLURM_ARRAY_TASK_ID]}
-python Run_Task3_FMTResidual_Frozen_4_1.py \
+python -m experiments.Run_Task3_FMTResidual_Frozen_4_1 \
   --config "outputs/Ablation_Task23IVDPercentile_1.2/generated_configs/task3_${tag}_final.yaml" \
   --mode summary

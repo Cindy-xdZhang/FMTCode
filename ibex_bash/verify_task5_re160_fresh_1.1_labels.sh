@@ -13,5 +13,5 @@ cd "$repo_root"
 mkdir -p slurm_logs
 source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
-python Build_Task3_GlobalIVD_Labels.py \
+python -m experiments.Build_Task3_GlobalIVD_Labels \
   --config config/Verify_Task5_Re160FreshTimes_1.1_labels.yaml

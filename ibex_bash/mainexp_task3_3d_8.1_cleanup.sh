@@ -10,7 +10,7 @@
 set -euo pipefail
 cd "${TASK81_REPO_ROOT:-/home/zhanx0o/FMT_Task3_ExtendedTuned_8_1}"
 mkdir -p slurm_logs
-python Freeze_Task3_RawDependencyClosure_8_1.py \
+python -m experiments.Freeze_Task3_RawDependencyClosure_8_1 \
   --config config/mainExp_Task3_3D_8.1.yaml \
   --mode cleanup
 test -s outputs/mainExp_Task3_3D_8.1/raw_dependency_cleanup.json

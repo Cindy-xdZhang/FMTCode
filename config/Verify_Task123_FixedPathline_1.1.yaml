@@ -1,0 +1,154 @@
+experiment: Verify_Task123_FixedPathline_1.1
+task: Task1/Task2/Task3
+status: preregistered_fixed_pathline_development_search
+output_root: outputs/Verify_Task123_FixedPathline_1.1
+cache_root: outputs/Verify_Task123_FixedPathline_1.1/cache
+staged_window_root: tmp/Verify_Task123_FixedPathline_1.1/windows
+seed: 17068
+
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+families:
+  channel: channel
+  cylinder3d: halfcylinder
+  halfcylinderRe640: halfcylinder
+  halfcylinderRe6400: halfcylinder
+  tangaroa: tangaroa
+  deltaWing_resampled: deltaWing
+  deltaWing_LBM: deltaWing
+  f22raptor: f22raptor
+  boeing747: boeing747
+  smokeBuoyancy: smokeBuoyancy
+
+# The first eight complete fixed-configuration caches are immutable evidence
+# from Verify_PathlineHyperparams3D_1.1.  Boeing and Smoke use staged,
+# spatially-downsampled source windows so the integrations themselves still
+# run on Ibex without transferring the 21.8 GB Boeing NetCDF file.
+cache_sources:
+  imported_old8: outputs/Verify_PathlineHyperparams3D_1.1/cache
+  staged_new2: [boeing747, smokeBuoyancy]
+
+staging:
+  max_spatial_dim: 96
+  frame_count: 26
+  datasets:
+    boeing747:
+      path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/boeing747_808_2392.nc
+      time_indices: [40, 55, 69, 84, 99, 113, 128, 143, 157, 172]
+    smokeBuoyancy:
+      path: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/SmokeBuoyancy80_239.nc
+      time_indices: [32, 43, 54, 66, 77, 88, 99, 111, 122, 133]
+
+sampling:
+  seed_grid_shape: [16, 16, 16]
+  boundary_fraction: 0.08
+  offset_grid_scale: 0.5
+  offset_mode: min
+  seed_grid_phase: null
+
+pathlines:
+  method: RK4
+  chunk_size: 2048
+
+# One factor changes at a time around the current .25/48/32 baseline.
+# dt_small and dt_large retain a 12-source-frame horizon.  samples_16 and
+# samples_48 use identical integrated trajectories and only change temporal
+# resampling.  The long-horizon candidate is kept despite prior negative
+# evidence so this joint Task1/2/3 test does not suppress a known failure.
+variants:
+  - {id: dt_small,    dt_scale: 0.125, integration_steps: 96, sampled_steps: 32}
+  - {id: baseline,    dt_scale: 0.250, integration_steps: 48, sampled_steps: 32}
+  - {id: dt_large,    dt_scale: 0.375, integration_steps: 32, sampled_steps: 32}
+  - {id: steps_short, dt_scale: 0.250, integration_steps: 32, sampled_steps: 32}
+  - {id: steps_long,  dt_scale: 0.250, integration_steps: 96, sampled_steps: 32}
+  - {id: samples_16,  dt_scale: 0.250, integration_steps: 48, sampled_steps: 16}
+  - {id: samples_48,  dt_scale: 0.250, integration_steps: 48, sampled_steps: 48}
+
+encoder: {num_freq: 6, mode: gram, include_chirality: true, neighbor_pool: sort}
+reference: {definition: whole_field_ivd_percentile, percentile: 95.0}
+comparison_population: all_variants_common_valid_seeds
+expected_slices: 10
+splits:
+  train: [0, 1, 2, 3, 4, 5]
+  validation: [6, 7]
+  confirmation: [8, 9]
+
+task1:
+  fmt_feature: fmt_all+kin4
+  fmt_pca_dim: 8
+  raw_pca_dim: 2
+  development_kmeans_seeds: [7110, 7111, 7112]
+  confirmation_kmeans_seeds: [7120, 7121, 7122, 7123, 7124]
+  kmeans_n_init: 20
+  pca_random_state: 7068
+
+task2:
+  fmt_feature: fmt_all+kin4
+  source_config: config/Verify_Task2Universality_1.1.yaml
+  architecture:
+    id: l512_l64_b1e-6
+    hidden_dims: [512, 256]
+    latent_dim: 64
+    beta: 0.000001
+    learning_rate: 0.0003
+    optimizer_steps: 7000
+    relational_weight: 0.0
+    pair_count: 2048
+  development_training_seeds: [120, 121, 122]
+  confirmation_training_seeds: [130, 131, 132, 133, 134]
+  kmeans_seed: 7068
+  kmeans_n_init: 20
+
+task3:
+  fmt_feature: aivd1w3_dft
+  raw_wide_parameter_count: 148225
+  raw_pca_random_state: 7068
+  development_training_seeds: [50, 51, 52]
+  confirmation_training_seeds: [60, 61, 62, 63, 64]
+  backbone_model: {temporal_width: 64, embedding_dim: 128, auxiliary_dim: 64}
+  residual_model:
+    embedding_dim: 128
+    auxiliary_dim: 64
+    residual_input: geometry_fmt
+    head_architecture: mlp
+    head_hidden_dim: 128
+    head_depth: 2
+    bilinear_rank: 32
+    attention_heads: 4
+    head_dropout: 0.0
+    auxiliary_projection: linear_layernorm_gelu
+    auxiliary_hidden_dim: 64
+    auxiliary_dropout: 0.0
+    auxiliary_classifier_architecture: none
+    auxiliary_classifier_hidden_dim: 64
+    residual_gate: none
+    residual_gate_temperature: 1.0
+    residual_gate_floor: 0.0
+  fusion:
+    alpha_min: 0.0
+    alpha_max: 3.0
+    alpha_steps: 61
+    selection_metric: minimum_gain
+    minimum_f1_gain: 0.0
+  training:
+    device: auto
+    batch_size: 512
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    max_epochs: 100
+    patience: 20
+    min_delta: 0.0001
+
+selection:
+  opened_ordinals: [0, 1, 2, 3, 4, 5, 6, 7]
+  confirmation_opened: false
+  primary: equal_task_mean_dataset_macro_f1_gain
+  tie_breakers: [minimum_task_f1_gain, task3_average_precision_gain,
+                 mean_absolute_fmt_f1]
+  baseline_variant: baseline
+
+confirmation:
+  variants: [baseline, selected_winner]
+  opened_only_after_selection_and_independent_audit: true
+  checkpoint_policy: temporary_until_independent_confirmation_audit

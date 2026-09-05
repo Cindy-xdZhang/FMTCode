@@ -118,7 +118,7 @@ class MainExpTask3_8_1Tests(unittest.TestCase):
         self.assertEqual(prior_confirm.SOURCE_EXPERIMENT, original_source)
 
     def test_confirmation_contains_no_training_entrypoint(self):
-        text = Path("Confirm_Task3_ExtendedTuned_8_1.py").read_text(
+        text = Path("experiments/Confirm_Task3_ExtendedTuned_8_1.py").read_text(
             encoding="utf-8"
         )
         self.assertNotIn("_train_one", text)

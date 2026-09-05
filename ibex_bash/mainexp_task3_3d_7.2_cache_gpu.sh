@@ -21,6 +21,6 @@ export PYTHONUNBUFFERED=1
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
 export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
-python Confirm_Task3_AdaptiveTuned_7_2.py \
+python -m experiments.Confirm_Task3_AdaptiveTuned_7_2 \
   --config config/mainExp_Task3_3D_7.2.yaml \
   --mode cache --job-index "$SLURM_ARRAY_TASK_ID"

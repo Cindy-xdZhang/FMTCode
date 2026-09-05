@@ -51,5 +51,5 @@ nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
 printf 'task=%s dataset=%s group=%s mode=%s output=%s\n' \
   "$SLURM_ARRAY_TASK_ID" "$dataset" "$data_group" "$mode" "$output_dir"
-python Verify_Task3_FMTResidual.py \
+python -m experiments.Verify_Task3_FMTResidual \
   --config "$config" --dataset "$dataset" --output-dir "$output_dir"

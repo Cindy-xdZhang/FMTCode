@@ -21,6 +21,6 @@ export PYTHONUNBUFFERED=1
 seeds=(70 71 72 73 74)
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Verify_Task5_Re160FreshTimes.py \
+python -m experiments.Verify_Task5_Re160FreshTimes \
   --config config/Verify_Task5_Re160FreshTimes_1.1.yaml \
   --mode train-candidate --seed "${seeds[$SLURM_ARRAY_TASK_ID]}"

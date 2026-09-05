@@ -17,6 +17,6 @@ export TASK72_SOURCE_MODEL_ROOT="${TASK72_SOURCE_MODEL_ROOT:-/home/zhanx0o/FMT_T
 export TASK3_TUNED72_SOURCE_MANIFEST="${TASK3_TUNED72_SOURCE_MANIFEST:-/ibex/scratch/zhanx0o/FMT_Task3_AdaptiveTuned_7_2/source_staging_manifest.json}"
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
 export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
-python Confirm_Task3_AdaptiveTuned_7_2.py \
+python -m experiments.Confirm_Task3_AdaptiveTuned_7_2 \
   --config config/mainExp_Task3_3D_7.2.yaml \
   --mode labels --job-index "$SLURM_ARRAY_TASK_ID"

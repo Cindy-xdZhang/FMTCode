@@ -31,7 +31,7 @@
 - `FMT_encoder.py:238` `TemporalDFT` 有 `weight_real/weight_imag` 可学习复数滤波 + BatchNorm（聚类实验 `temporal_head=None` 未用到，但它在"FMT"这个名字底下）。
 - 真正零参数的只有：强制 stages=0 的 `FTLEUpsamplingFMT_Unet`、以及 `DCT_FMT`。
 
-**更隐蔽的一层**：`FMT_Clustering.py` 构建 encoder 后**从未调用 `.eval()`**，且推理在 `torch.no_grad()` 下逐 (场,时刻) 组整批前向。BatchNorm 在 train 模式下用的是**当前 batch 的统计量**——即每个 primitive 的特征依赖于同批次其他 primitive。后果：
+**更隐蔽的一层**：`experiments/FMT_Clustering.py` 构建 encoder 后**从未调用 `.eval()`**，且推理在 `torch.no_grad()` 下逐 (场,时刻) 组整批前向。BatchNorm 在 train 模式下用的是**当前 batch 的统计量**——即每个 primitive 的特征依赖于同批次其他 primitive。后果：
 1. 同一条 primitive 单独编码 vs 随全场编码，特征**不同**；
 2. 换 batch 组成（比如换 grid_sampling）结果漂移；
 3. 我认为这次"聚类成功"可能部分**依赖**这个意外行为——train 模式 BN 恰好等价于对该时间片全部 primitive 做逐通道标准化，这正是 KMeans 需要的特征白化。若切到 eval 模式（未训练的 BN ≈ 恒等），特征分布会变，聚类结果可能变差。**这是"成功"最需要复核的一根柱子**（存疑，待 mainExp 复跑验证）。
@@ -48,10 +48,10 @@
 
 ## P3. Task1 的"成功"没有定量地基
 
-- `FMT_Clustering.py` 的评估 = 4 种输入视图 KMeans(k=2) 的并排可视化，人眼判断。无 ARI（Adjusted Rand Index，调整兰德指数）、无 NMI（Normalized Mutual Information，归一化互信息）、无对客观判据标签的 F1/IoU。
+- `experiments/FMT_Clustering.py` 的评估 = 4 种输入视图 KMeans(k=2) 的并排可视化，人眼判断。无 ARI（Adjusted Rand Index，调整兰德指数）、无 NMI（Normalized Mutual Information，归一化互信息）、无对客观判据标签的 F1/IoU。
 - 唯一的定量 A/B 框架 `compare_DCT_FMT_vs_FMT.py` 比的是**另一个任务**（FTLE 超分 PSNR），且证据显示 FMT/DCT 两臂**从未跑通**（无图、无日志、断言与 config 冲突、import 已断）。
 - 旧评测函数还有硬 bug：`test.py:62` 只评了每样本第 0 条线。
-- **可用的 GT 其实现成**：(a) Vatistas 合成场自带解析涡核标签（`VatistasFlowDatasetGenerator.py`，已复制）；(b) 真实场可用 IVD/Q 判据阈值当参考标签（`FLowUtils/ScalarField2d.py` 的向量化 `compute_ivd_2D` 等；注意 IVD 本身客观，适合做"客观涡"的参照）。
+- **可用的 GT 其实现成**：(a) Vatistas 合成场自带解析涡核标签（`experiments/VatistasFlowDatasetGenerator.py`，已复制）；(b) 真实场可用 IVD/Q 判据阈值当参考标签（`FLowUtils/ScalarField2d.py` 的向量化 `compute_ivd_2D` 等；注意 IVD 本身客观，适合做"客观涡"的参照）。
 **建议**：mainExp_1.x 的定义里必须包含固定的定量协议：每场每时间片报 ARI/NMI + 对 IVD 阈值标签的 F1，Vatistas 合成场报对解析标签的 F1；聚类先做特征标准化，KMeans 固定 seed 多次取稳。
 
 ## P4. 采样与数据构造存在系统性偏差
@@ -78,7 +78,7 @@
 
 | 位置 | 问题 | 状态 |
 |---|---|---|
-| `FMT_Clustering.py:9` | import 的 `generate_FLowMap_SLICE` 已被改名 → ImportError | **本仓库已修** |
+| `experiments/FMT_Clustering.py:9` | import 的 `generate_FLowMap_SLICE` 已被改名 → ImportError | **本仓库已修** |
 | `FMT_Utils/vortexExtraction_utiles.py` | 整个文件**没有任何 import 语句**，引用的 loader 函数也不存在；且其 IVD 标签用逐切片 50 分位阈值——每张切片恒有 50% 像素是"涡"，物理语义不成立 | 保留原样，仅作参考；重写前不可用 |
 | `FTLE_fitting_utils.py:435` | `compute_ivd_2D` 未 import → `generate_IVD_SLICE` 必崩 | **已修**（944d206；且 IVD 本体已改为有号涡量，见 code_review §F） |
 | `FTLE_fitting_utils.py:896` | `temporal_downsamplePathlineCrossPrimitive` 不存在（只有 …Regular/…Random）→ `PointWiseFTLETrainDataset` 必崩 | 未修（属失败 SR 线） |

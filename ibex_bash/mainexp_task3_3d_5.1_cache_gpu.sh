@@ -17,5 +17,5 @@ source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
 export PYTHONUNBUFFERED=1
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
-python Build_Task3_AnchoredRobust_Confirmation_5_1.py \
+python -m experiments.Build_Task3_AnchoredRobust_Confirmation_5_1 \
   --mode cache --job-index "$SLURM_ARRAY_TASK_ID"

@@ -27,23 +27,23 @@ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 
 case "$ACTION" in
   strong_task2)
-    python experiments/Run_Task123_StrongBaselines_1_1.py --config "$STRONG_CONFIG" \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 --config "$STRONG_CONFIG" \
       --mode task2-run --job-index "$INDEX"
     ;;
   strong_task3)
-    python experiments/Run_Task123_StrongBaselines_1_1.py --config "$STRONG_CONFIG" \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 --config "$STRONG_CONFIG" \
       --mode task3-run --job-index "$INDEX"
     ;;
   ablation_task1)
-    python experiments/Run_Task123_FMTComponentAblation_1_1.py --config "$ABLATION_CONFIG" \
+    python -m experiments.Run_Task123_FMTComponentAblation_1_1 --config "$ABLATION_CONFIG" \
       --mode task1 --job-index "$INDEX"
     ;;
   ablation_task2)
-    python experiments/Run_Task123_FMTComponentAblation_1_1.py --config "$ABLATION_CONFIG" \
+    python -m experiments.Run_Task123_FMTComponentAblation_1_1 --config "$ABLATION_CONFIG" \
       --mode task2 --job-index "$INDEX"
     ;;
   ablation_task3)
-    python experiments/Run_Task123_FMTComponentAblation_1_1.py --config "$ABLATION_CONFIG" \
+    python -m experiments.Run_Task123_FMTComponentAblation_1_1 --config "$ABLATION_CONFIG" \
       --mode task3 --job-index "$INDEX"
     ;;
   *)

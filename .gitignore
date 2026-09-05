@@ -12,6 +12,28 @@ wandb/
 *.am
 *.pth
 *.pth.tar
+*.pt
+*.ckpt
+checkpoints/
+*checkpoints*.tar
+*checkpoints*.tar.gz
 *.7z*
 .DS_Store
 Thumbs.db
+
+# Local runtime/deployment artifacts. Canonical experiment results use outputs/.
+/output/
+/tmp/
+/slurm_logs/
+/.deploy/
+/.codex/
+/.nature-figure-backend.json
+
+# Recoverable, source-only local backup of retired validation workflows.
+# The inventory is tracked in docs/research_archive_manifest.json.
+/.research_archive/
+
+# Local handover/deployment snapshots, not canonical research documents.
+/handoverTask1235.md
+/DEPLOYMENT_BASE_COMMIT.txt
+/DEPLOYMENT_MANIFEST.sha256

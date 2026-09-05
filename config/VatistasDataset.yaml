@@ -13,8 +13,8 @@
 # verification; pass --full to stream all 60000 to disk in shards. The reported/target
 # totals always equal the paper regardless of how many are written.
 #
-# Run:  python VatistasFlowDatasetGenerator.py --config config/VatistasDataset.yaml
-#       python VatistasFlowDatasetGenerator.py --full        # write all 60000 (sharded, ~39GB)
+# Run:  python -m experiments.VatistasFlowDatasetGenerator --config config/VatistasDataset.yaml
+#       python -m experiments.VatistasFlowDatasetGenerator --full        # write all 60000 (sharded, ~39GB)
 # ---------------------------------------------------------------------------
 seed: 7068
 

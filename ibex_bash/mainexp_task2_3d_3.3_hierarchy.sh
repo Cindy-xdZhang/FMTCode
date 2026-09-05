@@ -11,7 +11,7 @@ set -euo pipefail
 cd /home/zhanx0o/FMT_Task12_3D_20260823
 source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
-python Summarize_Task2_3D_Hierarchy.py \
+python -m experiments.Summarize_Task2_3D_Hierarchy \
   --task2 outputs/mainExp_Task2_3D_3.3/summary.json \
   --task1 \
     outputs/mainExp_Task1_3D_3.3_reference_old8/paper_table.csv \

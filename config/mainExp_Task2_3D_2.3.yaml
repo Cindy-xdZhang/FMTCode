@@ -1,0 +1,50 @@
+experiment: mainExp_Task2_3D_2.3
+source_config: config/Verify_Task2Universality_1.1.yaml
+output_dir: outputs/mainExp_Task2_3D_2.3
+
+cache_roots:
+  development: outputs/Verify_Task2Universality_1.1/cache
+  confirmation: outputs/mainExp_Task3Universality_2.2/confirmation_cache
+cache_overrides:
+  halfcylinderRe640:
+    development: outputs/Verify_HighReSampling3D_1.5/cache/field160_seed20
+    confirmation: outputs/mainExp_Task2_3D_2.1_highre_confirmation/cache/field160_seed20
+  halfcylinderRe6400:
+    development: outputs/Verify_HighReSampling3D_1.5/cache/field160_seed20
+    confirmation: outputs/mainExp_Task2_3D_2.1_highre_confirmation/cache/field160_seed20
+
+# Each group uses exactly the same VAE in both arms. Architectures were frozen
+# from the FMT validation winners in mainExp_Task2_3D_2.2 before 2.3 confirmation.
+groups:
+  channel: {datasets: [channel], fmt_feature: fmt_chirality_all,
+            fixed_architecture: linear8_b1e-5}
+  halfcylinder_low: {datasets: [cylinder3d], fmt_feature: fmt_all+kin4,
+                     fixed_architecture: mlp8_b1e-4}
+  halfcylinder_high: {datasets: [halfcylinderRe640, halfcylinderRe6400],
+                      fmt_feature: fmt_real_neighbor,
+                      fixed_architecture: linear2_b1e-5}
+  tangaroa: {datasets: [tangaroa], fmt_feature: fmt_all+kin4,
+             fixed_architecture: mlp16_b1e-3}
+  deltaWing: {datasets: [deltaWing_resampled, deltaWing_LBM],
+              fmt_feature: fmt_real_neighbor,
+              fixed_architecture: mlp16_b1e-3}
+  f22raptor: {datasets: [f22raptor], fmt_feature: fmt_all,
+              fixed_architecture: mlp16_b1e-3}
+
+splits:
+  final_train: [0, 1, 2, 3, 4, 5, 6, 7]
+  cluster_calibration: [8, 9]
+
+architectures:
+  - {id: linear2_b1e-5, hidden_dims: [], latent_dim: 2, beta: 0.00001,
+     optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: linear8_b1e-5, hidden_dims: [], latent_dim: 8, beta: 0.00001,
+     optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: mlp8_b1e-4, hidden_dims: [128, 64], latent_dim: 8, beta: 0.0001,
+     optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+  - {id: mlp16_b1e-3, hidden_dims: [256, 128], latent_dim: 16, beta: 0.001,
+     optimizer_steps: 4600, relational_weight: 0.0, pair_count: 2048}
+
+final_training_seeds: [7068, 7069, 7070]
+kmeans_seed: 7068
+kmeans_n_init: 20

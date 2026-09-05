@@ -36,7 +36,7 @@ esac
 
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Visualize_Task23_3D_Horizontal.py \
+python -m experiments.Visualize_Task23_3D_Horizontal \
   --tasks task2 task3 \
   --datasets "${datasets[@]}" \
   --predictions-only \

@@ -19,6 +19,6 @@ conda activate deepvortex
 export PYTHONUNBUFFERED=1
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Verify_Task5_Re160FreshTimes.py \
+python -m experiments.Verify_Task5_Re160FreshTimes \
   --config config/Verify_Task5_Re160FreshTimes_1.1.yaml \
   --mode evaluate-fresh

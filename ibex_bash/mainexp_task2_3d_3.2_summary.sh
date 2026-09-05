@@ -11,5 +11,5 @@ set -euo pipefail
 cd /home/zhanx0o/FMT_Task12_3D_20260823
 source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
-python Run_Task2_3D_Main.py \
+python -m experiments.Run_Task2_3D_Main \
   --config config/mainExp_Task2_3D_3.2.yaml --summarize

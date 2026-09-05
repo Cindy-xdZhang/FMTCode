@@ -197,7 +197,7 @@ def test_source_selection_and_all_40_models_are_frozen_by_content(
 
 
 def test_confirmation_code_cannot_train_or_select_on_fifth_population():
-    text = Path("Confirm_Task3_FinalTuned_7_1.py").read_text(encoding="utf-8")
+    text = Path("experiments/Confirm_Task3_FinalTuned_7_1.py").read_text(encoding="utf-8")
     assert "_train_one" not in text
     assert "_select_f1_threshold" not in text
     assert "_load_residual" not in text
@@ -207,7 +207,7 @@ def test_confirmation_code_cannot_train_or_select_on_fifth_population():
     for script in scripts:
         body = script.read_text(encoding="utf-8")
         assert "config/mainExp_Task3_3D_7.1.yaml" in body
-        assert "Confirm_Task3_FinalTuned_7_1.py" in body or (
+        assert "experiments/Confirm_Task3_FinalTuned_7_1.py" in body or (
             script.name.endswith("static_preflight.sh")
-            and "Prepare_Task3_FinalTuned_SourceManifest_7_1.py" in body
+            and "experiments/Prepare_Task3_FinalTuned_SourceManifest_7_1.py" in body
         )

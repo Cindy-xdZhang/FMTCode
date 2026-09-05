@@ -1,0 +1,22 @@
+experiment: mainExp_Task3NewFlows_2.3_baselines
+source_cache_root: outputs/mainExp_Task123NewFlows_1.1/development_cache
+label_cache_root: outputs/mainExp_Task3NewFlows_2.3/development_labels/labels
+output_dir: outputs/mainExp_Task3NewFlows_2.3/baselines
+datasets: [boeing747, smokeBuoyancy]
+sampled_steps: 32
+fmt_subset: all
+variants: [raw, raw_wide]
+split:
+  train_ordinals: [0, 1, 2, 3, 4, 5]
+  validation_ordinals: [6, 7]
+  test_ordinals: [8, 9]
+model: {temporal_width: 64, embedding_dim: 128, auxiliary_dim: 64}
+training:
+  device: auto
+  seeds: [20, 21, 22]
+  batch_size: 512
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  max_epochs: 60
+  patience: 10
+  min_delta: 0.0001

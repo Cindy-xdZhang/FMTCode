@@ -1,0 +1,139 @@
+experiment: mainExp_Task4B_PooledInstanceSplit_3.1
+task: Task4-b pooled channel+TBL four-class classification with hairpin-instance holdout
+output_dir: outputs/mainExp_Task4B_PooledInstanceSplit_3.1/pooled
+seed: 7068
+
+preregistration:
+  question: >
+    When channel and TBL cubes are pooled and whole hairpin instances are held out
+    (about 80% of instances for fitting, 20% for testing, per volume), does adding
+    the frozen FMT representation improve four-class vortex-type classification
+    against Raw and the larger Raw-wide control?
+  split_rule: >
+    Instances sorted by cube count are processed in blocks of ten; inside each block
+    a fixed pattern (2 test, 1 validation, 7 train) is randomly permuted with the
+    experiment seed. Validation instances are carved out of the 80% fitting share
+    and are used only for epoch selection, never for testing.
+  ordinary_rule: >
+    Every ordinary vortex cube inherits the split of the nearest hairpin cube of
+    its own volume (Voronoi partition by hairpin instance; periodic x/y in channel).
+  buffer_rule: >
+    Train and validation cubes whose seed lies within one primitive support radius
+    (16 * spatial_step + neighbor offset, per volume) of any test cube seed are
+    discarded, so no fitted primitive support reaches a test seed. Test cubes are
+    never discarded. Two radii were rejected before training because they remove
+    77% (channel) and 64% (TBL) of the training hairpin cubes.
+  decisions_frozen_before_training: true
+
+volumes:
+  channel:
+    code: 0
+    proxy_label_result: outputs/Verify_Task4B_ProxyLabels_1.2/channel_GTs/task4b_proxy_labels.npz
+    proxy_label_sha256: f545c46427991842c05814d8df71bfa09b3ea11e33d3f240e18fccee0d8383e8
+    flow_path_candidates:
+      - "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel.vtk"
+      - "/ibex/user/zhanx0o/FLowDataFolder/channel_flow/channel.vtk"
+    flow_sha256: c1e3c18d0e67b6eb33ea41cd49c3a4c55216838a0f4a42f778ef00aaba3d4564
+    periodic_axes: [x, y]
+    streamlines:
+      method: bidirectional_RK4_unit_velocity
+      steps_per_direction: 16
+      spatial_step_mean_voxel_scale: 0.5
+      offset_min_voxel_scale: 0.25
+      minimum_speed: 1.0e-6
+      chunk_size: 8192
+      expected_spatial_step: 0.006638998689603197
+      expected_offset: 0.0009968177926155829
+    expected_candidate_class_counts: [120996, 251043, 4275, 12436]
+    expected_instance_count: 73
+  tbl:
+    code: 1
+    target_cache_manifest_candidates:
+      - outputs/mainExp_Task4B_ChannelToTBL_2.3/tbl_GTs/target_cache/target_cache_manifest.json
+      - /ibex/user/zhanx0o/FMT_Task4B_ChannelToTBL_2_3/repo/outputs/mainExp_Task4B_ChannelToTBL_2.3/tbl_GTs/target_cache/target_cache_manifest.json
+    manifest_note: staged Ibex manifest differs only in path spelling; chunk byte hashes are verified individually
+    periodic_axes: []
+    expected_spatial_step: 0.11940419241924695
+    expected_offset: 0.017928038410791425
+    expected_valid_class_counts: [107441, 245638, 4533, 27619]
+    expected_instance_count: 57
+
+representation:
+  coordinate_units: per_volume_spatial_step
+  definition: (primitive - primitive_first_center_point) / spatial_step
+  sampled_steps: 33
+
+encoder:
+  num_freq: 6
+  mode: gram
+  include_chirality: true
+  neighbor_pool: sort
+  neighbor_scale: 100.0
+  neighbor_weight_after_train_standardization: 0.5
+  expected_feature_dim: 161
+  frozen: true
+
+split:
+  block_pattern: [test, test, validation, train, train, train, train, train, train, train]
+  buffer_radius_multiplier: 1.0
+  hairpin_sampling: all_valid_cubes
+  ordinary_max_per_class_per_split_per_volume:
+    train: 8000
+    validation: 2000
+    test: 4000
+  minimum_per_class_per_split_per_volume: 64
+
+cache:
+  path: outputs/mainExp_Task4B_PooledInstanceSplit_3.1/pooled/cache/task4b_pooled_cache.npz
+
+taxonomy:
+  classes:
+    0: ordinary_streamwise
+    1: ordinary_spanwise
+    2: hairpin_head
+    3: hairpin_limb
+  non_vortex: excluded by the frozen per-volume p80.5 vorticity-deviation gate
+
+variants: [raw, raw_wide, fmt_only, raw_fmt]
+core_comparisons: [raw_fmt_minus_raw, raw_fmt_minus_raw_wide]
+
+model:
+  num_classes: 4
+  temporal_width: 64
+  embedding_dim: 128
+  auxiliary_dim: 64
+  dropout: 0.10
+
+training:
+  recipe_provenance: identical to mainExp_Task4B_1.2
+  seeds: [7068, 7069, 7070]
+  batch_size: 256
+  evaluation_batch_size: 1024
+  class_balance: exact equal quota per training batch
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  label_smoothing: 0.0
+  gradient_clip_norm: 1.0
+  max_epochs: 50
+  patience: 8
+  min_delta: 0.0001
+  selection_metric: validation_macro_f1
+  checkpoint_policy: in_memory_best_state_only_no_persistent_model_file
+
+evaluation:
+  primary: test_macro_f1
+  metrics:
+    - per_class_precision_recall_f1
+    - balanced_accuracy
+    - one_vs_rest_macro_average_precision
+    - confusion_matrix
+    - per_volume_macro_f1
+    - hairpin_to_ordinary_error_rate
+    - known_hairpin_mask_head_limb_macro_f1
+    - vortex_id_equal_head_limb_macro_f1
+  test_policy: score once after validation-selected epoch; never tune on test
+
+limitations:
+  - labels are deterministic physics proxies, not manual head/limb anatomy
+  - one channel volume and one TBL volume; instance holdout is within these two volumes
+  - the one-radius buffer removes train cubes near test instances and can remove whole training instances

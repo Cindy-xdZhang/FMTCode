@@ -1,0 +1,87 @@
+experiment: Other_Task23DenseCloseup_2.8
+purpose: tighter continuous-surface macro close-ups without any seed-point arrays
+role: visualization-only local diagnostic; not a replacement for whole-field main-table metrics
+
+task2_config: config/mainExp_Task2_3D_3.3.yaml
+task2_training_seed: 9068
+task3_prediction_root: outputs/Other_Task3DenseVisualization_1.98/predictions
+task3_audit_root: outputs/Other_Task3DenseVisualization_1.98/figures
+dense_cache_root: outputs/Other_Task3DenseVisualization_1.98/cache
+
+density:
+  local_seed_count: 20480
+  sampling_pattern: sobol
+  sampling_seed: 403
+  source_population_retained_for_metrics: true
+
+close_up:
+  # The crop is chosen once from the shared IVD/disagreement context and is
+  # identical in the IVD, Raw, and FMT panels.  This is a rendering crop only:
+  # all 20,480 frozen local samples remain in every metric and artifact.
+  # IVD-only crop selection prevents either learned arm from moving the camera
+  # toward a convenient success or away from an error.
+  focus_basis: ivd_positive
+  positive_fraction: 0.02
+  minimum_points: 16
+  padding_factor: 1.00
+  minimum_span_fraction: 0.00001
+  target_span_fraction: null
+  physical_cube_longest_axis_fraction: null
+  exact_target_span: true
+  center_on_selected_neighbourhood: true
+
+  # Version 2.7 cropped an already sub-voxel reintegration box.  That leaves
+  # too few distinct flow samples and can turn an interpolated surface into a
+  # solid screen.  Return to the audited 20,480-sample box spanning at least
+  # two source voxels, then display its central 10%: still a tight macro view,
+  # but one backed by physically resolvable source variation.
+  display_crop_scale: 0.10
+  camera_zoom: 3.40
+  # Kept positive for schema compatibility; surface_only makes it unreachable.
+  marker_scale: 0.01
+  false_positive_color: "#222222"
+
+  # No sample marks are permitted.  Raw and FMT are rendered as continuous
+  # decision isosurfaces reconstructed only for display from the frozen
+  # predictions.  Metrics and thresholds remain seedwise and unchanged.
+  prediction_point_mode: predicted_positive
+  prediction_surface_grid_shape: [112, 112, 112]
+  prediction_surface_neighbors: 16
+  prediction_surface_power: 1.75
+  prediction_surface_smoothing_sigma: 0.60
+  show_reference_points: false
+  show_true_negatives: false
+  show_true_positives: false
+  show_paired_error_context: false
+  show_reference_surface_in_predictions: false
+  reference_context_color: "#f1eee9"
+  reference_surface_alpha: 1.0
+  all_positive_surface_alpha: 0.10
+  shade_surfaces: true
+  render_prediction_surface: true
+  render_reference_surface_from_labels: true
+  render_scalar_slices: false
+  require_all_prediction_surfaces_in_crop: false
+  show_error_markers: false
+  surface_only: true
+  show_close_up_axes: true
+  fixed_canvas_export: true
+
+datasets:
+  - cylinder3d
+  - halfcylinderRe640
+  - halfcylinderRe6400
+  - tangaroa
+  - deltaWing_resampled
+  - deltaWing_LBM
+  - channel
+  - boeing747
+  - smokeBuoyancy
+
+outputs:
+  # Task2 is recomputed only on this frozen 20,480-sample visualization cache;
+  # the VAE recipe, training/calibration slices, and seed remain unchanged.
+  prediction_root: outputs/Other_Task23DenseCloseup_2.8/predictions
+  ivd_surface_cache_root: outputs/Other_Task3DenseVisualization_1.98/figures/ivd_surface_cache
+  task2_figure_root: outputs/Other_Task23DenseCloseup_2.8/task2_figures
+  task3_figure_root: outputs/Other_Task23DenseCloseup_2.8/task3_figures

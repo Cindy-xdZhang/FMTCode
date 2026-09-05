@@ -20,5 +20,5 @@ conda activate deepvortex
 export PYTHONUNBUFFERED=1
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Evaluate_Task5_Multiscale.py \
+python -m experiments.Evaluate_Task5_Multiscale \
   --config config/mainExp_Task5_3D_1.1_evaluate.yaml

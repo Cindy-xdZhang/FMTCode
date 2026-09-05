@@ -314,7 +314,7 @@ class MainExpTask3_7_2Tests(unittest.TestCase):
             ))
 
     def test_confirmation_has_no_training_or_selection_path(self):
-        text = Path("Confirm_Task3_AdaptiveTuned_7_2.py").read_text(
+        text = Path("experiments/Confirm_Task3_AdaptiveTuned_7_2.py").read_text(
             encoding="utf-8"
         )
         self.assertNotIn("_train_one", text)
@@ -330,10 +330,10 @@ class MainExpTask3_7_2Tests(unittest.TestCase):
             body = script.read_text(encoding="utf-8")
             self.assertIn("config/mainExp_Task3_3D_7.2.yaml", body)
             self.assertTrue(
-                "Confirm_Task3_AdaptiveTuned_7_2.py" in body
+                "experiments/Confirm_Task3_AdaptiveTuned_7_2.py" in body
                 or (
                     script.name.endswith("static_preflight.sh")
-                    and "Prepare_Task3_AdaptiveTuned_SourceManifest_7_2.py"
+                    and "experiments/Prepare_Task3_AdaptiveTuned_SourceManifest_7_2.py"
                     in body
                 )
             )

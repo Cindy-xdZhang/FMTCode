@@ -24,6 +24,6 @@ export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-6}
 groups=(channel halfcylinder tangaroa deltaWing f22raptor boeing747 smokeBuoyancy)
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Run_Task2_IVDPercentile_Sweep.py \
+python -m experiments.Run_Task2_IVDPercentile_Sweep \
   --config config/Ablation_Task23IVDPercentile_1.1.yaml \
   --group "${groups[$SLURM_ARRAY_TASK_ID]}" --resume

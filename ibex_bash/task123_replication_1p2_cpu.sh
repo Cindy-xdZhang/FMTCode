@@ -24,47 +24,47 @@ export OPENBLAS_NUM_THREADS="$OMP_NUM_THREADS"
 
 case "$ACTION" in
   strong_task1_select)
-    python experiments/Run_Task123_StrongBaselines_1_1.py --config "$STRONG_CONFIG" \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 --config "$STRONG_CONFIG" \
       --mode task1-select --job-index "$INDEX"
     ;;
   strong_task1_freeze)
-    python experiments/Run_Task123_StrongBaselines_1_1.py --config "$STRONG_CONFIG" \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 --config "$STRONG_CONFIG" \
       --mode task1-freeze
     ;;
   strong_task1_run)
-    python experiments/Run_Task123_StrongBaselines_1_1.py --config "$STRONG_CONFIG" \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 --config "$STRONG_CONFIG" \
       --mode task1-run --job-index "$INDEX"
     ;;
   strong_task1_merge)
-    python experiments/Run_Task123_StrongBaselines_1_1.py --config "$STRONG_CONFIG" \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 --config "$STRONG_CONFIG" \
       --mode task1-merge
     ;;
   strong_task2_freeze)
-    python experiments/Run_Task123_StrongBaselines_1_1.py --config "$STRONG_CONFIG" \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 --config "$STRONG_CONFIG" \
       --mode task2-freeze
     ;;
   strong_summarize)
-    python experiments/Run_Task123_StrongBaselines_1_1.py --config "$STRONG_CONFIG" \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 --config "$STRONG_CONFIG" \
       --mode summarize
     ;;
   strong_audit)
-    python experiments/Audit_Task123_AdditionalEvidence_1_1.py --kind strong \
+    python -m experiments.Audit_Task123_AdditionalEvidence_1_1 --kind strong \
       --config "$STRONG_CONFIG"
     ;;
   ablation_task1_merge)
-    python experiments/Run_Task123_FMTComponentAblation_1_1.py --config "$ABLATION_CONFIG" \
+    python -m experiments.Run_Task123_FMTComponentAblation_1_1 --config "$ABLATION_CONFIG" \
       --mode task1-merge
     ;;
   ablation_summarize)
-    python experiments/Run_Task123_FMTComponentAblation_1_1.py --config "$ABLATION_CONFIG" \
+    python -m experiments.Run_Task123_FMTComponentAblation_1_1 --config "$ABLATION_CONFIG" \
       --mode summarize
     ;;
   ablation_audit)
-    python experiments/Audit_Task123_AdditionalEvidence_1_1.py --kind ablation \
+    python -m experiments.Audit_Task123_AdditionalEvidence_1_1 --kind ablation \
       --config "$ABLATION_CONFIG"
     ;;
   ablation_cleanup)
-    python experiments/Run_Task123_FMTComponentAblation_1_1.py --config "$ABLATION_CONFIG" \
+    python -m experiments.Run_Task123_FMTComponentAblation_1_1 --config "$ABLATION_CONFIG" \
       --mode cleanup
     ;;
   *)

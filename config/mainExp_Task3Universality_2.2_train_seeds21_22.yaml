@@ -1,0 +1,37 @@
+experiment: mainExp_Task3Universality_2.2_train_seeds21_22
+source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+label_cache_root: outputs/Verify_Task3Universality_1.1/labels
+raw_checkpoint_dir: outputs/Confirm_Task3Universality_1.1/baselines_seed21_22/checkpoints
+output_dir: outputs/mainExp_Task3Universality_2.2/residual_training_seeds21_22
+datasets:
+  - cylinder3d
+  - halfcylinderRe640
+  - halfcylinderRe6400
+  - deltaWing_resampled
+  - deltaWing_LBM
+  - channel
+sampled_steps: 32
+fmt_subset: all_plus_gram_kinematic
+fmt_gram_num_freq: 2
+raw_wide_parameter_count: 148225
+split:
+  train_ordinals: [0, 1, 2, 3, 4, 5]
+  validation_ordinals: [6, 7]
+  test_ordinals: [8, 9]
+evaluation: {test_enabled: false}
+model: {embedding_dim: 128, auxiliary_dim: 64, residual_input: geometry_fmt}
+fusion:
+  alpha_min: 0.0
+  alpha_max: 1.5
+  alpha_steps: 61
+  selection_metric: constrained_average_precision
+  minimum_f1_gain: 0.02
+training:
+  device: auto
+  seeds: [21, 22]
+  batch_size: 512
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  max_epochs: 60
+  patience: 30
+  min_delta: 0.0001

@@ -16,6 +16,6 @@ source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
 tags=(p80 p85 p87p5 p90 p92p5)
 tag=${tags[$SLURM_ARRAY_TASK_ID]}
-python Merge_Task3_ResidualShards.py \
+python -m experiments.Merge_Task3_ResidualShards \
   --config "outputs/Ablation_Task23IVDPercentile_1.1/generated_configs/task3_${tag}_evaluate.yaml" \
   --root "outputs/Ablation_Task23IVDPercentile_1.1/task3/${tag}"

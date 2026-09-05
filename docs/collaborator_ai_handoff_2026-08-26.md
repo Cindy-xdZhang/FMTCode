@@ -5,6 +5,16 @@
 > Ibex 工作目录：`/home/zhanx0o/FMT_Task12_3D_20260823`
 > 写本文档时 Git HEAD：`7b31944`
 > 当前工作重点：3D Task1、Task2、Task3；Task5 正在运行；Task4 尚未开始。
+>
+> **2026-09-02重要更新：本文是历史快照，不再负责声明当前论文主结果。**最新任务
+> 定义以`AGENTS.md`和`docs/research_tasks_and_protocol.md`为准，当前主表状态以
+> `docs/paper_tables_tasks_3d.md`为准。Task1、Task2、Task3的论文主表现在必须各自
+> 使用一套跨全部10个3D数据条目不变的FMT配方；旧逐flow/逐family配方只作补充与
+> 可视化。Task5仍固定FMT encoder，只有预注册的pathline尺度tuple按任务定义变化。
+> 统一配置confirmation现已完成并独立审计：Task1 F1增益`+.1504`（9/10条目正），
+> Task2同一VAE F1增益`+.0956`（8/10条目正），Task3 F1/AP增益
+> `+.2185/+.2345`（10/10条目正）。精确逐条目值只取
+> `docs/paper_tables_tasks_3d.md`。
 
 本文档应作为新 AI session 的入口。它总结研究动机、固定协议、当前可信结果、代码与
 数据位置、已知反例及未完成事项。详细结论仍以
@@ -16,17 +26,18 @@
 
 1. 先读 `AGENTS.md`、`docs/research_tasks_and_protocol.md`、
    `docs/experiment_log.md` 和 `docs/ibex_run_registry.md`。
-2. 不要根据旧 README 或旧实验目录自行判断“当前主结果”。本文第8节列出了 canonical
-   experiment version。
+2. 不要根据旧实验目录或本文第8节自行判断“当前主结果”；只读
+   `docs/paper_tables_tasks_3d.md`及其指向的独立审计证据。
 3. 不得使用 confirmation/test 标签选择 feature、VAE、checkpoint、分类阈值、
    residual 权重或 cluster-to-class 映射。
 4. 任何新实验必须使用版本号并保留失败结果。任何 Ibex 进程提交后立即登记到
    `docs/ibex_run_registry.md`。
 5. 仓库工作树长期存在其他研究者的 modified/untracked 文件。不得清理、reset、覆盖或
    一次性全部提交；每次只 stage 自己明确修改的文件。
-6. 用户接受不同 physical family 使用不同超参数，只要选择过程不读取 test、代码最终
-   开源、负结果不被删除。学术问题不是“所有任务必须共享同一超参数”，而是不得为制造
-   胜利而篡改数据、标签或隐藏反例。
+6. 旧的“不同physical family可使用不同FMT超参数”规则已撤销。Task1、Task2、Task3
+   论文主表各自必须使用一套任务级统一FMT配方；逐family最佳代码和结果完整保留，但
+   只能作补充表与可视化，不能混入统一主表macro。仍须保证选择不读取test、代码开源、
+   负结果和反例不被删除。
 7. 用户对 Task1 的目标是实际聚类性能，不要求证明完整参考系客观性。不要擅自把
    “严格 objective encoder”设成 Task1 的验收条件。
 
@@ -365,7 +376,7 @@ IVD-p95监督识别性能；不支持“每个flow都提高”。
 - `outputs/mainExp_Task3_3D_3.2_global_ivd/final_confirmation/paper_table.csv`
 - `outputs/mainExp_Task3_3D_3.2_global_ivd/final_confirmation/per_run.csv`
 - `outputs/mainExp_Task3_3D_3.2_global_ivd/final_confirmation/per_slice.csv`
-- `docs/mainExp_Task3_3D_3.2_global_ivd.md`
+- `docs/mainExp_Task3_3D.md`（已合并全部 Task3 主实验版本）
 - 结果归档 SHA-256：`583ec77ca1e3c355b86de50987cc4548d9a557c2a4aad0291358b10fe0a4c040`
 
 ### 8.4 Task4
@@ -402,9 +413,9 @@ Task3: IVD-p95 ground truth | Raw-PCA residual | Raw+FMT residual
 
 代码与输出：
 
-- `Visualize_Task1_3D_PaperCandidates.py`
-- `Visualize_Task1_3D_Horizontal.py`
-- `Visualize_Task23_3D_Horizontal.py`
+- `experiments/Visualize_Task1_3D_PaperCandidates.py`
+- `experiments/Visualize_Task1_3D_Horizontal.py`
+- `experiments/Visualize_Task23_3D_Horizontal.py`
 - `outputs/Task1_3D_horizontal_clean_1.1/`
 - `outputs/Task2_3D_horizontal_main_3.3/`
 - `outputs/Task3_3D_horizontal_main_3.2/`
@@ -419,14 +430,14 @@ Task2/Task3 共20张360 DPI PNG，20/20 通过 PIL 完整性检查。预测 arch
 ### Task1 3.3 reference
 
 ```bash
-python Run_Task1_3D_Main.py --config config/mainExp_Task1_3D_3.3_reference_old8.yaml
-python Run_Task1_3D_Main.py --config config/mainExp_Task1_3D_3.3_reference_new2.yaml
+python -m experiments.Run_Task1_3D_Main --config config/mainExp_Task1_3D_3.3_reference_old8.yaml
+python -m experiments.Run_Task1_3D_Main --config config/mainExp_Task1_3D_3.3_reference_new2.yaml
 ```
 
 ### Task2 3.3
 
 ```bash
-python Run_Task2_3D_Main.py \
+python -m experiments.Run_Task2_3D_Main \
   --config config/mainExp_Task2_3D_3.3.yaml \
   --group halfcylinder
 ```
@@ -439,7 +450,7 @@ smokeBuoyancy`。
 在标签、缓存与 checkpoint 已存在时：
 
 ```bash
-python Evaluate_Task3_MainTable.py \
+python -m experiments.Evaluate_Task3_MainTable \
   --config config/mainExp_Task3_3D_3.2_global_ivd_evaluate.yaml
 ```
 
@@ -448,20 +459,20 @@ python Evaluate_Task3_MainTable.py \
 Ibex 只生成 prediction artifacts，本地读取原始数据坐标后渲染：
 
 ```bash
-python Visualize_Task23_3D_Horizontal.py \
+python -m experiments.Visualize_Task23_3D_Horizontal \
   --tasks task2 task3 --predictions-only
 
-python Visualize_Task23_3D_Horizontal.py \
+python -m experiments.Visualize_Task23_3D_Horizontal \
   --tasks task2 task3 --dpi 360 --render-only
 ```
 
 ### Task5
 
 ```bash
-python Build_Task5_Multiscale_Cache.py \
+python -m experiments.Build_Task5_Multiscale_Cache \
   --config config/mainExp_Task5_3D_1.1.yaml
 
-python Evaluate_Task5_Multiscale.py \
+python -m experiments.Evaluate_Task5_Multiscale \
   --config config/mainExp_Task5_3D_1.1_evaluate.yaml
 ```
 
@@ -487,17 +498,17 @@ module load cuda/11.8 2>/dev/null || true
 | `docs/research_tasks_and_protocol.md` | Task1–Task5 唯一正式定义 |
 | `docs/experiment_log.md` | 方法级结论的唯一总表 |
 | `docs/ibex_run_registry.md` | 所有 Ibex job、设备、时间、结果与失败记录 |
-| `docs/Table1_pyflowvis_review.md` | PyflowVis 历史项目与复制边界 |
+| `docs/from_pyflowvis/Table1_pyflowvis_review.md` | PyflowVis 历史项目与复制边界 |
 | `docs/first_principles_analysis.md` | 旧代码第一性原理审计和已知风险 |
 | `FMT_Utils/DFT_FMT_3D.py` | 3D FMT 主实现 |
 | `FMT_Utils/FMT_3D_pipeline.py` | 3D seed、primitive、IVD/FMT pipeline |
-| `Run_Task1_3D_Main.py` | Task1 主入口 |
-| `Run_Task2_3D_Main.py` | Task2 主入口 |
-| `Verify_Task3_FMTClassifier.py` | Task3 Raw/Raw-wide 训练 |
-| `Verify_Task3_FMTResidual.py` | Task3 FMT/Raw-PCA residual 训练 |
-| `Evaluate_Task3_MainTable.py` | Task3 冻结主表评估 |
-| `Build_Task5_Multiscale_Cache.py` | Task5 variable-scale cache |
-| `Evaluate_Task5_Multiscale.py` | Task5 confirmation |
+| `experiments/Run_Task1_3D_Main.py` | Task1 主入口 |
+| `experiments/Run_Task2_3D_Main.py` | Task2 主入口 |
+| `experiments/Verify_Task3_FMTClassifier.py` | Task3 Raw/Raw-wide 训练 |
+| `experiments/Verify_Task3_FMTResidual.py` | Task3 FMT/Raw-PCA residual 训练 |
+| `experiments/Evaluate_Task3_MainTable.py` | Task3 冻结主表评估 |
+| `experiments/Build_Task5_Multiscale_Cache.py` | Task5 variable-scale cache |
+| `experiments/Evaluate_Task5_Multiscale.py` | Task5 confirmation |
 
 ---
 
@@ -513,7 +524,7 @@ module load cuda/11.8 2>/dev/null || true
    新旧并列说明，不能静默改写历史。
 4. **README 有滞后。**当前 `README.md` 仍把 Task3 3.1 写成论文主表，并没有完整反映
    Task5。以 `docs/research_tasks_and_protocol.md` 和本文档为准。
-5. **旧论文汇总表的 Task2 有滞后。**`docs/paper_tables_task123_3d.md` 的 Task2 部分
+5. **旧论文汇总表的 Task2 有滞后。**当前汇总表已重构为 `docs/paper_tables_tasks_3d.md`；当时旧表的 Task2 部分
    仍是2.3+2.4；当前 canonical Task2 是3.3的 `outputs/.../paper_table.csv`。
 6. **输出不等于 Git 跟踪内容。**大量 cache、checkpoint、PNG 和历史脚本未被 Git
    跟踪。新机器仅 clone 仓库不会得到全部结果，需从本地输出或 Ibex 工作目录复制。
@@ -530,7 +541,7 @@ module load cuda/11.8 2>/dev/null || true
 ## 13. 建议的下一步，但必须先由用户确认
 
 1. 继续监控并完成 Task5 1.1；在 final confirmation 结束前不解释中间训练结果。
-2. 更新 `README.md` 和 `docs/paper_tables_task123_3d.md`，使其指向 Task1 3.3、
+2. 更新 `README.md` 和 `docs/paper_tables_tasks_3d.md`，使其指向 Task1 3.3、
    Task2 3.3、Task3 3.2；更新时保留旧版本修订记录。
 3. 如果论文要强化 Task2，应优先做预先注册的新 held-out 时间片确认或解释 F-22、
    Smoke、Re160 的失败；不能在现有 confirmation 上继续调 VAE 后仍称独立确认。

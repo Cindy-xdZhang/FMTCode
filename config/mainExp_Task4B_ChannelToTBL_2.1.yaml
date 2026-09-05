@@ -1,0 +1,132 @@
+experiment: mainExp_Task4B_ChannelToTBL_2.1
+task: Task4-b channel-to-TBL supervised four-class transfer
+output_dir: outputs/mainExp_Task4B_ChannelToTBL_2.1/tbl_GTs
+
+source:
+  role: training_only
+  cache: outputs/Other_Task4B_FMTFourClassClustering_1.2/channel_GTs/cache/task4b_four_class_cache.npz
+  cache_sha256: 4be1dcedf69c3c5b4e2a47fd26fc46b2567db5dda9f547448e0cf6407af0a190
+  population: all_20641_rows_including_historical_channel_splits
+  required_class_support: [5000, 5000, 2829, 7812]
+
+target:
+  role: test_only
+  flow_path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/tbl_flow/tbl.vtk"
+  gt_path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/tbl_flow/tbl_GTs.vtk"
+  vorticity_validation_path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/tbl_flow/tbl_GTs.vtk"
+  vorticity_validation_role: numerical_curl_audit_only_never_labels_or_features
+  velocity_array: velocity
+  omega_y_prime_array: oyf
+  label_array: VortexIds
+  label_association: cell
+  axes: {x: streamwise, y: spanwise, z: wall_normal}
+  boundary_conditions: {x: nonperiodic, y: nonperiodic, z: wall_nonperiodic}
+  minimum_derived_oyf_correlation: 0.90
+  curl_validation_gate:
+    minimum_component_correlation: 0.97
+    minimum_component_sign_agreement: 0.95
+    maximum_vector_relative_rmse: 0.15
+
+voxelization:
+  resolution_xyz: null
+  preview_max_voxels: 2000000
+  max_axis_resolution: 1024
+  method: voxel_center_discrete_labels
+
+target_proxy:
+  taxonomy: vortex_only_four_types
+  classes:
+    0: ordinary_streamwise
+    1: ordinary_spanwise
+    2: hairpin_head
+    3: hairpin_limb
+  vorticity_deviation: wall_normal_plane
+  percentile: 80.5
+  percentile_provenance: frozen_channel_training_selection
+  percentile_application: unlabeled_per_volume_rank_preprocessing
+  absolute_channel_threshold_diagnostic: 5.388844
+  manual_hairpin_override: true
+  streamwise_max_angle_degrees: 45.0
+  minimum_vector_norm: 1.0e-9
+  head_rule:
+    - velocity_curl_angle_gt_45_degrees
+    - stored_oyf_gt_0
+    - abs_stored_oyf_dominates_abs_omega_x_and_abs_omega_z
+
+streamlines:
+  method: bidirectional_RK4_unit_velocity
+  steps_per_direction: 16
+  spatial_step_mean_voxel_scale: 0.5
+  source_offset_over_spatial_step: 0.1501503378764808
+  minimum_speed: 1.0e-6
+  integration_chunk_size: 8192
+  feature_chunk_size: 8192
+  test_sampling: all_candidate_cubes_before_streamline_validity
+
+representation:
+  coordinate_units: per_volume_spatial_step
+  definition: (primitive - primitive_first_center_point) / spatial_step
+  rationale: remove incompatible channel/TBL physical coordinate units
+
+encoder:
+  num_freq: 6
+  mode: gram
+  include_chirality: true
+  neighbor_pool: sort
+  neighbor_scale: 100.0
+  neighbor_weight_after_source_standardization: 0.5
+  expected_feature_dim: 161
+  frozen: true
+
+variants: [raw, raw_wide, fmt_only, raw_fmt]
+core_comparisons:
+  - raw_fmt_minus_raw
+  - raw_fmt_minus_raw_wide
+
+model:
+  family: PathlineMulticlassClassifier3D
+  temporal_width: 128
+  embedding_dim: 1024
+  auxiliary_dim: 1024
+  dropout: 0.0
+
+training:
+  seeds: [7068, 7069, 7070]
+  batch_size: 512
+  evaluation_batch_size: 2048
+  sampling: one_without_replacement_permutation_of_every_source_row_per_epoch
+  loss: unweighted_cross_entropy
+  optimizer: Adam
+  learning_rate: 0.001
+  beta1: 0.9
+  beta2: 0.999
+  epsilon: 1.0e-8
+  weight_decay: 0.0
+  scheduler: cosine_annealing
+  minimum_learning_rate: 1.0e-6
+  max_epochs: 1000
+  gradient_clipping: false
+  mixed_precision: false
+  stop_gate:
+    consecutive_source_zero_error_epochs: 3
+    positive_minimum_true_logit_margin: true
+  checkpoint_policy: in_memory_only_no_persistent_model_file
+
+evaluation:
+  primary: target_macro_f1
+  metrics:
+    - balanced_accuracy
+    - one_vs_rest_macro_average_precision
+    - per_class_precision_recall_f1
+    - confusion_matrix
+    - hairpin_membership_f1
+    - hairpin_to_ordinary_error_rate
+    - known_hairpin_mask_head_limb_macro_f1
+    - vortex_id_equal_head_limb_macro_f1
+  target_policy: evaluate_once_only_after_source_memorization_gate
+  target_selection_prohibited: true
+
+interpretation_boundary:
+  - TBL VortexIds are manual hairpin support and identity, not manual head/limb labels
+  - head/limb and ordinary orientation remain deterministic physics proxy labels
+  - this experiment tests transfer between exactly one channel volume and one TBL volume

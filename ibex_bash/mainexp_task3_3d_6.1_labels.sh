@@ -17,6 +17,6 @@ export TASK46_SOURCE_MODEL_ROOT="${TASK46_SOURCE_MODEL_ROOT:-/home/zhanx0o/FMT_T
 export TASK3_ANCHORED6_SOURCE_MANIFEST="${TASK3_ANCHORED6_SOURCE_MANIFEST:-/ibex/scratch/zhanx0o/FMT_Task3_AnchoredFeature_6_1/source_staging_manifest.json}"
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
 export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
-python Confirm_Task3_AnchoredFeature_6_1.py \
+python -m experiments.Confirm_Task3_AnchoredFeature_6_1 \
   --config config/mainExp_Task3_3D_6.1.yaml \
   --mode labels --job-index "$SLURM_ARRAY_TASK_ID"

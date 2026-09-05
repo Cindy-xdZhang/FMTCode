@@ -1,0 +1,21 @@
+experiment: Verify_HighReVAE_1.1
+source_config: config/Verify_Task2Universality_1.1.yaml
+sampling_spec: config/Verify_HighReSampling3D_1.1.yaml
+sampling_variant: fine4_geom05
+datasets: [halfcylinderRe640, halfcylinderRe6400]
+representations: [center_relative_delta, fmt]
+screening_seeds: [7068]
+variants:
+  - {id: lowbeta32, hidden_dims: [256, 128], latent_dim: 32, beta: 0.0001,
+     relational_weight: 0.0, pair_count: 2048}
+  - {id: wide32, hidden_dims: [512, 256], latent_dim: 32, beta: 0.0001,
+     relational_weight: 0.0, pair_count: 2048}
+  - {id: wide32_rel01, hidden_dims: [512, 256], latent_dim: 32, beta: 0.0001,
+     relational_weight: 0.1, pair_count: 2048}
+  - {id: wide32_rel1, hidden_dims: [512, 256], latent_dim: 32, beta: 0.0001,
+     relational_weight: 1.0, pair_count: 2048}
+  - {id: wide32_rel5, hidden_dims: [512, 256], latent_dim: 32, beta: 0.0001,
+     relational_weight: 5.0, pair_count: 2048}
+  - {id: wide64_rel1, hidden_dims: [512, 256], latent_dim: 64, beta: 0.0001,
+     relational_weight: 1.0, pair_count: 2048}
+output_dir: outputs/Verify_HighReVAE_1.1

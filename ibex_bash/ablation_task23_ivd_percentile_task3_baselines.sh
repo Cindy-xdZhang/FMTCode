@@ -27,5 +27,5 @@ tag=${tags[$((SLURM_ARRAY_TASK_ID / 2))]}
 group=${groups[$((SLURM_ARRAY_TASK_ID % 2))]}
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Verify_Task3_FMTClassifier.py \
+python -m experiments.Verify_Task3_FMTClassifier \
   --config "outputs/Ablation_Task23IVDPercentile_1.1/generated_configs/task3_${tag}_baselines_${group}.yaml"

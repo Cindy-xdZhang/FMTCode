@@ -12,5 +12,5 @@ repo_root=${FMT_REPO_ROOT:-/home/zhanx0o/FMT_Task12_3D_20260823}
 cd "$repo_root"
 source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
-python Run_Task2_IVDPercentile_Sweep.py \
+python -m experiments.Run_Task2_IVDPercentile_Sweep \
   --config config/Ablation_Task23IVDPercentile_1.1.yaml --summarize

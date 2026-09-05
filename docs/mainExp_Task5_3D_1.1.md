@@ -43,8 +43,8 @@ Task3做paired比较。最终输出总体、逐流场、physical-family和9个co
 ## 代码与配置
 
 - `FMT_Utils/MultiscalePathline_3D.py`
-- `Build_Task5_Multiscale_Cache.py`
-- `Evaluate_Task5_Multiscale.py`
+- `experiments/Build_Task5_Multiscale_Cache.py`
+- `experiments/Evaluate_Task5_Multiscale.py`
 - `config/mainExp_Task5_3D_1.1.yaml`
 - `config/mainExp_Task5_3D_1.1_*.yaml`
 
@@ -95,8 +95,8 @@ F1/AP 增益均为正。Re640 同时超过 strong Raw `+.1527/+.2031`。这张�
 统一超参数对二者都最优；Re640 数据长度不足以再构造与所有既有 source window
 不重叠的新时间片，故其证据等级仍是首次冻结 outer，而非 Re160 式新时间检验。
 
-完整协议、负结果和哈希见 `docs/Verify_Task5_CylinderHyperparams_1.1.md` 与
-`docs/Verify_Task5_Re160FreshTimes_1.1.md`。
+完整验证结论、负结果和哈希索引见 `Verify_experiments.md`；逐实验记录见
+`experiment_log.md`。
 
 ## 未见尺度分解
 

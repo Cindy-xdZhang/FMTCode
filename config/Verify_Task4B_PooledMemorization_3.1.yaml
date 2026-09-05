@@ -1,0 +1,61 @@
+experiment: Verify_Task4B_PooledMemorization_3.1
+task: Task4-b pooled channel+TBL full-cache four-class memorization sanity check
+output_dir: outputs/Verify_Task4B_PooledMemorization_3.1/pooled
+cache: outputs/mainExp_Task4B_PooledInstanceSplit_3.1/pooled/cache/task4b_pooled_cache.npz
+cache_sha256: 40f21e358abb1999b5bf06bfa35db3f135d86ce8c9d245c4684e76618ef2d8a3
+
+diagnostic_contract:
+  fit_set: all_91711_frozen_pooled_cache_rows
+  evaluation_set: exactly_the_same_all_91711_rows
+  holdout: false
+  allowed_conclusion: finite_sample_memorization_only
+  forbidden_conclusions: [generalization, test_performance, fmt_advantage]
+
+provenance_note: identical recipe to Verify_Task4B_FullVolumeMemorization_1.1, applied to the pooled 3.1 cache
+
+variants: [raw, fmt_only, raw_fmt]
+
+encoder:
+  num_freq: 6
+  mode: gram
+  include_chirality: true
+  neighbor_pool: sort
+  neighbor_scale: 100.0
+  neighbor_weight_after_train_standardization: 0.5
+  expected_feature_dim: 161
+  frozen: true
+
+model:
+  family: PathlineMulticlassClassifier3D
+  temporal_width: 128
+  embedding_dim: 1024
+  auxiliary_dim: 1024
+  dropout: 0.0
+
+training:
+  seeds: [7068, 7069, 7070]
+  batch_size: 512
+  evaluation_batch_size: 1024
+  sampling: one_without_replacement_permutation_of_every_row_per_epoch
+  loss: unweighted_cross_entropy
+  label_smoothing: 0.0
+  optimizer: Adam
+  learning_rate: 0.001
+  beta1: 0.9
+  beta2: 0.999
+  epsilon: 1.0e-8
+  weight_decay: 0.0
+  scheduler: cosine_annealing
+  minimum_learning_rate: 1.0e-6
+  max_epochs: 1000
+  early_stopping: false
+  gradient_clipping: false
+  mixed_precision: false
+  checkpoint_policy: in_memory_only_no_persistent_model_file
+
+pass_gate:
+  required_consecutive_zero_error_epochs: 3
+  require_positive_minimum_true_logit_margin: true
+  experiment_requires_every_variant_seed_run_to_pass: true
+  expected_sample_count: 91711
+  expected_class_support: [28000, 28000, 6927, 28784]

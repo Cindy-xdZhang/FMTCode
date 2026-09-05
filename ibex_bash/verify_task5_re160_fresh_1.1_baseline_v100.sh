@@ -19,5 +19,5 @@ conda activate deepvortex
 export PYTHONUNBUFFERED=1
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Verify_Task3_FMTClassifier.py \
+python -m experiments.Verify_Task3_FMTClassifier \
   --config config/Verify_Task5_Re160FreshTimes_1.1_baseline.yaml

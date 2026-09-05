@@ -1,0 +1,60 @@
+experiment: Verify_Task4B_FullVolumeMemorization_1.1
+task: Task4-b full-cache four-class memorization sanity check
+output_dir: outputs/Verify_Task4B_FullVolumeMemorization_1.1/channel_GTs
+cache: outputs/Other_Task4B_FMTFourClassClustering_1.2/channel_GTs/cache/task4b_four_class_cache.npz
+cache_sha256: 4be1dcedf69c3c5b4e2a47fd26fc46b2567db5dda9f547448e0cf6407af0a190
+
+diagnostic_contract:
+  fit_set: all_20641_frozen_cache_rows
+  evaluation_set: exactly_the_same_all_20641_rows
+  holdout: false
+  allowed_conclusion: finite_sample_memorization_only
+  forbidden_conclusions: [generalization, test_performance, fmt_advantage]
+
+variants: [raw, fmt_only, raw_fmt]
+
+encoder:
+  num_freq: 6
+  mode: gram
+  include_chirality: true
+  neighbor_pool: sort
+  neighbor_scale: 100.0
+  neighbor_weight_after_train_standardization: 0.5
+  expected_feature_dim: 161
+  frozen: true
+
+model:
+  family: PathlineMulticlassClassifier3D
+  temporal_width: 128
+  embedding_dim: 1024
+  auxiliary_dim: 1024
+  dropout: 0.0
+
+training:
+  seeds: [7068, 7069, 7070]
+  batch_size: 512
+  evaluation_batch_size: 1024
+  sampling: one_without_replacement_permutation_of_every_row_per_epoch
+  loss: unweighted_cross_entropy
+  label_smoothing: 0.0
+  optimizer: Adam
+  learning_rate: 0.001
+  beta1: 0.9
+  beta2: 0.999
+  epsilon: 1.0e-8
+  weight_decay: 0.0
+  scheduler: cosine_annealing
+  minimum_learning_rate: 1.0e-6
+  max_epochs: 1000
+  early_stopping: false
+  gradient_clipping: false
+  mixed_precision: false
+  checkpoint_policy: in_memory_only_no_persistent_model_file
+
+pass_gate:
+  required_consecutive_zero_error_epochs: 3
+  require_positive_minimum_true_logit_margin: true
+  experiment_requires_every_variant_seed_run_to_pass: true
+  expected_sample_count: 20641
+  expected_class_support: [5000, 5000, 2829, 7812]
+

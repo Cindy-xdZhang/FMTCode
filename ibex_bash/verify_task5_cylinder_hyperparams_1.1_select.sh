@@ -13,5 +13,5 @@ cd "$repo_root"
 mkdir -p slurm_logs
 source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
-python Search_Task5_CylinderHyperparams.py \
+python -m experiments.Search_Task5_CylinderHyperparams \
   --config config/Verify_Task5_CylinderHyperparams_1.1.yaml --mode select

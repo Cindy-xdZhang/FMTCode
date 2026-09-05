@@ -22,65 +22,65 @@ export OPENBLAS_NUM_THREADS="$OMP_NUM_THREADS"
 
 case "$ACTION" in
   strong_task1_select)
-    python experiments/Run_Task123_StrongBaselines_1_1.py \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 \
       --config config/Verify_Task123_StrongBaselines_1.1.yaml \
       --mode task1-select --job-index "$INDEX"
     ;;
   strong_task1_freeze)
-    python experiments/Run_Task123_StrongBaselines_1_1.py \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 \
       --config config/Verify_Task123_StrongBaselines_1.1.yaml --mode task1-freeze
     ;;
   strong_task1_run)
-    python experiments/Run_Task123_StrongBaselines_1_1.py \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 \
       --config config/Verify_Task123_StrongBaselines_1.1.yaml \
       --mode task1-run --job-index "$INDEX"
     ;;
   strong_task1_merge)
-    python experiments/Run_Task123_StrongBaselines_1_1.py \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 \
       --config config/Verify_Task123_StrongBaselines_1.1.yaml --mode task1-merge
     ;;
   strong_task2_freeze)
-    python experiments/Run_Task123_StrongBaselines_1_1.py \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 \
       --config config/Verify_Task123_StrongBaselines_1.1.yaml --mode task2-freeze
     ;;
   strong_summarize)
-    python experiments/Run_Task123_StrongBaselines_1_1.py \
+    python -m experiments.Run_Task123_StrongBaselines_1_1 \
       --config config/Verify_Task123_StrongBaselines_1.1.yaml --mode summarize
     ;;
   strong_audit)
-    python experiments/Audit_Task123_AdditionalEvidence_1_1.py --kind strong \
+    python -m experiments.Audit_Task123_AdditionalEvidence_1_1 --kind strong \
       --config config/Verify_Task123_StrongBaselines_1.1.yaml
     ;;
   ablation_task1_merge)
-    python experiments/Run_Task123_FMTComponentAblation_1_1.py \
+    python -m experiments.Run_Task123_FMTComponentAblation_1_1 \
       --config config/Ablation_Task123_FMTComponents_1.1.yaml --mode task1-merge
     ;;
   ablation_summarize)
-    python experiments/Run_Task123_FMTComponentAblation_1_1.py \
+    python -m experiments.Run_Task123_FMTComponentAblation_1_1 \
       --config config/Ablation_Task123_FMTComponents_1.1.yaml --mode summarize
     ;;
   ablation_audit)
-    python experiments/Audit_Task123_AdditionalEvidence_1_1.py --kind ablation \
+    python -m experiments.Audit_Task123_AdditionalEvidence_1_1 --kind ablation \
       --config config/Ablation_Task123_FMTComponents_1.1.yaml
     ;;
   ablation_cleanup)
-    python experiments/Run_Task123_FMTComponentAblation_1_1.py \
+    python -m experiments.Run_Task123_FMTComponentAblation_1_1 \
       --config config/Ablation_Task123_FMTComponents_1.1.yaml --mode cleanup
     ;;
   noise_task1_merge)
-    python experiments/Run_Task123_NoiseRobustness_1_1.py \
+    python -m experiments.Run_Task123_NoiseRobustness_1_1 \
       --config config/Verify_Task123_NoiseRobustness_1.1.yaml --mode task1-merge
     ;;
   noise_summarize)
-    python experiments/Run_Task123_NoiseRobustness_1_1.py \
+    python -m experiments.Run_Task123_NoiseRobustness_1_1 \
       --config config/Verify_Task123_NoiseRobustness_1.1.yaml --mode summarize
     ;;
   noise_audit)
-    python experiments/Audit_Task123_AdditionalEvidence_1_1.py --kind noise \
+    python -m experiments.Audit_Task123_AdditionalEvidence_1_1 --kind noise \
       --config config/Verify_Task123_NoiseRobustness_1.1.yaml
     ;;
   noise_cleanup)
-    python experiments/Run_Task123_NoiseRobustness_1_1.py \
+    python -m experiments.Run_Task123_NoiseRobustness_1_1 \
       --config config/Verify_Task123_NoiseRobustness_1.1.yaml --mode cleanup
     ;;
   *)

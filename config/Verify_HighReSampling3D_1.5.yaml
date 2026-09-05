@@ -1,0 +1,14 @@
+experiment: Verify_HighReSampling3D_1.5
+source_config: config/Verify_Task2Universality_1.1.yaml
+datasets: [halfcylinderRe640, halfcylinderRe6400]
+fixed_time_indices:
+  halfcylinderRe640: [16, 21, 26, 31, 36, 42, 47, 52, 57, 62]
+  halfcylinderRe6400: [31, 42, 54, 65, 77, 88, 100, 111, 123, 134]
+representations: [fmt]
+comparison_population: native
+kmeans_n_init: 10
+variants:
+  - {id: field160_seed20, dt_scale: 0.125, integration_steps: 32, sampled_steps: 32,
+     offset_mode: geometric_mean, offset_grid_scale: 0.5, max_spatial_dim: 160,
+     seed_grid_shape: [20, 20, 20]}
+output_dir: outputs/Verify_HighReSampling3D_1.5

@@ -1,0 +1,28 @@
+experiment: mainExp_Task2_3D_2.1_highre_confirmation
+seed: 7068
+datasets:
+  - {id: halfcylinderRe640, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe640resampled.nc", enabled: true}
+  - {id: halfcylinderRe6400, path: "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/halfcylinderRe6400.nc", enabled: true}
+sampling:
+  timeslices: 4
+  begin_fraction: 0.20
+  end_fraction: 0.90
+  fixed_time_indices_by_dataset:
+    halfcylinderRe640: [18, 29, 45, 60]
+    halfcylinderRe6400: [35, 58, 95, 127]
+  max_spatial_dim: 160
+  seed_grid_shape: [20, 20, 20]
+  boundary_fraction: 0.08
+pathlines:
+  method: RK4
+  dt_scale: 0.125
+  integration_steps: 32
+  sampled_steps: 32
+  offset_grid_scale: 0.5
+  offset_mode: geometric_mean
+  chunk_size: 2048
+encoder: {num_freq: 6, mode: gram, include_chirality: true, neighbor_pool: sort, neighbor_weight: 0.5}
+reference: {definition: standard_global_ivd, percentile: 95.0}
+output:
+  cache_dir: outputs/mainExp_Task2_3D_2.1_highre_confirmation/cache/field160_seed20
+  result_dir: outputs/mainExp_Task2_3D_2.1_highre_confirmation/results

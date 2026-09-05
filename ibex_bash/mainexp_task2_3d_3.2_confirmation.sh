@@ -23,5 +23,5 @@ TASK2_GROUPS=(channel halfcylinder tangaroa deltaWing f22raptor boeing747 smokeB
 group_name=${TASK2_GROUPS[$SLURM_ARRAY_TASK_ID]}
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Run_Task2_3D_Main.py \
+python -m experiments.Run_Task2_3D_Main \
   --config config/mainExp_Task2_3D_3.2.yaml --group "$group_name" --resume

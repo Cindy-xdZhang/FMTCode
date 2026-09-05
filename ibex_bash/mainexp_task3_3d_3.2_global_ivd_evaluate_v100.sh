@@ -20,5 +20,5 @@ conda activate deepvortex
 export PYTHONUNBUFFERED=1
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Evaluate_Task3_MainTable.py \
+python -m experiments.Evaluate_Task3_MainTable \
   --config config/mainExp_Task3_3D_3.2_global_ivd_evaluate.yaml

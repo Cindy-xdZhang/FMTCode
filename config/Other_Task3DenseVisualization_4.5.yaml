@@ -1,0 +1,85 @@
+experiment: Other_Task3DenseVisualization_4.5
+cache_experiment: Other_Task3DenseVisualization_4.4
+task: Task3
+purpose: screen-filling 5x-density close-ups with no non-vortex/background point array
+layout: close_up_only
+
+# Render-only revision of the audited 4.4 local population.  It reuses all
+# 20,480 newly integrated Sobol primitives, frozen probabilities, thresholds,
+# checkpoints, labels, and source times.  Only the common camera projection
+# and marker size change.  Raw and FMT retain exactly the same physical box.
+reuse_prediction_root: outputs/Other_Task3DenseVisualization_4.4/predictions
+reuse_prediction_sidecars: true
+
+density:
+  original_seed_grid_shape: [16, 16, 16]
+  dense_seed_grid_shape: null
+  requested_multiplier: 5.0
+  previous_local_seed_count: 4096
+  new_local_seed_count: 20480
+
+local_sampling:
+  sampling_pattern: sobol
+  seed_count: 20480
+  sampling_seed: 404
+  sampling_box_scale: 0.50
+
+close_up:
+  focus_basis: ivd_positive
+  positive_fraction: 0.02
+  minimum_points: 16
+  padding_factor: 1.00
+  minimum_span_fraction: 0.00001
+  target_span_fraction: null
+  physical_cube_longest_axis_fraction: null
+  exact_target_span: true
+  center_on_selected_neighbourhood: true
+
+  # Keep the complete newly reintegrated local population visible.  Camera
+  # zoom increases from 3.8 in 4.4 to 5.2 so the same physical local structure
+  # fills more of each panel while retaining recognizable coordinate-box edges.
+  display_crop_scale: 1.00
+  camera_zoom: 5.20
+  marker_scale: 0.010
+  false_positive_color: "#222222"
+
+  # Only exact predicted-vortex support is drawn.  Every negative/background,
+  # reference-point, confusion-context, and error-marker scatter layer stays
+  # disabled.  Raster and SVG blue-pixel guards remain mandatory.
+  prediction_point_mode: predicted_positive
+  prediction_surface_grid_shape: [96, 96, 96]
+  prediction_surface_neighbors: 16
+  prediction_surface_power: 1.75
+  prediction_surface_smoothing_sigma: 0.60
+  show_reference_points: false
+  show_true_negatives: false
+  show_true_positives: false
+  show_paired_error_context: false
+  show_reference_surface_in_predictions: false
+  reference_surface_alpha: 1.0
+  all_positive_surface_alpha: 0.12
+  shade_surfaces: true
+  render_prediction_surface: false
+  render_reference_surface_from_labels: true
+  render_scalar_slices: false
+  require_all_prediction_surfaces_in_crop: false
+  show_error_markers: false
+  surface_only: false
+  show_close_up_axes: true
+  fixed_canvas_export: true
+
+datasets:
+  - cylinder3d
+  - halfcylinderRe640
+  - halfcylinderRe6400
+  - tangaroa
+  - deltaWing_resampled
+  - deltaWing_LBM
+  - channel
+  - boeing747
+  - smokeBuoyancy
+
+outputs:
+  cache_root: outputs/Other_Task3DenseVisualization_4.4/cache
+  prediction_root: outputs/Other_Task3DenseVisualization_4.4/predictions
+  figure_root: outputs/Other_Task3DenseVisualization_4.5/figures

@@ -14,6 +14,6 @@ source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
 export TASK71_SOURCE_MODEL_ROOT="${TASK71_SOURCE_MODEL_ROOT:-/home/zhanx0o/FMT_Task3_FinalPortfolio_49_1}"
 export TASK3_TUNED7_SOURCE_MANIFEST="${TASK3_TUNED7_SOURCE_MANIFEST:-/ibex/scratch/zhanx0o/FMT_Task3_FinalTuned_7_1/source_staging_manifest.json}"
-python Confirm_Task3_FinalTuned_7_1.py \
+python -m experiments.Confirm_Task3_FinalTuned_7_1 \
   --config config/mainExp_Task3_3D_7.1.yaml \
   --mode evaluation-preflight

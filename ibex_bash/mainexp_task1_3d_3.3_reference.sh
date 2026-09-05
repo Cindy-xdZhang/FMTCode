@@ -18,4 +18,4 @@ module load cuda/11.8
 source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
 CONFIGS=(config/mainExp_Task1_3D_3.3_reference_old8.yaml config/mainExp_Task1_3D_3.3_reference_new2.yaml)
-python Run_Task1_3D_Main.py --config "${CONFIGS[$SLURM_ARRAY_TASK_ID]}"
+python -m experiments.Run_Task1_3D_Main --config "${CONFIGS[$SLURM_ARRAY_TASK_ID]}"

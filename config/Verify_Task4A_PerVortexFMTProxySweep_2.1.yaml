@@ -1,0 +1,85 @@
+experiment: Verify_Task4A_PerVortexFMTProxySweep_2.1
+task: Task4-a per-VortexId geometry clustering proxy-development sweep
+seed: 7068
+
+input:
+  fmt_result: outputs/Other_Task4A_FMTStreamlineClustering_1.1/channel_GTs/task4a_clustering_result.npz
+  proxy_result: outputs/Verify_Task4A_VelocityCurlBaseline_1.1/channel_GTs/velocity_curl_baseline_result.npz
+  flow_path_candidates:
+    - "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel.vtk"
+    - "/home/zhanx0o/DeepVortex/FLowDataFolder/channel.vtk"
+
+streamline_search:
+  method: bidirectional_RK4_unit_velocity
+  spatial_step_mean_voxel_scales: [0.25, 0.5, 1.0]
+  steps_per_direction: [8, 16, 32]
+  offset_min_voxel_scale: 0.25
+  minimum_speed: 1.0e-6
+  chunk_size: 8192
+
+encoder:
+  source_protocol: config/PathlineFMTclustering3D.yaml
+  num_freq: 6
+  mode: gram
+  include_chirality: true
+  neighbor_pool: sort
+  neighbor_weights_after_standardization: [0.0, 0.25, 0.5, 1.0, 2.0]
+
+phase1_kmeans:
+  scaling: within_vortex
+  init: k-means++
+  n_init: 2
+  max_iter: 300
+  tol: 1.0e-4
+  algorithm: lloyd
+
+phase2_kmeans_variants:
+  - id: within_kpp_n5
+    scaling: within_vortex
+    init: k-means++
+    n_init: 5
+    max_iter: 300
+    tol: 1.0e-4
+    algorithm: lloyd
+  - id: within_kpp_n20_strict
+    scaling: within_vortex
+    init: k-means++
+    n_init: 20
+    max_iter: 1000
+    tol: 1.0e-6
+    algorithm: lloyd
+  - id: within_random_n20_strict
+    scaling: within_vortex
+    init: random
+    n_init: 20
+    max_iter: 1000
+    tol: 1.0e-6
+    algorithm: lloyd
+  - id: within_kpp_n20_elkan
+    scaling: within_vortex
+    init: k-means++
+    n_init: 20
+    max_iter: 1000
+    tol: 1.0e-6
+    algorithm: elkan
+  - id: global_kpp_n20_strict
+    scaling: global
+    init: k-means++
+    n_init: 20
+    max_iter: 1000
+    tol: 1.0e-6
+    algorithm: lloyd
+
+topology_naming:
+  dominant_component_min_voxels: 3
+  dominant_component_min_fraction_of_vortex: 0.05
+  tie_break: lower_median_z_index
+
+selection:
+  primary: proxy_permutation_vortex_equal_weighted_macro_f1
+  secondary: proxy_permutation_vortex_equal_weighted_angle_confidence_weighted_mse
+  success_macro_f1_at_least: 0.90
+  success_hard_label_mse_at_most: 0.10
+  status: development_on_proxy_not_independent_confirmation
+
+output_dir: outputs/Verify_Task4A_PerVortexFMTProxySweep_2.1/channel_GTs

@@ -1,0 +1,17 @@
+experiment: Verify_HighReTask2_1.1
+source_config: config/Verify_Task2Universality_1.1.yaml
+sampling_spec: config/Verify_HighReSampling3D_1.2.yaml
+sampling_variant: field160_seed24
+datasets: [halfcylinderRe640, halfcylinderRe6400]
+training_seeds: [7068, 7069, 7070]
+kmeans_seed: 7068
+
+# Selected on slices 7-8 only; confirmation trains on 1-8 and evaluates 9-10.
+raw_vae:
+  halfcylinderRe640: {hidden_dims: [256, 128], latent_dim: 4, beta: 0.00001,
+    relational_weight: 0.0, pair_count: 2048}
+  halfcylinderRe6400: {hidden_dims: [], latent_dim: 4, beta: 0.00001,
+    relational_weight: 0.0, pair_count: 2048}
+fmt_vae: {hidden_dims: [], latent_dim: 2, beta: 0.00001,
+  relational_weight: 0.0, pair_count: 2048}
+output_dir: outputs/Verify_HighReTask2_1.1

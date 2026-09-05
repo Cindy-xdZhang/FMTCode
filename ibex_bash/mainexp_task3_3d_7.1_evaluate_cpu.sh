@@ -18,6 +18,6 @@ export TASK3_TUNED7_SOURCE_MANIFEST="${TASK3_TUNED7_SOURCE_MANIFEST:-/ibex/scrat
 export PYTHONUNBUFFERED=1
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
 export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
-python Confirm_Task3_FinalTuned_7_1.py \
+python -m experiments.Confirm_Task3_FinalTuned_7_1 \
   --config config/mainExp_Task3_3D_7.1.yaml \
   --mode dataset --job-index "$SLURM_ARRAY_TASK_ID"

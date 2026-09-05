@@ -1,0 +1,14 @@
+experiment: mainExp_Task3Universality_2.1_labels
+source_config: config/mainExp_Task3Universality_2.1_cache.yaml
+source_cache_root: outputs/mainExp_Task3Universality_2.1/confirmation_cache
+datasets:
+  - cylinder3d
+  - halfcylinderRe640
+  - halfcylinderRe6400
+  - tangaroa
+  - deltaWing_resampled
+  - deltaWing_LBM
+  - f22raptor
+  - channel
+label: {mode: mean_fraction, value: 0.9, neighborhood_size: 11}
+output_dir: outputs/mainExp_Task3Universality_2.1

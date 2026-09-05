@@ -1,0 +1,31 @@
+experiment: Verify_Task4A_VelocityCurlBaseline_1.1
+task: Task4-a traditional velocity-curl orientation baseline
+
+input:
+  fmt_result: outputs/Other_Task4A_FMTStreamlineClustering_1.1/channel_GTs/task4a_clustering_result.npz
+  flow_path_candidates:
+    - "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel.vtk"
+    - "/home/zhanx0o/DeepVortex/FLowDataFolder/channel.vtk"
+
+criterion:
+  definition: absolute_angle_between_local_velocity_and_curl
+  streamwise_if_angle_degrees_lte: 45.0
+  minimum_vector_norm: 1.0e-9
+  class_ids:
+    background_or_invalid: 0
+    streamwise_parallel: 1
+    spanwise_perpendicular: 2
+
+topology_proxy:
+  connectivity: 26
+  dominant_component_min_voxels: 3
+  dominant_component_min_fraction_of_vortex: 0.05
+
+visualization:
+  output_dir: outputs/Verify_Task4A_VelocityCurlBaseline_1.1/channel_GTs
+  surface_mode: interfaces
+  shrink: 0.92
+  opacity: 1.0
+  image_size: [1400, 900]
+  views: [isometric, "+x", "+y", "+z"]
+

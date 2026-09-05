@@ -1,0 +1,17 @@
+experiment: mainExp_Task3NewFlows_2.3_evaluate
+source_cache_root: outputs/mainExp_Task123NewFlows_1.1/confirmation_cache
+label_cache_root: outputs/mainExp_Task3NewFlows_2.3/confirmation_labels/labels
+output_dir: outputs/mainExp_Task3NewFlows_2.3/final_confirmation
+datasets: [boeing747, smokeBuoyancy]
+sampled_steps: 32
+fmt_subset: all_plus_gram_kinematic
+fmt_gram_num_freq: 2
+expected_slices: 4
+seeds: [20, 21, 22]
+batch_size: 1024
+device: auto
+minimum_obvious_gain: 0.02
+baseline_checkpoint_roots:
+  - outputs/mainExp_Task3NewFlows_2.3/baselines/checkpoints
+residual_checkpoint_roots:
+  - outputs/mainExp_Task3NewFlows_2.3/residual/checkpoints

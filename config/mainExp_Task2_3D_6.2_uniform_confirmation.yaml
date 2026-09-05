@@ -1,0 +1,22 @@
+experiment: mainExp_Task2_3D_6.2_uniform_confirmation
+task: Task2
+status: pre_registered_global_recipe_confirmation
+selection_config: config/Verify_Task2_UniformFMT_6.1.yaml
+selection_path: outputs/Verify_Task2_UniformFMT_6.1/global_selection.json
+selection_audit_path: outputs/Verify_Task2_UniformFMT_6.1/independent_selection_audit.json
+output_root: outputs/mainExp_Task2_3D_6.2_uniform_confirmation
+
+# The global recipe is trained on the same development-train ordinals used by
+# selection.  Development validation only fixes the anonymous KMeans label;
+# outer ordinals remain unopened until the recipe manifest is frozen.
+splits:
+  train: [0, 1, 2, 3, 4, 5]
+  cluster_calibration: [6, 7]
+  confirmation: [8, 9]
+
+training_seeds: [100, 101, 102, 103, 104]
+kmeans_seed: 7068
+kmeans_n_init: 20
+expected_slices: 10
+checkpoint_policy: no_checkpoints_written
+

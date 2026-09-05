@@ -23,17 +23,17 @@ export OPENBLAS_NUM_THREADS="$OMP_NUM_THREADS"
 
 case "$ACTION" in
   noise_task1)
-    python experiments/Run_Task123_NoiseRobustness_1_2.py --config "$CONFIG" \
+    python -m experiments.Run_Task123_NoiseRobustness_1_2 --config "$CONFIG" \
       --mode task1 --job-index "$INDEX"
     ;;
   noise_task1_merge)
-    python experiments/Run_Task123_NoiseRobustness_1_2.py --config "$CONFIG" --mode task1-merge
+    python -m experiments.Run_Task123_NoiseRobustness_1_2 --config "$CONFIG" --mode task1-merge
     ;;
   noise_summarize)
-    python experiments/Run_Task123_NoiseRobustness_1_2.py --config "$CONFIG" --mode summarize
+    python -m experiments.Run_Task123_NoiseRobustness_1_2 --config "$CONFIG" --mode summarize
     ;;
   noise_audit)
-    python experiments/Audit_Task123_AdditionalEvidence_1_1.py --kind noise-strong \
+    python -m experiments.Audit_Task123_AdditionalEvidence_1_1 --kind noise-strong \
       --config "$CONFIG"
     ;;
   *)

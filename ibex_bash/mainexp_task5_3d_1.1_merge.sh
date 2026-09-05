@@ -14,6 +14,6 @@ cd "$repo_root"
 mkdir -p slurm_logs
 source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
-python Merge_Task3_ResidualShards.py \
+python -m experiments.Merge_Task3_ResidualShards \
   --config config/mainExp_Task5_3D_1.1_evaluate.yaml \
   --root outputs/mainExp_Task5_3D_1.1

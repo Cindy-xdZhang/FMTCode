@@ -124,6 +124,10 @@ def _recompute_record(
         ),
     )
     if need_cached_fmt:
+        if condition["id"] == "clean" and not np.array_equal(
+            primitives, reshape_cached_primitives(record["raw"])
+        ):
+            raise RuntimeError("clean corruption changed cached pathline coordinates")
         fmt = pathline_dft_features_3d(
             torch.from_numpy(primitives).to(device), num_freq=6,
             neighbor_weight=1.0, neighbor_scale=1.0,
@@ -136,11 +140,15 @@ def _recompute_record(
                 np.linalg.norm(difference)
                 / max(np.linalg.norm(record["fmt"].astype(np.float64)), 1e-12)
             )
-            # Original caches were generated on CUDA whereas this replay may
-            # run on a different GPU or CPU.  A norm check admits harmless
-            # FFT reduction-order noise while still rejecting a changed FMT
-            # recipe or primitive layout by several orders of magnitude.
-            if max_absolute > 1e-3 or relative_l2 > 1e-4:
+            # Original caches were generated on different GPU models.  Their
+            # FFT kernels can differ slightly in reduction order, and an
+            # absolute tolerance is invalid because FMT block scales vary by
+            # several orders of magnitude across flows.  The threshold below
+            # is twice the largest clean replay discrepancy observed in the
+            # failed preflight (2.424e-4), while a recipe/layout change gives
+            # an order-one relative discrepancy.  Exact raw equality above
+            # separately guarantees that the clean corruption is an identity.
+            if relative_l2 > 5e-4:
                 raise RuntimeError(
                     "clean FMT recomputation differs from cache: "
                     f"max_absolute={max_absolute}, relative_l2={relative_l2}"

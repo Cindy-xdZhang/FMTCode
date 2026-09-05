@@ -26,11 +26,11 @@ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 
 case "$ACTION" in
   noise_task2)
-    python experiments/Run_Task123_NoiseRobustness_1_2.py --config "$CONFIG" \
+    python -m experiments.Run_Task123_NoiseRobustness_1_2 --config "$CONFIG" \
       --mode task2 --job-index "$INDEX"
     ;;
   noise_task3)
-    python experiments/Run_Task123_NoiseRobustness_1_2.py --config "$CONFIG" \
+    python -m experiments.Run_Task123_NoiseRobustness_1_2 --config "$CONFIG" \
       --mode task3 --job-index "$INDEX"
     ;;
   *)

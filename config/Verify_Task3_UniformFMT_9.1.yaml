@@ -1,0 +1,112 @@
+experiment: Verify_Task3_UniformFMT_9.1
+task: Task3
+status: development_only_global_fmt_selection
+output_root: outputs/Verify_Task3_UniformFMT_9.1
+expected_slices: 10
+expected_ivd_percentile: 95.0
+require_source_reference_match: true
+sampled_steps: 32
+raw_pca_random_state: 7068
+raw_wide_parameter_count: 148225
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor,
+           boeing747, smokeBuoyancy]
+
+groups:
+  channel:
+    datasets: [channel]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  halfcylinder:
+    datasets: [cylinder3d, halfcylinderRe640, halfcylinderRe6400]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  tangaroa:
+    datasets: [tangaroa]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  deltaWing:
+    datasets: [deltaWing_resampled, deltaWing_LBM]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  f22raptor:
+    datasets: [f22raptor]
+    source_cache_root: outputs/Verify_Task2Universality_1.1/cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_old8/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_old8/baselines/checkpoints
+  boeing747:
+    datasets: [boeing747]
+    source_cache_root: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_new2/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/baselines/checkpoints
+  smokeBuoyancy:
+    datasets: [smokeBuoyancy]
+    source_cache_root: outputs/mainExp_Task123NewFlows_1.1/development_cache
+    label_cache_root: outputs/mainExp_Task3_3D_3.2_global_ivd/development_labels_new2/labels
+    raw_checkpoint_dir: outputs/mainExp_Task3_3D_3.2_global_ivd/development_new2/baselines/checkpoints
+
+screen_split:
+  train_ordinals: [0, 1, 2, 3, 4, 5]
+  validation_ordinals: [6, 7]
+  test_ordinals: []
+outer_ordinals: [8, 9]
+# The frozen paired Raw backbones were trained only for seeds 40--44.  The
+# first deployment incorrectly requested 93--95 and therefore failed before
+# training.  Use three already-existing paired seeds; this changes no model
+# or FMT candidate and does not open outer ordinals.
+screen_seeds: [40, 41, 42]
+available_raw_checkpoint_seeds: [40, 41, 42, 43, 44]
+
+# Union of the six distinct FMT recipes frozen in mainExp_Task3_3D_8.1 and
+# the three strongest shared baselines from the earlier 4.1 feature search.
+# Every recipe existed before this uniform-selection experiment.
+candidates:
+  - {id: g00_all, fmt_feature: fmt_all, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: g01_kin2, fmt_feature: kin2, residual_input: geometry_fmt,
+     auxiliary_dim: 64, selection_metric: minimum_gain}
+  - {id: g02_all_kin4, fmt_feature: fmt_all+kin4,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: g03_aivd1w3_first, fmt_feature: aivd1w3_first,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: g04_aivd2w8_dft, fmt_feature: aivd2w8_dft,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: g05_all_aivd2w8, fmt_feature: fmt_all+aivd2w8,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: g06_aivd1w3d2_core, fmt_feature: aivd1w3d2_core,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: g07_aivd1w3_early, fmt_feature: aivd1w3_early,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+  - {id: g08_aivd1w3_dft, fmt_feature: aivd1w3_dft,
+     residual_input: geometry_fmt, auxiliary_dim: 64,
+     selection_metric: minimum_gain}
+
+# Fixed existing 4.1 residual architecture and optimizer.  Only the FMT
+# recipe changes, so the new experiment does not expand a training grid.
+training:
+  device: auto
+  batch_size: 512
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  max_epochs: 100
+  patience: 20
+  min_delta: 0.0001
+
+selection:
+  scope: global
+  global_primary: absolute_fmt_f1
+  minimum_macro_f1_gain: 0.0
+  top_k: 5
+  target_dataset_macro_f1_gain: 0.10
+  target_absolute_fmt_f1: 0.85
+  allowed_fmt_below_strong_raw: 0.005

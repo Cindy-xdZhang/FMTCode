@@ -1,0 +1,63 @@
+experiment: mainExp_Task4B_1.1
+status: superseded_before_full_run_by_spatially_buffered_1.2
+task: Task4-b supervised four-vortex-type classification
+output_dir: outputs/mainExp_Task4B_1.1/channel_GTs
+cache: outputs/Other_Task4B_FMTFourClassClustering_1.1/channel_GTs/cache/task4b_four_class_cache.npz
+
+taxonomy:
+  protocol: vortex_only_four_types
+  non_vortex: excluded by frozen channel-profile deviation gate
+  classes:
+    0: ordinary_streamwise
+    1: ordinary_spanwise
+    2: hairpin_head
+    3: hairpin_limb
+
+variants: [raw, raw_wide, fmt_only, raw_fmt]
+core_comparison: raw_fmt versus raw; raw_wide controls capacity; fmt_only is diagnostic
+
+encoder:
+  num_freq: 6
+  mode: gram
+  include_chirality: true
+  neighbor_pool: sort
+  neighbor_scale: 100.0
+  neighbor_weight_after_train_standardization: 0.5
+  expected_feature_dim: 161
+  frozen: true
+
+model:
+  num_classes: 4
+  temporal_width: 64
+  embedding_dim: 128
+  auxiliary_dim: 64
+  dropout: 0.10
+
+training:
+  seeds: [7068, 7069, 7070]
+  batch_size: 256
+  evaluation_batch_size: 1024
+  class_balance: exact equal quota per training batch
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  label_smoothing: 0.0
+  gradient_clip_norm: 1.0
+  max_epochs: 50
+  patience: 8
+  min_delta: 0.0001
+  selection_metric: validation_macro_f1
+  checkpoint_policy: in_memory_best_state_only_no_persistent_model_file
+
+evaluation:
+  primary: macro_f1
+  metrics:
+    - per_class_f1
+    - balanced_accuracy
+    - one_vs_rest_macro_average_precision
+    - confusion_matrix
+  test_policy: score once after validation-selected epoch; never tune on test
+
+limitations:
+  - 1.1 cache has cross-split primitive overlap and is ineligible for formal evaluation
+  - proxy labels are not manual head/limb annotations
+  - seed-centered local primitives do not expose absolute z or whole-instance position order

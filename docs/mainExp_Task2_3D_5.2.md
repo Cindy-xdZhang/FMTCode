@@ -1,6 +1,16 @@
 # mainExp_Task2_3D_5.2
 
 > Status: **COMPLETED on Ibex; all 200 trainings independently verified.**
+>
+> Paper-table role updated on 2026-09-01: this experiment uses
+> family-specific FMT/VAE recipes and is retained as historical supplementary
+> evidence and for visualization. It is not the current uniform-configuration
+> main table. The replacement `mainExp_Task2_3D_6.2_uniform_confirmation`
+> is now complete and independently audited: one unchanged
+> `fmt_all+kin4` + MLP `[512,256]` latent-64 VAE gives Raw/FMT
+> dataset-macro F1 `.48844/.58404`, gain `+.09560`; 8/10 datasets,
+> 5/7 families and 5/5 seeds are positive. See
+> [`paper_tables_tasks_3d.md`](paper_tables_tasks_3d.md).
 
 ## Question
 
@@ -92,9 +102,9 @@ No checkpoint was written. Final evidence SHA-256 values are:
 ## Code and execution order
 
 - Config: `config/mainExp_Task2_3D_5.2.yaml`.
-- Source derivation: `Prepare_Task2_LatentConfirmation_SourceManifest_5_2.py`.
-- Fifth-population builder: `Build_Task2_LatentConfirmation_5_2.py`.
-- Frozen evaluation: `Confirm_Task2_LatentBottleneck_5_2.py`.
+- Source derivation: `experiments/Prepare_Task2_LatentConfirmation_SourceManifest_5_2.py`.
+- Fifth-population builder: `experiments/Build_Task2_LatentConfirmation_5_2.py`.
+- Frozen evaluation: `experiments/Confirm_Task2_LatentBottleneck_5_2.py`.
 - Contracts: `tests/test_mainexp_task2_3d_5_2.py`.
 - Ibex scripts: `ibex_bash/mainexp_task2_latent_5.2_*.sh`.
 

@@ -22,5 +22,5 @@ tags=(p80 p85 p87p5 p90 p92p5)
 tag=${tags[$SLURM_ARRAY_TASK_ID]}
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Evaluate_Task3_MainTable.py \
+python -m experiments.Evaluate_Task3_MainTable \
   --config "outputs/Ablation_Task23IVDPercentile_1.1/generated_configs/task3_${tag}_evaluate.yaml"

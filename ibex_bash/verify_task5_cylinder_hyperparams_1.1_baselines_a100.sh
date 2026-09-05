@@ -24,4 +24,4 @@ CONFIGS=(
 )
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Verify_Task3_FMTClassifier.py --config "${CONFIGS[$SLURM_ARRAY_TASK_ID]}"
+python -m experiments.Verify_Task3_FMTClassifier --config "${CONFIGS[$SLURM_ARRAY_TASK_ID]}"

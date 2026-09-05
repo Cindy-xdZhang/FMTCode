@@ -39,5 +39,5 @@ conda activate deepvortex
 export PYTHONUNBUFFERED=1
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Verify_Task3_FMTResidual.py \
+python -m experiments.Verify_Task3_FMTResidual \
   --config "$config" --dataset "$dataset" --output-dir "$output_dir"

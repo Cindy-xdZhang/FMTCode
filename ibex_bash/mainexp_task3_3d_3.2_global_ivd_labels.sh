@@ -21,4 +21,4 @@ CONFIGS=(
   config/mainExp_Task3_3D_3.2_global_ivd_labels_confirmation_old8.yaml
   config/mainExp_Task3_3D_3.2_global_ivd_labels_confirmation_new2.yaml
 )
-python Build_Task3_GlobalIVD_Labels.py --config "${CONFIGS[$SLURM_ARRAY_TASK_ID]}"
+python -m experiments.Build_Task3_GlobalIVD_Labels --config "${CONFIGS[$SLURM_ARRAY_TASK_ID]}"

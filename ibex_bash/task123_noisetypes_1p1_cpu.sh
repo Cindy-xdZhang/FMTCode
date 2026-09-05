@@ -24,29 +24,29 @@ export OPENBLAS_NUM_THREADS="$OMP_NUM_THREADS"
 
 case "$ACTION" in
   a_task1_merge)
-    python experiments/Run_Task123_NoiseRobustness_1_1.py --config "$CONFIG_A" --mode task1-merge
+    python -m experiments.Run_Task123_NoiseRobustness_1_1 --config "$CONFIG_A" --mode task1-merge
     ;;
   a_summarize)
-    python experiments/Run_Task123_NoiseRobustness_1_1.py --config "$CONFIG_A" --mode summarize
+    python -m experiments.Run_Task123_NoiseRobustness_1_1 --config "$CONFIG_A" --mode summarize
     ;;
   a_audit)
-    python experiments/Audit_Task123_AdditionalEvidence_1_1.py --kind noise --config "$CONFIG_A"
+    python -m experiments.Audit_Task123_AdditionalEvidence_1_1 --kind noise --config "$CONFIG_A"
     ;;
   a_cleanup)
-    python experiments/Run_Task123_NoiseRobustness_1_1.py --config "$CONFIG_A" --mode cleanup
+    python -m experiments.Run_Task123_NoiseRobustness_1_1 --config "$CONFIG_A" --mode cleanup
     ;;
   b_task1)
-    python experiments/Run_Task123_NoiseRobustness_1_2.py --config "$CONFIG_B" \
+    python -m experiments.Run_Task123_NoiseRobustness_1_2 --config "$CONFIG_B" \
       --mode task1 --job-index "$INDEX"
     ;;
   b_task1_merge)
-    python experiments/Run_Task123_NoiseRobustness_1_2.py --config "$CONFIG_B" --mode task1-merge
+    python -m experiments.Run_Task123_NoiseRobustness_1_2 --config "$CONFIG_B" --mode task1-merge
     ;;
   b_summarize)
-    python experiments/Run_Task123_NoiseRobustness_1_2.py --config "$CONFIG_B" --mode summarize
+    python -m experiments.Run_Task123_NoiseRobustness_1_2 --config "$CONFIG_B" --mode summarize
     ;;
   b_audit)
-    python experiments/Audit_Task123_AdditionalEvidence_1_1.py --kind noise-strong \
+    python -m experiments.Audit_Task123_AdditionalEvidence_1_1 --kind noise-strong \
       --config "$CONFIG_B"
     ;;
   *)

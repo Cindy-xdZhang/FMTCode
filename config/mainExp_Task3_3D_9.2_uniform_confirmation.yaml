@@ -1,0 +1,21 @@
+experiment: mainExp_Task3_3D_9.2_uniform_confirmation
+task: Task3
+status: pre_registered_global_recipe_confirmation
+selection_config: config/Verify_Task3_UniformFMT_9.1.yaml
+selection_path: outputs/Verify_Task3_UniformFMT_9.1/global_selection.json
+selection_audit_path: outputs/Verify_Task3_UniformFMT_9.1/independent_selection_audit.json
+output_root: outputs/mainExp_Task3_3D_9.2_uniform_confirmation
+
+# Validation keeps its original role: epoch, threshold and residual scale are
+# selected without outer data.  Ordinals 8--9 are used once for confirmation.
+splits:
+  train: [0, 1, 2, 3, 4, 5]
+  validation: [6, 7]
+  confirmation: [8, 9]
+
+# Seeds 40--44 are the complete set with pre-existing frozen Raw backbones.
+# The global selector used only 40--42; 43--44 add two paired training repeats.
+training_seeds: [40, 41, 42, 43, 44]
+expected_slices: 10
+checkpoint_policy: temporary_until_independent_audit
+

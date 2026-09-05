@@ -1,0 +1,7 @@
+experiment: Verify_Task3LabelsLiteral_1.1
+sampling_spec: config/Verify_HighReSampling3D_1.5.yaml
+sampling_variant: field160_seed20
+datasets: [halfcylinderRe640, halfcylinderRe6400]
+max_spatial_dim: 160
+label: {mode: mean_fraction, value: 0.9, neighborhood_size: 11}
+output_dir: outputs/Verify_Task3LabelsLiteral_1.1

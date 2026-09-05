@@ -1,0 +1,66 @@
+experiment: Other_Task4A_FMTStreamlineClustering_1.1
+task: Task4-a exploratory unlabeled hairpin decomposition
+seed: 7068
+
+input:
+  gt_path_candidates:
+    - "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel_GTs.vtk"
+    - "/home/zhanx0o/DeepVortex/FLowDataFolder/channel_GTs.vtk"
+  flow_path_candidates:
+    - "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel.vtk"
+    - "/home/zhanx0o/DeepVortex/FLowDataFolder/channel.vtk"
+  label_array: VortexIds
+  association: cell
+
+voxelization:
+  resolution_xyz: null
+  preview_max_voxels: 2000000
+  max_axis_resolution: 1024
+
+streamlines:
+  method: bidirectional_RK4_unit_velocity
+  periodic_axes: [x, y]
+  steps_per_direction: 16
+  spatial_step_mean_voxel_scale: 0.5
+  offset_min_voxel_scale: 0.25
+  minimum_speed: 1.0e-6
+  chunk_size: 8192
+
+primitive:
+  line_count: 7
+  line_order: [center, x_minus, x_plus, y_minus, y_plus, z_minus, z_plus]
+  sampled_steps: 33
+
+encoder:
+  source_protocol: config/PathlineFMTclustering3D.yaml
+  num_freq: 6
+  mode: gram
+  include_chirality: true
+  neighbor_pool: sort
+  neighbor_weight_after_standardization: 0.5
+
+clustering:
+  classes: 2
+  n_init: 20
+  fit_max_seeds_per_vortex: 128
+  semantic_naming: higher_median_absolute_vorticity_x_alignment_is_streamwise
+
+topology_proxy:
+  connectivity: 26
+  dominant_component_min_voxels: 3
+  dominant_component_min_fraction_of_vortex: 0.05
+  expected_streamwise_components: 2
+  expected_spanwise_components: 1
+  report_single_input_component_subset: true
+
+visualization:
+  output_dir: outputs/Other_Task4A_FMTStreamlineClustering_1.1/channel_GTs
+  class_ids:
+    background: 0
+    streamwise: 1
+    spanwise: 2
+  surface_mode: interfaces
+  shrink: 0.92
+  opacity: 1.0
+  image_size: [1400, 900]
+  views: [isometric, "+x", "+y", "+z"]

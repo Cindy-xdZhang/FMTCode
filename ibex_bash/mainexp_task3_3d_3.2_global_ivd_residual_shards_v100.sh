@@ -47,5 +47,5 @@ export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
 export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
 nvidia-smi --query-gpu=name,uuid,memory.total --format=csv,noheader
 hostname
-python Verify_Task3_FMTResidual.py \
+python -m experiments.Verify_Task3_FMTResidual \
   --config "$config" --dataset "$dataset" --output-dir "$output_dir"

@@ -13,5 +13,5 @@ mkdir -p slurm_logs
 source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
 export PYTHONUNBUFFERED=1
-python Prepare_Task2_LatentConfirmation_SourceManifest_5_2.py \
+python -m experiments.Prepare_Task2_LatentConfirmation_SourceManifest_5_2 \
   --config config/mainExp_Task2_3D_5.2.yaml

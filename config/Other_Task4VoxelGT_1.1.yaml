@@ -1,0 +1,28 @@
+experiment: Other_Task4VoxelGT_1.1
+task: Task4_preparation
+
+input:
+  path_candidates:
+    - "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel_GTs.vtk"
+    - "/home/zhanx0o/DeepVortex/FLowDataFolder/channel_GTs.vtk"
+  label_array: VortexIds
+  association: cell
+
+sampling:
+  # null means derive per-axis fidelity from the VTK topology/cell sizes.
+  resolution_xyz: null
+  # The source-fidelity estimate for channel_GTs.vtk is large. The standalone
+  # default is a repeatable preview; pass --native-resolution for the uncapped grid.
+  preview_max_voxels: 2000000
+  max_axis_resolution: 1024
+  domain: vtk_file_bounds
+  method: voxel_center_discrete_labels
+
+visualization:
+  output_dir: outputs/Other_Task4VoxelGT_1.1/channel_GTs
+  surface_mode: outer
+  shrink: 0.92
+  opacity: 1.0
+  image_size: [1200, 900]
+  views: [isometric, "+x", "+y", "+z"]
+

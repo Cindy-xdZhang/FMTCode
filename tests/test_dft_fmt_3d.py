@@ -8,6 +8,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from FMT_Utils.DFT_FMT_3D import (
     dft_rotation_invariants_3d,
     pathline_dft_features_3d,
+    pathline_velocity_gradient_dft_features_3d,
+    time_local_gram_dft_features_3d,
 )
 
 
@@ -61,8 +63,55 @@ def test_reflection_flips_nonzero_chirality_slots():
     assert proper[:, width_without_chirality:].abs().max() > 1e-4
 
 
+def test_time_local_gram_is_invariant_to_time_varying_rigid_observer():
+    primitives = make_primitives(n=3)
+    transformed = torch.empty_like(primitives)
+    for time_index in range(primitives.shape[2]):
+        rotation = random_rotation(100 + time_index)
+        translation = torch.tensor(
+            [0.1 * time_index, -0.03 * time_index ** 2, 2.0],
+            dtype=primitives.dtype,
+        )
+        transformed[:, :, time_index] = (
+            primitives[:, :, time_index] @ rotation.T + translation
+        )
+    before = time_local_gram_dft_features_3d(
+        primitives, num_freq=6, return_numpy=False
+    )
+    after = time_local_gram_dft_features_3d(
+        transformed, num_freq=6, return_numpy=False
+    )
+    assert before.shape == (3, 231)
+    torch.testing.assert_close(before, after, rtol=1e-9, atol=1e-9)
+
+
+def test_velocity_gradient_block_constant_rigid_invariance_and_shape():
+    primitives = make_primitives(n=12)
+    offsets = torch.tensor([
+        [0.0, 0.0, 0.0], [0.2, 0.0, 0.0], [-0.2, 0.0, 0.0],
+        [0.0, 0.2, 0.0], [0.0, -0.2, 0.0], [0.0, 0.0, 0.2],
+        [0.0, 0.0, -0.2],
+    ], dtype=primitives.dtype)
+    primitives = primitives + offsets[None, :, None, :]
+    rotation = random_rotation(91)
+    translation = torch.tensor([3.0, -4.0, 2.0], dtype=primitives.dtype)
+    before = pathline_velocity_gradient_dft_features_3d(
+        primitives, num_freq=6, return_numpy=False
+    )
+    after = pathline_velocity_gradient_dft_features_3d(
+        primitives @ rotation.T + translation, num_freq=6,
+        return_numpy=False,
+    )
+    assert before.shape == (12, 44)
+    torch.testing.assert_close(before, after, rtol=1e-8, atol=1e-8)
+
+
+
+
 if __name__ == "__main__":
     test_rotation_invariance()
     test_translation_and_neighbour_permutation_invariance()
     test_reflection_flips_nonzero_chirality_slots()
+    test_time_local_gram_is_invariant_to_time_varying_rigid_observer()
+    test_velocity_gradient_block_constant_rigid_invariance_and_shape()
     print("ALL DFT_FMT_3D TESTS PASSED")

@@ -1,0 +1,60 @@
+experiment: Verify_Task4B_ProxyLabels_1.2
+task: Task4-b channel proxy-label construction with spatially buffered splits
+output_dir: outputs/Verify_Task4B_ProxyLabels_1.2/channel_GTs
+
+input:
+  gt_path_candidates:
+    - "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel_GTs.vtk"
+    - "/home/zhanx0o/DeepVortex/FLowDataFolder/channel_GTs.vtk"
+  flow_path_candidates:
+    - "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/channel_flow/channel.vtk"
+    - "/home/zhanx0o/DeepVortex/FLowDataFolder/channel.vtk"
+  label_array: VortexIds
+  association: cell
+
+voxelization:
+  resolution_xyz: null
+  preview_max_voxels: 2000000
+  max_axis_resolution: 1024
+
+splits:
+  unit: complete_VortexId_inside_buffered_x_interval
+  x_intervals:
+    train: [0.05, 0.50]
+    validation: [0.57, 0.73]
+    test: [0.80, 0.97]
+  excluded_buffers:
+    - [0.00, 0.05]
+    - [0.50, 0.57]
+    - [0.73, 0.80]
+    - [0.97, 1.00]
+  policy: exclude every VortexId whose complete voxel support is not inside one interval
+
+vorticity_deviation_search:
+  modes: [whole_domain, wall_normal_plane]
+  mode_definitions:
+    whole_domain: "standard IVD = norm(omega - whole-domain mean omega)"
+    wall_normal_plane: "channel-profile deviation = norm(omega - xy-plane mean omega at z); not standard IVD"
+  threshold_reference: target_voxel_grid
+  percentile_grid: [0.0, 99.5, 0.5]
+  minimum_train_micro_recall: 0.95
+  minimum_train_vortex_equal_recall: 0.95
+  interpolation_chunk_size: 262144
+  selection: minimum candidate fraction subject to both train recall constraints
+  manual_hairpin_override: true
+
+proxy_labels:
+  protocol: vortex_only_four_types
+  ignore_label: -1
+  class_ids:
+    ordinary_streamwise: 0
+    ordinary_spanwise: 1
+    hairpin_head: 2
+    hairpin_limb: 3
+  streamwise_max_angle_degrees: 45.0
+  minimum_vector_norm: 1.0e-9
+  head_rule:
+    - velocity_curl_angle_gt_45_degrees
+    - omega_y_prime_gt_0
+    - abs_omega_y_prime_dominates_abs_omega_x_and_abs_omega_z
+  limb_rule: all remaining positive-VortexId voxels, including neck and transition

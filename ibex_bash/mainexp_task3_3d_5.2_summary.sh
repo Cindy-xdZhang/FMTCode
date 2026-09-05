@@ -12,5 +12,5 @@ cd "${TASK23_REPO_ROOT:-/home/zhanx0o/FMT_Task12_3D_20260823}"
 mkdir -p slurm_logs
 source /home/zhanx0o/anaconda3/etc/profile.d/conda.sh
 conda activate deepvortex
-python Run_Task3_FMTResidual_Frozen_5_2.py \
+python -m experiments.Run_Task3_FMTResidual_Frozen_5_2 \
   --config config/mainExp_Task3_3D_5.2.yaml --mode summary

@@ -27,23 +27,23 @@ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 
 case "$ACTION" in
   a_task1)
-    python experiments/Run_Task123_NoiseRobustness_1_1.py --config "$CONFIG_A" \
+    python -m experiments.Run_Task123_NoiseRobustness_1_1 --config "$CONFIG_A" \
       --mode task1 --job-index "$INDEX"
     ;;
   a_task2)
-    python experiments/Run_Task123_NoiseRobustness_1_1.py --config "$CONFIG_A" \
+    python -m experiments.Run_Task123_NoiseRobustness_1_1 --config "$CONFIG_A" \
       --mode task2 --job-index "$INDEX"
     ;;
   a_task3)
-    python experiments/Run_Task123_NoiseRobustness_1_1.py --config "$CONFIG_A" \
+    python -m experiments.Run_Task123_NoiseRobustness_1_1 --config "$CONFIG_A" \
       --mode task3 --job-index "$INDEX"
     ;;
   b_task2)
-    python experiments/Run_Task123_NoiseRobustness_1_2.py --config "$CONFIG_B" \
+    python -m experiments.Run_Task123_NoiseRobustness_1_2 --config "$CONFIG_B" \
       --mode task2 --job-index "$INDEX"
     ;;
   b_task3)
-    python experiments/Run_Task123_NoiseRobustness_1_2.py --config "$CONFIG_B" \
+    python -m experiments.Run_Task123_NoiseRobustness_1_2 --config "$CONFIG_B" \
       --mode task3 --job-index "$INDEX"
     ;;
   *)
