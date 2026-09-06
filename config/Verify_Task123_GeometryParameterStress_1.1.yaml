@@ -1,0 +1,87 @@
+experiment: Verify_Task123_GeometryParameterStress_1.1
+purpose: deliberately_misconfigured_geometry_diagnostic_not_a_strongest_baseline
+output_root: outputs/Verify_Task123_GeometryParameterStress_1.1
+roots:
+  fixed: /home/zhanx0o/FMT_Uniform_3D_20260901
+tasks: [Task1, Task2, Task3]
+datasets: [channel, cylinder3d, halfcylinderRe640, halfcylinderRe6400,
+           tangaroa, deltaWing_resampled, deltaWing_LBM, f22raptor, boeing747, smokeBuoyancy]
+seeds:
+  Task1: [40, 41, 42]
+  Task2: [100, 101, 102]
+  Task3: [40, 41, 42]
+task1:
+  train: [0, 1, 2, 3, 4, 5, 6, 7]
+  validation: [8, 9]
+  confirmation: [0, 1, 2, 3]
+task2:
+  train: [0, 1, 2, 3, 4, 5]
+  validation: [6, 7]
+  confirmation: [8, 9]
+task3:
+  train: [0, 1, 2, 3, 4, 5]
+  validation: [6, 7]
+  confirmation: [8, 9]
+geometry_variants:
+  - {id: reference, parameters: {}}
+  - {id: lag_4, parameters: {lag: 4}}
+  - {id: lag_16, parameters: {lag: 16}}
+  - {id: lag_31, parameters: {lag: 31}}
+  - {id: smooth_9, parameters: {smooth_window: 9}}
+  - {id: smooth_31, parameters: {smooth_window: 31}}
+  - {id: pinv_099, parameters: {rcond: 0.99}}
+  - {id: pinv_101_zero_control, parameters: {rcond: 1.01}}
+  - {id: mean_weight_0, parameters: {mean_weight: 0.0}}
+  - {id: mean_weight_2, parameters: {mean_weight: 2.0}}
+  - {id: feature_scale_001, parameters: {feature_scale: 0.01}}
+  - {id: feature_scale_100, parameters: {feature_scale: 100.0}}
+decision_offsets_in_train_score_std: [-8.0, -2.0, -0.5, 0.5, 2.0, 8.0]
+kmeans: {n_init: 20, max_iter: 300, init: k-means++}
+task2_input_width: 189
+vae:
+  hidden_dims: [512, 256]
+  latent_dim: 64
+  beta: 0.000001
+  learning_rate: 0.0003
+  weight_decay: 0.00001
+  batch_size: 256
+  optimizer_steps: 7000
+  reference_selection: /home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_Task2_UniformFMT_6.1/global_selection.json
+auxiliary_input_width: 268
+model: {embedding_dim: 128, auxiliary_dim: 64, residual_input: geometry_fmt}
+fusion: {fixed_alpha: 1.0, selection_metric: average_precision}
+training:
+  batch_size: 512
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  max_epochs: 100
+  patience: 20
+  min_delta: 0.0001
+training_variants:
+  Task1:
+    - {id: reference, overrides: {}}
+    - {id: one_iteration, overrides: {max_iter: 1}}
+    - {id: one_initialization, overrides: {n_init: 1}}
+    - {id: random_initialization, overrides: {init: random}}
+  Task2:
+    - {id: reference, overrides: {}}
+    - {id: underfit_10_steps, overrides: {optimizer_steps: 10}}
+    - {id: kl_100, overrides: {beta: 100.0}}
+    - {id: learning_rate_1e7, overrides: {learning_rate: 0.0000001}}
+  Task3:
+    - {id: reference, overrides: {}}
+    - {id: underfit_1_epoch, overrides: {max_epochs: 1}}
+    - {id: weight_decay_100, overrides: {weight_decay: 100.0}}
+    - {id: learning_rate_1e7, overrides: {learning_rate: 0.0000001}}
+protocol:
+  scope: geometry_only_deliberate_parameter_degradation_no_FMT_reranking
+  labels: frozen_whole_field_IVD_p95
+  geometry_sweep: inference_only_parameter_swap_with_reference_clean_model_scaler_and_threshold_frozen
+  decision_sweep: reference_scores_unchanged_threshold_plus_offset_times_training_score_std
+  training_sweep: one_training_hyperparameter_changed_reference_geometry_unchanged_each_threshold_validation_only
+  task2: new_scalar_geometry_padded_to_189_same_frozen_VAE_settings_not_historical_Raw_FMT_main_comparison
+  reference: original_geometric_control_preserved_and_new_reference_refit_paired_with_bad_training_configs
+  selection: grid_fixed_before_this_run_report_all_settings_no_confirmation_based_worst_config_selection
+  invalid_rows: explicit_mask_seven_complete_lines_same_samples_all_settings_no_noise_added
+  outputs: predictions_full_metrics_confusion_counts_feature_distribution_runtime_and_training_losses
+  checkpoints: VAE_in_memory_residual_temporary_delete_only_own_after_metrics_written

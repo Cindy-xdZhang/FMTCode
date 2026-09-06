@@ -9,7 +9,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from FMT_Utils.GeometricControls_3D import (
-    validate_cache, perturb, geometric_sequences, pad_auxiliary, array_hash,
+    validate_cache, perturb, geometric_sequences, pad_auxiliary, array_hash, stressed_seed_ivd,
 )
 
 
@@ -86,6 +86,37 @@ class GeometricControlsTests(unittest.TestCase):
         x=np.arange(12).reshape(3,4); y=pad_auxiliary(x)
         np.testing.assert_array_equal(x,y[:,:4]); self.assertTrue(np.all(y[:,4:]==0))
         with self.assertRaises(ValueError): pad_auxiliary(np.zeros((3,269)))
+
+    def test_stress_default_matches_reference_and_preserves_input(self):
+        r = validate_cache(fixture())
+        rng = np.random.default_rng(81)
+        r['raw'][:, :, 1:] += rng.normal(0, .0001, size=r['raw'][:, :, 1:].shape).astype(np.float32)
+        before = array_hash(r['raw'])
+        expected = geometric_sequences(r['raw'], r['times'], r['scale_id'])[:, 0, :1]
+        np.testing.assert_array_equal(stressed_seed_ivd(r), expected)
+        np.testing.assert_array_equal(stressed_seed_ivd(r, rcond=1.01), np.zeros_like(expected))
+        np.testing.assert_allclose(stressed_seed_ivd(r, feature_scale=100), 100*expected, rtol=1e-6)
+        for lag in (4, 16, 31): self.assertTrue(np.isfinite(stressed_seed_ivd(r, lag=lag)).all())
+        for window in (9, 31): self.assertTrue(np.isfinite(stressed_seed_ivd(r, smooth_window=window)).all())
+        self.assertEqual(array_hash(r['raw']), before)
+
+    def test_stress_rejects_invalid_parameter_grid(self):
+        r = validate_cache(fixture())
+        for kwargs in ({'lag': 0}, {'lag': 32}, {'smooth_window': 2}, {'rcond': -1}, {'feature_scale': float('nan')}):
+            with self.assertRaises(ValueError): stressed_seed_ivd(r, **kwargs)
+
+    @unittest.skipUnless(importlib.util.find_spec('torch') is not None,'requires research PyTorch environment')
+    def test_stress_vae_in_memory_training_is_reproducible(self):
+        import torch
+        from experiments.Run_GeometryParameterStress import train_vae, encode
+        torch.set_num_threads(2)
+        x = np.random.default_rng(8).normal(size=(12, 4)).astype(np.float32)
+        spec = {'hidden_dims': [8], 'latent_dim': 2, 'learning_rate': .001,
+                'weight_decay': .00001, 'batch_size': 4, 'optimizer_steps': 2, 'beta': .000001}
+        a, loss = train_vae(x, spec, 40, torch.device('cpu'))
+        b, _ = train_vae(x, spec, 40, torch.device('cpu'))
+        self.assertEqual(loss['steps'], 2)
+        np.testing.assert_array_equal(encode(a, x, 'cpu'), encode(b, x, 'cpu'))
 
     @unittest.skipUnless(importlib.util.find_spec('torch') is not None,'requires research PyTorch environment')
     def test_frozen_training_and_prediction_interface(self):

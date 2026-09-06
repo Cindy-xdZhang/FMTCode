@@ -195,3 +195,36 @@ def pad_auxiliary(values, width=268):
     if value.ndim != 2 or value.shape[1] > width:
         raise ValueError(f'cannot losslessly pad {value.shape} to {width}')
     return np.pad(value, ((0, 0), (0, width-value.shape[1])))
+
+
+def stressed_seed_ivd(record, *, lag=1, smooth_window=1, rcond=1e-6,
+                      mean_weight=1.0, feature_scale=1.0):
+    """Explicitly misconfigured seed-time geometry for diagnostic sweeps.
+
+    Defaults reproduce the original seed-time scalar. Nondefaults are NOT
+    replacements for that baseline. Times and row validity remain unchanged.
+    Smoothing uses an edge-padded moving mean of pair-separation matrices.
+    A cutoff above one intentionally discards every singular direction.
+    """
+    lag, window = int(lag), int(smooth_window)
+    if not 1 <= lag < 32 or window not in range(1, 32, 2):
+        raise ValueError('lag must be 1..31 and smoothing an odd width 1..31')
+    if not np.isfinite([rcond, mean_weight, feature_scale]).all() or rcond < 0:
+        raise ValueError('invalid diagnostic geometry parameters')
+    x = np.asarray(record['raw'], dtype=np.float64)
+    times = record['times']
+    d = np.stack((x[:, 1]-x[:, 2], x[:, 3]-x[:, 4], x[:, 5]-x[:, 6]), axis=-1)
+    if window > 1:
+        half = window // 2
+        padded = np.pad(d, ((0, 0), (half, half), (0, 0), (0, 0)), mode='edge')
+        d = sum(padded[:, j:j+32] for j in range(window)) / window
+    derivative = (d[:, lag]-d[:, 0]) / (times[:, lag]-times[:, 0])[:, None, None]
+    gradient = derivative @ np.linalg.pinv(d[:, 0], rcond=float(rcond))
+    omega = np.stack((gradient[:, 2, 1]-gradient[:, 1, 2],
+                      gradient[:, 0, 2]-gradient[:, 2, 0],
+                      gradient[:, 1, 0]-gradient[:, 0, 1]), axis=-1)
+    result = float(feature_scale)*np.linalg.norm(
+        omega-float(mean_weight)*omega.mean(axis=0, keepdims=True), axis=1)
+    if not np.isfinite(result).all():
+        raise ValueError('diagnostic geometry is nonfinite; no row removal permitted')
+    return result.astype(np.float32)[:, None]
