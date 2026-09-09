@@ -924,3 +924,9 @@ Instantaneous Vorticity Deviation（IVD，瞬时涡量偏差）衡量局部涡�
 | 部署计划 | 独立Git分支 `codex/task678-flowmap-tokenization`；Ibex旧实验目录不是Git检出，本批使用独立Git目录；source/smoke/build/cache_audit/train/final_audit依赖链，提交ID和设备另记作业登记表 |
 
 本节只支持实现可执行、数值/信息边界检查通过。真实流场方法性能尚未产生，不能用短步数解析流验证的误差排序评价FMT。任何真实数据失败、重试或实现修正继续追加，不覆盖原运行记录。
+
+### 2026-09-09 15:31+03 — Git 推送与 Ibex 批量提交完成
+
+代码 commit `237f4841c0c8f848cf69ad88f3743ad3eaf879e7` 已推送至 `codex/task678-flowmap-tokenization`，Ibex `/home/zhanx0o/FMT_Task678_20260909` clone/pull 后核对到同一 HEAD。提交 source `51630116`、smoke `51630117`、九条数据构建数组 `51630118`、缓存审计 `51630119`、54条GPU数组 `51630120`、最终审计 `51630121`，全部按 afterok 依赖连接。任务版本、提交时刻、配置/commit及设备请求已登记 `docs/ibex_run_registry.md`。首次核对为source/smoke因Priority排队，其余等待依赖，尚无真实流场性能结论。
+
+15:33+03，Ibex实际source检查与完整smoke均已exit0：同一Git检出的10项单元测试、39条评估、78条窗口指标复算全部PASS；数据构建数组已开始运行。此为真实集群环境中的代码验证，仍不是九流场性能结果。源码执行commit保持`237f4841`，后续作业登记文档提交不改变该批运行源码。

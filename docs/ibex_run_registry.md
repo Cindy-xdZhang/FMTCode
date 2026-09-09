@@ -16,10 +16,16 @@
 
 | Ibex 实验 ID | 所属任务 | 实验版本 | 提交时间 | 实际开始时间 | 运行状态与主要结果 | 支持、反对的结论 | 实验设备 | Git commit / config | 日志与输出 |
 |---|---|---|---|---|---|---|---|---|---|
-| 51360437 | Task1/3/5 | Verify_Task135_GeometricControls_1.1 + Verify_Task135_PairedRobustness_1.1（independent audit） | 2026-09-05T14:56:42+03:00 | 未开始 | QUEUED，依赖 `afterok:51360430`；从保存的逐样本预测独立重算指标、clean 下降、Task5 分尺度结果，检查配对扰动和模型容量一致性 | 尚无方法结论；仅审计 PASS 后才能将汇总作为已核实结果 | Ibex CPU-only，8 CPU、48 GB、0 GPU，1h 上限 | `39471787aaeff70e16b7b81aab7fde1af0a2988b`；`config/Verify_Task135_GeometricControls_1.1.yaml` | `/ibex/user/zhanx0o/FMT_GeometricControls_20260905/outputs/Verify_Task135_GeometricControls_1.1/`；`logs/GEO135_audit.51360437.{out,err}`；`independent_audit.json` |
-| 51360430 | Task1/3/5 | Verify_Task135_GeometricControls_1.1 + Verify_Task135_PairedRobustness_1.1（summary） | 2026-09-05T14:56:08+03:00 | 未开始 | QUEUED，依赖 `afterok:51360408:51360409`；须 150 个子任务全部完成才汇总 | 尚无方法结论；不能以部分数据的领先代替全表结果 | Ibex CPU-only，8 CPU、48 GB、0 GPU，1h 上限 | `39471787aaeff70e16b7b81aab7fde1af0a2988b`；`config/Verify_Task135_GeometricControls_1.1.yaml` | `/ibex/user/zhanx0o/FMT_GeometricControls_20260905/outputs/Verify_Task135_GeometricControls_1.1/`；`logs/GEO135_sum.51360430.{out,err}`；`summary.json`、`robustness_table.csv`、`clean_comparison.csv` |
-| 51360408[0-49] | Task1 | Verify_Task135_GeometricControls_1.1 + Verify_Task135_PairedRobustness_1.1 | 2026-09-05T14:55:26+03:00 | 首批 2026-09-05T14:55:28+03:00 | RUNNING（14:58 核查：6/50 完成、8 运行，无失败）；50 children，最多并行 8；每个子任务冻结干净模型后评估 clean + 11 个扰动强度×3 次配对重复 | 尚无方法结论；完整报告几何阈值、一维 KMeans、普通 Fourier、无 Fourier 几何及 FMT 的绝对性能和下降 | Ibex 首批 `cn604-10,cn604-07,cn511-06,cn504-17,cn504-16,cn504-12,cn504-09`；每 child CPU-only，8 CPU、48 GB、0 GPU，6h 上限 | `39471787aaeff70e16b7b81aab7fde1af0a2988b`；`config/Verify_Task135_GeometricControls_1.1.yaml`；依赖 `51359759` PASS | `/ibex/user/zhanx0o/FMT_GeometricControls_20260905/outputs/Verify_Task135_GeometricControls_1.1/`；`logs/GEO135_cpu.51360408_<index>.{out,err}`；`shards/Task1/` |
-| 51360409[50-149] | Task3/5 | Verify_Task135_GeometricControls_1.1 + Verify_Task135_PairedRobustness_1.1 | 2026-09-05T14:55:26+03:00 | 首批 2026-09-05T14:57:24+03:00 | RUNNING（首批 8 children 已进入训练，未见错误）；100 children，最多并行 8；五种输入均无损补零至 268 维后进入同结构辅助分支；干净验证集定 epoch 与阈值，冻结后配对测试 | 尚无方法结论；检验简单几何+同结构网络能否解释 FMT 收益，以及 FMT 是否降低扰动损失 | Ibex 首批 `gpu502-22,dgpu501-22,dgpu501-18,dgpu501-14`；每 child 1×NVIDIA GTX 1080 Ti、8 CPU、48 GB，6h 上限 | `39471787aaeff70e16b7b81aab7fde1af0a2988b`；`config/Verify_Task135_GeometricControls_1.1.yaml`；依赖 `51359759` PASS | `/ibex/user/zhanx0o/FMT_GeometricControls_20260905/outputs/Verify_Task135_GeometricControls_1.1/`；`logs/GEO135_gpu.51360409_<index>.{out,err}`；`shards/Task3/`、`shards/Task5/` |
+| 51392361 | Task1/2/3 | Verify_Task123_GeometryParameterStress_1.1（independent audit） | 2026-09-06T14:25:32+03:00 | 未开始 | QUEUED，依赖 `afterok:51392342`；从保存预测独立复算分类/排序指标、四格混淆计数、相对正常配置下降、数据集等权汇总；检查阈值偏移不改变分数 | 审计PASS只支持数值与协议检查，不证明任何人为设差配置是最强基线 | Ibex CPU-only，8 CPU、48 GB、0 GPU、1h上限 | `aee4bd562d340158118f2e41f40129a9918e06a1`；`config/Verify_Task123_GeometryParameterStress_1.1.yaml` | `/ibex/user/zhanx0o/FMT_GeometryParameterStress_20260906/outputs/Verify_Task123_GeometryParameterStress_1.1/`；`logs/GPAR_audit.51392361.{out,err}`；`independent_audit.json` |
+| 51392342 | Task1/2/3 | Verify_Task123_GeometryParameterStress_1.1（summary） | 2026-09-06T14:24:56+03:00 | 未开始 | QUEUED，依赖 `afterok:51392311:51392312:51392313`；90子任务全部成功后汇总3510指标行 | 不根据部分结果选择退化设置；尚无性能结论 | Ibex CPU-only，8 CPU、48 GB、0 GPU、1h上限 | `aee4bd562d340158118f2e41f40129a9918e06a1`；`config/Verify_Task123_GeometryParameterStress_1.1.yaml` | `/ibex/user/zhanx0o/FMT_GeometryParameterStress_20260906/outputs/Verify_Task123_GeometryParameterStress_1.1/`；`logs/GPAR_sum.51392342.{out,err}`；`parameter_stress_table.csv`、`summary.json` |
+| 51392311[0-29] | Task1 | Verify_Task123_GeometryParameterStress_1.1 | 2026-09-06T14:24:15+03:00 | 首批2026-09-06T14:24:16+03:00 | COMPLETED 2026-09-06T14:25:14+03:00；30/30 children成功、1170指标行（39/child），尚待全量独立审计 | 暂无性能结论；故意退化诊断，保留正常参照及全部参数表现，不替换最强基线 | Ibex `cn511-13,cn504-12,cn504-07,cn605-24-l,cn605-20-r,cn605-13-r,cn605-12-r,cn605-12-l`；每child 8 CPU、48 GB、0 GPU | `aee4bd562d340158118f2e41f40129a9918e06a1`；`config/Verify_Task123_GeometryParameterStress_1.1.yaml`；依赖`51392255` PASS | `/ibex/user/zhanx0o/FMT_GeometryParameterStress_20260906/outputs/Verify_Task123_GeometryParameterStress_1.1/`；`logs/GPAR_T1.51392311_<index>.{out,err}`；`shards/Task1/` |
+| 51392312[30-59] | Task2 | Verify_Task123_GeometryParameterStress_1.1 | 2026-09-06T14:24:15+03:00 | 首个2026-09-06T14:26:27+03:00 | RUNNING（首个channel/seed100已完成5000余步正常VAE训练，未见错误；其余等待调度）；30 children，最多并行4；正常VAE7000步、beta1e-6、lr3e-4，对照10步/beta100/lr1e-7各单项改变，另测冻结模型推理几何/阈值错设 | 暂无性能结论；故意退化诊断，保留正常参照及全部参数表现，不替换最强基线 | Ibex 首个 `gpu202-23-r`，1×NVIDIA A100；每child 8 CPU、48 GB、1 GPU、6h上限；后续节点待分配 | `aee4bd562d340158118f2e41f40129a9918e06a1`；`config/Verify_Task123_GeometryParameterStress_1.1.yaml`；依赖`51392255` PASS | `/ibex/user/zhanx0o/FMT_GeometryParameterStress_20260906/outputs/Verify_Task123_GeometryParameterStress_1.1/`；`logs/GPAR_T2.51392312_<index>.{out,err}`；`shards/Task2/` |
+| 51392313[60-89] | Task3 | Verify_Task123_GeometryParameterStress_1.1 | 2026-09-06T14:24:15+03:00 | 未开始（14:28核查） | QUEUED（Priority）；30 children，最多并行4；正常几何残差网络与1epoch/weight decay100/lr1e-7各单项改变，另测冻结模型推理几何/阈值错设 | 暂无性能结论；故意退化诊断，保留正常参照及全部参数表现，不替换最强基线 | Ibex 每child 8 CPU、48 GB、1 GPU（型号待分配），6h上限 | `aee4bd562d340158118f2e41f40129a9918e06a1`；`config/Verify_Task123_GeometryParameterStress_1.1.yaml`；依赖`51392255` PASS | `/ibex/user/zhanx0o/FMT_GeometryParameterStress_20260906/outputs/Verify_Task123_GeometryParameterStress_1.1/`；`logs/GPAR_T3.51392313_<index>.{out,err}`；`shards/Task3/` |
+| 51392255 | Task1/2/3 | Verify_Task123_GeometryParameterStress_1.1（preflight） | 2026-09-06T14:21:41+03:00 | 2026-09-06T14:21:43+03:00 | COMPLETED 2026-09-06T14:22:59+03:00，exit 0；15项测试、30个task×dataset预检全部PASS；340份切片证书、17源文件哈希、正常几何逐位复放与12组参数检查通过；未计算确认集性能 | 尚无性能结论；故意退化诊断不替代原正常基线 | Ibex `cn511-13`；CPU-only，8 CPU、48 GB、0 GPU | `aee4bd562d340158118f2e41f40129a9918e06a1`；`config/Verify_Task123_GeometryParameterStress_1.1.yaml`；部署包SHA `b7e39dab445ee93964db14857b0dfec667cef5eb069eb177504db4ee901edbea`（17源文件） | `/ibex/user/zhanx0o/FMT_GeometryParameterStress_20260906/outputs/Verify_Task123_GeometryParameterStress_1.1/`；`logs/GPAR_pre.51392255.{out,err}`；`preflight.json` |
+| 51360437 | Task1/3/5 | Verify_Task135_GeometricControls_1.1 + Verify_Task135_PairedRobustness_1.1（independent audit） | 2026-09-05T14:56:42+03:00 | 2026-09-05T16:38:52+03:00 | COMPLETED 2026-09-05T16:45:29+03:00，exit 0；独立指标审计PASS；核验34000指标行、107100分尺度指标行及模型容量/阈值；表SHA fd1f1a9d…a6844a4e | 支持保存预测与汇总指标一致，不等于支持FMT有效；方法结论见experiment_log两行 | Ibex `cn604-14`；每 child 8 CPU、48 GB、0 GPU；逐子任务记录 `outputs/Verify_Task135_GeometricControls_1.1/scheduler_completed.psv` | `39471787aaeff70e16b7b81aab7fde1af0a2988b`；`config/Verify_Task135_GeometricControls_1.1.yaml` | `/ibex/user/zhanx0o/FMT_GeometricControls_20260905/outputs/Verify_Task135_GeometricControls_1.1/`；`logs/GEO135_audit.51360437.{out,err}`；`independent_audit.json` |
+| 51360430 | Task1/3/5 | Verify_Task135_GeometricControls_1.1 + Verify_Task135_PairedRobustness_1.1（summary） | 2026-09-05T14:56:08+03:00 | 2026-09-05T16:38:41+03:00 | COMPLETED 2026-09-05T16:38:51+03:00，exit 0；汇总34000指标行，含clean、全部配对扰动和相对clean下降；summary保留当时PENDING_AUDIT字样，后续51360437已PASS | 不支持FMT普遍优于简单几何或跨任务鲁棒；Task3低中噪声存在局部绝对性能优势，详见experiment_log | Ibex `cn604-14`；每 child 8 CPU、48 GB、0 GPU；逐子任务记录 `outputs/Verify_Task135_GeometricControls_1.1/scheduler_completed.psv` | `39471787aaeff70e16b7b81aab7fde1af0a2988b`；`config/Verify_Task135_GeometricControls_1.1.yaml` | `/ibex/user/zhanx0o/FMT_GeometricControls_20260905/outputs/Verify_Task135_GeometricControls_1.1/`；`logs/GEO135_sum.51360430.{out,err}`；`summary.json`、`robustness_table.csv`、`clean_comparison.csv` |
+| 51360408[0-49] | Task1 | Verify_Task135_GeometricControls_1.1 + Verify_Task135_PairedRobustness_1.1 | 2026-09-05T14:55:26+03:00 | 2026-09-05T14:55:28+03:00（首批） | COMPLETED 2026-09-05T15:11:57+03:00，exit 0；50/50子任务成功；Task1 clean F1：FMT .6015，几何KMeans .6337，几何直接阈值 .8593；扰动全表完整 | 不支持FMT普遍优于简单几何或跨任务鲁棒；Task3低中噪声存在局部绝对性能优势，详见experiment_log | Ibex `cn604-10,cn604-07,cn511-06,cn504-17,cn504-16,cn504-12,cn504-09,cn604-05,cn511-11,cn604-13,cn604-08,cn604-14`；每 child 8 CPU、48 GB、0 GPU；逐子任务记录 `outputs/Verify_Task135_GeometricControls_1.1/scheduler_completed.psv` | `39471787aaeff70e16b7b81aab7fde1af0a2988b`；`config/Verify_Task135_GeometricControls_1.1.yaml`；依赖 `51359759` PASS | `/ibex/user/zhanx0o/FMT_GeometricControls_20260905/outputs/Verify_Task135_GeometricControls_1.1/`；`logs/GEO135_cpu.51360408_<index>.{out,err}`；`shards/Task1/` |
+| 51360409[50-149] | Task3/5 | Verify_Task135_GeometricControls_1.1 + Verify_Task135_PairedRobustness_1.1 | 2026-09-05T14:55:26+03:00 | 2026-09-05T14:57:24+03:00（首批） | COMPLETED 2026-09-05T16:38:38+03:00，exit 0；100/100子任务成功；Task3/5 clean F1：FMT .8474/.6735，几何同结构网络 .8406/.7902；临时新模型已清理（audit核验） | 不支持FMT普遍优于简单几何或跨任务鲁棒；Task3低中噪声存在局部绝对性能优势，详见experiment_log | Ibex `gpu502-22,dgpu501-22,dgpu501-18,dgpu501-14,dgpu501-02,dgpu502-33,dgpu501-30`；每 child 8 CPU、48 GB、1×GTX 1080 Ti或Tesla P100（按节点分配）；逐子任务记录 `outputs/Verify_Task135_GeometricControls_1.1/scheduler_completed.psv` | `39471787aaeff70e16b7b81aab7fde1af0a2988b`；`config/Verify_Task135_GeometricControls_1.1.yaml`；依赖 `51359759` PASS | `/ibex/user/zhanx0o/FMT_GeometricControls_20260905/outputs/Verify_Task135_GeometricControls_1.1/`；`logs/GEO135_gpu.51360409_<index>.{out,err}`；`shards/Task3/`、`shards/Task5/` |
 | 51359759 | Task1/3/5 | Verify_Task135_GeometricControls_1.1 + Verify_Task135_PairedRobustness_1.1（preflight） | 2026-09-05T14:49:21+03:00 | 2026-09-05T14:49:22+03:00 | COMPLETED，exit 0；12 项单元/训练接口测试通过，30 个 task×dataset 的全量有效性、标签、物理时间及模型容量预检通过；未计算确认集性能 | 支持数据与接口满足预注册比较条件；不能支持 FMT 优于几何量或抗噪结论 | Ibex `cn604-07`；CPU-only，8 CPU、48 GB、0 GPU | `39471787aaeff70e16b7b81aab7fde1af0a2988b`；`config/Verify_Task135_GeometricControls_1.1.yaml`；部署包 SHA-256 `0ddeda5a8c2e102b47c9811ba411b31e0782d35e84b6e6d5852ce3b6af4e685d` | `/ibex/user/zhanx0o/FMT_GeometricControls_20260905/outputs/Verify_Task135_GeometricControls_1.1/`；`logs/GEO135_pre.51359759.{out,err}`；`preflight.json` |
 | 50788282 | Task1 | mainExp_Task1_3D_2.1 | 2026-08-23T15:18:00+03:00 | 2026-08-23T20:02:19+03:00 | COMPLETED 2026-08-23T20:14:05+03:00（11m46s）；FMT F1：channel `.2613`、Re160 `.5964`、Re640 `.5692`、Re6400 `.5330`、Tang `.7447`、delta-resampled `.7451`、delta-LBM `.7656`、F22 `.3136` | 支持：FMT+KMeans 在当前 8 个 3D 数据条目上均得到可量化聚类；7/8 优于 Raw。反对：F22 优于 Raw、所有场都达到高 F1 | Ibex `gpu109-16-r`；1×NVIDIA A100-SXM4-80GB、12 CPU、64 GB | HEAD `9748974` + bundle SHA-256 `5c18bde8…0e9432`; `config/mainExp_Task1_3D_2.1.yaml` | `/home/zhanx0o/FMT_Task12_3D_20260823/slurm_logs/FMTT1m21.50788282.{out,err}`；本地副本 `outputs/mainExp_Task1_3D_2.1_ibex_a100/` |
 | 50788283[0-5] | Task2 | mainExp_Task2_3D_2.1 | 2026-08-23T15:18:00+03:00 | 未开始 | CANCELLED；等待期间由开发验证结果冻结了 2.2 的 family-specific FMT block，未占用 GPU | 不产生方法结论；保留该 job 证明 2.1 没有被静默覆盖 | Ibex；原请求每个 child 1×A100、6 CPU、64 GB | HEAD `9748974` + dirty bundle SHA-256 `53761215…e069f6`; `config/mainExp_Task2_3D_2.1.yaml` | 无运行日志；取消前一直为 PENDING |
@@ -1603,3 +1609,526 @@ true-logit margin>0 才 PASS）。训练器与审计器为 1.1 的版本化拷�
 | 51335442 | Task4-b | Verify_Task4B_PooledMemorization_3.1（串行，超时） | 2026-09-04T18:19:28+03:00 | 2026-09-04T18:43:00+03:00 | **TIMEOUT** 2026-09-05T01:43:16（时限 6 小时 + 集群 60 分钟宽限，共 7:00:16）；18:44 曾用 `scontrol update` 将 Features 由 `a100\|v100` 放宽为 `a100\|v100\|p100`、内存 48G→32G，随后立即被调度到 P100。三臂串行、Raw 在前，Raw 臂在 P100 上约 13.7 秒/epoch：Raw seed 7068 第 824 epoch PASS（margin `.779`，184 分钟）、seed 7069 第 864 epoch PASS（margin `1.053`，193 分钟），seed 7070 在 190 epoch（598 错误）时被终止；FMT-only 与 Raw+FMT 未开始；无 summary、无审计。两个完成的 Raw seed 与分片作业 51339155 的同 seed 结果逐 epoch 一致 | 无正式结论（不完整、未审计）；只作为分片正式结果的旁证与调度失败记录保留 | Ibex Tesla P100-PCIE-16GB `dgpu502-37`（与 3 个分片共用节点）；1 GPU、8 CPU、32 GB | base `22430b2e`；`config/Verify_Task4B_PooledMemorization_3.1.yaml`（SHA `abf3ac01…0ce4`）；trainer/audit SHA `ceb16856…9e4f`/`f0f167b1…fb1b` | 远端 `outputs/Verify_Task4B_PooledMemorization_3.1/pooled/{logs/T4B_P31_Memo.51335442.{out,err},summary.json,independent_audit.json,runs/,histories/,predictions/,evidence_sha256.txt}` |
 | 51339155[0-8] | Task4-b | Verify_Task4B_PooledMemorization_3.1（分片，正式结果） | 2026-09-04T19:25:02+03:00 | 2026-09-04T19:25:18+03:00 | **COMPLETED** 9/9（最后一个分片 22:38:19 结束，全部 ExitCode 0:0，stderr 空）；9/9 run PASS，每 run 在 91,711 行上 accuracy/macro-F1 = 1.0、confusion 为对角阵 `diag(28000,28000,6927,28784)`；通过 epoch Raw `824/864/797`（每 seed 178–193 分钟，P100）、FMT-only `61/60/58`（<1 分钟）、Raw+FMT `54/55/52`（约 12 分钟）；最小 true-logit margin Raw `.779/1.053/.672`、FMT-only `2.925/3.472/3.597`、Raw+FMT `4.189/4.308/3.531`，均 >0；参数量 Raw 1,937,284、FMT-only 1,223,684、Raw+FMT 3,153,796。因串行作业 51335442 在 P100 上 Raw 臂约 13.7 秒/epoch、三臂串行且 Raw 在前，6 小时时限内很可能只跑完部分 Raw seed，故提交同一冻结 config 的按 (variant, seed) 分片数组作为备份：索引 0–2 Raw、3–5 FMT-only、6–8 Raw+FMT × seeds 7068–7070，共享输出目录 `pooled_sharded`；不改任何实验参数。fmt_only 三个分片约 60 epoch 达零错误、1 分钟内完成 | 与 51335442 回答同一问题；两条路径中先完整通过审计者作为正式结果，另一条如实登记 | Ibex P100 `dgpu502-37/dgpu502-33/dgpu501-30`；每分片 1 GPU、8 CPU、32 GB、4 小时 | 同上；`ibex_bash/verify_task4b_pooled_memorization_3p1_array_gpu.sh` | 远端 `outputs/Verify_Task4B_PooledMemorization_3.1/pooled_sharded/{logs/T4B_P31_MemoArr.51339155_<i>.{out,err},summary_<variant>_seed<seed>.json,runs/,predictions/,histories/}` |
 | 51339348 | Task4-b | Verify_Task4B_PooledMemorization_3.1 分片合并与审计 | 2026-09-04T19:26+03:00 | 2026-09-04T22:38:21+03:00 | **COMPLETED** 22:38:44（23 秒，CPU `cn511-19`，ExitCode 0:0）；合并 9 个分片 summary 后独立审计 `PASS`（cache 身份、(volume,index) 唯一性、normalization 重算、逐 run 预测/历史/零错误 streak、artifact SHA 均通过）；checkpoint 残留 0；summary/audit SHA `c46c6bf1…4e18`/`94b9e200…be57`；本地下载后 evidence 20/20 SHA 核对通过；`experiments/Merge_Task4B_PooledMemorization_3_1_Shards.py` 用训练器自身的 `_aggregate` 合并 9 个分片 summary 为 `summary.json`，随后运行 3.1 独立审计与 checkpoint 零残留检查 | 只做合并与审计，不产生新的性能数字 | Ibex CPU；8 CPU、48 GB、1 小时 | 同上；`ibex_bash/verify_task4b_pooled_memorization_3p1_merge_cpu.sh` | 同目录 `logs/T4B_P31_MemoMerge.51339348.{out,err}`、`summary.json`、`independent_audit.json`、`evidence_sha256.txt` |
+
+## 2026-09-06 Task4-b 按用户新标签定义重启：Verify_Task4B_VelocityCurlMemorization_4.1
+
+用户明确 channel+TBL 合并训练一个网络，涡区按 hairpin membership × velocity-curl 45°二分生成四类（ordinary_streamwise、ordinary_spanwise、hairpin_head、hairpin_leg）。不沿用旧百分位/手工强制纳入/附加 head 条件。全域体积加权 IVD，a 为全部正标注原始单元中心和目标体素中心 IVD 最小值下一个较小浮点数，涡区 IVD>0.9a。全流场网格最多200万体素；每 flow 普通两类各最多8192点、hairpin全部有效点；七线×33点，无量纲积分；单个 fmt_only 网络。完整协议 docs/Task4B_velocity_curl_protocol_4.1.md。只验证 fit=evaluation 记忆能力，无泛化结论，不保存 checkpoint。
+
+部署目录 `/ibex/user/zhanx0o/FMT_Task4B_VelocityCurl_4p1_20260906/repo`；base commit `b0fe6d274aacf5f79d333505c2d454ccdffc3dbc` + 本次未提交新增文件，以 `DEPLOYMENT_MANIFEST_4p1.sha256` 精确标识运行代码（19/19远端核对通过）。增量包 `tmp/task4b_4p1_incremental.tar.gz` SHA-256 `7dcfc931f70acef0ddf68d59e6aced66d6b50dc8c889e27b04de70e520313ba6`；本地/远端4项标签测试通过、远端模块导入和Bash语法检查通过。整项目源码包上传被自动审批拒绝；缩小至本次新增文件、验证原有远端依赖后增量上传获准。预检 PowerShell 管道末尾附带 CR 导致额外空命令报错（发生在全部检查已通过后），不影响上传文件，其哈希均一致。
+
+| Ibex 实验 ID | 所属任务 | 实验版本 | 提交时间 | 实际开始时间 | 运行状态与主要结果 | 支持、反对的结论 | 实验设备 | Git commit / config | 日志与输出 |
+|---|---|---|---|---|---|---|---|---|---|
+| 51391665 | Task4-b 数据构建 | Verify_Task4B_VelocityCurlMemorization_4.1 | 2026-09-06T13:51:13+03:00 | 2026-09-06T13:51:15+03:00 | COMPLETED 13:56:21（5:06，ExitCode 0）；47127有效primitive，四类15683/15575/10783/5086；输入/覆盖/标签/索引本地21项审计PASS | 数据路径核对通过；阈值导致几乎全场为涡区，见experiment_log | CPU cn605-27-r，8核、64GB | base b0fe6d27 + 19文件哈希清单；config/Verify_Task4B_VelocityCurlMemorization_4.1.yaml | outputs/Verify_Task4B_VelocityCurlMemorization_4.1/logs/build.51391665.{out,err}；build_summary.json |
+| 51391666 | Task4-b 共享网络过拟合与审计 | Verify_Task4B_VelocityCurlMemorization_4.1 | 2026-09-06T13:51:13+03:00 | 2026-09-06T13:58:19+03:00 | COMPLETED 13:59:19（1:00，ExitCode 0）；fmt_only seed7068在epoch104–106连续零错误，第106通过；合并/channel/TBL accuracy与macro-F1均1.0；训练33.76秒；Ibex23项审计PASS、本地预测13项PASS | 仅支持47127有效primitive有限样本记忆；无泛化结论，无checkpoint | Tesla P100-PCIE-16GB，dgpu502-33，8核、32GB，GPU UUID c8dc811e-1045-b504-3369-c70a4a981d88 | 同上；cache 1563a763…3a671；fit/audit 1094e1c5…da460 / 1185e644…cc601 | 同目录logs/fit.51391666.{out,err}、four_class_report.json、histories/、predictions/、independent_audit.json |
+
+4.1 启动核查（2026-09-06 13:52 +03:00）：51391665 实际于 13:51:15 在 CPU 节点 cn605-27-r 开始（8 CPU、64GB），日志已进入 channel 原始数据加载；51391666 等待 afterok 依赖。尚无训练结果。
+
+4.1 补充预检：新增端到端 CPU 测试2项通过（100倍长度/速度及平移后七线 primitive/FMT 一致、共享训练循环两epoch预测/标签逐行对应且无模型文件），本地4项标签测试与该2项合计6项。未修改运行中的生产代码。仓库布局检查通过；本地协议文件按协议文档命名规则调整为 docs/Task4B_velocity_curl_protocol_4.1.md，远端已冻结部署包仍保留原文档文件名 docs/Verify_Task4B_VelocityCurlMemorization_4.1.md，正文科学配置不变，19文件清单与包哈希不变。
+
+## 2026-09-06 Task4-b 4.1 三维可视化
+
+用户要求三维图片、不要坐标平面投影。直接用保存的数值预测和真实体素中心渲染，全部47127个有效样本，不重训、不改标签、不做样本下采样、不平滑；透视相机、实体体素、深度遮挡，完整四类视图普通两类透明度.16、hairpin两类不透明；另输出全部hairpin及按体素数最多实例的局部视图。可交互HTML为同一数据的三维网格，支持旋转及图例筛选；VTP保留类别与VortexIds。此为4.1结果可视化，不是新模型实验。
+
+| Ibex 实验 ID | 所属任务 | 实验版本 | 提交时间 | 实际开始时间 | 运行状态与主要结果 | 支持、反对的结论 | 实验设备 | Git commit / config | 日志与输出 |
+|---|---|---|---|---|---|---|---|---|---|
+| 51391986 | Task4-b 三维渲染 | Verify_Task4B_VelocityCurlMemorization_4.1 visualization | 2026-09-06T14:10:48+03:00 | 2026-09-06T14:10:52+03:00 | COMPLETED 14:11:02（10秒，CPU cn604-13，ExitCode0）；两flow各3张透视PNG、1份交互HTML、1份VTP | 仅展示训练样本预测的三维分布，无新性能结论 | 预期CPU4核、16GB、15分钟，VTK EGL离屏渲染 | 输入4.1 base b0fe6d27及原预测SHA；新增experiments/Visualize_Task4B_VelocityCurl_3D.py SHA a4bbfc09…45192，提交脚本SHA a5942bfd…b175d | outputs/Verify_Task4B_VelocityCurlMemorization_4.1/figures_3d/；logs/render3d.51391986.{out,err} |
+| 51392008 | Task4-b 三维渲染显示修订 | Verify_Task4B_VelocityCurlMemorization_4.1 visualization r2 | 2026-09-06T14:12:43+03:00 | 2026-09-06T14:12:45+03:00 | COMPLETED 14:12:55（10秒，CPU cn604-14，ExitCode0）；保留r1图片及源码副本；r2仅关闭拥挤数字刻度、在页脚写xyz范围、普通类透明度改.36 | 不改样本、标签、相机或几何 | 预期CPU4核、16GB、15分钟 | 新渲染源码SHA30cf0e60…b12e6；同一提交脚本 | 同目录figures_3d_r2/，logs/render3d.51392008.{out,err} |
+
+## 2026-09-06 Task1/2/3 首批论文三联图
+
+`Other_Task123_PaperTriptychs_1.1`：用户指定 Half-cylinder Re160 与 Tangaroa；
+固定首个已注册seed和首个确认ordinal，复放Task1-4.1、Task2-6.2、Task3-9.2。
+代码在既有冻结目录 `/home/zhanx0o/FMT_Uniform_3D_20260901` 运行，新增入口只存于
+`visualization_1p1/`；原训练实现/主表不改。基准本地commit `b0fe6d274aacf5f79d333505c2d454ccdffc3dbc`
+加新增文件，以SHA-256精确标识：exporter `320ca4c1c1bfc28ecccc3eadc103d637af8512b47c48da687fb8984c078d5f76`；
+config `7fd16008010eb2840906ca8d31674815d2fffa7535392708396c7c9c0daa10be`；
+Slurm入口 `9578343921955e245108145241fabfef846b37063e000da06156dd18f5fcc298`。
+3个文件本地/远端哈希一致；本地语法和远端Bash语法检查通过。
+
+| Job ID | 版本/任务 | 提交时间 | 开始/设备 | 状态与输出 | 配置/证据边界 |
+|---|---|---|---|---|---|
+| 51391980[0-5%3] | Other_Task123_PaperTriptychs_1.1；索引0/1 Task1、2/3 Task2、4/5 Task3，各按Re160/Tangaroa顺序 | 2026-09-06约14:10 +03:00（精确时间待sacct补） | 待查；每child 1 GPU、4 CPU、24 GB、30分钟 | SUBMITTED；`outputs/Other_Task123_PaperTriptychs_1.1/logs/51391980_<i>.{out,err}` | `config/Other_Task123_PaperTriptychs_1.1.json`；Task1 seed7080 ordinal0、Task2 seed100 ordinal8、Task3 seed40 ordinal8；不替换主表，不下载模型；临时Task3 checkpoint导出后删除 |
+
+Task4-b三维渲染交付核查：r2六张PNG均已逐图检查；六视图均为透视相机，透明overview使用深度剥离，完全不透明的hairpin/detail使用常规深度缓冲。overview数量26842/20285等于全部有效样本，无下采样。局部为最大样本实例channel40（480体素）/TBL52（247体素）。HTML为自包含Plotly mesh3d，保留所有样本并支持旋转及四类开关；PNG/HTML/VTP与QA清单保存在figures_3d_r2/。VTK无X显示警告后自动采用EGL成功完成渲染，非错误。
+
+51391980 状态更新（2026-09-06 14:16 +03:00）：精确提交时间14:10:43。
+0/1在14:13:26于gpu502-22开始，分别34秒/49秒完成；2在14:13:26于dgpu501-22开始，98秒完成；
+3–5仍排队，前三个stderr为空。实际GPU型号待runtime JSON核查。
+Re160 Task1首片Raw/FMT F1=.529126/.619590；Tangaroa首片=.556886/.708010，
+这些只是预先指定单时间片的绘图指标，不替代主表。
+本地原始NetCDF重算4个参考场，逐点标签错配均为0，阈值在冻结审计容差内一致。
+下载NPZ/JSON被自动审批拒绝（未明确授权该派生数据传入本地），已向用户请求仅本次预测文件的授权；
+未尝试替代渠道转移被拒绝数据，训练/状态核查继续。
+
+51391980 状态更新（2026-09-06 14:18:39 +03:00）：0/1/2/3/5已完成，stderr均空；
+3于14:15:58在gpu510-12开始，84秒完成；5于14:15:58在gpu203-16-l开始，117秒完成，
+其临时checkpoint已清理。4于14:15:58在gpu510-07开始，仍运行，当前只有其Raw-PCA临时checkpoint，
+属尚未完成依赖链。尚未下载任何本次预测文件，也未生成正式科学图片；等待用户授权。
+本地渲染器静态预检0 FAIL，实际PDF与图像检查待数据下载后执行。
+
+## 2026-09-06 Task4-b 0.98a ground truth 可视化（不训练）
+
+用户要求将涡区条件改为严格 IVD>0.98a，先不跑实验，直接看ground truth。`Other_Task4B_ProxyGTThreshold_4.2` 仅标识此次标签与图片版本：复用4.1冻结完整网格的IVD、VortexIds、velocity-curl余弦与每flow原始a，不读取网络预测、不积分流线、不训练、不计算模型性能。独立两种标签构造核对一致；完整GT包括此前无法生成有效primitive的体素。输出新的标签NPZ与三维图片，不覆盖4.1结果。
+
+| Ibex 实验 ID | 所属任务 | 实验版本 | 提交时间 | 实际开始时间 | 运行状态与主要结果 | 支持、反对的结论 | 实验设备 | Git commit / config | 日志与输出 |
+|---|---|---|---|---|---|---|---|---|---|
+| 51392331 | Task4-b GT阈值更新与出图，仅后处理 | Other_Task4B_ProxyGTThreshold_4.2 | 2026-09-06T14:24:44+03:00 | 待查 | SUBMITTED；严格0.98a，完整标签网格三维最近邻分类体渲染、两flow各整体/全部hairpin图；无训练 | 无模型性能结论；阈值占比另记experiment_log | 预期CPU4核、16GB、15分钟 | 4.1输入base b0fe6d27；config/Other_Task4B_ProxyGTThreshold_4.2.json SHA803a016f…40b28；脚本SHA8d04105e…f2ee5；复用渲染器SHA30cf0e60…b12e6 | outputs/Other_Task4B_ProxyGTThreshold_4.2/；logs/render.51392331.{out,err} |
+
+### 2026-09-06 用户授权仅下载图片：改为Ibex远端渲染
+
+预测数组51391980已6/6完成；4于14:15:58开始、183秒完成，全部stderr为空；
+本次temporary_training下已无.pt。用户本轮明确授权下载图片，因此预测NPZ/JSON留在Ibex，
+不再尝试下载；原始NetCDF亦已在远端，使用既有副本重建参考面。
+
+| Job ID | 版本/任务 | 提交时间 | 开始/设备 | 状态与输出 | 配置/代码身份 |
+|---|---|---|---|---|---|
+| 51392355 | Other_Task123_PaperTriptychs_1.1 远端渲染；6图×论文/PPT | 2026-09-06约14:25 +03:00 | 待查；CPU4核、16GB、30分钟 | SUBMITTED；`logs/render_51392355.{out,err}`，输出`paper/`、`slides/` | render SHA `e4893fda7b94070d2a53ad346cfc80ee0767470c2974590a82f3ecfa2ff70fee`；Slurm SHA `500715dc835c7d70abd550cd9c826292a00caa169b9c30bfbac3261367148d47`；base b0fe6d27 + 新文件；数据配置沿用1.1；不重训 |
+
+51392355 FAILED：14:25:08开始于cn604-15，4秒结束。渲染器自由放置的三栏未向检查器显式声明可比较组，
+面板检查返回NOT AUDITABLE，在图像导出前停止；数据/模型无变化。修正为显式row_groups=[a,b,c]，
+保留1.5pt容差，没有绕过检查。
+
+| Job ID | 版本/任务 | 提交时间 | 开始/设备 | 状态与输出 | 配置/代码身份 |
+|---|---|---|---|---|---|
+| 51392376 | Other_Task123_PaperTriptychs_1.1 远端渲染修复 | 2026-09-06约14:26 +03:00 | 待查；CPU4核、16GB、30分钟 | SUBMITTED；`logs/render_51392376.{out,err}` | 渲染器SHA `ca8470777e4dec8c06fd8729b3a1bb96dcf47daba10ab7a3db5d6739f2995b46`；其余与51392355相同 |
+
+### 2026-09-06 Task4-b 0.98a 三维图显示修订 r2
+
+51392331 已完成：2026-09-06T14:24:45+03:00 在 cn604-15 开始，10秒完成。两flow完整ground truth网格及4张三维图已下载；本地独立逐体素核对、SHA256和原始GT覆盖检查全部通过。未训练、未读取预测。首版图和渲染源码已保留。
+
+| Job ID | 版本/任务 | 提交时间 | 开始/设备 | 状态与输出 | 配置/代码身份 |
+|---|---|---|---|---|---|
+| 51392397 | Other_Task4B_ProxyGTThreshold_4.2 显示修订r2，仅重绘 | 2026-09-06约14:28+03:00 | 待查；CPU4核、16GB | SUBMITTED；关闭VTK坐标箭头自动放大的字母，冻结标签SHA核对后仅重绘两张总览，输出figures_r2；无训练 | config保持4.2；渲染脚本SHA4ceabd463434d83d546f02a47d95015ffb72dd17e824d2a6244c5db1390af2c9；base b0fe6d27+新文件 |
+
+51392376已产生两套12张图并授权下载图像格式；首轮本地PDF检查发现默认3D刻度相互覆盖和越界，
+因此该版不交付。预测与参考面数据无变化；将默认刻度改为共同坐标方向标与共享数值范围，
+缩小画幅留白，重新渲染。
+
+| Job ID | 版本/任务 | 提交时间 | 开始/设备 | 状态与输出 | 配置/代码身份 |
+|---|---|---|---|---|---|
+| 51392430 | Other_Task123_PaperTriptychs_1.1 最终排版修复 | 2026-09-06约14:29 +03:00 | 待查；CPU4核、16GB、30分钟 | SUBMITTED；`logs/render_51392430.{out,err}` | render SHA `0800496983707cfec6160bca9a9969f89e624500c2f42c850bb2d406d4b20665`；数据配置和Slurm入口不变 |
+
+51392397 完成更新：实际提交2026-09-06T14:27:58+03:00，14:27:59于cn604-15开始，14:28:02完成（3秒）。无训练、无标签变化；两张r2总览及render_summary.json已下载。51392331与51392397均仅有无DISPLAY时VTK自动选择离屏渲染的提示，无渲染失败。
+
+## 2026-09-06 Task4-b 严格 IVD>a 的 ground truth（不训练）
+
+| Ibex 实验 ID | 所属任务 | 实验版本 | 提交时间 | 实际开始时间 | 运行状态与主要结果 | 支持、反对的结论 | 实验设备 | Git commit / config | 日志与输出 |
+|---|---|---|---|---|---|---|---|---|---|
+| 51392510 | Task4-b GT阈值更新与三维出图，仅后处理 | Other_Task4B_ProxyGTThreshold_4.3 | 2026-09-06 本轮提交，精确时间待sacct补录 | 待查 | SUBMITTED；a使用原始GT单元中心与正标注体素中心联合IVD的实际最小值，不再nextafter；严格IVD>a；不训练、不读取预测 | 无模型性能结论 | 预期CPU4核、16GB、15分钟 | 输入4.1 base b0fe6d27；config/Other_Task4B_ProxyGTThreshold_4.3.json SHA2de747d0…df674；脚本SHA691f11c9…22c86；Slurm SHA6988d1c7…53c5a | outputs/Other_Task4B_ProxyGTThreshold_4.3/；logs/render.51392510.{out,err} |
+
+51392510 完成更新：2026-09-06T14:32:38+03:00提交，14:32:40于cn604-15开始，14:32:45完成（CPU作业5秒，COMPLETED）。四张三维图、两份完整ground truth NPZ及日志/summary已下载；本地独立逐体素、最小值与SHA核对通过。未训练、未读取预测；无checkpoint。日志仅有VTK无DISPLAY时离屏渲染提示，PNG正常生成。统计及边界覆盖记录于experiment_log 4.3行。
+
+
+### 2026-09-06 Task1/2/3 最终图片交付完成
+
+51392376于14:25:59在cn604-15开始并完成首轮渲染，但本地检查发现刻度重叠，该排版不交付。
+51392430 COMPLETED：14:28:47（+03:00）在cn604-14开始，运行1分10秒；CPU4核、16GB。
+最终渲染SHA0800496983707cfec6160bca9a9969f89e624500c2f42c850bb2d406d4b20665；
+数据配置/预测未改变，paper/slides共42个图片文件下载完成。12份PDF字体检查通过；
+碰撞检查每份0 FAIL、1个方向标z跨白色背景边界WARN，经逐图查看接受，详情见成图说明。
+
+另在同一Ibex checkout通过SSH运行独立审计（无Slurm job ID，2026-09-06本轮）：
+`visualization_1p1/Audit_Task123_PaperTriptychs_1_1.py`；base b0fe6d27+新增审计脚本，CPU。
+初次将指标摘要打印回本地被自动审批拒绝；随后审批允许的远端执行将全部标准输出/错误
+重定向至`outputs/Other_Task123_PaperTriptychs_1.1/logs/data_audit_remote_only.log`，退出码0。
+报告`independent_figure_data_audit.json`留在Ibex，不下载、不读取到本地；
+预测哈希/逐点指标/参考标签/面板尺寸/42图存在/临时checkpoint清理断言通过。
+未导入本次预测数组、指标JSON/CSV或模型，仅传输用户授权的图片。
+
+## 2026-09-06 六流场模式a/b出图
+
+| Job ID | 实验 | 提交 | 开始/状态 | 设备 | 代码与配置 | 输出 |
+|---|---|---|---|---|---|---|
+| 51392726[0-11%4] | Other_Task123_PaperTriptychs_1.2，Task1/2/3四个新增流场预测 | 2026-09-06T14:42:28+03:00 | SUBMITTED，待补 | 每child 1 GPU、4 CPU、24GB、30min | base b0fe6d27；Export_Task123_PaperTriptychs_1_2.py；config/Other_Task123_PaperTriptychs_1.2.json；与1.1导出器仅实验号变化 | outputs/Other_Task123_PaperTriptychs_1.2/logs/export_51392726_*.{out,err} |
+
+复用上一版本Re160、Tangaroa预测，仅远端复制；新建Re640、Re6400、Boeing747、DeltaWing LBM预测。
+最初脚本上传被自动审批拒绝；随后核对远端同一目的地已有脚本SHA与本地一致，确认只更改用户指定流场、版式和实验号，重新审批通过并上传。未传输凭证或模型。
+
+| Job ID | 实验 | 提交 | 开始/状态 | 设备 | 代码与配置 | 输出 |
+|---|---|---|---|---|---|---|
+| 51392852[0,12,15] | Other_Task123_PaperTriptychs_1.2 模式a首轮渲染 | 2026-09-06T14:46:36+03:00 | SUBMITTED | 每child 4CPU、16GB、30min | Visualize_Task123_PaperTriptychs_1_2.py；other_task123_paper_triptychs_1p2_render.sh；base b0fe6d27+新增脚本 | paper/slides 的Re160、Boeing747、DeltaWing Task1；logs/render_51392852_* |
+
+本地由已存在原始NetCDF和缓存构建12份显示资产：每流场Task1一份、Task2/3共用一份。原始p95参考面通过逐点标签核查；Task1显示轨线使用IVD分层最大间距选点、RK4与原始时变速度线性插值，最多96步，飞机两流场192步，越域即终止。Boeing/Delta-wing几何变换直接复用旧函数；其他四流场旧规范无已核实独立几何，不臆造实体。显示资产约8MB上传到已核验同一用户Ibex绘图目录，未上传模型。最终只下载图片。
+
+| Job ID | 实验 | 提交 | 开始/状态 | 设备 | 代码与配置 | 输出 |
+|---|---|---|---|---|---|---|
+| 51392906[1-11,13-14,16-17%4] | Other_Task123_PaperTriptychs_1.2 其余15组三联图 | 2026-09-06T14:48:53+03:00 | SUBMITTED，afterok:51392726 | 每child 4CPU、16GB、30min | 同51392852 | logs/render_51392906_*；paper/slides |
+
+先行三份论文PDF碰撞审计0 FAIL、各1个z方向标跨白色背景边界WARN，属于旧版已解释的有意放置。
+
+| Job ID | 实验 | 提交 | 开始/状态 | 设备 | 代码与配置 | 输出 |
+|---|---|---|---|---|---|---|
+| 51392946[0,12,15] | Other_Task123_PaperTriptychs_1.2 模式a显示修订r2 | 2026-09-06T14:50:19+03:00 | SUBMITTED，afterok:51392852 | 每child 4CPU、16GB、30min | 同一渲染器仅降低轨线透明度并让已核实实体轮廓可见；显式说明图层，不改变预测/几何坐标 | logs/render_51392946_* |
+
+51392906开始前已同步r2源码，全部最终图采用同一渲染器；原先行r1不作最终交付。
+
+51392726全部12个child完成、stderr为空。实际开始/耗时/设备：
+
+| child | Task/flow | 开始(+03:00) | 耗时 | 节点 | GPU |
+|---|---|---|---|---|---|
+| 0 | Task1 Re640 | 14:44:54 | 30s | gpu502-22 | GTX1080Ti |
+| 1 | Task1 Re6400 | 14:44:54 | 24s | gpu502-22 | GTX1080Ti |
+| 2 | Task1 Boeing | 14:44:54 | 26s | gpu502-11 | GTX1080Ti |
+| 3 | Task1 DeltaWing | 14:44:54 | 21s | dgpu501-26 | P100-PCIE-16GB |
+| 4 | Task2 Re640 | 14:47:28 | 82s | gpu502-11 | GTX1080Ti |
+| 5 | Task2 Re6400 | 14:47:28 | 95s | dgpu501-26 | P100-PCIE-16GB |
+| 6 | Task2 Boeing | 14:47:28 | 83s | gpu510-12 | RTX2080Ti |
+| 7 | Task2 DeltaWing | 14:47:28 | 75s | gpu510-07 | RTX2080Ti |
+| 8 | Task3 Re640 | 14:50:04 | 166s | gpu502-11 | GTX1080Ti |
+| 9 | Task3 Re6400 | 14:50:04 | 191s | dgpu501-26 | P100-PCIE-16GB |
+| 10 | Task3 Boeing | 14:50:04 | 88s | gpu510-12 | RTX2080Ti |
+| 11 | Task3 DeltaWing | 14:50:04 | 125s | gpu510-07 | RTX2080Ti |
+
+51392852三child均完成，14:46:37开始，cn113-35-l，Re160 33s/Boeing231s/DeltaWing136s。
+51392946三child均完成，14:50:32开始，Re160 cn113-35-l 35s/Boeing cn604-17 106s/DeltaWing cn604-17 67s。
+最终render SHA77d9cf978ec5990cb3b1c21bf16b85f807a6539baa11f10b8758dad532f271e1；
+显示资产构建器SHA79174c755490d76cb08e4648068fbecbb45be65b851f4330bec1c0c9b8504d77。
+本地12份显示资产的有限坐标、路径时间单调性与域内范围核查通过。
+
+
+51392906全部15child完成、stderr为空，开始14:53:18–14:54:39（+03:00），最后14:55:02完成；
+CPU节点cn604-03/05/11；每child 4CPU16GB；耗时11–43秒。child1/2/3/4在14:53:18开始，
+5在14:53:33，6/7在14:53:36，8在14:53:46，9在14:53:49，10/11在14:54:15，
+13在14:54:20，14在14:54:25，16/17在14:54:39。最终18组两版式126文件全部下载。
+本轮另在同一Ibex checkout通过SSH执行Audit_Task123_PaperTriptychs_1_2.py（无Slurm ID，CPU），
+全部输出重定向至outputs/Other_Task123_PaperTriptychs_1.2/logs/data_audit_remote_only.log，退出码0。
+报告independent_figure_data_audit.json留远端；36个预测臂指标重算、参考标签/场景身份/面板尺寸/文件存在/临时checkpoint清理通过。
+本地36份最终PDF碰撞0 FAIL，字号7pt/13pt；z方向标跨白色背景的WARN逐图审阅接受。
+已查看全部36图的各栏；最终图片ZIP只含126个图片文件和3张浏览总览，不含预测、模型或数据表。
+
+## 2026-09-06 Task4-b 用户指定固定 IVD 阈值（不训练）
+
+| Ibex 实验 ID | 所属任务 | 实验版本 | 提交时间 | 实际开始时间 | 运行状态与主要结果 | 支持、反对的结论 | 实验设备 | Git commit / config | 日志与输出 |
+|---|---|---|---|---|---|---|---|---|---|
+| 51395061 | Task4-b GT阈值更新与三维出图，仅后处理 | Other_Task4B_ProxyGTThreshold_4.4 | 2026-09-06约16:03+03:00，精确时间待sacct | 待查 | SUBMITTED；Channel IVD>5.785、TBL IVD>0.08，来自用户咨询CFD专家后指定；不训练、不读取预测 | 无模型性能结论；不以全覆盖约束降低阈值 | 预期CPU4核、16GB、15分钟 | 输入4.1 base b0fe6d27；config/Other_Task4B_ProxyGTThreshold_4.4.json SHAf07fa374…d3790；script SHAda3f000b…4305a；Slurm SHA50366df8…0d7fe | outputs/Other_Task4B_ProxyGTThreshold_4.4/；logs/render.51395061.{out,err} |
+
+51395061 完成更新：2026-09-06T16:03:57+03:00提交，16:03:59于cn603-08-r开始，16:04:49完成（CPU作业50秒，COMPLETED）。实际使用CPU4核、16GB配额，无GPU。四张三维图片、两份ground truth NPZ、summary与日志已下载。独立本地逐体素核对PASS，三维总览目视通过；日志仅有VTK无DISPLAY时离屏渲染提示。未训练、未读取预测、无checkpoint；结果见experiment_log 4.4行。
+
+## 2026-09-06 Task4-b 2000个局部区域训练/测试，5.1
+
+当前用户已授权训练。每flow900/100区域，hairpin实例Channel66/7、TBL52/6；跨split盒间隔1体素，流线及原生速度插值域限制在patch内部。标签沿用4.4固定IVD界限。共享fmt_only网络固定200epoch，最终test一次，不保留模型。详见docs/Task4B_patch_segmentation_protocol_5.1.md。
+
+提交前Windows CRLF校验清单导致sha256sum把CR读入文件名，未创建作业；清单改LF后23项源码校验全部通过，数据/配置/代码无变化。
+
+| Ibex 实验 ID | 所属任务 | 实验版本 | 提交时间 | 实际开始时间 | 运行状态与主要结果 | 支持、反对的结论 | 实验设备 | Git commit / config | 日志与输出 |
+|---|---|---|---|---|---|---|---|---|---|
+| 51395970 | Task4-b patch特征构建 | mainExp_Task4B_PatchSegmentation_5.1 | 2026-09-06约16:25+03:00，精确时间待查 | 待查 | SUBMITTED；本地3项单元测试PASS、2000区域空间和实例隔离核对PASS | 不涉及模型性能 | 预期CPU8核、64GB、4小时 | 本地base aee4bd562d340158118f2e41f40129a9918e06a1；远端沿用4.1 checkout b0fe6d27，23源码哈希验证；config/mainExp_Task4B_PatchSegmentation_5.1.json；部署manifest SHA c3105bb6c83572ff85d9ebb8040be8553e427b7b0fcb38470d170e8dcbadc2bd；patch清单SHA3e96f032…fdf67 | outputs/mainExp_Task4B_PatchSegmentation_5.1/；logs/build.51395970.{out,err} |
+
+### Task4-b 5.1 GPU依赖作业
+
+| Job ID | 版本/任务 | 提交时间 | 开始/设备 | 状态与输出 | 配置/代码身份 |
+|---|---|---|---|---|---|
+| 51395974 | mainExp_Task4B_PatchSegmentation_5.1 共享FMT训练、测试、审计、三维图 | 2026-09-06约16:25+03:00，精确时间待查 | 待查；GPU1张A100/V100/P100、CPU8核、32GB、4小时 | SUBMITTED；afterok:51395970；固定200epoch最终test一次，无checkpoint；logs/train.51395974.{out,err} | config/mainExp_Task4B_PatchSegmentation_5.1.json；部署manifest c3105bb6…dc2bd；源码/输入身份同51395970 |
+
+### Task4-b 5.1 VTK局部流场导出依赖作业
+
+| Job ID | 版本/任务 | 提交时间 | 开始/设备 | 状态与输出 | 配置/代码身份 |
+|---|---|---|---|---|---|
+| 51396032 | mainExp_Task4B_PatchSegmentation_5.1 2000个局部VTK流场及测试预测导出 | 2026-09-06约16:29+03:00，精确时间待查 | 待查；CPU4核、64GB、1小时 | SUBMITTED；afterok:51395974；速度、curl、冻结IVD、实例和proxy标签，测试另有预测；两flow各1个tar.gz，无模型文件 | Export_Task4B_PatchVolumes_5_1.py SHA3be5c526…f21ee；export Slurm SHAe61e9ade…9d720；训练源码/配置保持冻结 |
+
+51395970已完成：准确提交16:24:08+03:00，16:24:10于cn604-18开始，16:25:40完成（90秒）；得到230839×161有效特征。51395974准确提交16:24:29，等待GPU资源。三个数据/流程单元测试在Ibex通过。
+
+### Task4-b 5.1 三维显示修订r2
+
+| Job ID | 版本/任务 | 提交时间 | 开始/设备 | 状态与输出 | 配置/代码身份 |
+|---|---|---|---|---|---|
+| 51396143 | mainExp_Task4B_PatchSegmentation_5.1 显示修订r2 | 2026-09-06约16:33+03:00，精确时间待查 | 待查；CPU4核、16GB、10分钟 | SUBMITTED；相同预先选定测试patch，普通涡opacity=.04以显示内部hairpin；只重绘，不训练/不重评估 | Render_Task4B_PatchSegmentation_5_1.py SHAe7af7514…096d4；Slurm SHAb7b5a473…4ac41；预测SHA122adebd…aef82保持不变 |
+
+51395974完成：16:26:31于dgpu502-33开始，16:29:06结束（155秒）；Tesla P100-PCIE-16GB，PyTorch2.6.0+cu118，训练及最终推理计108.78秒。固定200epoch后test一次，远端审计PASS，无checkpoint。51396032准确提交16:27:47，16:29:09于cn604-17开始，16:29:36结束（27秒）；共导出2000个VTK，两flow各900train/100test，train/test各抽样文件读回核对通过。逐patch重构IVD与冻结IVD最大差异均0。两份VTK压缩包和预测/日志已下载，本地逐2000文件SHA验证、完整test成员与独立指标重算通过；所有模型性能结果见experiment_log 5.1。
+
+51396143完成：准确提交2026-09-06T16:33:16+03:00，16:33:17于cn604-18开始，16:33:23完成（6秒）。8张显示修订三维图已下载；原r1图保留，未重训或重评估。日志仅无DISPLAY离屏渲染提示；已目视核对GT与预测相同相机、半透明普通涡与内部hairpin显示。所有5.1作业已结束。
+
+### Other_Task4B_GeometrySearch_5.2 — training-only network/geometry search
+
+| Job ID | Task | Submitted (+03:00) | Status/device | Identity/output |
+|---|---|---|---|---|
+| 51397778 | Task4-b 5.2 train-only unit/time geometry build | 2026-09-06 about 17:19; exact Slurm time pending | SUBMITTED; CPU8,64GB,4h | config/Other_Task4B_GeometrySearch_5.2.json; local base aee4bd562d340158118f2e41f40129a9918e06a1 + new-file manifest SHA000c42b6c4525369f0a790367b55d8b5abf0598f9a39481ccd81f83eefa8e248; 26/26 dependencies verified; outputs/Other_Task4B_GeometrySearch_5.2/logs/build.51397778.{out,err} |
+
+Deployment uses the existing directory `/ibex/user/zhanx0o/FMT_Task4B_VelocityCurl_4p1_20260906/repo`. Initial automatic upload review rejected destination ownership as unconfirmed. Read-only id/stat confirmed zhanx0o ownership and the remote 5.1 manifest matched local SHA3e96f032…fdf67; reviewing the same 11-file,112640-byte payload then passed. No source data, credentials, repository history or checkpoints uploaded. Frozen 5.1 sources/results remain unchanged. Protocol: docs/Task4B_geometry_search_protocol_5.2.md. Local analytic shear and velocity-scale tests passed (2/2).
+| 51397786_0, 51397786_1, 51397786_2, 51397786_3, 51397786_4, 51397786_5, 51397786_6, 51397786_7 | Task4-b 5.2 eight candidate memorization + internal validation searches | 2026-09-06 about 17:20; exact Slurm time pending | SUBMITTED; afterok51397778; array0-7%2; each GPU1 A100/V100/P100,CPU8,32GB,4h | Same frozen config/base/26-file deployment manifest as51397778; logs/search.51397786_<index>.{out,err}; each candidate fresh fit, original test unused |
+| 51397799 | Task4-b 5.2 selection + full original train refit + one final test + audit | 2026-09-06 about 17:20; exact Slurm time pending | SUBMITTED; afterok51397786; GPU1 A100/V100/P100,CPU8,32GB,4h | Same frozen config/base/26-file manifest; logs/final.51397799.{out,err}; no checkpoint; reused5.1 test explicitly reported as benchmark, not fresh confirmation |
+| 51397878 | Task4-b 5.2 export 200 test VTK volumes and fixed examples in 3D | 2026-09-06 about17:22; exact Slurm time pending | SUBMITTED; afterok51397799; CPU4,16GB,30min | DEPLOYMENT_EXPORT_5p2.sha256 SHA1826d04fe91d9b1b84e876032963fd4e769a9cebc7b1008674b88e1e8f2797bc; Export_Task4B_GeometrySearch_5_2.py; logs/export.51397878.{out,err}; prediction-only replacement in frozen5.1 test VTK |
+
+51397778 exact submission17:17:38+03:00, start17:17:41 on cn604-17. 51397786 exact array submission17:17:57; 51397799 submission17:18:13. Initial approximate submission times above are superseded by these Slurm records. Build node passed both analytic tests, then regenerated channel and TBL train geometry; no test rows enter this cache.
+51397778 COMPLETED17:20:26 (165s), cn604-17; train cache SHA7dc85012…b0c4; 204359 rows, no original test rows. 51397786_0 and _1 started17:20:33 on dgpu501-26, Tesla P100-PCIE-16GB each. During their successful initial training, the array throttle was increased from2 to4 through scontrol to reduce wall-clock waiting; exactly the same eight candidates/epochs/config/seeds remain frozen. No scientific setting changed.
+Correction to the preceding throttle statement: scontrol on root51397786 returned exit1, `51397786_0: Job has already finished`; that attempt did not confirm any concurrency change. The first candidate finished during this operation. Remaining array state is being checked before any retry.
+Read-only squeue subsequently confirmed pending tasks as51397786_[2-7%4]: the remaining array throttle is4 despite the already-finished child0 message. This resolves the ambiguous scontrol result; no resubmission or extra candidate was introduced.
+Pending candidates51397786_[2-7] had TimeLimit reduced from04:00:00 to00:30:00 through scontrol after the baseline candidate completed (112.66s measured training). This changes only scheduler reservation, not the300 training epochs or500-epoch diagnostic cap. scontrol returned success. Baseline logical child51397786_0 reports underlying SLURM_JOB_ID51397892; both identifiers refer to the same array child.
+51397786_0 completed17:23:03 (150s), _1 completed17:25:13 (280s), both dgpu501-26. Candidates_2/_3 began17:25:29 on dgpu501-26 and _4 began17:25:29 on gpu202-09-l. Final dependency job51397799 reservation also reduced to30min; same frozen scientific configuration. Five local analytic tests now pass, including additional independently written length/velocity scaling, solid-body curl and uniform-flow checks in tests/test_task4b_geometric_curl_invariants_5_2.py; frozen runtime sources were not modified.
+
+### Task4-b 5.2 final accounting — all completed
+
+Times below are2026-09-06 +03:00; all array children were submitted17:17:57. Scientific config and source identities are unchanged from deployment. Complete candidate/output hashes are in each summary and selection.json.
+
+| Logical array child | SLURM_JOB_ID | Start → end | Node / actual GPU | State |
+|---|---|---|---|---|
+| 51397786_0 (baseline_fmt_mlp) | 51397892 | 17:20:33 → 17:23:03 | dgpu501-26 / Tesla P100-PCIE-16GB | COMPLETED |
+| 51397786_1 (wide_fmt_mlp) | 51397893 | 17:20:33 → 17:25:13 | dgpu501-26 / Tesla P100-PCIE-16GB | COMPLETED |
+| 51397786_2 (residual_fmt_lr1e3) | 51397935 | 17:25:29 → 17:29:24 | dgpu501-26 / Tesla P100-PCIE-16GB | COMPLETED |
+| 51397786_3 (residual_fmt_lr3e4) | 51397936 | 17:25:29 → 17:29:14 | dgpu501-26 / Tesla P100-PCIE-16GB | COMPLETED |
+| 51397786_4 (unit_geometry_curl) | 51397937 | 17:25:29 → 17:28:00 | gpu202-09-l / NVIDIA A100-SXM4-80GB | COMPLETED |
+| 51397786_5 (time_geometry_curl_lr1e3) | 51398473 | 17:28:00 → 17:31:02 | gpu208-14 / Tesla V100-SXM2-32GB | COMPLETED |
+| 51397786_6 (time_geometry_curl_lr3e4) | 51398555 | 17:30:34 → 17:34:28 | dgpu501-26 / Tesla P100-PCIE-16GB | COMPLETED |
+| 51397786_7 (factorized_time_geometry) | 51397786 | 17:30:34 → 17:35:15 | dgpu501-26 / Tesla P100-PCIE-16GB | COMPLETED |
+
+Build51397778: submitted17:17:38, ran17:17:41–17:20:26 on cn604-17, CPU8/64GB. Final51397799: submitted17:18:13, ran17:35:46–17:38:04 on dgpu501-26, Tesla P100-PCIE-16GB, CPU8/32GB; frozen candidate selection, all-original-training refit, one final test and audit all completed. Export51397878: exact submission17:20:12 (supersedes earlier approximation), ran17:38:07–17:38:24 on cn113-35-l, CPU4/16GB; exported200 VTK files with complete array roundtrip checks and8 perspective PNGs. Only expected missing-DISPLAY VTK warning; depth peeling confirmed. All search/final error logs are empty.
+
+Curated outputs downloaded and independently audited locally, including every validation score and final confusion matrix, unchanged5.1 test support, paired3D cameras,200 VTK hashes and absence of checkpoints. Source runtime script SHAca68bc8b360383725c8af1860cd6e49123abc38c7cf8fc8dc2a3159a80c6ace4; geometry SHA7e1516d35edef93c76b44d3a0e8fb9c1a5dd06941dbccc8aeeb91fba46d8b42f; final predictions SHAdc67e75eb920f87015a3a3774f1f8b0756de2afa2028bf2779e98a80d5a06b52. Performance findings and their limitations are recorded only in experiment_log5.2.
+
+## 2026-09-06 Other_FMTObjectivityTranslation_1.2 — Cylinder Re160 mean-flow observer
+
+Job51401240 submitted2026-09-06 (exact scheduler time pending query), CPU4/24GB, no GPU, 15min limit. User requested global mean translating observer on Cylinder Re160 3D. Config config/Other_FMTObjectivityTranslation_1.2.json; base local git aee4bd562d340158118f2e41f40129a9918e06a1 plus uncommitted source hashes tmp/objectivity_1p2_sources.json (remote objectivity_1p2/source_hashes.json). Main source SHA f2bbc66e7fd863905bb07903f88179dc5b85a26c5d46bcf7252ed1a211a1de60. Frozen Task1-4.1 recipe and seed7080, confirmation ordinal0, full-source spatial volume mean at each time, alpha0/0.25/0.5/1; common valid material primitives; no refit per observer. Remote /home/zhanx0o/FMT_Uniform_3D_20260901/objectivity_1p2/run.sh. Output outputs/Other_FMTObjectivityTranslation_1.2/cylinder3d. No checkpoint creation/download. Status submitted; numerical tests9 passed locally. Start/node/results to follow.
+Job51401240 exact scheduler submission2026-09-06T18:55:02+03:00, start18:55:03, node cn113-35-l, CPU4/24GB, no GPU. Running.
+Job51401240 FAILED18:56:20 after77s, maxRSS1287384K. Scientific integration/classification completed and saved; paper export saved, then ModuleNotFoundError audit_pdf_text. Remote PyMuPDF also absent. Keep failed log and outputs; render-only recovery uses saved arrays, bundles font audit, defers collision audit explicitly to local final PDFs. Rendering revision2 enlarges common camera zoom and reduces non-vortex opacity, without changing trajectories or predictions.
+Render recovery Job51401324 submitted2026-09-06 (exact scheduler times pending), CPU4/12GB/10min, no GPU. Uses 51401240 saved arrays/labels unchanged; renderer SHA f90063cbcb5a3ae1044150da222f0669344a76cd08b56f69d36c0d90adf4242f; wrapper SHA b1b3740ae998360859bf9cb6943c898eef2aa071725f206d3af75d831960f303. Same config and local base commit. Output cylinder3d/final; local final PDF collision audit required before delivery.
+Job51401324 exact submit18:58:52+03:00, start18:58:55, node cn113-35-l, CPU4/12GB, no GPU.
+Job51401324 COMPLETED18:59:24+03:00, elapsed29s, maxRSS647160K; no stderr. Final7 image files downloaded; original computed arrays retained only remotely. Both final panel audits PASS; local final PDF font/collision checks completed, 7/13pt minimum, 0FAIL and4WARN each reviewed as white axes-background edge overlaps. Scientific findings are in experiment_log1.2. Final render hashes tmp/objectivity_1p2_render_hashes.json; local image hashes and audit reports in cylinder3d/final. All requested exports complete.
+
+## 2026-09-06 Other_FMTObjectivityTranslation_1.3 — cylinder late-time policy
+
+Array51407401_[0-2] submitted2026-09-06 (exact time pending query): Re160/Re640/Re6400, Task1, CPU4/24GB each, no GPU,15min, concurrency3. User directed cylinder starts t>=7 and original simulation latter50%. Original simulation[0,15] gives cutoff7.5; Re640 source is already[7.5,15], no second truncation. Metadata-only earliest frozen confirmation slice selection: ordinal2/t10.5, ordinal0/t9.5, ordinal2/t10.5. Config config/Other_FMTObjectivityTranslation_1.3.json; persistent policy config/cylinder_time_policy.json. Local base commit aee4bd562d340158118f2e41f40129a9918e06a1 plus new source hashes tmp/objectivity_1p3_sources.json. Main source SHA325e7c5658fe50658469504676802dce6dece2d3270119300e77d59cfb2a1a20. Remote objectivity_1p3/run.sh; output outputs/Other_FMTObjectivityTranslation_1.3/<dataset>. Frozen classifiers/train/calibration unchanged; new figure version, prior results retained. Two policy tests pass in addition to nine observer/mean tests. Collision audit explicitly deferred to local final PDFs because remote PyMuPDF is unavailable. No checkpoints saved/downloaded. Status submitted.
+Array51407401 submitted23:31:16+03:00, all children began23:31:17. _0 Re160 COMPLETED23:32:04 cn604-14; _1 Re640 COMPLETED23:32:04 cn604-13; _2 Re6400 FAILED23:31:32 cn604-13 due to missing remote source-file path, no arrays/results saved. Original Re6400 source exists locally (22,265,874,102 bytes); preparing exact original-index105..118, xyz-stride7/3/1 lossless field window for remote integration, plus observer means from each full original640x240x80 grid. No scientific parameter/time/recipe changes.
+Recovery51407452 submitted2026-09-06 (exact time pending): same Re6400 ordinal2/t10.5, CPU4/24GB/15min/no GPU. Source window87,636,856 bytes copied losslessly at original indices105..118 and existing xyz strides7/3/1; other frames explicitly missing. Observer means calculated before striding on original640x240x80 grids, no missing nodes. Original-frame hashes and window hash in source_window/observer.json (SHA152e3bed27ece52ea55198c5687b21dbcbc9f1cba8468c6001f5e88e7a2ee68b). Main script audit-only revision SHA9fad9e65ee9a126e8ca19a5e3139e3cab0978e764441bf1d5f598eba3800f090 adds explicit observer-schedule provenance and window SHA validation; scientific transform/classifier unchanged. Extraction script SHAc44b7310066ef4fe81f155a7d0b0b12c3cbaefecc687874185e850721d1f6090. Same base commit/config; recovery wrapper SHA5440bfd5004c38162f2606099a877a53432506c03393d0e8822108981bca0c20.
+Recovery51407452 exact submit23:35:51+03:00, start23:35:52, node cn604-11, CPU4/24GB, no GPU.
+Recovery51407452 COMPLETED23:36:46+03:00, elapsed54s, cn604-11, maxRSS1582568K. Source SHA validation passed and all outputs exported. Initial _0/_1 maxRSS1287444K/1321524K; failed _2 maxRSS799644K retained in registry. All21 requested image files downloaded; six panel audits PASS, local PDF audit0FAIL/4WARN each, 7/13pt fonts, all figures visually reviewed and white-background-edge warnings accepted. Final findings and exact boundary of claims recorded in experiment_log1.3. No checkpoint created or downloaded.
+
+## 2026-09-07 Other_FMTObjectivityTranslation_1.4 — 2x duration and 2x count
+
+Array51408807_[0-1] submitted2026-09-07 (scheduler times pending): Re160/Re640 Task1 visualization, CPU4/24GB each, no GPU,20min. User requested 2x pathline length and count; display steps48->96, duration~1.2->2.4; exact counts7220/7154. Initial times10.5/9.5 unchanged. Classification still consumes original48-step/32-point window; one frozen Task1-4.1 seed7080 classifier per flow. Original complete seeds first, then label-independent scrambled Sobol seed7080 additions; reject incomplete long primitives before classification. Config config/Other_FMTObjectivityTranslation_1.4.json. Base local git aee4bd562d340158118f2e41f40129a9918e06a1 plus source manifest tmp/objectivity_1p4_sources.json; main SHA fec7b07553c074d9f03cfd08f0e4d36edd7bc5d470208f32be752fdb281282fe; density helper SHA b33e8de794741437ab39a1071f8113300a747e40ae5bb91b3bf935da7033eb39. Remote objectivity_1p4/run.sh, outputs/Other_FMTObjectivityTranslation_1.4/<dataset>. No checkpoint save/download. Two new density-selection tests passed; static preflight noFAIL. Re6400 awaiting extended source window.
+
+Initial source upload was auto-review rejected for unverified remote ownership. Read-only id/stat verified uid178058 zhanx0o owns destination project and prior1.3 runtime, with prior1.3 user images present. Same upload retried with this evidence and approved; no change of destination or transport and no bypass.
+Array51408807 submit2026-09-07T00:06:03+03:00, both began00:06:05: _0 cn604-18, _1 cn604-15, CPU4/24GB each/no GPU. Array51408817_2 submitted for Re6400 at00:07 (exact scheduler time pending), same1.4 source/config/base commit, CPU4/24GB/20min/no GPU; output halfcylinderRe6400. Source window181,143,413 bytes, indices105..130; full-grid means and exact SHA in source_window/observer.json. No scientific recipe changes.
+Array51408817_2 exact submit2026-09-07T00:06:49+03:00, start00:06:50, node cn604-12, CPU4/24GB/no GPU. Source upload completed successfully and source-window SHA validation passed before integration. Supersedes earlier approximate00:07 submission. Config descriptive claim/source_data strings corrected to state no old-IVD F1 on the new display cohort; no runtime parameters changed.
+Scientific jobs completed:51408807_0 00:08:56+03:00 cn604-18 elapsed171s/maxRSS2102288K; _1 00:08:36 cn604-15 elapsed151s/maxRSS2338752K;51408817_2 00:09:47 cn604-12 elapsed177s/maxRSS2802864K. All target counts/durations reached and four-observer correspondence errors below1e-5. Render-only job51408915 submitted2026-09-07 (exact scheduler time pending), CPU4/16GB/15min/no GPU, same source/config/base commit plus rendering revision disabling square-axes artist clipping. Renderer SHAa38bcb1e4a44c352b99092fac7fd5f9cd4738bf67e7f00a4a4d3cfffab567d44; wrapper SHAcd64e10aa2450d00f47c9b3f36c0fc5f3850a7bf1cfb353af7e459b5186729c9. Original scientific arrays and initial exports preserved; final exports written under each dataset/final. No reclassification.
+Render51408915 exact submit2026-09-07T00:10:58+03:00, start00:11:01, cn604-18, CPU4/16GB/no GPU. First final Re160 files downloaded and locally audited:7/13pt minimum,0FAIL and4 white-background-edge WARN each. Rendering proceeds through all three saved datasets.
+Render51408915 COMPLETED2026-09-07T00:14:00+03:00, elapsed179s, cn604-18, maxRSS3451040K, stderr empty. All six final panel reports PASS and all final metadata artist_clipping=false. Downloaded21 image files only; local PDF checks7/13pt minimum,0FAIL,4 white-background-edge WARN each, reviewed24 panels and six whole figures. Same trajectory arrays/counts preserved in re-render. Final ZIP and21 image hashes verified against disk. No remaining jobs or blockers.
+
+## 2026-09-07 Other_FMTObjectivityTranslation_1.5 — seven observer velocities
+
+Array51411521_[0-2] submitted2026-09-07 (exact scheduler times pending): Re160/Re640/Re6400, Task1, CPU4/24GB/20min each, no GPU. Seven equally spaced velocity fractions i/6 for i=0..6; exact 1.4 material cohort, source windows, mean-velocity schedules, 96 display steps and 48 classification steps retained. All seven frames independently integrated and classified by the same frozen Task1-4.1 classifier; shared 0/50/100% levels must reproduce 1.4 labels exactly and coordinates within1e-10. Config config/Other_FMTObjectivityTranslation_1.5.json SHA4661975fff886b6ae08db15f1d93befa891d948f7a19850bef1cc8b8da7787d5; local base commit aee4bd562d340158118f2e41f40129a9918e06a1 plus tmp/objectivity_1p5_sources.json. Main SHAe6998d911c446042c42dea7a969880bffcb8c2454bdf74563cc48de4dc1eb69f; helper SHA781d61833c76be22a0bf2cb1df1fe2eec9710ce21a4ca9d2662a840a2aff689e. Remote objectivity_1p5/run.sh; output outputs/Other_FMTObjectivityTranslation_1.5/<dataset>/final. Analytic seven-level check passed, correspondence error1.10e-11. Original four-level code/results preserved; no checkpoints. Final PDF collision audit deferred locally.
+Initial upload auto-review rejected for unverified destination. Current-session read-only id/stat/ls verified uid178058 zhanx0o owns destination, previous1.4 code and final image. Identical upload retried with this evidence and approved; same destination and transport, no bypass.
+Array51411521 exact submit2026-09-07T00:50:31+03:00, all started00:50:32; _0 cn604-18, _1/_2 cn604-17, CPU4/24GB each/no GPU. Static source preflight19PASS/2WARN/0FAIL; font sizes audited at final export, seed/mean warning refers to particle seeding and spatial velocity means rather than statistical replicate aggregation.
+All51411521 jobs COMPLETED: _0 end2026-09-07T00:54:09+03:00 elapsed217s cn604-18/maxRSS3705224K; _1 end00:54:40 elapsed248s cn604-17/maxRSS4170620K; _2 end00:55:15 elapsed283s cn604-17/maxRSS4444600K. Same CPU4/24GB each/no GPU. Seven-level integrations complete with exact retained counts; all three shared-level regressions passed with identical labels and coordinate max difference0. Final scientific findings in experiment_log1.5. Six panel audits PASS, final PDFs7/13pt minimum,0FAIL/7 white-background-edge WARN each accepted after all42 panels/six whole-figure visual reviews.21 image-only downloads and ZIP hashes verified. No checkpoint, no outstanding jobs or blockers.
+
+## 2026-09-07 Verify_FMTObservedPathline_2.1 — first-principles observer audit
+
+Array51447581_[0-2] submitted2026-09-07 (scheduler times pending), Task1 Re160/Re640/Re6400, CPU4/24GB/20min each/no GPU. User requested rederive observer worldline/transformation/observed field/pathline against optimal-connection ReferenceFrame3d.cpp and remove bounding boxes. New explicit camera-worldline solver DOP853, rtol1e-12/atol1e-13, inverse-location sampling, then RK4 observed-field paths. Exact1.4 material cohorts and frozen Task1-4.1 classifier retained; no model changes. New diagnostics: exact-coordinate-transform feature classification, center-block-only and other-block-only feature substitutions, double-precision neighbour descriptors, and wrong-relative-field negative control. Config config/Verify_FMTObservedPathline_2.1.json SHA686b10e86f3157c2a29029398e6884b27a154083365363b1148f3af04fe28e1d; main source SHAb24b982f90ea9cfce5a8ac7c8506c5ebae5a00b5778480045338fb85de4d2505; helper SHA232a0107c6042f080cf8aa1028983127368b7f8624fcd717dfc2e77c221f899f. Base local commit aee4bd562d340158118f2e41f40129a9918e06a1 plus tmp/observed_2p1_sources.json. Remote observed_2p1/run.sh; outputs/Verify_FMTObservedPathline_2.1/<dataset>.11 local numerical tests pass (4 new +7 existing); initial unittest package invocation failed import, corrected to direct test-file execution; no test failures. Final PDF collision audit deferred locally. Current-session id/stat verified remote ownership before approved source upload. No checkpoints.
+Array51447581 exact submit2026-09-07T12:04:26+03:00, all start12:04:27; _0 cn604-15, _1/_2 cn604-12. CPU4/24GB each/no GPU. Static preflight20PASS/1WARN/0FAIL; final font validation pending actual PDFs.
+All51447581 jobs COMPLETED2026-09-07: _0 end12:08:14+03:00 elapsed227s cn604-15/maxRSS5530780K; _1 end12:08:36 elapsed249s cn604-12/maxRSS5032600K; _2 end12:08:32 elapsed245s cn604-12/maxRSS5798220K. CPU4/24GB each/no GPU. Results and specific inference boundaries in experiment_log2.1. All21 images downloaded, all six seven-panel dimension reports PASS, local PDFs7/13pt minimum and0FAIL/7 white invisible-axes-edge WARN each accepted after visual review of42 panels and six whole figures. Final ZIP/21 hashes verified; no scientific arrays or checkpoints downloaded.
+Postprocessing2026-09-07: python observed_2p1/clean_metadata.py on login host (standard-library JSON only, no numerical compute) removed stale four-level feature array, corrected seven-level changed_label_fraction, removed old display metadata from scientific audit, and set actual rendering source hash. All original JSON preserved as .pre_metadata_cleanup.json; no arrays, predictions, or images changed. Script SHA1eaddebb8c4cda777d3ab19f479c4baff0730c54ab7e93592b499639f04d4e79. Local source metadata-only revision SHA2e26976b832feffd97129d5ee30d679091a1806b30d603ded4234318bb377061 makes future exports consistent; submitted runtime original SHAb24b982f90ea9cfce5a8ac7c8506c5ebae5a00b5778480045338fb85de4d2505 and manifest remain preserved remotely/locally. No science rerun or classifier modification.
+
+## Verify_FMTAllV2_1.1 — 2026-09-07
+
+- Job **51450110**, preflight, submitted **2026-09-07T12:40:10+03:00**; expected CPU4/24GB,15min,noGPU. Config `config/Verify_FMTAllV2_1.1.json`; base commit `aee4bd562d340158118f2e41f40129a9918e06a1`; source archive SHA256 `59409f2004f840b7c8c313579f755c95f1b7a9aca41f91dffd25874cef34c186`, source manifest SHA256 `fd2c42efea224cfe8620d4075e74a5c376223d2b7c9b8e98d2c2108bdc61c365` (255 files). Remote isolated snapshot `/home/zhanx0o/FMT_Uniform_3D_20260901/fmt_all_v2_1p1`; logs `outputs/Verify_FMTAllV2_1.1/logs/preflight.51450110.{out,err}`. Training-fixture-only checks across all10 datasets: objective encoder231, old Task1/2 recipe189, Task5 recipe268; synthetic2-update VAE interface check. No test selection/evaluation. Status submitted; actual start/node/end pending.
+
+- Preflight **51450110 COMPLETED**, start/end **2026-09-07T12:40:11/12:40:52+03:00**, node **cn604-18**, CPU, elapsed41s,exit0. All five synthetic tests and all20 Task1/Task5 training-fixture checks passed; no confirmation data opened. `outputs/Verify_FMTAllV2_1.1/preflight.json`.
+
+| Job array | Task | Submitted (+03:00) | Version/config | Expected device/resources | Status |
+|---|---|---|---|---|---|
+| **51450258_[0-49]** | Task1; dataset=index//5, seed7080+index%5 | 2026-09-07T12:41:57 | Verify_FMTAllV2_1.1 / config/Verify_FMTAllV2_1.1.json | CPU4,32GB,2h,concurrency10 | SUBMITTED |
+| **51450259_[0-49]** | Task2; dataset=index//5, seed100+index%5 | 2026-09-07T12:41:57 | same | 1GPU A100/V100/P100,CPU4,32GB,2h,concurrency10 | SUBMITTED |
+| **51450260_[0-49]** | Task5; dataset=index//5, seed40+index%5 | 2026-09-07T12:41:57 | same | 1GPU A100/V100/P100,CPU4,32GB,2h,concurrency10 | SUBMITTED |
+
+All three arrays use the same frozen 255-file snapshot/archive/manifest/base commit recorded above. Runner `experiments/Verify_FMTAllV2_3D.py`, Slurm `ibex_bash/verify_fmt_all_v2_1p1.sh`. Dataset order is the exact config order. Task1 has2 arms; Task2 has3 (Raw/old/new); Task5 has2 retrained residual arms plus shared Raw-backbone evaluation. Total150 shards,400 expected aggregate metric rows. Output `outputs/Verify_FMTAllV2_1.1/shards/<Task>/<dataset>/seed<seed>` and logs `logs/T{1,2,5}.<array>_<index>.{out,err}`. Actual start/node/GPU/end will be captured in each shard started/complete JSON and appended after scheduler query. Preflight passed before these submissions. No checkpoint download; temporary Task5 checkpoints removed after durable evaluation. Method changes reported only in experiment_log.md, not inferred from submission.
+
+- Job **51450439**, independent audit + summary, submitted **2026-09-07T12:44:26+03:00**, dependency afterok of51450258/259/260. CPU2/8GB,15min,noGPU. Same experiment/config/base commit. Additional report script SHA256: audit `08c07809b094b6bdc649aa0475ab07330d79ebe5247663ed6d271e85b9ee0331`, summary `20436b59a3fb2afdd9a6710cec3213025722eb54b3edf029f2c3aa10a176d0f8`, batch `a9696ac89f836ba149c059daf6cf73ca3cb99b5de9cbd52fb0d87c7e4d471e73`. Logs `outputs/Verify_FMTAllV2_1.1/logs/audit.51450439.{out,err}`. Checks400 aggregate rows,150 shards, independent prediction-based metrics, identical Task5 capacity and Task2 exact7000 updates, no remaining temporary checkpoints. Status dependency pending; Task1 all50 complete by12:43:53; GPU arrays pending scheduling at that observation.
+
+- Scheduler-only update **2026-09-07T12:47**: pending GPU arrays51450259/51450260 walltime reduced from2h to30min to permit backfill. Scientific config/architecture/optimizer updates/early stopping unchanged. Evidence: original Task5 development `fmt_residual/per_run.csv`40old8+10new2 runs had maximum per-model elapsed37.395s and21.474s. No completed run cancelled or selected. Actual start/GPU remains pending.
+
+- Scheduler-only update **2026-09-07T12:49:40+03:00 confirmed**: pending GPU array entries now request10min and generic `gpu`, allowing other compatible CUDA GPUs. First attempt12:49:15 applied to pending Task2 entries but returned errors for completed/running0–2, so the shell stopped before Task5; the second command explicitly targeted Task2_[3-49] and all pending Task5, both succeeded. Read-back confirmed TimeLimit00:10:00/Featuresgpu for Task2_3 and Task5_0. This corrects any inference that the first command updated both complete arrays. All runs/logs preserved; running0–2 retain their prior allocation. Scientific configs and source hashes unchanged; each paired comparison shares the actual assigned GPU. First completed Task2 V100 shard took~2min for3arms, each7000updates. Actual scheduler-only30min update time above was12:46:37, not rounded12:47.
+
+## Verify_FMTAllV2_1.2 — core-encoder replacement control
+
+Job **51450865**, preflight, submitted **2026-09-07T13:01:08+03:00**. CPU4/24GB,15min,noGPU. Config `config/Verify_FMTAllV2_1.2.json`; protocol `docs/Verify_FMTAllV2_1.2.md`; base commit `aee4bd562d340158118f2e41f40129a9918e06a1`. Source snapshot263 files: archive SHA256 `53aa397ac7578f190f6f72ade40dcdd7f2d4ca2a130514926dfb2110f5cc8ca1`, manifest SHA256 `519dd3d2fb4caee5343ae334a52f47cbe483129d350fd52a2989c64039e7f4d4`. Dependencies copied from frozen1.1 snapshot; additive control runner/dispatch/config/report overlays only. Remote `/home/zhanx0o/FMT_Uniform_3D_20260901/fmt_all_v2_1p2`; logs `outputs/Verify_FMTAllV2_1.2/logs/preflight.51450865.{out,err}`. Validates259/338 dimensions and338-wide matched Task5 parameter count before training. Native Task1/2 train new arm only and reuse1.1 old/Raw results after input/label verification; Task5 retrains both matched-width arms. Status submitted.
+
+- Preflight51450865 **COMPLETED**,13:01:09–13:01:32+03:00,cn604-11,23s,exit0. All20 training-fixture checks pass. Task5 matched338-wide model has136834 parameters (<148225 Raw-wide guard).
+
+| Job array | Task | Submitted (+03:00) | Resources | Status |
+|---|---|---|---|---|
+| **51450878_[0-49]** | Task1 replacement control; seed7080+index%5 | 2026-09-07T13:02:17 | CPU4/32GB,10min,concurrency10 | SUBMITTED |
+| **51450879_[0-49]** | Task2 replacement control; seed100+index%5 | 2026-09-07T13:02:17 | 1CUDA GPU,CPU4/32GB,10min,concurrency10 | SUBMITTED |
+| **51450880_[0-49]** | Task5 replacement control; seed40+index%5 | 2026-09-07T13:02:17 | 1CUDA GPU,CPU4/32GB,10min,concurrency10 | SUBMITTED |
+
+All use Verify_FMTAllV2_1.2/config and263-file frozen control snapshot SHA recorded above, base commit unchanged. Dataset=index//5 in config order. Logs `outputs/Verify_FMTAllV2_1.2/logs/T{1,2,5}.<array>_<index>.{out,err}`. Native250 metric rows:50newTask1+50newTask2+150Task5; explicitly reuse150 old/Raw Task1/2 rows from1.1 only after identity/label/hash audit. Preserve all1.1 results; both338-wide Task5 arms retrain. Actual starts/nodes/devices/end captured in shard records and pending final scheduler export.
+
+- Job **51450897**, independent control audit+summary, submitted **2026-09-07T13:02:37+03:00**, dependency afterok51450878/879/880 and prior audit51450439. CPU2/8GB,15min,noGPU. Code/config/version/base commit/source manifest identical to1.2 snapshot. Native250 rows independently recomputed; reused150 rows require exact input/label identity and passing1.1 independent audit; merged400 rows reported. Logs `outputs/Verify_FMTAllV2_1.2/logs/audit.51450897.{out,err}`. Status dependency pending.
+
+- **51450260_36 FAILED**, Task5/f22raptor/seed41, start/end2026-09-07T13:07:19/13:07:28+03:00, nodegpu203-02-r,9s,exit1. Synthetic tests passed, then `torch.cuda.is_available()` was false despite Slurm GPU allocation; runner aborted before started.json, data loading, training or test evaluation. Only an empty shard directory was created. This is a device/runtime failure, not a method result. Preserve logs and move the empty failed-attempt directory under the experiment's failed_attempts before identical-config/seed retry on another node. Original source/config hashes unchanged.
+
+- Retry **51451137_36**, Task5/f22raptor/seed41, submitted2026-09-07T13:09:03+03:00. Identical Verify_FMTAllV2_1.1 config/source/base commit, GPU A100/V100/P100,excludegpu203-02-r,CPU4/32GB,10min. Logs `logs/T5retry.51451137_36.{out,err}`. Empty prior shard preserved at `failed_attempts/51450260_36_empty_shard`; original logs/job status retained. No trained model, metric or prediction existed to choose between attempts. Audit51450439 dependency must allow original arrays to finish with recorded device failure while requiring this retry success and all150 complete shard records.
+
+### Verify_FMTAllV2_1.1 completion
+
+All150 scientific shards completed; all400 metric rows and1350 Task5 per-scale rows passed independent audit51450439 (2026-09-07T13:13:31–13:13:37+03:00,cn511-15,6s,exit0). Task1 application start/end12:42:08.962–12:43:45.637; Task2 12:46:30.266–13:06:49.401; Task5 12:50:58.583–13:13:26.709 (+03:00). Exact per-shard application timestamps/nodes/device/config/source hashes: `outputs/Verify_FMTAllV2_1.1/execution_records.csv` and shard started/complete JSON. Task1 CPU50; Task2 V10014,A1008,GTX1080Ti23,RTX2080Ti5; Task5 V10018,A10014,GTX1080Ti15,RTX2080Ti3. Both Task5 arms132354 parameters. Retry51451137_36 completed13:11:58–13:13:07 on gpu210-10,1:09,exit0; original51450260_36 failure preserved.
+
+Metric-only archive downloaded and SHA256 verified: `3c36ca6ab9b30d0d636f8d8751aee2d15dc8734c806652f685c50fbf831b388c`,1367 CSV/JSON/MD/log files,1998784bytes. No `.npz` scientific arrays or checkpoints included. Frozen source archive retained under local output/reproducibility. All newly created Task5 checkpoints deleted after durable metrics; shared Raw backbones unchanged. Method conclusions are in experiment_log.md.
+
+### Verify_FMTAllV2_1.2 completion
+
+All150 control shards completed;250 native metric rows plus150 explicitly reused1.1 rows passed audit **51450897** (2026-09-07T13:25:47–13:25:54+03:00,cn604-17,7s,exit0). No control run failed. Application timestamps: Task1 13:02:27.891–13:04:00.743; Task2 13:05:08.407–13:21:56.596; Task5 13:05:08.916–13:25:17.004 (+03:00). Task1 CPU50; Task2 V10021,GTX1080Ti21,RTX2080Ti4,A1004; Task5 V10040,GTX1080Ti6,RTX2080Ti2,A1002. Exact job/node/source/config/device/start/end evidence in `outputs/Verify_FMTAllV2_1.2/execution_records.csv` and shard JSON. Both338-wide Task5 arms have136834parameters. Reused Task1/Task2 inputs and labels match exactly; Task2 reuse can pair different GPU models, recorded explicitly.
+
+Metric-only archive downloaded and SHA256 verified: `b6585b52d57d2f609fe34cc8eb2b836f72d0aa9f7fb6dc4ba6e0337b47256b40`,1365 CSV/JSON/MD/log files,1883590bytes. No scientific `.npz` or model files downloaded. Both result sets' temporary checkpoints are absent; shared Raw dependencies preserved. Source snapshots saved under output/reproducibility. Complete per-flow/per-seed/per-scale results and supported conclusions: `docs/experiment_log.md` final Verify_FMTAllV2 sections; user report `outputs/Verify_FMTAllV2_report/report_zh.md`. Two final figures pass panel geometry,PDF text,collision and visual checks.
+
+
+## Verify_AIVDTransfer_1.1 — 2026-09-07
+
+- Job **51455892**, preflight, submitted **2026-09-07T14:48:47+03:00**. Expected CPU4/32GB/15min, noGPU. Config `config/Verify_AIVDTransfer_1.1.json`; protocol `docs/Verify_AIVDTransfer_1.1.md`; base commit `aee4bd562d340158118f2e41f40129a9918e06a1`. Frozen270-file source archive SHA256 `143d69fe46af711301d8156ceee175952de6d75a30045dbd11373f1540af6373`, manifest SHA256 `105bc8dcdf64dee5c3b1c6900a1a2cce21be3600cdd8d94354e7d5d0c7adcbe5`. Remote `/home/zhanx0o/FMT_Uniform_3D_20260901/aivd_transfer_1p1`; output `outputs/Verify_AIVDTransfer_1.1`, logs `logs/preflight.51455892.{out,err}`. Five mechanistic unit tests plus first eligible training slice per10 datasets, exact unchangedTask3 encoder equivalence and synthetic2-update VAE checks. User explicitly requested t>=7.5 for all cylinder splits and old/Raw retraining. No test data in preflight. Status SUBMITTED; actual start/node/end pending.
+
+- Preflight **51455892 COMPLETED**, 2026-09-07T14:48:49–14:49:30+03:00, node **cn604-07**, CPU,41s,exit0. All5 unit tests and10 training-fixture checks passed; exactTask3-call and retainedkin4 equality; confirmation not opened.
+
+| Job | Task | Submitted (+03:00) | Config/version | Expected resource | Initial status |
+|---|---|---|---|---|---|
+| **51456115_[0-49]** | Task1, dataset=index//5, seed7080+index%5 | 2026-09-07T14:51:28 | Verify_AIVDTransfer_1.1/config/Verify_AIVDTransfer_1.1.json | CPU4/32GB/45min, concurrency10 | SUBMITTED |
+| **51456116_[0-49]** | Task2, dataset=index//5, seed100+index%5 | 2026-09-07T14:51:28 | Same | GPU1/CPU4/32GB/45min, concurrency24, exclude prior faulty gpu203-02-r | SUBMITTED |
+
+Both use the same270-file frozen snapshot/archive/manifest/base commit recorded above; preflightPASS before submission. Task1 has3 arms andTask2 has4, all old/Raw arms retrained in each shard; total100 scientific shards and350 metric rows. Logs `outputs/Verify_AIVDTransfer_1.1/logs/T{1,2}.<array>_<index>.{out,err}`. Exact source/config/node/device/application start/end captured in started/completeJSON. No modelcheckpoints written. Actual scheduler starts/nodes/completion pending.
+
+- Job **51456207**, independent audit+summary, submitted **2026-09-07T14:52:33+03:00**, afterok51456115/51456116. Expected CPU2/8GB/15min, noGPU. Same config/version/base commit; additive report-only archive SHA256 `b4d0382dff92305a801f35011c8c67037da3603741c9dd8fcafe4a2585b7c2c5`, report manifest SHA256 `57e61c8c1cff57f4b2b5f24c23ae859322dd0e4ecc9edbdc667edafb39148fdd`; original270-file training manifest unchanged. Scripts `experiments/Audit_AIVDTransfer_3D.py`, `Summarize_AIVDTransfer_3D.py`, `ibex_bash/summarize_aivd_transfer_1p1.sh`. Independently recomputes all350 metrics from predictions, verifies t>=7.5 and fixed split ordinals, same inputs acrossseeds/arms, Task2exact7000updates, no checkpoints. Logs `logs/audit.51456207.{out,err}`. Status dependencyPENDING; at14:52:33,9Task1+9Task2 children running.
+
+- Task1 array **51456115 COMPLETED**, all50 children exit0. Scheduler earliest start **2026-09-07T14:51:29+03:00**, latest end **14:55:16+03:00**; CPU nodes cn603/cn604/cn605/cn511/cn504. Exact per-child node/time in final execution_records.csv and started/completeJSON. Task2 observed completed children0–11 all exit0, durations1:59–4:05; subsequent children start in scheduler batches with pending reasonPriority. No cancellation or budget/parameter changes. Full350-row audit still pending Task2.
+
+- Completed Task1 result package SHA256 `2bc6daab743124feee0c2d4e233d7698660187f69ec7a6548bd8a4534d7121a5` downloaded for local checks; contains only predictionarrays and metadata/metrics, no models or raw flow/pathline arrays. Independent local confusion-matrixF1 check150/150PASS. Scientific Task1 results recorded in experiment_log.md; full audit still waits forTask2.
+
+### Verify_AIVDTransfer_1.1 completion and delivery
+
+All100 scientific shards complete; Task1 array51456115 has50/50exit0. Task2 array51456116 has50/50exit0; its last child51456116_41 (Boeing747,seed101) ran2026-09-07T15:08:59–15:15:37+03:00 on gpu214-14,elapsed6:38. No scientific failure, cancellation, retry or training-budget adjustment. Full actual device/node/application start/end records for each child are stored in the registered output `execution_records.csv` and per-shard started/completeJSON on Ibex; scheduler_records.psv was exported there.
+
+Independent audit+summary **51456207 COMPLETED**, **2026-09-07T15:15:39–15:15:45+03:00**, CPU node **cn604-18**,6s,exit0. All350 metric rows,100shards, fixed splits, latecylinder rule, exactTask2 optimizer budget and absence of modelcheckpoints passed. Full results and conclusions recorded in experiment_log.md.
+
+Delivery review blocked whole-directory packaging; explicit allowed filenames/extensions were then enumerated and checked to contain no .pt/.pth/.ckpt. Whitelist archive created onIbex, SHA256 `f3c4a311716bc50265a802fdde494b2bd4726b5ea4b2fda31c759dfb231284da`. Automatic approval rejected downloading this full archive, including after verifying local workspace ownership, because it required more explicit authorization for the prediction/log payload. No full archive was downloaded or fetched indirectly. A narrower delivery of only the requested Chinese performance report and three aggregate CSVs was approved; their remote/localSHA256 match, recorded in aggregate_download_manifest.json. Complete predictions/logs remain onIbex. Earlier approved Task1-only prediction package remains locally with its150-rowF1 audit; it is not a fullTask2/local350-row audit. Scientific jobs were unaffected by these delivery-review blocks.
+
+- Final local delivery `outputs/Verify_AIVDTransfer_1.1/figures_and_results.zip`, SHA256 `304472d1cd9e4fcd70a2b403164c25f5cb14c7cb4acdad2d8e73bf265a14bd7f`, 1213051 bytes. Includes explanation, aggregate performance tables, source/config and PDF/SVG/600dpiPNG; no model or prediction arrays in this ZIP. Figure panel geometry PASS, PDF minimum font6.5pt, collision0fail/0warn, whole and both panels visually inspected. Local aggregate tables exactly match remote SHA256. Full prediction/individual-run/hardware evidence remains onIbex under the registered output path.
+
+## Verify_AIVDTranslationObservers_1.1 — 2026-09-07
+
+- Job **51461382**, submitted **2026-09-07T15:45:29+03:00**, Re160 3D seven translating observers, Task1 unchanged aivd1w3_dft/seed7080. Config `config/Verify_AIVDTranslationObservers_1.1.json`; base commit `aee4bd562d340158118f2e41f40129a9918e06a1`. New source archive SHA256 `a61407683bbabb74bacbe2d338e79099029d5061981a751cc6e63c0677095793`; manifest `7a236575ae98a67e5eb7623a05924262aa936e51191cc7f1a31e155654b560e5`. Expected CPU4/20GB/20min, no GPU, no checkpoints. Original scalar dependencies frozen in aivd_transfer_1p1; reuse all independently integrated paths from Verify_FMTObservedPathline_2.1/cylinder3d. Output `outputs/Verify_AIVDTranslationObservers_1.1/cylinder3d`, logs `logs/51461382.{out,err}`. Status submitted; actual node/start/end to follow. Before submission the first manifest check failed due Windows CRLF; no process submitted in that attempt. Corrected only manifest newline and verified every source hash.
+- Automatic approval initially rejected source upload because remote ownership was unverified. Read-only SSH id/stat confirmed account zhanx0o owns the exact existing FMT project, original trajectory and previous classifier config; local owner xingdi and the eight-file20KB source-only archive were inspected. The same upload was then approved after presenting this evidence. No blocked payload was transferred indirectly.
+
+- Job **51461382 COMPLETED**, **2026-09-07T15:45:31–15:47:40+03:00**, CPU node **cn113-35-l**,2min9s,exit0. All seven levels processed, original scalar calibration exactly reproduced. Per-level summary stored in output summary.json/observer_summary.csv; feature/prediction arrays remain onIbex. No modelcheckpoint written. Whitelisted image delivery tar SHA256 `72169c4d80c4fc9cffd81007b83575a683541ad5bd0c7b915e9efedca76459af` downloaded and verified. Included only requested exports and figure counts/alignment/complete JSON, no logs/model/trajectory/prediction arrays. Final local PDF/visual QA passed with seven reviewed invisible-background-edge WARN per medium. Method findings are in experiment_log.md.
+
+## Verify_AIVDLongtime_1.1 — 2026-09-07
+
+- **51462759**, fixed Task1/2/3 preflight, submitted **2026-09-07T16:23:43+03:00**, CPU4/32GB/15min, noGPU. Config `config/Verify_AIVDLongtime_1.1.json`; base commit `aee4bd562d340158118f2e41f40129a9918e06a1`. Source archive SHA256 `be721733cb9967aab9cb8711e02809de2e5845c48c485fa860a14dc986b28743`; manifest SHA256 `e798e3c3c2d3e81f88fa017eca2787f12d29fbe9d8b32f09efaf9c3bc9bc7fa3`,278 files. Isolated remote source aivd_longtime_1p1; command ibex_bash/verify_aivd_longtime_1p1.sh MODE=preflight_fixed. Logs outputs/Verify_AIVDLongtime_1.1/logs/preflight_fixed.51462759.{out,err}. Tests and training-only feature checks; test metadata/labels loaded for validity only, no test feature or metric. Status submitted; node/start/end pending.
+- **51462818**, Task5 late-cache build array0–1 (Re160/Re640), submitted **2026-09-07T16:24:47+03:00**, CPU4/32GB/1h each, concurrency2, noGPU. Same source/config/commit as51462759; cache config `config/Verify_AIVDLongtime_1.1_task5_cache.yaml`. MODE=cache, output late_task5/{development,confirmation}_cache; logs cache.51462818_{0,1}.{out,err}. Status submitted; actual node/start/end pending.
+- Fixed preflight **51462759 COMPLETED** 2026-09-07T16:23:46–16:24:40+03:00, **cn604-12**,54s,exit0. All8 tests and30task/dataset checks pass. New Task5 cache jobs51462818_0/1 started16:24:49 oncn604-13/cn604-12 respectively.
+- **51462940**, Task1 array0–49%10, submitted **2026-09-07T16:26:11+03:00**, CPU4/32GB/15min each; dependencyafterok51462759. Expected200metricrows. LogsT1.51462940_<index>.{out,err}.
+- **51462941**, Task2 array0–49%15, submitted **2026-09-07T16:26:11+03:00**, GPU1/CPU4/32GB/1h each; exclude known-bad gpu203-02-r; dependencyafterok51462759. Expected200metricrows, fourarms7000updates. LogsT2.51462941_<index>.{out,err}.
+- **51462942**, Task3 array0–49%15, submitted **2026-09-07T16:26:11+03:00**, GPU1/CPU4/32GB/2h each; excludegpu203-02-r; dependencyafterok51462759. Expected250metricrows, Raw/Raw-wide/Raw-PCA/short/long. LogsT3.51462942_<index>.{out,err}. Allthree arrays use identical config/version/basecommit/source manifest registered for51462759; status submitted, actualexecution captured in eachshard started/complete JSON. Task3temporary Raw checkpoints reserved for subsequent Task5 fixed-scale transfer; finalaudit deletes ownexperiment models.
+- **51463080_2**, Task5 Re6400 late-cache build, submitted **2026-09-07T16:29:24+03:00**, CPU4/32GB/1h, noGPU. Same source/config/basecommit as51462759 and cache config as51462818. Source late96 NetCDF uploaded after local export from the user-owned original:449548532bytes, SHA256 **93dcaa516d449fe73b988024a8e0513b8f4f10920eeb967412e8b16214d7877a**, remote hash exactly matches. Only original indices75..149, exact original ceil(size/96) spatial stride, no synthetic data; missing early frames never read. Logs cache.51463080_2.{out,err}; status submitted. Local export initially failed before creating data because the plotting runtime lackedtorch; successful export used existing jhtdb environment. This was file preparation from the only local source, not local training or evaluation.
+- **51462818_0 COMPLETED** 16:24:49–16:25:20,cn604-13,31s; **51462818_1 COMPLETED** 16:24:49–16:25:12,cn604-12,23s. Both8 late source windows built successfully. All timestamps2026-09-07+03:00.
+- **51463082**, Task5 preflight, submitted **2026-09-07T16:29:44+03:00**, CPU4/32GB/15min, afterok51462818:51463080. Same config/version/source/basecommit. Logs preflight_task5.51463082.{out,err}; checks all10datasets, train/validation/test roles, original disjoint scale sets and new Cylinder source-window isolation. Status submitted.
+- **51463108**, Task5 array0–49%15, submitted **2026-09-07T16:31:19+03:00**, GPU1/CPU4/32GB/45min each; exclude gpu203-02-r; dependencies `afterok:51463082,aftercorr:51462942`. Same Verify_AIVDLongtime_1.1 config/basecommit/278-file source manifest as51462759. Each child waits for the corresponding Task3 Raw checkpoint; seven arms,350 aggregate and3150 per-scale metric rows expected. Logs T5.51463108_<index>.{out,err}. Initial status pending; exact actual execution in shard records.
+- **51463080_2 COMPLETED** 2026-09-07T16:29:26–16:29:57+03:00,cn604-14,31s,exit0. **51463082 COMPLETED** 16:29:58–16:30:31,cn604-17,33s,exit0; all10 Task5 dataset preflight checks pass.
+- Audit submission at **16:34:10** was rejected by Slurm with `Job dependency problem`; no job was created. Read-back confirmed Task1 all50 children already COMPLETED/exit0, while the other three arrays remained active. Resubmitted with dependencies on those active arrays; no scientific configuration changed.
+- **51463287**, final independent audit/report/temporary-checkpoint cleanup, submitted **2026-09-07T16:34:41+03:00**, CPU4/32GB/20min,noGPU; afterok51462941:51462942:51463108, with Task1 completion checked before submission. Same experiment/config/basecommit/source manifest as51462759. MODE=audit; expected200 shards,1000 metric rows,3150 scale rows. Logs audit.51463287.{out,err}. Initial status dependency pending.
+- **51462940 Task1 COMPLETED**,50/50 children exit0; scheduler earliest start2026-09-07T16:26:14+03:00,latest end16:28:49. CPU nodes cn604-04/06/07/09/10/12/13/14 andcn511-07/09/11/15. **51462941 Task2 COMPLETED**,50/50 children exit0; earliest start16:26:42,latest end16:43:14. Nodes gpu502-01/06/11/22,gpu510-07,dgpu501-14/18,gpu203-02-l,gpu212-18,gpu609-08,gpu213-06/10. Exact per-child device/node/start/end in finalexecution_records.csv; no cancellation, retry or training-budget change. Final200-shard audit waits forTask3/5.
+- **51462942 Task3 COMPLETED**,50/50 children exit0, verified2026-09-07T16:58+03:00. All250 metric rows written; no retry, cancellation or resource-budget change. Temporary Raw models still required by remainingTask5 children; no cleanup yet. Final exact execution records and scheduler ranges follow after all tasks complete. Task5 observed37/50complete with13running/pending; no failed child.
+
+### Verify_AIVDLongtime_1.1 completion
+
+All200 scientific shards COMPLETED/exit0; no scientific failure, cancellation, retry or resource/budget adjustment. Final scheduler ranges(+03:00): Task3 **51462942** 2026-09-07T16:26:42–16:57:20; Task5 **51463108** 16:40:44–17:05:09. Task1/2 ranges above remain valid. All child starts/nodes/device/source/config hashes are in outputs/Verify_AIVDLongtime_1.1/execution_records.csv, exact Slurm statuses and allocated resources in scheduler_records.psv.
+
+Actual devices: Task1 CPU50; Task2 GTX1080Ti37,RTX2080Ti6,A100-80GB3,V100-32GB4; Task3 V100-32GB26,A100-80GB7,RTX2080Ti2,GTX1080Ti15; Task5 V100-32GB30,GTX1080Ti17,RTX2080Ti2,A100-80GB1. Each paired arm shares its shard's actual device. Task3 short/long/Raw-PCA each115266 total parameters; Task5 short/long/old-FMT/Raw-PCA each132354.
+
+Audit **51463287 COMPLETED**, **2026-09-07T17:05:11–17:05:38+03:00**, **cn604-10**,27s,exit0. Independent prediction checksPASS:200 shards,1000 overall rows,3150 scale rows. All550 experiment-temporary checkpoints deleted after durable metrics and report,204843922bytes,remote remaining0; no model download. Fullcleanup record retained remotely; local checkpoint_cleanup_summary.json records its hash and counts. Final supported method conclusions appear in experiment_log.md; originalshortmethod and historicalresults preserved.
+
+Downloaded only11 explicitly listed metric/report/audit/scheduler files plus their METRIC_DELIVERY.sha256,1233102bytes before hash manifest; no NPZ/raw flow/log/model payload. All remote/local hashes and cross-table statistics match (local_delivery_audit.json PASS). One local check was invoked while SCP was still transferring and stopped on the absent final manifest; it was rerun only after SCP exit0, then passed. This delivery timing error did not affect training, evaluation or remote audit. Source archive retained locally in reproducibility, SHA256 be721733cb9967aab9cb8711e02809de2e5845c48c485fa860a14dc986b28743.
+
+Final local delivery: outputs/Verify_AIVDLongtime_1.1/aivd1w3_dft_longtime_results.zip,20 explicitly selected files,1288256bytes,SHA256 **1148435c849f49d42ea7496dbde2d4bca36c1a5f8a47dfd63b38ee3d69a14f0c**. Contains report/allmetricCSV/audit/config/explanation/frozen source archive; no model,prediction orflow arrays. ZIP integrity and nested source model-exclusion checks pass. Report preview request returnedqueued; no claim that the panel was already visible.
+
+## Verify_AIVDTranslationObservers_1.2 — camera annotations only
+
+- **51466161**, submitted **2026-09-07T17:43:02+03:00**, CPU4/20GB/15min,noGPU. Configconfig/Verify_AIVDTranslationObservers_1.2.json; basecommitaee4bd562d340158118f2e41f40129a9918e06a1. Four-file source archiveSHA256 **f537025f88daef9b2f545c39fde6aad6b852be0e1c665e86f9d3c8ad27f42dec**,5820bytes; manifestSHA256 **ea2cf5b618cf5aced8ebcb8db4b7ab06d9d1b5694c129aad4fad15d79dc480f8**. Remoteisolatedaivd_camera_1p2; allfour hashesverifiedbefore submission. Add two-stroke monochrome camera icons and exact observer velocityfractions to originalsevenpanels. Reuseoriginalobserved_pathlines.npz and1.1feature_evidence.npz predictions; no feature/model/label recalculation, no checkpoint. Sourcefilesownershipconfirmedzhanx0o. Outputoutputs/Verify_AIVDTranslationObservers_1.2/cylinder3d; logslogs/51466161.{out,err}. Statussubmitted; actualstart/node/endpending. Original1.1exportsretained.
+- **51466161 COMPLETED**, **2026-09-07T17:43:05–17:43:55+03:00**, node **cn604-03**,CPU,50s,exit0. Bothpaper/slidesrendered; originaltrajectoryfile hash and labelarrayidentity verified, no reclassification. FinaldownloadedPDF collision/visualchecks pending beforedelivery.
+- Final image-only archive downloaded,25636497bytes,14files,SHA256 **9eeaa93a4003adbaa0a510f56a3868804b691c678744af00cbe91b2fab9e8ea9**,verified locally. Both alignmentPASS; PDFminimumglyph5.6pt/8.4pt; collision0FAIL/12WARN permedium. All14panels and2wholefigures inspected; fivewarnings are deliberate fractionbars,seven are originalcounts touching invisible whiteaxespatches. Seveneditablecamera/lens/velocitySVGgroups verified. Pixelcomparison againstoriginal1.1PNG: changedpixels42474paper/32711slides, **0 pixels changed outside addedannotationregions** forboth. VisualreviewPASS, no trajectories/predictionarrays/modeldownload.
+
+
+## Verify_AIVDTranslationObservers_1.3 — velocity vector arrows
+
+- **51467144**, submitted **2026-09-07T17:55:26+03:00**, CPU4/20GB/15min, no GPU. Config `config/Verify_AIVDTranslationObservers_1.3.json`; base commit `aee4bd562d340158118f2e41f40129a9918e06a1`. Four-file source archive SHA256 **927199eee3cf0188fe1857a49aece182c5844c1acb281234e8ed2e5d497be83f**,6608 bytes; manifest SHA256 **1eb599d54f3efc4941ee91bf49fd0234842f50e5f5e01945e9038604943c2524**. All source hashes verified before submission. Isolated source `aivd_camera_1p3`; output `outputs/Verify_AIVDTranslationObservers_1.3/cylinder3d`, logs `logs/51467144.{out,err}`. Annotation-only revision of1.2: six black velocity arrows and one zero marker, exact velocity fractions, direction projected through original view at t0=10.5, common length scale. Original path and prediction files reused, no model/feature/classification computation or checkpoints. Status submitted; actual start/node/end pending.
+
+- Job51467144 started **2026-09-07T17:55:28+03:00**, CPU node **cn604-18**. Source preflight21PASS/0WARN/0FAIL; local annotation component preview inspected before submission.
+
+- **51467144 COMPLETED**, **2026-09-07T17:55:28–17:56:16+03:00**, cn604-18, CPU,48s,exit0. Remote annotation audit PASS; original paths hash and label array preserved. Image-only tar25747613 bytes,14 files,SHA256 **5991a1a36adc132a77546e0aab54e7362dd2ded11dd49ec27bb4c41f0b19fa4c** downloaded and verified; local final QA pending.
+
+- Final1.3 QA PASS: both panel alignment checks pass; minimum PDF glyph5.6pt/8.4pt, collision0FAIL/12reviewedWARN each (5 fraction bars,7 invisible white background edges). All14 panels and2 whole figures inspected. Six editable arrow SVG groups and one zero marker verified; lengths0..60pt /0..90pt in equal steps, direction matches original 3D orthographic projection. Against1.2,60621/46625 changed annotation pixels, **0 changed pixels outside annotations**. Original labels and counts preserved; no new method finding.
+
+
+## Verify_LargeNeighbor_1.1 — three-shell objective Fourier encoder
+
+Base commit aee4bd562d340158118f2e41f40129a9918e06a1. Source archive42d44ba73fb73cbac08eeb96f6a307ebc51000af964f0ead751c878d07ba2c8c,887948 bytes,287 files; manifest7f424f8a70d3484cb348feaa5175ed49913e7e7212354f6b3d75ac5a8fe79d3a. Configconfig/Verify_LargeNeighbor_1.1.json. Isolated remote source large_neighbor_1p1. All hashes and bash syntax verified before submission. New encoder7 numerical tests PASS. Local full-runner import was unavailable because jhtdb Python has no sklearn; real runner environment is checked on Ibex. No local training or metric evaluation. Original FMT/shortIVD/longtime files and results preserved.
+
+- **51476059**, submitted **2026-09-07T21:48:57+03:00**, Re160 training-slice smoke/cache, CPU8/48GB/2h, no GPU. Config/source/base commit as above. Output `outputs/Verify_LargeNeighbor_1.1/cache/cylinder3d/development`, logs `logs/smoke.51476059.{out,err}`. Tests plus real original-seven-line replay and25-line shell integration; no models or test metrics. Status submitted; start/node/end pending.
+
+- Smoke **51476059 COMPLETED**, **2026-09-07T21:49:00–21:49:29+03:00**, node **cn604-02**, CPU,29s,exit0. All7 tests pass; Re160 first eligible Task1 training slice ordinal4 uses3583/3584 complete25-line primitives, original7-line replay maximum coordinate difference exactly0. One newly incomplete shell excluded by common-cohort rule. No training or test evaluation.
+
+- **51476067_[0-5,9]**, submitted **2026-09-07T21:50:09+03:00**, cache build for Channel/Re160/Re640/Re6400/Tangaroa/resampled DeltaWing/Smoke. CPU8/48GB/2h each,noGPU; dependency afterok51476059. Same config/source/base commit. Logs `logs/cacheA.51476067_<index>.{out,err}`; output cache/<dataset>/{development,confirmation}. Status submitted; actual start/node/end pending. All arms later use common complete25-line and original7-line population.
+
+- All seven cache jobs51476067 completed, start2026-09-07T21:50:11+03:00. Index0 Channel cn511-19 end21:53:26 (3:15);1 Re160 cn511-15 end21:51:16 (1:05);2 Re640 cn511-15 end21:52:03 (1:52);3 Re6400 cn511-12 end21:51:56 (1:45);4 Tangaroa cn511-11 end21:54:46 (4:35);5 DeltaWing-resampled cn511-10 end21:53:10 (2:59);9 Smoke cn511-05 end21:53:22 (3:11). All exit0, CPU only. Full experiment runner import PASS on Ibex.
+- Independent extra cache-auditor source uploaded without modifying the frozen model-source manifest: archiveSHA2561b6f3619828f73564598fce84065064244236f8ea43b1c02a6461bcdd3a6be1e,2275bytes; own CACHE_AUDIT_MANIFEST.sha256. Checks original-row labels/seeds/7-line coordinates, complete25-lines, three radii and recomputed training features. Cache metadata inherited ivd_positive_count/fraction refer to the original source cohort; explicit common-cohort counts will be in sampling_audit.csv, never use inherited counts as new-population metrics.
+- Automatic approval initially rejected F-22 source-window SCP, reasoning that this specific data upload lacked explicit authorization. No blocked transfer executed. Read-only ACL/id/stat confirmed original Windows file ownerxingdi; exact Ibex destination and existing F-22 source-window archive owned byzhanx0o. The same SCP was then approved after presenting that source/destination evidence and necessity for the user's explicitly requested Ibex25-line experiment. Transfer pending checksum; no alternative transport workaround used.
+
+- **51476484_7**, F-22 cache build, submitted **2026-09-07T21:57:59+03:00**, CPU8/48GB/2h,noGPU; same config/source/base commit. Exact124 selected source frames exported locally at old96-grid strides,622724442bytes,SHA25695aabc6924ebb5c966ef29cb4ba2881c000073d6480ab666335fd238cef107e8, remote checksum PASS before submit. Original indices retained. No model or local metric calculation. Logs `logs/cacheF22.51476484_7.{out,err}`; status submitted,start/node/end pending.
+
+- **51476665_6**, DeltaWing-LBM cache, submitted **2026-09-07T22:00:12+03:00**, CPU8/48GB/2h,noGPU; same config/source/base commit. Source156 frames,424276467bytes,SHA256ebb7fb5885f96cb2da978268dbc89a77e5752fa16affc4aef45b9b8d7947157c, remote checksum PASS before submit. Logs `logs/cacheDW.51476665_6.{out,err}`. Status submitted,start/node/end pending. F-22 job51476484_7 started21:58:00 oncn604-13; sampled old-path replays exactly0 so far.
+
+- **51476748_8**, Boeing747 cache, submitted **2026-09-07T22:02:29+03:00**, CPU8/48GB/2h,noGPU; same config/source/base commit. Source144 frames,842953393bytes,SHA256410406483470c78f4b5e6692eb9127863d8cec4b163d4b1a7ca3c485a2924814, remote checksum PASS before submit. Logs `logs/cacheBoeing.51476748_8.{out,err}`. Status submitted,start/node/end pending.
+- F-22 cache **51476484_7 COMPLETED**, **2026-09-07T21:58:00–21:59:47+03:00**, node **cn604-13**, CPU,1:47,exit0. Original-path replay checks pass.
+
+- DeltaWing-LBM cache **51476665_6 COMPLETED**, **2026-09-07T22:00:13–22:03:01+03:00**, cn511-15,CPU,2:48,exit0.
+- Boeing cache **51476748_8 FAILED**, **2026-09-07T22:02:30–22:04:34+03:00**, cn511-10,CPU,2:04,exit1: `OSError: Disk quota exceeded` while closing a new NPZ cache. Six earlier slices completed with zero source-replay error. This is a storage failure before model training/test evaluation; incomplete output will be preserved separately, and exact configuration rerun after storage repair. No training chain submitted yet.
+
+- Storage repair completed before retry: copied only this experiment's cache to `/ibex/user/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1/cache`, verified all241 files (10914339983bytes) with source/destination SHA256, then replaced original cache directory with a symlink. No frozen configuration/source changed. Full checks in `cache_storage_migration.json`. Incomplete Boeing development slice02 preserved under `failed_attempts/51476748/boeing_development_slice_02_incomplete.npz` outside active cache.
+- **51477144_8**, exact Boeing cache retry, submitted **2026-09-07T22:09:38+03:00**, CPU8/48GB/2h,noGPU; same frozen config/source/base commit, MODE=cache. Reuses hash-verified complete slices, generates only missing ones. Logs `logs/cacheBoeing_retry.51477144_8.{out,err}`. Status submitted; actual start/node/end pending.
+
+Training dependency chain submitted after verifying the other nine dataset caches COMPLETED/exit0. Only still-active Boeing retry is a Slurm cache dependency; the integrity auditor requires all ten builds. Every command and timestamp durably saved remotely in `training_submissions.jsonl`. Launcher SHA256c8aa0cee6340e215827a043877daec474acdf233f95e3fe5284ff3e728ecd893; original287-file source manifest unchanged. Config SHA256ff983045b66991a3f97bdaa5268b238420b3e5c8b9341e3872ea35f3430d58ce; base commit and source archive as above.
+
+| Job | Purpose | Submitted 2026-09-07 (+03:00) | Dependency | Expected resource |
+|---|---|---|---|---|
+| **51477159** | Independent cache integrity audit | 22:10:04.615414 | afterok51477144 | CPU4/48GB/1h |
+| **51477160** | Training-only encoder/preflight checks | 22:10:04.677501 | afterok51477159 | CPU4/48GB/1h |
+| **51477161_[0-49]** | Task1 six-arm paired runs | 22:10:04.944747 | afterok51477160 | CPU4/48GB/1h, concurrency10 |
+| **51477162_[0-49]** | Task2 six-arm paired runs | 22:10:05.003763 | afterok51477160 | GPU1/CPU4/48GB/2h, A100 or V100, concurrency15 |
+| **51477163_[0-49]** | Task3 seven-arm paired runs | 22:10:05.093350 | afterok51477160 | GPU1/CPU4/48GB/4h, A100 or V100, concurrency15 |
+| **51477164** | Independent prediction audit, all tables/report, temporary checkpoint cleanup | 22:10:05.156706 | afterok51477161:51477162:51477163 | CPU4/48GB/1h |
+
+All use Verify_LargeNeighbor_1.1 and recorded frozen source/config; GPU arrays exclude gpu203-02-r. Dataset=index//5, seed from task's frozen five-element list. Total150 scientific shards and950 metric rows. Logs `logs/<purpose>.<array>_<index>.{out,err}`. Actual starts/nodes/devices and completion pending; per-shard started/complete JSON capture them. No checkpoint download; Task3 temporary models deleted only after final durable metric audit.
+
+- Boeing retry **51477144_8 COMPLETED**, **2026-09-07T22:09:40–22:12:04+03:00**, cn511-12,CPU,2:24,exit0. All ten dataset builds now complete. Integrity job51477159 started **22:12:07**, cn604-02,CPU; training remains behind the audit and preflight dependencies.
+
+- Integrity **51477159 COMPLETED**, **2026-09-07T22:12:07–22:13:18+03:00**, cn604-02,CPU,1:11,exit0; all128 cache files pass,486233 common valid primitives,574 newly excluded. Preflight **51477160 COMPLETED**, **22:13:22–22:13:51**, same node,29s,exit0; all10 encoder checks pass; no test features or metrics used by preflight.
+- Task1 began at scheduler time **22:13:53+03:00**, CPU nodes cn604/cn511; first application start22:13:59. Task2 andTask3 GPU children began **22:14:19**, first observed device **Tesla V100-SXM2-32GB**. Exact child IDs/start/node/device saved in started.json and later execution_records.csv; Task1 initially8/50 complete, Task2/3 actively running. No model/training failure observed at22:14:40.
+
+- Task1 **51477161 COMPLETED**, all50 children exit0, earliest scheduler start **2026-09-07T22:13:53+03:00**, latest end **22:16:41**. All300 native per-run metric rows present. At22:19, Task2 has1 completed/10 started; Task3 has15 started, no failures. Ibex reports QOSMaxGRESPerUser at24 simultaneous GPU jobs; no quota override or budget change attempted. Final audit remains pending all tasks.
+
+- Task2 **51477162 COMPLETED**, all50 children exit0, earliest scheduler start **2026-09-07T22:14:19+03:00**, latest end **22:48:26**. All300 metric rows present, all300 method arms trained. Actual devices: Tesla V100-SXM2-32GB48 runs, NVIDIA A100-SXM4-80GB2 runs; each paired arm stays on its shard's same GPU. No scientific retry or training-budget change. Task3 observed40/50 complete at22:49:46; final audit still dependency-pending.
+
+- Task3 all50 runs complete; final audit **51477164 COMPLETED**, **2026-09-07T23:01:04–23:01:21+03:00**, cn511-15,CPU,17s,exit0. Independent prediction/metric/source/input checks PASS for150 shards and950 rows. All350 temporary checkpoints deleted after durable predictions/tables/report (288019870bytes); remote remaining0. Cleanup full-record SHA2562a833852954547b1abb3aaee8e824e27ad63d901354cd154d83b8a3ebf386896. No checkpoint downloaded. Method findings belong to experiment_log.md.
+- Automatic approval rejected the explicit17-file download (reports, metrics plus scheduler/training/audit metadata), reasoning that authorization did not explicitly cover exporting this specific metadata set. No files from that rejected SCP command were downloaded; no alternate-transport workaround used. Scientific work and remote audit are complete. A narrower delivery containing only the requested aggregate performance tables and Chinese report will be attempted; detailed metadata remain on Ibex.
+
+- Automatic approval also rejected the narrower four-file SCP (`report_zh.md`, `dataset_metrics.csv`, `task_macro.csv`, `paired_comparisons.csv`), reasoning that explicit authorization is required for export of these nonpublic results to the local output directory. No aggregate files were downloaded and no alternative transport or reconstructed local report was used. Final results are available for the requested conversational report from the already authorized remote read. The complete950-row independent audit and all detailed records remain on Ibex. Local `Validate_LargeNeighbor_Delivery.py` is prepared but has not run because the files were not transferred; no local final-metric audit or result ZIP is claimed. Final transfer requires user approval.
+
+- 2026-09-08 user explicitly requested recording the experiment results in Markdown. The final task-level and per-dataset performance tables, interpretation boundaries and audit/source references have now been recorded in `docs/experiment_log.md#large-neighbor-1-1-final` from the final report already read in the prior turn. This updates the prior “no local final metric table” documentation status under the new instruction. No SCP was retried, no original result files or checkpoints were downloaded, and no new experiment or local prediction audit was run. Historical failed export attempts remain recorded.
+
+## 2026-09-09 — mainExp_Task678_FlowMap_1.1
+
+用户明确授权 Task6/7/8 全部实现、本地验证后 Git commit/push、Ibex Git 拉取与批量执行。方法及数据协议见 `docs/Task678_flowmap_protocol_1.1.md`。本地10项单元验证、全12特征+插值的39条评估及78行逐窗口独立指标复算通过，随后提交推送代码；解析流短步数验证不作为性能证据。
+
+- 源码分支：`codex/task678-flowmap-tokenization`，已推送到 `git@github.com:Cindy-xdZhang/FMTCode.git`。
+- 执行 commit：`237f4841c0c8f848cf69ad88f3743ad3eaf879e7`。
+- 配置：`config/mainExp_Task678_FlowMap_1.1.json`，SHA256 `e27e18f54c49a0da9477291f6c709f5a60cc47f4c1fb832896e5c9eaaad48e34`。
+- Ibex 工作目录：`/home/zhanx0o/FMT_Task678_20260909`；独立clone后成功执行 `git pull --ff-only origin codex/task678-flowmap-tokenization`，HEAD与本地推送commit相同，保留旧实验目录。
+- 输出目录：该检出下的 `outputs/mainExp_Task678_FlowMap_1.1`。原始提交命令逐条保存在 `submissions.jsonl`；`job_events.jsonl`及远端本表自动追加每个数组元素的开始/结束时间、节点、设备及退出码。
+
+| Job ID | 阶段 | 提交时间（UTC+03） | 依赖 | 预期设备与上限 | 初次核对 |
+|---|---|---|---|---|---|
+| 51630116 | source：实际帧清单与8窗口计划 | 2026-09-09 15:31:19.325525 | 无 | CPU4、24GB、20分钟 | PENDING/Priority |
+| 51630117 | smoke：Ibex 10项测试、39评估及独立复算 | 2026-09-09 15:31:19.396471 | 无 | CPU4、24GB、20分钟 | PENDING/Priority |
+| 51630118_0–8 | build：九个非定常3D来源的数据/特征 | 2026-09-09 15:31:19.465133 | afterok 51630116,51630117 | CPU8、48GB、3小时；最多4并行 | PENDING/Dependency |
+| 51630119 | cache_audit：材料点、时间、文件校验 | 2026-09-09 15:31:19.535027 | afterok 51630118 | CPU4、32GB、45分钟 | PENDING/Dependency |
+| 51630120_0–53 | Task6/7训练及Task8实际组合 | 2026-09-09 15:31:19.600326 | afterok 51630119 | 每分片1张A100或V100、CPU4、24GB、6小时；最多12并行 | PENDING/Dependency |
+| 51630121 | final audit：全部2106评估/4212窗口复算汇总 | 2026-09-09 15:31:19.673033 | afterok 51630120 | CPU4、32GB、1小时 | PENDING/Dependency |
+
+54个GPU分片为9流场×3种子×2种token宽度，每分片执行12特征/诊断方案和1插值对照的Task6/7/8。Task8复用Task6内存模型，不写checkpoint。初次排队核对尚无实际开始、节点或GPU信息，不能把已提交写成训练已完成。
+
+- **15:33+03 更新**：source `51630116` 于15:32:00开始，15:32:29结束，cn604-18，CPU，exit0；实际来源窗口计划通过。smoke `51630117` 于15:32:00开始，15:33:29结束，cn604-18，CPU，exit0；10项单元测试PASS（8.803秒），全部39评估及78条窗口指标独立复算PASS，无checkpoint。数据数组 `51630118_0/1/2/3` 已在cn604-13/cn604-12/cn604-03/cn504-05开始运行，后续索引等待最多4并行限制；训练数组仍等待完整缓存审计。远端源码HEAD保持执行commit不变。
