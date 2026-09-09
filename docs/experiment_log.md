@@ -930,3 +930,24 @@ Instantaneous Vorticity Deviation（IVD，瞬时涡量偏差）衡量局部涡�
 代码 commit `237f4841c0c8f848cf69ad88f3743ad3eaf879e7` 已推送至 `codex/task678-flowmap-tokenization`，Ibex `/home/zhanx0o/FMT_Task678_20260909` clone/pull 后核对到同一 HEAD。提交 source `51630116`、smoke `51630117`、九条数据构建数组 `51630118`、缓存审计 `51630119`、54条GPU数组 `51630120`、最终审计 `51630121`，全部按 afterok 依赖连接。任务版本、提交时刻、配置/commit及设备请求已登记 `docs/ibex_run_registry.md`。首次核对为source/smoke因Priority排队，其余等待依赖，尚无真实流场性能结论。
 
 15:33+03，Ibex实际source检查与完整smoke均已exit0：同一Git检出的10项单元测试、39条评估、78条窗口指标复算全部PASS；数据构建数组已开始运行。此为真实集群环境中的代码验证，仍不是九流场性能结果。源码执行commit保持`237f4841`，后续作业登记文档提交不改变该批运行源码。
+
+### 15:44+03 — 九流场构建和缓存审计完成
+
+构建数组`51630118_0–8`全部COMPLETED/exit0。缓存审计`51630119`于15:43:41–15:44:38在cn604-18完成，检查72个不重叠源时间窗口、材料点数组、隐藏区域隔离、所有特征文件与配置校验值，结果PASS。训练数组的依赖已满足，此次核对为Priority排队。
+
+下表计数单位是一个中心区域及其配套可见支持/独立查询粒子，不是独立物理流场的数量。Task6 每个区域包含两个短时段查询实例，Task7/Task8 各一个实例；方法间使用相同区域集合。每时段八个查询粒子的随机位置在数据构建时确定。
+
+| 数据条目 | 训练区域 | 验证区域 | 测试区域 |
+|---|---:|---:|---:|
+| Cylinder Re160 | 453 | 225 | 223 |
+| Half-cylinder Re640 | 448 | 222 | 222 |
+| Half-cylinder Re6400 | 429 | 224 | 220 |
+| Tangaroa | 436 | 229 | 226 |
+| DeltaWing resampled | 450 | 222 | 216 |
+| DeltaWing LBM | 450 | 222 | 216 |
+| F22 | 390 | 198 | 187 |
+| Boeing | 450 | 222 | 216 |
+| SmokeBuoyancy | 511 | 256 | 254 |
+| 总计 | 4017 | 2020 | 1980 |
+
+证据为远端`outputs/mainExp_Task678_FlowMap_1.1/build/<dataset>.json`及`cache_audit.json`，初始物理时间、半径、实际网格形状、保留/排除原因及文件SHA256逐窗口保存。上述记录属于输入/实现审计，尚不支持任何方法性能排名。
