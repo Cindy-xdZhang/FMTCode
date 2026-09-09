@@ -1,0 +1,31 @@
+{
+  "experiment": "mainExp_Task678_FlowMap_1.1",
+  "task_versions": {"Task6": "mainExp_Task6_FlowMap_1.1", "Task7": "mainExp_Task7_FlowMap_1.1", "Task8": "mainExp_Task8_FlowMap_1.1"},
+  "output_root": "outputs/mainExp_Task678_FlowMap_1.1",
+  "datasets": ["cylinder3d", "halfcylinderRe640", "halfcylinderRe6400", "tangaroa", "deltaWing_resampled", "deltaWing_LBM", "f22raptor", "boeing747", "smokeBuoyancy"],
+  "families": {"cylinder3d": "cylinder", "halfcylinderRe640": "cylinder", "halfcylinderRe6400": "cylinder", "tangaroa": "free_surface", "deltaWing_resampled": "deltaWing", "deltaWing_LBM": "deltaWing", "f22raptor": "aircraft", "boeing747": "aircraft", "smokeBuoyancy": "buoyancy"},
+  "source_fields": {
+    "cylinder3d": "/home/zhanx0o/DeepVortex/FLowDataFolder/halfcylinderRe160Resampled.nc",
+    "halfcylinderRe640": "/home/zhanx0o/DeepVortex/FLowDataFolder/halfcylinderRe640resampled.nc",
+    "halfcylinderRe6400": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_AIVDLongtime_1.1/source/halfcylinderRe6400_late96.nc",
+    "tangaroa": "/home/zhanx0o/DeepVortex/FLowDataFolder/tangaroa.nc",
+    "deltaWing_resampled": "/home/zhanx0o/DeepVortex/FLowDataFolder/deltaWing_mag0_3reesampled.nc",
+    "deltaWing_LBM": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1/source/deltaWing_LBM_windows96.nc",
+    "f22raptor": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1/source/f22raptor_windows96.nc",
+    "boeing747": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1/source/boeing747_windows96.nc",
+    "smokeBuoyancy": "/home/zhanx0o/DeepVortex/FLowDataFolder/SmokeBuoyancy80_239.nc"
+  },
+  "available_frame_ranges": {"halfcylinderRe6400": [75, 149]},
+  "cylinder_datasets": ["cylinder3d", "halfcylinderRe640", "halfcylinderRe6400"],
+  "minimum_cylinder_time": 7.5,
+  "sampling": {"windows": 8, "source_frames": 9, "max_spatial_dim": 96, "seed_grid_side": 8, "max_bundles": 128, "minimum_bundles": 24, "radius_grid_fraction": 0.5, "steps_per_segment": 62, "context_offset_radii": 3.0, "data_seed": 9106},
+  "splits": {"train": [0, 1, 2, 3], "validation": [4, 5], "test": [6, 7]},
+  "seeds": [9100, 9101, 9102],
+  "token_dimensions": [32, 64],
+  "arms": ["raw_pca7", "raw_pca25", "raw_vae7", "fmt_all", "fmt_all_kin4", "fmt_all_v2", "largeNeighbor", "aivd1w3_dft", "differential_geometry", "coordinate_fourier", "center_pca", "coordinates_only"],
+  "decoder": {"hidden_width": 128, "optimizer_steps": 2000, "batch_size": 512, "learning_rate": 0.001, "weight_decay": 0.00001},
+  "vae": {"hidden_dims": [512, 256], "optimizer_steps": 3000, "batch_size": 256, "learning_rate": 0.0003, "beta": 0.000001},
+  "evaluation": {"primary": "position_nrmse", "geometry": ["pair_distance_error", "centered_shape_error", "tetra_volume_error"], "time": ["late_half_error", "between_sample_error", "endpoint_error"], "test_once_after_fixed_training": true},
+  "checkpoint_policy": "in_memory_only_no_model_files",
+  "scope": "Per-dataset held-out source times, not cross-flow generalization; no IVD or manual labels; no feature or epoch selection on test"
+}

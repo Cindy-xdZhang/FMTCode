@@ -26,12 +26,24 @@
 - 现有 `line_offset` 只整体平移邻居轨线，没有重新积分，不能当真正的种子扰动；
   邻居频率块整体删除也不能当只删除聚合操作。以上修正不改变原配置、代码或数值。
 
+## 2026-09-06 FMT 范围说明（保留原实验分支名称与数值）
+
+用户明确 FMT 指傅里叶特征提取模块，包含普通 DFT/幅度特征，不限于主表选定的某个几何配方。
+以下旧行中的 `fmt` 是机器结果中的具体分支名，不代表全部 FMT 实现；`plain_dft` 与
+`plain_magnitude` 也属于用户所定义的 FMT。此前把普通傅里叶排除在 FMT 外、进而笼统称
+“本次结果不支持 FMT 鲁棒性”超出了证据范围。现修正为：部分固定几何配方退化明显，
+但普通傅里叶幅度实现有坐标噪声优势，例如 GeometryControls 1.1 中邻距0.5%高斯噪声下
+Task5 普通幅度 F1 `.6769→.6696`、同结构几何网络 `.7902→.6273`；这支持该傅里叶实现的
+局部抗噪价值，不证明所有实现/扰动均优越。Task1/Task5干净数据几何对照更高的数值仍保留。
+不得按测试强度逐项选择最佳傅里叶分支后拼成一个统一方法的结果。
+
 ## 版本表
 
 | 版本 | 日期 | 任务 | 技术要点 | 主要代码路径 | config | 指标（协议见下） | 结论 |
 |---|---|---|---|---|---|---|---|
-| Verify_Task135_GeometricControls_1.1（已部署，预检 PASS，正式实验运行中） | 2026-09-05 | Task1/3/5 简单几何与 FMT 公平比较 | 不改既有确认集、IVD p95 标签和冻结 Raw 主干；从七线对向间距矩阵 D 重建 Ddot·pinv(D)，真实非均匀物理时间求导，减去未使用标签的采样点平均涡量。Task1 比较几何 IVD 直接阈值、1D KMeans、普通 DFT 复数/幅度、无 Fourier 四通道几何时间序列、原 fmt_all+kin4；Task3/5 比较直接阈值及五种表示进入同一残差分支，另复放 Raw。各辅助输入无损补零至268维，64维辅助嵌入，所有学习臂参数量完全相同；保留各任务原 FMT 配方，Task3 为 aivd1w3_dft（前三时刻的零频总和），Task5 为 all+gram2+index_kin6。100 epoch、patience20、学习率.001，5个配对种子40–44。全部模型和验证集阈值冻结后才评价确认集 | `FMT_Utils/GeometricControls_3D.py`；`experiments/Run_Task135_GeometricControls.py`；独立 `experiments/Audit_Task135_GeometricControls.py`；复用冻结 residual 训练器，不修改旧算法 | `config/Verify_Task135_GeometricControls_1.1.yaml`；源码提交及作业 ID 见 Ibex 登记表 | 尚无完整且独立审计通过的性能结果；Ibex 12项数值/标记/配对扰动及训练接口测试通过，30个任务×数据集、340份切片证书预检 PASS（51359759）。远端 Re160 代表缓存：Task1 保留3584/4096且七线长度全49；Task5保留3867/4096且长度按各行积分步数匹配33/41/49/65。源码 `39471787`；正式 arrays `51360408[0-49]` / `51360409[50-149]` 已运行，汇总 `51360430` → 独立审计 `51360437` 等待依赖 | 用户要求的诊断实验；不能预设 FMT 优于简单 IVD，不能把 Task3 零频均值当非零频抗噪证据；补零匹配后的新比较不替换历史主表。几何 IVD 是采样点均值偏差而非完整体场标签。无 Fourier 四通道控制是时间域表示，不是仅移除某一个 FMT 实现算子的严格消融。原确认集已有历史查看，本次不能宣传为全新未见的独立研究 |
-| Verify_Task135_PairedRobustness_1.1（已部署，与几何控制共享干净模型） | 2026-09-05 | Task1/3/5 坐标噪声、丢帧、截断配对测试 | 使用上行相同轨线、标签和冻结模型。坐标高斯σ为每条primitive自身原始邻距的.001/.005/.01/.02/.05/.10；丢帧10/25/40%，每个primitive独立取缺失时刻、七线共享、保留端点并按物理时间插值；保留前75/50%轨线，只使用保留点重采样并更新物理时间，不读取已截断未来点。3个扰动重复17068/27068/37068，独立于训练种子，所有方法共享逐点相同实现；干净条件只评估一次 | 同一 `experiments/Run_Task135_GeometricControls.py` 和独立审计，避免复制第二套训练器；`ibex_bash/task135_geometric_controls.sh` | 同一 `config/Verify_Task135_GeometricControls_1.1.yaml`；输出 `outputs/Verify_Task135_GeometricControls_1.1/` 下 clean_comparison、robustness_table、逐次预测与 Task5 逐尺度结果 | 尚无完整且独立审计通过的性能结果；已提交150个 task×dataset×seed分片，每个分片1个干净条件+11种扰动×3重复 | 报告绝对F1、Average Precision、IoU及相对配对干净模型的下降；不能用相对Raw增益替代退化曲线，不按结果选择有利噪声。不做噪声增强；若追加增强训练必须新版本、相同增强预算。无效样本由原始网格mask及七线长度统一预检，失败就停止，禁止按方法或噪声程度另筛样本 |
+| Verify_Task123_GeometryParameterStress_1.1（已部署，故意偏离正常配置的诊断） | 2026-09-06 | Task1/2/3 几何基线退化维度 | 用户明确要求故意调差几何超参数。10数据条目×3种子×3任务共90分片。保留正常seed-time七线几何IVD参考；12组几何参数含正常配置、差分跨度4/16/31、平滑窗9/31、伪逆截断.99/1.01、均值权重0/2、特征缩放.01/100，仅在冻结正常模型推理阶段替换；6档决策阈值偏移为正常阈值±.5/2/8倍训练分数标准差，分数保持不变。训练侧每次只改一项：Task1 KMeans迭代1次/初始化1次/随机初始化；Task2 VAE仅10步/KL权重100/学习率1e-7；Task3仅1epoch/weight decay100/学习率1e-7。每个训练变体单独用验证集定阈值或簇映射，所有变体冻结后才评分确认集 | `FMT_Utils/GeometricControls_3D.py::stressed_seed_ivd`；通用 `experiments/Run_GeometryParameterStress.py`、`experiments/Audit_GeometryParameterStress.py`；不修改原始提取器和训练器 | `config/Verify_Task123_GeometryParameterStress_1.1.yaml`；源码`aee4bd56`；preflight `51392255` PASS；Task1/2/3 arrays `51392311/51392312/51392313`，summary `51392342`→audit `51392361`；正常Task2为新增几何标量补零189维→原冻结512/256隐藏层、64维latent VAE，7000步、beta1e-6、lr3e-4；不替代历史Raw/FMT主表 | Ibex全部15项测试及30个任务×数据集、340切片证书预检PASS。Task1已完成30/30子任务、1170指标行；Task2首个A100训练中、Task3排队中；最终预计3510指标行，含F1/AP/IoU/precision/recall/balanced accuracy、四格混淆计数、预测正类率、特征分布和相对正常配置下降。暂无性能结论 | 只回答故意错设参数如何影响该几何基线；不能把退化配置作为最强基线，也不按确认集挑最差配置。几何参数改变仅发生在推理阶段，不能混称该参数下重新训练的模型表现；训练参数变体则重新拟合。阈值错设应只改分类指标、不改排序指标。伪逆>1为显式零特征负对照。保留无变化和改善结果，不能预设每一项都会降分。FMT按用户定义包含普通DFT/傅里叶，本次不修改任何傅里叶实现或将其重新排除在FMT之外 |
+| Verify_Task135_GeometricControls_1.1（完成，独立指标审计 PASS） | 2026-09-05 | Task1/3/5 简单几何与 FMT 公平比较 | 不改既有确认集、IVD p95 标签和冻结 Raw 主干；从七线对向间距矩阵 D 重建 Ddot·pinv(D)，真实非均匀物理时间求导，减去未使用标签的采样点平均涡量。Task1 比较几何 IVD 直接阈值、1D KMeans、普通 DFT 复数/幅度、无 Fourier 四通道几何时间序列、原 fmt_all+kin4；Task3/5 比较直接阈值及五种表示进入同一残差分支，另复放 Raw。各辅助输入无损补零至268维，64维辅助嵌入，所有学习臂参数量完全相同；保留各任务原 FMT 配方，Task3 为 aivd1w3_dft（前三时刻的零频总和），Task5 为 all+gram2+index_kin6。100 epoch、patience20、学习率.001，5个配对种子40–44。全部模型和验证集阈值冻结后才评价确认集 | `FMT_Utils/GeometricControls_3D.py`；`experiments/Run_Task135_GeometricControls.py`；独立 `experiments/Audit_Task135_GeometricControls.py`；复用冻结 residual 训练器，不修改旧算法 | `config/Verify_Task135_GeometricControls_1.1.yaml`；源码提交及作业 ID 见 Ibex 登记表 | 源码 `39471787`；arrays `51360408/51360409` 全150子任务完成；summary `51360430`、audit `51360437` 完成。10数据条目等权、5种子平均 clean F1（Task1/3/5）：FMT `.6015/.8474/.6735`；几何直接阈值 `.8593/.8857/.8290`；几何 IVD+KMeans/同结构网络 `.6337/.8406/.7902`；无 Fourier 几何 `.6372/.8033/.7573`；普通幅度 DFT `.5847/.7425/.6769`（Task5普通复数DFT `.6785`）。表与逐次数据：`outputs/Verify_Task135_GeometricControls_1.1/`，独立审计PASS、34000指标行及107100分尺度指标行，表SHA `fd1f1a9d…a6844a4e` | 旧结论→新增证据：FMT优于此前Raw/普通DFT的结果仍按旧协议保留，但不能据此推断超越简单物理量；原对照缺少从七线直接重建标签相关涡量偏差。现在：Task1 FMT不及几何KMeans；Task3相对同结构几何网络仅+.0068，未做显著性检验；Task5低于几何网络−.1167；三个任务均不及几何直接阈值。反对“FMT普遍提供简单物理量之外的预测收益”；也不能仅凭本比较断言收益完全来自网络。Task1阈值用验证标签校准，是诊断对照，不冒充纯无监督KMeans。几何IVD是采样均值偏差而非直接读取标签；Task3 FMT为前三时刻零频和，不能当非零频抗噪证据。新同结构容量匹配比较不覆盖历史主表；无Fourier几何是时间域控制，不是严格单算子消融 |
+| Verify_Task135_PairedRobustness_1.1（完成，独立指标审计 PASS） | 2026-09-05 | Task1/3/5 坐标噪声、丢帧、截断配对测试 | 使用上行相同轨线、标签和冻结模型。坐标高斯σ为每条primitive自身原始邻距的.001/.005/.01/.02/.05/.10；丢帧10/25/40%，每个primitive独立取缺失时刻、七线共享、保留端点并按物理时间插值；保留前75/50%轨线，只使用保留点重采样并更新物理时间，不读取已截断未来点。3个扰动重复17068/27068/37068，独立于训练种子，所有方法共享逐点相同实现；干净条件只评估一次 | 同一 `experiments/Run_Task135_GeometricControls.py` 和独立审计，避免复制第二套训练器；`ibex_bash/task135_geometric_controls.sh` | 同一 `config/Verify_Task135_GeometricControls_1.1.yaml`；输出 `outputs/Verify_Task135_GeometricControls_1.1/` 下 clean_comparison、robustness_table、逐次预测与 Task5 逐尺度结果 | 150分片、34000指标行完整，全部11扰动强度×3重复，审计PASS；表见同目录 `robustness_table.csv`。Gaussian σ=.005（自身邻距0.5%）FMT clean→noisy F1：Task1 `.6015→.3365`（降.2650），Task3 `.8474→.7726`（降.0748），Task5 `.6735→.5112`（降.1623）；普通幅度DFT分别 `.5847→.5836`（降.0011）、`.7425→.7333`（降.0092）、`.6769→.6696`（降.0074）。Task3同结构几何网络 `.8406→.7332`（降.1074）。40%内点dropout FMT下降 `.0043/.0008/.0005`，多数对照同样接近不变。只保留前50%轨线 FMT `.2441/.4903/.5533`（降.3575/.3571/.1202），几何阈值约 `.8593/.8857/.8290`（接近不变） | 不支持跨Task1/3/5的稳定鲁棒性优势。局部正结果：Task3在σ=.005/.01/.02时FMT的绝对F1高于全部本次对照，且相对几何网络下降较小；但普通Fourier下降更小，σ=.05/.10时普通Fourier绝对性能反超。Task1/5逐点高斯与截断不支持FMT更可靠；丢帧后各方法都较稳定，不能归为FMT独有优势。截断保留最初时刻，seed-time几何量几乎不变属于该扰动设定的预期性质，不是普遍缺失鲁棒性。不得挑选有利强度或用领先Raw代替下降报告。噪声单位、标签、配对样本与干净冻结模型均固定，未做噪声增强 |
 | （待跑）mainExp_1.1 | — | Task1 | 旧法冻结复跑：FMT(PosE+同时刻跨线分组+LGA+Pool, stages=2, embed24, alpha1000, beta19, temporal_head=None) + KMeans(k=2)，4 输入视图；补定量协议与确定性设置。注：分组已从 GeoLinePicker 重构为 `group_same_timestep`，经测试与旧实现逐位一致（commit ca653fd），故仍视为"旧法冻结"。复跑前已修复两处数据侧 bug（commit 944d206）：时间重采样改为先过滤无效 primitive；积分后端 CPU/CUDA 语义统一——它们改变的是"数据正确性"而非方法本身。eval/train 模式两臂均测（协议要求） | `experiments/FMT_Clustering.py`, `FMT_Utils/FMT_encoder.py` | `config/PathlineFMTclustering.yaml` | ARI / NMI / F1(vs IVD阈值) / F1(vs Vatistas解析标签) | — |
 | （待跑）Verify_objectivity_1.1 | — | Task1 | Killing 观察者不变性测试：随机时变刚体观察者变换场 → 重积分 → 重编码 → 特征漂移量化 | `FLowUtils/KillingObserver2D.py`（符号先校准，见问题分析 P7） | — | 特征相对漂移 / 聚类标签翻转率 | — |
 | mainExp_3DFMT_1.1 | 2026-08-17 | Task1-3D | 每个种子生成 7 条 pathline（center、x±、y±、z±）；中心位移与邻居相对位移先做时间差分；三维实序列逐坐标做 Fourier 变换，每个频率取 Gram 不变量并附加旋向三重积；邻居特征排序池化；StandardScaler + KMeans(k=2)；输出真实物理比例的 3D/正交投影/Z截面/pathline 图，并计算同一时刻 3D IVD 体数据及 p90/p95/p97.5 等值面 | `experiments/FMT_Clustering_3D.py`, `FMT_Utils/DFT_FMT_3D.py`, `FMT_Utils/FMT_3D_pipeline.py` | `config/PathlineFMTclustering3D.yaml` | 合成 smoke：180/180 valid，feature `[180,77]`，cluster `[60,120]`。真实 `halfcylinderRe160Resampled.nc`：两次均为 7200/8000 valid、feature `[7200,161]`。默认 `t=3`：cluster `[7000,200]`，少数 cluster 1 对 IVD 的 p90/p95/p97.5 F1=.347/.558/.833。指定 `--seed-time 7`：cluster `[828,6372]`，少数 cluster 0 对 IVD：p90 F1=.674/IoU=.509/P=.774/R=.597；p95 F1=.736/IoU=.582/P=.615/R=.917；p97.5 F1=.468/IoU=.306/P=.306/R=1.000 | `t=3` 少数簇只对应近圆柱最强 IVD 核；`t=7` 尾迹已发展为明显的波动结构，少数簇沿近尾迹展开，和 p95 IVD 区域最接近。它覆盖全部 p97.5 强 IVD 点但相对该窄阈值过分割，因此不能只凭最高分位判定成败。KMeans 簇编号每次运行可交换；这里的“少数簇”按样本数识别。IVD 百分位只是可追溯参考阈值，不是唯一 ground truth。只保证常数旋转/常数平移不变，不保证时变观察者下的完整客观性。 |
@@ -223,9 +235,692 @@
 | Verify_Task123_NoiseTypes_1.1（完成，Ibex confirmation，独立审计 PASS） | 2026-09-04 | Task1/Task2/Task3 噪声类型扫描：FMT vs 原 Raw | 与 NoiseRobustness 1.1 相同协议（只在 clean 上拟合，只扰动 confirmation pathline，`corruption_seed=17068`，两臂配对），条件换为 22 种：高斯白噪声 σ=.005/.01/.02/.03、时间平滑高斯 σ=.05/.10/.20、共模噪声 σ=.05/.10/.20、邻居种子偏移 σ=.05/.10/.20（中心线不动）、绕种子点刚体旋转 15°/45°/90°、脉冲离群点 2%/5%/10%（跳幅 1.0 邻居间距）、单调时间弯曲 10%/25%/50%。预注册声明：全部条件与臂无论结果如何都报告，不得只挑对 FMT 有利的扰动 | `FMT_Utils/RobustnessFeatures_3D.py::corrupt_pathline_primitives_3d`（新增 6 kinds + `_moving_average_time`/`_rodrigues`），`experiments/Run_Task123_NoiseRobustness_1_1.py`（复用），`tests/test_robustness_features_3d.py`（+1 结构化扰动不变量测试），`ibex_bash/task123_noisetypes_1p1_{cpu,gpu}.sh`，`ibex_bash/submit_task123_noisetypes_1p1.sh`；commit `789b7162` | `config/Verify_Task123_NoiseTypes_1.1.yaml`；部署包 `7143f6ca…5acb`；jobs `51312626–51312632` | 每任务 2300 条，独立审计 `PASS`（summary/audit SHA `efc8b0c8…`/`8d4f4b58…`），clean 复放与主表差 ≤.0011。FMT dataset-macro F1（Raw 对照见 NoiseTypesStrong 行的合并表）：Task1 刚体旋转 15/45/90° `.601/.601/.601`（严格不变）、邻居偏移 `.601/.601/.602`、共模 `.609/.609/.570`、时间弯曲 `.608/.537/.371`、细高斯 σ=.005/.01/.02/.03 `.336/.270/.242/.206`、平滑高斯 `.177/.134/.136`、脉冲 `.148/.138/.142`；Task2 刚体旋转 `.585×3`、邻居偏移 `.584/.584/.581`、共模 `.479/.405/.326`、时间弯曲 `.542/.361/.243`、细高斯 `.297/.270/.232/.189`、平滑 `.152/.151/.152`、脉冲 `.163/.153/.151`；Task3 F1 刚体旋转 `.745/.702/.680`、邻居偏移 `.852/.832/.801`、共模 `.859/.858/.854`、时间弯曲 `.848/.806/.723`、细高斯 `.763/.702/.668/.650`、平滑 `.613/.488/.281`、脉冲 `.431/.299/.225`（AP 细高斯 `.887/.830/.807/.792`） | 见 NoiseTypesStrong_1.1 行的合并结论。单独看 FMT：对刚体旋转和邻居种子偏移按构造完全不变（Task1/2）；Task3 的 residual 模型含 Raw 主干，旋转下降到 .68–.75 但仍远高于纯 Raw；对逐点独立噪声极敏感：Task1 在 σ=.005（平均位移 ~7e-6，约邻居间距的 0.4%）就从 .601 跌到 .336 |
 | Verify_Task123_NoiseTypesStrong_1.1（完成，Ibex confirmation，独立审计 PASS） | 2026-09-04 | 噪声类型扫描：更强 baseline | 与 NoiseTypes_1.1 逐位相同的 22+1 条件与扰动实现；臂与 NoiseRobustness 1.2 相同：Task1 plain_dft_magnitude/PCA-64、geometric_sequences/PCA-2；Task2 Raw-PCA189、Raw-tuned、plain DFT 同一 VAE；Task3 冻结 raw/raw_wide。summary 核验 A 组审计哈希后合并为 13 臂×23 条件总表 | `experiments/Run_Task123_NoiseRobustness_1_2.py`（复用），`experiments/Audit_Task123_AdditionalEvidence_1_1.py --kind noise-strong`；commit `789b7162` | `config/Verify_Task123_NoiseTypesStrong_1.1.yaml`；同一部署包；jobs `51312633–51312635, 51312645–51312647` | 2300/3450/2300 条，独立审计 `PASS`（summary/audit SHA `c23e1433…`/`73470164…`），9 个臂 clean 复放差 ≤.0020。合并 13 臂×23 条件总表见 `outputs/Verify_Task123_NoiseTypesStrong_1.1/robustness_table.csv`。FMT 相对最强 baseline 的 F1 差（Task1/Task2/Task3）：clean `+.017/+.005/+.219`；刚体旋转 90° `+.154/+.412/+.491`；邻居偏移 .20 `+.013/+.056/+.231`；共模 .10 `+.024/−.132/+.256`；时间弯曲 .25 `−.048/−.167/+.174`；细高斯 σ=.005 `−.247/−.240/+.123`、σ=.03 `−.276/−.300/+.011`；平滑高斯 .10 `−.145/−.138/−.056`；脉冲 5% `−.250/−.092/−.179`。最强 baseline 的身份：Task1 几乎总是普通 DFT（幅度谱对时间弯曲和 σ≤.02 高斯几乎不变：`.584/.594`），Task2 是 Raw-tuned 或普通 DFT VAE，Task3 是 Raw-wide/Raw-PCA | **按预注册全部报告。FMT 明确更鲁棒的扰动类型**：刚体旋转（三任务都是唯一不崩的臂，baseline 在 45° 起跌到 .1–.3）、邻居种子偏移（Task2/Task3 领先 +.06/+.23，Task1 与普通 DFT持平）、Task3 下的共模噪声与时间弯曲（Raw 网络分别跌到 .53 与 .60，FMT 保持 .85 与 .72）、Task3 下 σ≤.03 的细高斯（F1 仍领先，AP 领先 +.10–.20；与 NoiseRobustness 1.1 合看，FMT 在 σ≈.03–.05 之间被 Raw 追平）。**FMT 更脆弱的类型**：逐点独立噪声（细高斯在 Task1/Task2 从 σ=.005 起、平滑高斯、脉冲离群点）——普通 DFT 的幅度谱在 Task1 对 σ≤.02 高斯几乎不变（.583–.594）而 FMT 已掉到 .24–.34；Task2 下的共模噪声与 25% 以上时间弯曲。预注册预期中“共模与时间弯曲下 FMT 仍脆弱”在 Task3 被推翻、在 Task2 成立；“细高斯下脆弱”在 Task3 被推翻（σ≤.03 仍领先）。机制：FMT 的旋转/平移不变量对坐标系与种子放置误差免疫，但其无量纲比值（余弦、手性）在相对位移信号极小时被逐点噪声翻转；Task3 的 1 维 `aivd1w3` 是有限差分量，对平滑漂移与脉冲最敏感。论文表述：FMT 的鲁棒性优势在于观察者/坐标系与采样几何误差（旋转、种子偏移、共模抖动、时间轴弯曲），不在于逐点测量噪声 |
 
+## 2026-09-06 Task1/2/3 论文三联图预测复放
+
+`Other_Task123_PaperTriptychs_1.1`：按用户指定先绘制 Half-cylinder Re160 与 Tangaroa。
+只复放当前统一 Task1-4.1、Task2-6.2、Task3-9.2 配方，冻结实现不修改。
+预先固定 Task1 seed7080、confirmation ordinal0；Task2 seed100、ordinal8；
+Task3 seed40、ordinal8，均为各自原协议首个注册seed和首个确认时间片。
+Task2重训同一VAE；Task3重训相同配置的两臂residual，沿用原冻结Raw backbone，
+临时模型只用于导出逐点预测，导出后删除，不下载模型。复放指标只检查图的数据身份，
+不覆盖主表，不按图像效果或confirmation数值选择时间片、seed或阈值。
+代码 `experiments/Export_Task123_PaperTriptychs_1_1.py`；配置
+`config/Other_Task123_PaperTriptychs_1.1.json`；输出
+`outputs/Other_Task123_PaperTriptychs_1.1/`。2026-09-06已完成6组效果图，每组分别导出论文/PPT版，
+共42个图片文件；预测job51391980[0-5]、最终渲染job51392430。原始场重建标签零错配，
+独立数据审计在Ibex执行成功（退出码0），报告留在远端。该审计重算逐片指标并记录与冻结逐次表的复放差异，
+未要求复放与原训练浮点结果完全相同，也未据差异选图。图中F1是预先指定单时间片的精确率与召回率调和平均，
+不能替代跨流场/重复实验的主表结论。本次不新增方法优劣结论。
+用户授权仅下载图片，未下载预测/模型。12份PDF字体与排版检查及逐图目视检查完成；
+方向标跨白色背景边界警告已记录并接受。详见[成图说明](Other_Task123_PaperTriptychs_1.1.md)。
+
 ## 定量协议（v1，改动需升版本并注明）
 
 - 数据：cylinder2d, doublegyre2d, beads2d, pipedcylinder2d；时间窗 [0.6, 0.8]×T；参数沿用 `PathlineFMTclustering.yaml`（dt=0.005, max_steps=300, L=30, offset=0.02, grid 0.25）。
 - 参考标签：(a) IVD 阈值（`ScalarField2d.compute_ivd_2D`，阈值=全数据集固定分位，非逐切片）；(b) Vatistas 合成场解析标签（`experiments/VatistasFlowDatasetGenerator.py`）。
 - 指标：ARI、NMI、对参考标签的 F1（聚类簇经匈牙利匹配后计）；KMeans 固定 random_state，特征先做显式标准化并记录方式。
 - 确定性：固定全部 seed；encoder 显式 `.eval()` 或显式逐片标准化，二选一并记录（两者都测一次，作为 P1 的复核）。
+
+## 2026-09-06 Task4-b 4.1 新标签共享网络过拟合结果
+
+| 实验版本 | 日期 | 任务 | 技术细节 | 主要代码路径 | Config / commit / 证据 | 主要指标 | 支持、反对的结论 |
+|---|---|---|---|---|---|---|---|
+| Verify_Task4B_VelocityCurlMemorization_4.1（完成，Ibex及本地审计PASS） | 2026-09-06 | Task4-b：channel+TBL 单个共享FMT网络四分类过拟合 | 用户重定义四类为 ordinary-streamwise、ordinary-spanwise、hairpin-head、hairpin-leg；仅 hairpin membership × velocity-curl 45°明确二分（反平行同属平行、45°归平行），无额外head判据。重算curl，全域体积加权IVD；a为正标注原始单元中心+目标体素中心IVD最小值下一个较小float64，涡区IVD>0.9a，无手工覆盖。全流场网格、普通两类每flow各随机最多8192点、全部有效hairpin点；七线×33点、无量纲单位速度积分，FMT161→1024→1024→4；单个fmt_only、seed7068、Adam1e-3、dropout/weight decay=0、每epoch全样本无放回一次、连续3epoch零错误且正确类最小logit优势>0；fit=evaluation | FMT_Utils/Task4B_VelocityCurlLabels_3D.py；experiments/Verify_Task4B_VelocityCurlMemorization.py（复用旧_train_one而不修改旧入口）；experiments/Export_Task4B_VelocityCurlReport.py；docs/Task4B_velocity_curl_protocol_4.1.md | config/Verify_Task4B_VelocityCurlMemorization_4.1.yaml，SHA df4c4d7a…761b8；base b0fe6d27 + 19文件manifest f8ccf48a…1a98；jobs 51391665/51391666；P100 dgpu502-33；cache SHA1563a763…3a671；原fit/audit SHA1094e1c5…da460 / 1185e644…cc601；正式报告four_class_report.json SHAbe62ffd8…3c3e1 | 合并47127样本，四类支持15683/15575/10783/5086。第104–106 epoch连续零错误，第106通过；训练33.76秒，GPU作业共1分钟；参数1223684。channel26842、TBL20285样本各自accuracy/macro-F1=1.0，每类F1=1.0；最小正确类logit优势2.98224。Ibex23项审计PASS，本地21项数据+13项预测审计PASS，6项单元/流程测试通过，无checkpoint | 支持：按用户本次四类标签，单个FMT输入网络可同时完全记忆两流场的47127个有效primitive；数值标签、索引、训练输出和覆盖核对通过。边界：仅训练样本记忆，不证明泛化、真实解剖标签正确或FMT优于Raw。严格全覆盖IVD使涡区几乎覆盖全场（channel99.9612%、TBL99.8475%）；不能据此声称得到选择性涡区边界。训练丢弃无法完整积分的1593个候选primitive，TBL实例12无有效primitive，未包含在拟合成功主张中 |
+
+数据构建细节：channel原始721811个正标注单元中心及10539个正标注体素中心的覆盖率均为1.0，a=.1694188708110282、0.9a=.15247698372992538；TBL对应655063/5413，覆盖率均为1.0，a=.01026903406092381、0.9a=.009242130654831428。channel每类有效支持8155/8148/6968/3571，TBL7528/7427/3815/1515；无效primitive分别81/1512（TBL含83个hairpin点），channel73个实例全部有有效primitive，TBL58个中57个有。输入文件SHA与用户本地四个VTK逐字节一致。两个文件的速度均方根分别.907866/.843941，实际物理积分步长.00783834/.21878458；归一化依据实际数据记录，不假定输入速度一定相差10–100倍。
+
+与旧描述并列：此前“94.2%涡区”只是在旧缓存的逐z平面均值偏差上作的诊断；本次是从原始速度重算curl、全域体积加权IVD、全流场网格及全部原始正标注单元中心校准，得到上述99.9612%/99.8475%，两者不是同一量或同一标注支持，不能混用。旧3.1的91711样本记忆结果保持不变，不替代本次新标签结果。
+
+输出位于 outputs/Verify_Task4B_VelocityCurlMemorization_4.1/：four_class_report.json、per_volume_fit_metrics.csv、build_summary.json、fit_summary.json、independent_audit.json、local_data_audit.json、local_fit_audit.json、histories/、predictions/及cache/标签NPZ（无模型文件）。原始复用训练器的指标字典仍沿用类别3旧键hairpin_limb；正式报告从数值预测重算并使用本版名称hairpin_leg，未改变类别定义、标签或数值结果。
+
+## 2026-09-06 Task4-b 0.98a 代理真值图片（不训练）
+
+| 实验版本 | 日期 | 任务 | 技术细节 | 主要代码路径 | Config / commit / 证据 | 主要指标 | 支持、反对的结论 |
+|---|---|---|---|---|---|---|---|
+| Other_Task4B_ProxyGTThreshold_4.2（仅标签后处理与三维出图） | 2026-09-06 | Task4-b channel+TBL ground truth | 按用户要求保留4.1每flow原始a，将严格IVD>0.9a改为IVD>0.98a；四类方向规则和hairpin成员保持不变；使用完整网格，包含无法积分有效primitive的GT；不训练、不读取预测 | experiments/Visualize_Task4B_ProxyGroundTruth_3D.py | config/Other_Task4B_ProxyGTThreshold_4.2.json SHA803a016f…40b28；输入版本4.1 base b0fe6d27；jobs51392331/51392397；outputs/Other_Task4B_ProxyGTThreshold_4.2/summary.json、local_groundtruth_audit.json；label SHA channel dd1bf629…de44、TBL ae967d8f…ff99 | channel阈值.15247698372992538→.16603049339480763，涡区99.9611977%→99.9501186%，移除219体素；TBL阈值.009242130654831428→.010063653379705334，99.8475105%→99.7958363%，移除1020体素。原始GT单元中心及GT体素覆盖均100%；本地独立完整网格核对通过 | 提高到0.98a仍将几乎全部网格视为涡区，修改幅度小；此记录仅描述用户指定阈值的标签结果，不支持模型性能或泛化结论，旧0.9a训练结果保持不变 |
+
+四类完整网格支持数（ordinary_streamwise / ordinary_spanwise / hairpin_head / hairpin_leg）：channel 618613 / 1346550 / 6968 / 3571；TBL 599852 / 1364611 / 3883 / 1530。三维总览为真实空间比例的透视体渲染，类别最近邻采样；普通两类半透明，全部hairpin另有不透明体素几何图。figures_r2仅关闭VTK过大坐标字母，标签文件未改写，原首版图和源码保留。
+
+## 2026-09-06 Task4-b 实际最小值 a，严格 IVD>a（仅出图）
+
+| 实验版本 | 日期 | 任务 | 技术细节 | 主要代码路径 | Config / commit / 证据 | 主要指标 | 支持、反对的结论 |
+|---|---|---|---|---|---|---|---|
+| Other_Task4B_ProxyGTThreshold_4.3 | 2026-09-06 | Task4-b ground truth 后处理 | a为原始正标注单元中心与目标正标注体素中心联合IVD的实际最小值，不再取nextafter；严格IVD>a排除等值点，四类方向判据不变；不训练、不读取预测 | experiments/Visualize_Task4B_ProxyGroundTruth_StrictMinimum_3D.py | config/Other_Task4B_ProxyGTThreshold_4.3.json SHA2de747d0…df674；script SHA691f11c9…22c86；输入4.1 base b0fe6d27；job51392510；outputs/Other_Task4B_ProxyGTThreshold_4.3/summary.json与local_groundtruth_audit.json | Channel a=.16941887081102822，涡区99.946121998%；TBL a=.010269034060923811，涡区99.783171032%；相对4.2分别移除79/250体素；独立逐体素标签、阈值最小值及文件SHA检查PASS | 指定a仍接近全场涡区。严格大于排除Channel 1个原始GT单元中心（原始GT覆盖99.99986146%，网格GT100%）及TBL 1个GT体素（网格GT覆盖99.98152596%，原始GT100%）；如实保留边界，不强制补回。无模型性能结论 |
+
+与4.2并列：此前a用实际最小值下一个更小float64、阈值0.98a，Channel/TBL涡区99.9501186%/99.7958363%；现在按用户新要求用实际最小值、阈值a，得到本版结果。这是定义变化，旧数值保留。Channel原始GT与网格GT最小IVD分别.16941887081102822/.2717325463372836，TBL分别.011468771054584097/.010269034060923811；每flow取两者最小，覆盖支持集合沿用4.1/4.2。完整四类支持依序ordinary_streamwise / ordinary_spanwise / hairpin_head / hairpin_leg：Channel 618613/1346471/6968/3571，TBL 599852/1364362/3882/1530。数据SHA：Channel e97a2fd414f5e0c4679e96d21dc9771ce827bc1248992243650313a45022226b；TBL 54ee581ccd4c407015e4e7649d9523bf9dcce0d02965f6852bf652d4b82f42c4。
+
+
+## 2026-09-06 六流场Task1–3模式a/b图片预登记
+
+`Other_Task123_PaperTriptychs_1.2`：用户指定Re160、Re640、Re6400、Tangaroa、Boeing747、Delta-wing原始LBM。
+Task1恢复模式a：几何体+IVD参考面+轨线 / FMT两簇 / FMT相对IVD误差；Task2/3使用模式b：参考 / 无FMT / FMT。
+复用1.1的Re160与Tangaroa预测，其余四流场沿用当前统一配方Task1-4.1、Task2-6.2、Task3-9.2；
+固定seed7080/100/40、确认序号0/8/8。模式a显示与评估均用p95，区别于旧模式a显示p97；
+轨线按旧IVD分层规则积分，仅展示，不变更训练输入。几何体仅使用经核实资产，不根据零速度猜测障碍物。
+配置config/Other_Task123_PaperTriptychs_1.2.json；结果outputs/Other_Task123_PaperTriptychs_1.2/。
+不据本次图像或确认指标选择时间、阈值、特征或模型；无新增方法级结论。仅下载图片，预测及模型不下载。
+
+
+`Other_Task123_PaperTriptychs_1.2`完成更新（2026-09-06）：18组三联图、36张论文/PPT版式、126个图片格式文件及3张浏览总览已生成并下载。
+预测job51392726全部12child完成，旧两流场复用1.1；最终渲染jobs51392906、51392946全部完成。
+数据独立审计留Ibex、退出码0；36份PDF本地最小字号7pt/13pt、碰撞0 FAIL，方向标白底边缘WARN经目视接受。
+全部36图已逐栏查看。结果仅作为预先指定时刻的效果图，不据此新增跨流场方法优劣结论，不改变主表；
+Boeing Task2单片结果保留其实际对照/FMT差异，未替换种子或时间来改善图片。
+说明和图注见docs/Other_Task123_PaperTriptychs_1.2.md，后续默认Task1模式a、Task2/3模式b。
+
+## 2026-09-06 Task4-b 用户指定固定 IVD 阈值（4.4，仅标签与三维图）
+
+| 实验版本 | 日期 | 任务 | 技术细节 | 主要代码路径 | Config / commit / 证据 | 主要指标 | 支持、反对的结论 |
+|---|---|---|---|---|---|---|---|
+| Other_Task4B_ProxyGTThreshold_4.4 | 2026-09-06 | Task4-b ground truth 后处理 | 用户在软件检查并咨询CFD专家后指定Channel IVD>5.785、TBL IVD>0.08；使用冻结全域IVD物理原值，不归一化阈值、不重算curl、不训练、不读取预测。hairpin成员×velocity-curl四类规则不变，阈值以下ignore=-1，不强制补回GT | experiments/Visualize_Task4B_ProxyGroundTruth_FixedThreshold_3D.py | config/Other_Task4B_ProxyGTThreshold_4.4.json SHAf07fa374…d3790；script SHAda3f000b…4305a；输入4.1 base b0fe6d27；job51395061；outputs/Other_Task4B_ProxyGTThreshold_4.4/summary.json、local_groundtruth_audit.json | Channel涡区229768/1976688=11.62388804%，原始GT保留92.85408507%、网格GT90.24575387%；TBL涡区304347/1973906=15.41851537%，原始GT保留99.93786857%、网格GT99.79678552%。本地独立逐体素、阈值、覆盖、空间网格及SHA核对PASS | 新阈值产生明显更小的涡候选集；无需、也不保证hairpin标注全覆盖。阈值来源为用户指定，不是模型性能搜索；不据此声称物理分类已由独立专家审计。无训练或泛化结论 |
+
+结论修订并列：此前以hairpin区域最小IVD为全场涡区边界（4.3），Channel/TBL分别标为99.946%/99.783%涡区；现在按用户提供的固定界限改为11.624%/15.419%。此前不合理之处是将标注区域的极小值覆盖条件当作全场涡识别阈值依据；数值计算检查通过并不证明该阈值物理合理。旧结果保留以便追溯，不再作为当前Task4-b涡区定义。尚未据此判断用户软件与本代码IVD实现逐点一致。
+
+完整四类支持（ordinary_streamwise / ordinary_spanwise / hairpin_head / hairpin_leg）：Channel 66681/153576/6158/3353，TBL 61563/237382/3873/1529。Channel排除51580个原始GT单元中心与1028个GT体素；TBL排除407与11。新标签SHA：Channel 17d5a9bd9a7e6548bef93ce49e0a789fb90fa41e78c6ab348bab91afed2bfadf；TBL c0dbd809d7885c9d4b69f8aa71afd6f209cf1427fe97e6fbac4cd1b9d1de9f79。三维总览保留4.3相同相机、物理比例和透明度，另输出全部保留hairpin的不透明体素图。
+
+## 2026-09-06 Task4-b 2000个小区域共享FMT分割（5.1，完成）
+
+| 实验版本 | 日期 | 任务 | 技术细节 | 主要代码路径 | Config / commit / 证据 | 主要指标 | 支持、反对的结论 |
+|---|---|---|---|---|---|---|---|
+| mainExp_Task4B_PatchSegmentation_5.1 | 2026-09-06 | Task4-b channel+TBL共享FMT四类局部分割 | 每flow900train/100test区域，含全部实例体素bbox+1体素padding和随机同尺寸窗口；连通盒实例整体分组，Channel66/7、TBL52/6；跨split盒间隔1体素，区域内可重叠。4.4固定IVD阈值；每点7×33单位速度RK4流线，seed步长受patch内原生插值域限制，FMT161→1024→1024→4，dropout0.1；train-only标准化、inverse-sqrt训练类频权重，Adam1e-3/weight_decay1e-4，200epoch固定最终模型；test最终一次；无checkpoint | FMT_Utils/Task4B_PatchSplit_3D.py；experiments/Task4B_PatchSegmentation_5_1.py；Export_Task4B_PatchVolumes_5_1.py；docs/Task4B_patch_segmentation_protocol_5.1.md | config/mainExp_Task4B_PatchSegmentation_5.1.json SHA83dd47bb…c2213；本地base aee4bd562d340158118f2e41f40129a9918e06a1+新文件，远端旧checkout b0fe6d27通过23文件SHA校验；部署manifest c3105bb6…dc2bd；patch清单3e96f032…fdf67；cache e7d9f696…22936；预测122adebd…aef82；jobs51395970/51395974/51396032/51396143；P100 dgpu502-33 | 唯一test体素（无效primitive计漏检）：Channel12302点，accuracy57.8524%、mIoU25.0146%、macro-F1 36.3563%；TBL12292点，57.8262%、22.1260%、31.9828%。对应训练抽样唯一体素mIoU89.0146%/84.0151%。远端审计及独立本地重算PASS，2000个VTK文件SHA全部核对通过 | 数据拆分、共享模型训练、密集test涡区推理及导出流程完成；当前测试分割效果较差，特别是hairpin两类，不能称为高质量分割。训练/测试差距明显，不从审计PASS推断标签物理正确或模型泛化良好；仅两个已知flow内未见空间区域/实例，不支持跨flow泛化、FMT优于Raw或whole-field涡/非涡识别。未根据本次test结果重训或选择参数 |
+
+四类顺序为ordinary_streamwise / ordinary_spanwise / hairpin_head / hairpin_leg。Channel test IoU分别31.1309%/53.9537%/7.9845%/6.9892%，F1分别47.4806%/70.0908%/14.7882%/13.0653%；TBL IoU19.0132%/57.0455%/7.9610%/4.4843%，F1 31.9514%/72.6484%/14.7479%/8.5837%。主指标对重叠test patch的同一体素概率平均后去重；无效预测为-2计入真实类别漏检。Channel/TBL唯一test体素流线覆盖98.2198%/97.5594%（219/300点无有效primitive）。每patch出现次数指标和valid-only指标另列training_report.json，不混入主结果。
+
+构建共236129个候选、230839个有效primitive。Channel候选136529、有效133870，train有效120498、test有效13372；TBL候选99600、有效96969，train有效83861、test有效13108。普通训练点每patch最多256，hairpin训练点全部；测试patch所有涡体素均列入候选。随机窗口不按IVD或类别筛选，因此Channel训练199/测试26个patch无涡点，TBL训练366/测试52个patch无涡点，均保留在900/100区域数中但不进入四类损失；这不是1800个非空训练区域或200个非空四类测试区域。
+
+与旧结论并列：4.1是0.9a标签、全域固定尺度流线、fit=evaluation的有限样本100%记忆；本次是4.4固定阈值、patch内可变步长、dropout/weight_decay及固定200epoch、独立空间测试。两者定义与评估不同，旧100%结果不支持本版泛化，不作直接方法优劣归因。本版参数1223684，P100训练和最终推理108.78秒，GPU作业155秒；不保留模型。配置/种子/输入/源码清单/历史曲线/逐patch指标/完整预测均保存。
+
+输出：outputs/mainExp_Task4B_PatchSegmentation_5.1/manifest.json、config_snapshot.json、build_summary.json、training_report.json、training_history.csv、predictions.npz、channel_test_segmentation.npz、tbl_test_segmentation.npz、test_patch_metrics.json、audit.json、local_review.json、export_report.json、figures_3d及figures_3d_r2。导出2000个含velocity/vorticity/IVD/VortexIds/proxy_label的局部VTK，测试另含predicted_label与confidence；每flow分别打包并已本地逐文件核对SHA及展开到patch_volumes。逐patch原始场curl重构IVD与冻结IVD最大差异0；VTK重读train/test各抽样检查通过。VTK速度为目标网格采样值，不能假设从该较粗局部速度再差分得到同一IVD。r2仅将普通涡显示透明度改为.04，测试patch选择、标签、预测与指标不变。
+
+## 2026-09-06 JHTDB channel 下载与加载器验证（1.1，完成）
+
+| 实验版本 | 技术细节 | 主要代码路径 | 配置与证据 | 指标与结论边界 |
+|---|---|---|---|---|
+| Verify_JHTDB_ChannelDownload_1.1 | 复制并修正 PyflowVis JHTDB_Lodader；用户确认局部64³、32时刻t=1+k×0.0065；x=[3,3.3],y=[-0.9,-0.6],z=[0.2,0.5]；getData静止壁面坐标、lag8空间/PCHIP时间插值；逐帧保存、4线程独立dataset续传 | FLowUtils/flowDatasetUtils/JHTDB_Lodader.py；JHTDB_NetCDF.py；experiments/Download_JHTDB_Channel.py；Visualize_JHTDB_Channel.py；Audit_JHTDB_Channel.py | config/Verify_JHTDB_ChannelDownload_1.1.json；outputs/Verify_JHTDB_ChannelDownload_1.1/{manifest,audit,probe}.json；两次执行源码快照与最终源码SHA记录；docs/JHTDB_channel_download_1.1.md | 完成32帧(32,64,64,64,3) float32；19项测试通过；全部帧SHA、NetCDF/逐帧/FMT读取逐值一致；首末xz平面与末帧17随机点独立查询最大差异0；三维体渲染和32帧滑块已目视验证。支持下载/排列/保存的一致性，不独立验证数据库物理精度；无模型或FMT方法效果结论，不改变已有任务数据和阈值 |
+
+时间为插值后的物理时刻，t=1不在原始k×0.0065存储网格上；不是32个未经插值的原始快照。原始channel cutout为移动网格，本次未使用cutout。初次串行完成两帧后中断并改为4线程续传，两次源码与记录保留；全程本地执行，无Ibex作业。
+
+## 2026-09-06 客观性验证四联图代码
+
+`Other_FMTObjectivityTranslation_1.1`：新增纯平移Killing observer四档0/25/50/100%速度对照代码；速度样条积分得到位移，在原坐标拉回位置读取v，再减u；同一Task1-4.1拟合分类器逐档重新计算FMT和标签，不复制原预测。代码experiments/Visualize_FMT_Objectivity_Translation_1_1.py、FMT_Utils/TranslationObserver_3D.py；约定config/Other_FMTObjectivityTranslation_1.1.json；说明docs/Other_FMTObjectivityTranslation_1.1.md。完成7项参考系/轨线/分类回调数值测试及解析fixture两种版式排版检查；真实FMT接口尚未端到端运行。未指定正式目标速度，未提交Ibex作业，不新增方法客观性结论。旧三联图与冻结主实验实现不变。
+
+## 2026-09-06 channel与isotropic重新下载为VTK（完成）
+
+| 实验版本 | 技术细节 | 主要代码路径 | 配置与证据 | 指标与结论边界 |
+|---|---|---|---|---|
+| Verify_JHTDB_VTKDownload_1.1 | 用户要求新增isotropic并重下非VTK数据；channel保持原局部盒64³、t=1+k×0.0065；isotropic1024coarse取[0,0.4]³、64³、t=1+k×0.002；各32帧；lag8空间插值，channel PCHIP、isotropic原始时刻none；4线程共享总并发；直接二进制STRUCTURED_GRID、PointData velocity | FLowUtils/flowDatasetUtils/JHTDB_VTK.py；experiments/Download_JHTDB_VTK.py；Audit_JHTDB_VTK.py；Visualize_JHTDB_VTK.py | config/Verify_JHTDB_VTKDownload_1.1.json；outputs/Verify_JHTDB_VTKDownload_1.1/{channel,isotropic}/manifest.json；audit.json；source/；old_format_cleanup.json；docs/JHTDB_vtk_download_1.1.md | 两流场各32单帧VTK+1含32时间数组的合并VTK；2项新增非立方/多时间数组VTK测试通过；64帧速度及坐标、文件SHA与合并数组核对通过；原PyFlowVis VTKLoader读取全部时刻及数值完全一致；两流场首末切片和17随机点查询最大差异均0。支持下载/保存/读取一致性，不独立验证数据库物理精度，不训练或改变既有任务阈值 |
+
+此前channel为NetCDF/NPY，现在为重新请求后直接保存的VTK；新旧32帧逐值完全一致，改动原因是用户要求格式及重新下载，并非原速度数据有误。新VTK核验通过后，已删除旧32个frame_NNN.npy与channel.nc，保留历史清单、审计和源码；逐文件旧SHA及删除范围见old_format_cleanup.json。参考OneDrive的channel_flow/channel.vtk只读未改。VTK坐标使用JHTDB原始x,y,z顺序，未复制参考文件的轴置换或未查询的涡量/标签。所有执行均为本地CPU，无Ibex作业。
+
+## Other_Task4B_GeometrySearch_5.2 — network/LR and geometry differences (2026-09-06)
+
+User-authorized extension of frozen mainExp_Task4B_PatchSegmentation_5.1. Earlier 5.1 conclusion remains: high training fit did not yield strong held-out four-class segmentation (test mIoU channel25.0146%, TBL22.1260%). This version tests wider/residual classifiers, learning rates0.001/0.0003, and geometry-derived gradient/curl features; it does not rewrite that result. Config SHAe507d0b9289b24173d893db59f51168e88c0d8303448d33246fd6bee6fc0da7a; protocol docs/Task4B_geometry_search_protocol_5.2.md; methods code experiments/Task4B_GeometrySearch_5_2.py and FMT_Utils/Task4B_GeometricCurl_3D.py. Eight candidates were frozen before any run. Selection uses spatially separated internal validation from original training patches only, followed by refit on all900+900 original training patches. The original 5.1 test is reused once after selection and is not fresh confirmation.
+
+Build51397778: 204359 original valid training occurrences; fit137514, internal validation12623, buffer54222. Baseline161 features, unit/time geometry399 features each; exact cache SHA7dc8501242b915cfe1d92c8ff653fc0ea34da6629ff4a24b13d7820e6c24b0c4. All native interpolation queries stayed within their patches. On fit rows only, a direct 45-degree threshold of geometry-derived tangent/curl gives parallel-versus-perpendicular agreement: channel unit59.2359%, time94.3076%; TBL unit59.8731%, time95.0657%. This is an input/label consistency diagnostic, not four-class neural segmentation or independent test performance. Analytic shear tests explain why: equal-arclength geometry removes speed variation, while equal-time geometry retains relative speed and yields a scaled velocity-curl estimate. Stored label curl is never a network input. Final neural results pending eight preregistered candidates; no performance conclusion yet.
+
+### 5.2 completed: frozen selection and final evaluation
+
+All eight candidates passed the same 4096-row memorization diagnostic (zero errors for three consecutive epochs). This establishes finite-sample fit capability; it is not a claim that the selected final model perfectly fits all original training points. Each candidate then trained from a fresh initialization for 300 epochs on the internal fit set.
+
+| 5.2 candidate | Channel validation mIoU (%) | TBL validation mIoU (%) | Mean (%) | Selected epoch | Memorization pass epoch |
+|---|---:|---:|---:|---:|---:|
+| baseline_fmt_mlp | 32.2205 | 27.8246 | 30.0225 | 10 | 281 |
+| wide_fmt_mlp | 30.4810 | 28.1360 | 29.3085 | 1 | 283 |
+| residual_fmt_lr1e3 | 30.8328 | 28.1185 | 29.4757 | 1 | 261 |
+| residual_fmt_lr3e4 | 32.2953 | 27.8056 | 30.0505 | 1 | 142 |
+| unit_geometry_curl | 39.3485 | 34.8974 | 37.1230 | 1 | 120 |
+| time_geometry_curl_lr1e3 | 54.8817 | 56.5686 | 55.7252 | 1 | 152 |
+| time_geometry_curl_lr3e4 | 53.2055 | 56.4255 | 54.8155 | 1 | 68 |
+| factorized_time_geometry | 53.7086 | 56.2933 | 55.0010 | 1 | 78 |
+
+The selected candidate is time_geometry_curl_lr1e3: equal-time 7x33 geometry, 399 input features including geometry-derived gradient/curl, width512 and four residual blocks, 2,314,244 trainable parameters, Adam learning rate0.001, no dropout/weight decay. The predeclared internal-validation rule selected epoch1 (mean mIoU55.7252%). Full refit therefore used one epoch over all204359 valid original training occurrences from900+900 patches, followed by one original-test inference. Selection SHA1154822e111544cb517564e38e3d780f8a587262786c08799b873dd8971d74cc. Later near-zero fit errors in the 300-epoch searches did not exceed the early validation maximum; no epoch was selected from final-test results.
+
+| Flow | 5.1 test mIoU (%) | 5.2 test mIoU (%) | 5.2 accuracy (%) | 5.2 macro F1 (%) | Ordinary streamwise IoU (%) | Ordinary spanwise IoU (%) | Hairpin head IoU (%) | Hairpin leg IoU (%) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| channel | 25.0146 | 45.0882 | 78.7514 | 56.8642 | 68.6355 | 77.1279 | 17.9451 | 16.6445 |
+| tbl | 22.1260 | 45.2979 | 82.1266 | 55.8791 | 69.0787 | 82.2853 | 18.7597 | 11.0680 |
+
+The 5.1 result is unchanged; 5.2 improves this reused benchmark by20.0736 percentage points for channel and23.1719 for TBL. It does not establish that hairpin segmentation is solved. Confusion matrices show substantial ordinary-vortex false positives as hairpin:
+
+- channel: hairpin membership precision 21.5553%, recall 64.9371%; 1503 ordinary voxels predicted hairpin. Final one-epoch refit training sampled unique-voxel accuracy 81.4116% and mIoU 54.9390% (valid only).
+- tbl: hairpin membership precision 19.5341%, recall 76.0465%; 1347 ordinary voxels predicted hairpin. Final one-epoch refit training sampled unique-voxel accuracy 84.0269% and mIoU 53.7084% (valid only).
+
+Evidence: outputs/Other_Task4B_GeometrySearch_5.2/{selection.json,final_report.json,final_test_predictions.npz,candidate_comparison.csv,local_review.json}; complete candidate curves and validation probabilities under search/. Final unique test supports remain12302/12292 including219/300 invalid predictions counted as errors, exactly matching5.1. Internal validation uses the frozen original training-point sample; final test is dense within its vortex regions. This sampling difference and the reused test must accompany interpretation. New geometry versus cached baseline changes feature content, neighbor offset and numerical precision; it is not an isolated FMT ablation. This is one preregistered seed per candidate, not a seed-robust ranking.
+
+All eleven Slurm processes completed. Remote audit and independent local recomputation of every validation and final metric passed; all200 VTK hashes and8 paired perspective-camera/transparency records passed. Four fixed test patches (channel6/10, TBL26/33) were rendered without selecting favorable predictions; the first examples visibly overpredict hairpin extent. Five analytic geometry tests and repository layout/diff checks passed. No model checkpoint was saved or downloaded. Final data SHA: dc67e75eb920f87015a3a3774f1f8b0756de2afa2028bf2779e98a80d5a06b52. Results bundle SHA9b494e30e43d91dbfa33295849da4f03477ab464e20d9c74b7364bdcbb42a69f.
+
+## 2026-09-06 Other_FMTObjectivityTranslation_1.2 — 全局平均平移 observer 预登记
+
+用户指定Cylinder Re160 3D，沿全局平均速度平移。新版本1.2保持1.1代码与记录不变；目标observer速度定义为每时刻完整原始160×60×20网格上的体积平均，非均匀坐标采用梯形积分权重；缺失速度节点联合排除，零速度节点保留，不凭零速度猜测障碍物。自然三次样条插值速度，再积分为位移；0/25/50/100%档分别积分observed field并重新分类。沿用Task1-4.1已冻结fmt_all+kin4、PCA8、seed7080、确认ordinal0，仅在原始训练/校准集合拟合一次；不按图像或确认指标选observer。全局空间均值用于定义观察者，不用于标签或模型选择。本实验测试该平移下的分类变化，不预设客观性成立，也不把均值扣除视为消除所有环境流。代码与配置见绘图方法表P15；9项数值测试通过。Job51401240，结果待运行。
+
+### 1.2 完成结果：Cylinder Re160 平均平移 observer
+
+证据：计算job51401240的cylinder3d/paper.json与observed_pathlines.npz；渲染job51401324复用同一数组，未重新分类。计算代码SHA f2bbc66e7fd863905bb07903f88179dc5b85a26c5d46bcf7252ed1a211a1de60；选择文件SHA f1e76ae43e97aa1d562dd2d6a168581a9ec1a0bba77275aab3e109346ea0a0a7；确认缓存SHA b9aa07f27957023785830f74ae16136cd06af838c6d98f772814fcf97d614783。实际轨线区间t=3.900000095至5.099998951，目标速度节点覆盖3.9至5.2。时间窗平均observer速度(1.0001947954,-8.195038686e-5,1.019448375e-5)，最终位移(1.2002326099,-9.834037044e-5,1.223336883e-5)，均为源数据单位，源文件未声明SI单位。全空间各帧无缺失节点。
+
+| Observer速度比例 | 有效中心轨线 | 预测为涡 | 相对原始标签变化 | 标签一致率 | 固定IVD p95参考F1 |
+|---|---:|---:|---:|---:|---:|
+| 0% | 3584 | 136 | 0 | 100% | 0.6195899772 |
+| 25% | 3584 | 135 | 1 | 99.972098% | 0.6164383562 |
+| 50% | 3584 | 135 | 1 | 99.972098% | 0.6164383562 |
+| 100% | 3584 | 134 | 2 | 99.944196% | 0.6132723112 |
+
+四档无额外排除；固定参考正类303。直接observed积分与原始轨线坐标变换的最大差0/2.500e-11/4.999e-11/9.998e-11。特征最大绝对变化0/1.99307275/1.99988461/1.99989939，故不能以分类高度一致推断特征不变。结论仅支持：本时间片、此纯平移observer及固定分类器下标签高度一致，但非严格不变；整体流向位移显著减弱。不证明一般observer客观性，不把均值扣除等同去掉所有环境流或背景剪切。未进一步解释两条变化的数值/方法原因；未用它们改模型或调参。
+
+输出7个正式图片文件，论文PNG2880×4079、汇报PNG2376×3366；最终两套面板尺寸PASS，PDF字号最小7/13pt，碰撞0FAIL。各4个WARN均为面板统计文字跨白色axes背景边界；已逐栏目视，文字完整不遮挡轨线，接受并保留REVIEW REQUIRED审计原状态。所有3584条线均绘制；非涡线alpha0.12、涡线alpha0.95在四档固定，放大同一相机zoom2.1，不改数据范围。格式包outputs/Other_FMTObjectivityTranslation_1.2/cylinder3d/Cylinder_Re160_mean_observer_figures.zip；未下载预测数组或模型。1.1此前仅完成代码/解析测试，本次新增真实数据结果，不改写原记录。
+
+## 2026-09-06 Other_FMTObjectivityTranslation_1.3 — cylinder 后半程可视化预登记
+
+用户排除所有cylinder原始模拟前50%的初始阶段，要求初始t>=7。三组原始模拟[0,15]，统一实际下限7.5；Re640源文件已裁到[7.5,15]，不能对该文件再次截半。按已有确认缓存元数据取首个合规时间，不看标签、预测或指标：Re160 ordinal2/t10.5，Re640 ordinal0/t9.5，Re6400 ordinal2/t10.5。已有1.2使用Re160 t3.9；1.3改用后半程，因为用户更新展示时间范围，旧1.2数值不覆盖也不与新时间片作方法优劣比较。新图仍固定Task1-4.1 fmt_all+kin4/PCA8、seed7080、原始训练/校准；每流场目标observer取完整源网格每时刻空间体积均值。所有分类在同一固定分类器下独立计算。长期规则已写AGENTS.md与config/cylinder_time_policy.json；未来新实验按新时间范围建版本，冻结训练/测试划分不追溯修改。Array51407401_[0-2]；结果待运行。
+
+### 1.3 完成：三组cylinder后半程图片
+
+证据：Array51407401_0/_1和补跑51407452；outputs/Other_FMTObjectivityTranslation_1.3/<dataset>/paper.json及observed_pathlines.npz（远端）。前两组运行代码SHA325e7c5658fe50658469504676802dce6dece2d3270119300e77d59cfb2a1a20；Re6400为相同科学计算代码加源文件/observer身份检查，SHA9fad9e65ee9a126e8ca19a5e3139e3cab0978e764441bf1d5f598eba3800f090。完整配置与数据身份在各图JSON。
+
+| 数据 | 初始t / 确认ordinal | 共同有效primitive | 0/25/50/100%预测为涡数 | 0/25/50/100%变化数 | 0/25/50/100%固定IVD参考F1 |
+|---|---|---:|---|---|---|
+| Re160 | 10.5 / 2 | 3610 | 825/836/851/863 | 0/11/26/38 | 0.52057245/0.51550044/0.50874126/0.50346021 |
+| Re640 | 9.5 / 0 | 3577 | 543/562/586/626 | 0/19/43/83 | 0.62093863/0.61411765/0.60411899/0.59299781 |
+| Re6400 | 10.5 / 2 | 3621 | 181/184/188/188 | 0/3/7/7 | 0.51152074/0.51716247/0.51700680/0.51700680 |
+
+三组均无额外轨线排除。100%档observed积分与坐标变换的最大物理距离误差分别8.6926e-9、1.1436e-8、8.6889e-8，均小于预设1e-5；该数值一致性不等于分类或特征客观性证明。路径时间窗平均observer速度分别(1.000022507,-0.000212933,-0.000163566)、(1.000093525,-0.000188258,-0.000127206)、(1.000194710,0.000786879,-0.000123216)，使用源数据单位。
+
+旧说法（1.2，Re160 t3.9）：100%档仅2/3584改变。当前（1.3，Re160 t10.5）：38/3610改变。原因是用户明确改为后半程时间片；之前的数字只描述初始阶段，不能外推到后半程。本次未修改原始冻结配方，不能把跨时间差异解释为方法退化/改进。三组本次分类均非严格不变，且相对IVD的F1变化方向不一致；不预设平均平移提升分类准确率。
+
+3组×2版式全部导出，共21张PNG/PDF/SVG/TIFF格式文件；6份面板尺寸报告PASS、最终PDF字号最小7/13pt、碰撞0FAIL。每份4项WARN为统计文字跨白色axes背景边缘，全部24面板逐栏和整图查看后接受，保留REVIEW REQUIRED报告。全部线保留，透明度和同流场四档相机固定。新增2项时间规则测试通过；源代码静态审计无FAIL。图片ZIP为outputs/Other_FMTObjectivityTranslation_1.3/Cylinder_late_time_observer_figures.zip，21文件哈希清单image_manifest.json；仅下载图片，预测与checkpoint均未下载。
+
+## 2026-09-07 Other_FMTObjectivityTranslation_1.4 — 双倍显示时长和数量预登记
+
+用户要求所有当前cylinder四联图轨线加长2倍、数量增至2倍。显示积分48->96步，约1.2->2.4物理时间，数量Re160/Re640/Re6400为7220/7154/7242；原初始t10.5/9.5/10.5保留。冻结分类配方只看每条轨线前48步的原定32点，各observer独立重新编码，标签着色到整条96步延长轨线上，不表示尾段逐位置都重新判为同类。旧样本能完整积分则优先保留；越域样本明确排除后，由固定Sobol空间种子按顺序补足准确数量，不据标签/图像筛选。新显示队列不套用旧缓存IVD标签、不报告旧队列F1。目标observer仍为完整空间均值，但读取26帧覆盖更长显示窗口；Re6400本地延长原始源窗口105..130帧。配置与使用说明docs/Other_FMTObjectivityTranslation_1.4.md。Array51408807_[0-1]；结果待运行。
+
+### 1.4 数值完成与显示裁剪修复记录
+
+计算证据：51408807_0/_1、51408817_2，运行代码SHAfec7b07553c074d9f03cfd08f0e4d36edd7bc5d470208f32be752fdb281282fe；配置执行参数见1.4预登记；每流场JSON保留完整来源。所有显示时长均2.4000091552734375，分类时长1.2000045776367188，比例恰为2；显示97点，分类取原48步32点。
+
+| 数据 | 旧显示数→新显示数 | 保留原种子 / 新增 | 已尝试候选 / 不完整 / 多余完整未采用 | 0/25/50/100%预测涡数 | 0/25/50/100%标签变化数 | 最大轨线变换误差 |
+|---|---|---|---|---|---|---|
+| Re160 t10.5 | 3610→7220 | 2986 / 4234 | 9216 / 1788 / 208 | 1925/1947/1979/2012 | 0/22/54/87 | 1.52027e-7 |
+| Re640 t9.5 | 3577→7154 | 2883 / 4271 | 9216 / 1634 / 428 | 1215/1256/1318/1408 | 0/41/103/193 | 9.03370e-7 |
+| Re6400 t10.5 | 3621→7242 | 2903 / 4339 | 9216 / 1944 / 30 | 368/378/390/394 | 0/10/22/26 | 1.51750e-6 |
+
+三组四档共同有效集合均恰达目标数量，无再次丢失。旧种子分别有624/694/718个不能完成更长积分，按纯几何完整性规则排除并补足。整个补点及选择过程不读取类别，未选最有利曲线。当前变化数属于新的显示队列，不能拿旧1.3的变化数直接作性能优劣比较；不报告基于旧IVD缓存标签的F1。
+
+显示检查修订：此前1.2/1.3记录“面板尺寸、字体检查通过并已目视”的结论只覆盖布局和文字，未发现放大三维视图中Line3DCollection仍被默认二维axes边界裁剪。1.4密集图预览暴露该问题，现对物理域内的已验证轨线关闭artist clipping，重新导出到final/。之前错在把文字/面板检查和整图目视当成轨线完整显示的充分检查；它们不能证明图元没有被裁。修复不改变积分、特征或分类数值，旧图片保留但不建议作为完整轨线展示直接使用。最终渲染SHAa38bcb1e4a44c352b99092fac7fd5f9cd4738bf67e7f00a4a4d3cfffab567d44，render-only51408915读取同一保存数组；详见1.4使用说明。
+1.4最终完成：render51408915于2026-09-07T00:14:00+03:00结束。所有三组最终图均在各dataset/final/，图片包Cylinder_long_dense_observer_figures.zip含21个PNG/PDF/SVG/TIFF文件。最终六份面板尺寸检查PASS、PDF最小字号论文7pt/汇报13pt、碰撞0FAIL；每份4项统计文字跨白色axes背景边缘的WARN已逐栏接受。24个面板及六张整图目视核对，物理域内轨线完整投影显示、不再按二维方形截断。下载仅图片，zip与21图哈希已核验。2项新增密集种子选择测试通过，静态审计19PASS/2WARN/0FAIL；动态字号及单次确定性队列无需误差条分别解释两个WARN。未新增训练或基线修改。
+
+## 2026-09-07 Other_FMTObjectivityTranslation_1.5 — seven velocity fractions
+
+用户将1.4四联图扩展为一列七图。固定alpha=0,1/6,2/6,3/6,4/6,5/6,1；同1.4的物质种子、源场、全网格均值曲线、后半程初始时间、96步展示及48步分类窗口。每档独立积分observed field并用原冻结Task1-4.1分类器重新计算标签，速度积分为位移后在逆变换查询位置读取原场。无新模型选择，无旧队列IVD F1复用。代码experiments/Visualize_FMT_Objectivity_Translation_1_5.py，配置config/Other_FMTObjectivityTranslation_1.5.json，source manifest tmp/objectivity_1p5_sources.json；Ibex51411521_[0-2]全部完成。
+
+| 流场 | N / t0 | 七档涡轨线数（alpha升序） | 七档相对原始标签变化数 | 最大轨线对应误差 |
+|---|---|---|---|---|
+| Re160 | 7220 / 10.5 | 1925,1942,1953,1979,1998,2012,2012 | 0,17,28,54,73,87,87 | 1.520271892e-7 |
+| Re640 | 7154 / 9.5 | 1215,1245,1276,1318,1362,1405,1408 | 0,30,61,103,147,190,193 | 9.033696338e-7 |
+| Re6400 | 7242 / 10.5 | 368,376,382,390,393,395,394 | 0,8,14,22,25,27,26 | 1.517499120e-6 |
+
+所有七档均完整保留同一队列。三流场0/50/100%相对1.4逐条标签完全相同、坐标最大绝对差0。新中间档位显示Re6400在83.3%至100%间变化数27降至26，因此不能将分类变化描述为普遍单调；三个流场均有非零标签变化，不能声称此冻结分类器严格客观。图中显示平移剥离后的几何与这些轨线的实际分类；不从画面推断新准确率结论。
+
+最终三流场共21份PNG/PDF/SVG/TIFF图片，论文2880x6834 PNG，PPT2376x5638 PNG；最小字体7/13pt。七栏尺寸检查六份全部PASS；本地最终PDF碰撞0FAIL、各7项统计文字跨白色axes边缘WARN，六张整图全部七栏已目视检查并接受，不遮挡文字/轨线。自动REVIEW REQUIRED原报告保留并附visual-review解释。沿用1.4禁用二维axes裁剪修复。ZIP内容、CRC及21文件SHA核对通过，科学数组只保留在Ibex；1.4结果未改。
+
+
+## 2026-09-07 Verify_FMTObservedPathline_2.1 — 三步observer独立实现及特征诊断
+
+用户质疑1.5缺少pushforward和整体平移，并要求从第一性原理复核。读完当前ReferenceFrame3d.cpp的worldline、两方向变换及场构造后，新建数值相机worldline(DOP853)、ReferenceFrameFromWorldline、ObservedVectorField三部分，然后RK4积分observed场；不依赖旧TranslationObserver的场查询/位移实现。固定参考时刻为播种时刻，变换初始恒等，不额外添加模拟0时刻累积位移。原1.4同物质种子、96步显示/48步分类、冻结Task1-4.1配方和主实验完全保留；七档系数i/6。删除全部bounding box。Ibex51447581_[0-2]全部完成；运行源manifest tmp/observed_2p1_sources.json，配置config/Verify_FMTObservedPathline_2.1.json。
+
+| 流场 | 七档标签变化数 | 仅替换中心块变化数 | 仅替换其他块变化数 | 正确轨线最大对应误差 | 错误v(y)-u轨线最大偏差 / 完整对照数 | 双精度邻居FMT最大变化 |
+|---|---|---|---|---:|---|---:|
+| Re160 | 0,17,28,54,73,87,87 | 0,17,28,54,73,87,87 | 0,0,1,0,1,1,0 | 1.51778993e-7 | 1.184129208 / 128 | 4.30543379e-11 |
+| Re640 | 0,30,61,103,147,190,193 | 0,29,61,103,147,190,193 | 0,0,0,0,0,0,0 | 9.05568258e-7 | 1.062239021 / 128 | 4.84513853e-11 |
+| Re6400 | 0,8,14,22,25,27,26 | 0,8,14,22,25,27,26 | 0,0,0,0,0,0,0 | 1.51645437e-6 | 1.173574161 / 126 | 3.74953402e-11 |
+
+全部21档的独立observed积分与原轨线精确坐标变换的分类逐条一致（差异数0）；新实现与1.5原七档分类逐条一致（每流场七档差异全0）。所有主图物质primitive完整，N仍7220/7154/7242。错误relative-field对照只用事先按索引选定的前128条中心线，Re6400其中2条不完整仅排除于负对照；不影响主图或分类队列。
+
+结论修订并列：之前只报告“颜色变化所以不严格客观”，没有定位具体原因 → 现在将场变换正确性和编码配方分别检验。源码显示旧1.5本已在y+d(t)查询原场，新独立实现与精确变换控制支持原有积分语义；因此不能把错误原因写成旧版仅积分v-u。旧图线框实际是共同取景盒，容易被误解成固定lab边界，现去掉。FMT的fmt_all含前23维跨时间中心位移特征，随相机速度改变；双精度邻居相对特征仅1e-11级变化，中心块变化最高约2。中心块干预在大多数档位复现标签变化数量，但“数量相同”不自动等于变化集合相同；Re640在1/6处中心块29而完整配方30，不能将每一条变化都唯一归因于中心块。
+
+浮点局限另记：float32输入下邻居描述符最大差约0.03–0.07，kin4某些极端样本的绝对差很大（例如Re640在5/6档3238344）；该块涉及局部微分矩阵的伪逆和高幅值量，不能仅以绝对差推断准确率。本次未全面追踪每个病态样本；不修改冻结配方或以复制标签消除差异。参考系刚体性保持同一时刻粒子间几何，不保持跨时刻中心曲线形状；匀速流在随流相机里成为静止点即反例。
+
+理论推导和知识缺口已写入optimal-connection/docs/referenceframe/referenceFrame_overview_zh.md§2.3–2.6，用户原指定缺失路径创建入口。只改文档，无C++源码修改；当前C++ SHAe786d3bb34ae8cf7bfcd421e392cf0d264051487b848808d5392fb9811649f93。纯平移验证不推广至任意时变旋转或非Killing相机。
+
+
+
+最终质量检查：三个流场共21份图片，全部六份面板尺寸PASS，最终PDF最小字号7/13pt、0FAIL，每份7个统计文字跨不可见白色axes背景边缘WARN已逐栏查看并接受。42栏与六张整图已查看，无bounding box、无可见轨线截断；ZIP及21个文件SHA核对通过。原始科学数组和JSON只留Ibex。整理审计时移除了从1.4继承的旧四档feature_max_absolute_change、旧显示字段，将changed_label_fraction按七档实际计数重算；旧JSON留备份，图片/轨线/标签完全不改。这个metadata修订不改变上述科学结论。
+
+## 2026-09-07 — Verify_FMTAllV2_1.1 preregistration
+
+User requested an objective neighbour-only `fmt_all_v2` and paired Task1/2/5 reruns. Fixed protocol `docs/Verify_FMTAllV2_1.1.md` and config `config/Verify_FMTAllV2_1.1.json` before performance evaluation. Encoder `FMT_Utils/FMTAllV2_3D.py` uses same-time six-neighbour offsets, 21 scalar Gram sequences, initial-scale normalization and initial-Gram subtraction, then 6 real-input Fourier bins (231 dimensions). Same-time vectors are rotation-covariant; their scalar Gram entries are invariant under arbitrary time-dependent rigid transformations before Fourier analysis. Five local synthetic tests pass, including a negative control showing that vector-component Fourier coefficients change under time-dependent rotation. This establishes implementation behavior on these tests, not performance on flow data. Old recipes and frozen results are unchanged. New performance remains pending; no claim of improved classification. Full Task5 retains a Raw coordinate branch and is not claimed objective.
+
+## 2026-09-07 — Task1 portion of Verify_FMTAllV2_1.1
+
+All50 Task1 shards completed. Independent prediction-based integer confusion matrices reproduce all100 F1 values. Paired dataset-macro old/new F1 =0.6015089286796476 /0.1429654043818444, difference -0.458543524297803; all10 entries decrease. This is a result of the frozen8-component PCA/KMeans setting with the specified231-dimensional objective Gram-Fourier input, not a claim that every possible objective encoder fails. Re160 seed7080 predicts100% positive under v2 (precision0.0832235,recall1), versus15.01% under the old recipe. DeltaWing_LBM v2 predicts99.90% positive. Labels and cluster identities were calibrated on the held-out development split. Prior task results remain unchanged. Full cross-task report pending Task2/Task5 and all-shard audit.
+
+## 2026-09-07 — distinction between standalone v2 and core replacement
+
+Earlier1.1 comparison: the complete prior recipe was replaced by v2 alone. Revised interpretation: this measures a standalone objective encoder, **not** the isolated effect of replacing the old fmt_all core, because it also removes kin4 (Tasks1/2) and gram2+kin6 (Task5). This is a comparison-scope limitation, not an error in computed1.1 metrics. Preserve all1.1 results and add `Verify_FMTAllV2_1.2` to answer the pipeline replacement question: retain old neighbour add-ons, replace only fmt_all by fmt_all_v2. Task1/2 new width259; Task5 new width338, so both old and new residual inputs are padded to338 for equal capacity and both retrained. Hyperparameters unchanged; old/Raw Tasks1/2 predictions reused only after exact data-identity checks. This control is registered after1.1 Task1 and partial learning-task results were seen and is explicitly not fresh confirmation or tuning. The core's exact objectivity certificate does not cover retained kinematic add-ons or the Raw branch.
+
+Task1 control1.2 also completed50 new-arm runs: retained-kin4 v2 macro F1=0.14277179008726074, versus standalone1.1 v2=0.1429654043818444 and paired old=0.6015089286796476. Restoring kin4 therefore does not recover Task1 performance under the fixed PCA8/KMeans protocol. Independent integer-count F1 audit of the50 native control predictions passes. This narrows the interpretation of Task1's failure; it does not identify a unique causal feature or rule out other objective representations. Full Task2/Task5 controls remain pending.
+
+## 2026-09-07 — Verify_FMTAllV2_1.1 complete, standalone objective encoder
+
+Independent auditPASS:150shards,400 aggregate rows,1350 per-scale rows,5seeds x10datasets per task. Data-source hashes, disjoint split paths, same labels, confusion matrices, Average Precision, adjusted Rand index and normalized mutual information were checked. All Task2 runs completed7000updates. Both Task5 arms have132354parameters and share each seed's frozen Raw model. Source/config/seed evidence is in `outputs/Verify_FMTAllV2_1.1` and ibex registry.
+
+| Task | Old recipe macro F1 | Standalone v2 macro F1 | New minus old | Raw macro F1 | Entries improved |
+|---|---:|---:|---:|---:|---:|
+| Task1 |0.601508929|0.142965404|-0.458543524|not rerun here|0/10|
+| Task2 |0.583613270|0.139851968|-0.443761302|0.488473648|0/10|
+| Task5 |0.675298050|0.615071320|-0.060226731|0.576159839|1/10|
+
+Task5 Average Precision old0.719478009→v2 0.640993768 (delta-0.078484242), Raw0.599648549. Paired macro-F1 delta sample standard deviations across seeds are0.001991067/0.020510307/0.002383823 for Tasks1/2/5. This specific objective-neighbour-only Fourier representation substantially underperforms the old complete feature recipes on the fixed benchmark, especially unsupervised Tasks1/2; Task5 remains above Raw on macro F1, with one entry improving versus old. This does not establish that objective encoders in general fail. The standalone comparison also removes existing auxiliary blocks; control1.2 separately retains them.
+
+Core invariance check across synthetic tests and actual training fixtures passed: maximum absolute float32-output discrepancy1.862645149230957e-9, maximum relative L2 discrepancy1.747969685661488e-10 under time-dependent rotations/translations applied in float64 to the same material particles. This certificate applies to the encoder, not Task5's Raw branch. Frozen cylinder times were replayed, including earlier simulation times; no late-only benchmark was generated.
+
+## 2026-09-07 — Verify_FMTAllV2_1.2 complete, core replacement with retained blocks
+
+All150 control shards and250 native predictions/metric rows pass independent audit;150 Task1/Task2 old/Raw rows from1.1 are explicitly reused after source-file/hash/label identity verification. Two Task5 networks use338 inputs and136834parameters each; their matched-width old baseline is separately rerun rather than borrowing the132354-parameter old baseline from1.1. Task2 input/output layers follow259 features while the same hidden512/256,latent64,KL1e-6,learning-rate3e-4,7000updates are preserved. GPU models for reused Task2 pairs can differ; exact devices are recorded.
+
+| Task | Matched old macro F1 | Core-replaced macro F1 | New minus old | Entries improved/decreased |
+|---|---:|---:|---:|---:|
+| Task1 |0.601508929|0.142771790|-0.458737139|0/10|
+| Task2 |0.583613270|0.179515022|-0.404098248|1/9|
+| Task5 |0.678020588|0.676800723|-0.001219866|7/3|
+
+Task5 AP0.719512817→0.723950925 (delta+0.004438108). Its mean F1 change is-0.12percentage points, versus a paired macro-difference sample SD of0.99points over5seeds; no significance or equivalence test was conducted. Largest Task5 loss isChannel-0.0387; largest gain isF22+0.0216. Task2's sole small mean-F1 increase isChannel+0.0022. The results support this limited statement: replacing the core withv2 substantially reduces unsupervised Task1/2 performance under frozen settings; Task5 with retained neighbour blocks has near-unchanged meanF1 and slightly higher meanAP. They do not support declaring the complete Task5 pipeline objective, because Raw and retained kinematic blocks are outside the core's exact certificate. Old paper tables and frozen recipes remain unchanged.
+
+Reconciliation with1.1: standalone v2 also removed the old auxiliary neighbour blocks, while1.2 retains them. Restoring those blocks recovers most Task5 performance but does not recover Task1/2 performance. Therefore1.1's losses cannot all be attributed to replacing only fmt_all. The two versions and their old baselines must remain separate; there is no silent revision of the original result.
+
+An algebraic information-loss diagnostic explains a possible limitation, not a proven causal decomposition of the benchmark losses. Because v2 stores onlyper-primitive same-time Gram scalars, it is invariant even under independently chosen rotations of each primitive, stronger than the required single global rigid observer. Uniformly rotating a rigid neighbour cross and leaving that cross stationary both yield an unchanged Gram series. The existing negative-control test establishes this behavior; an additional NumPy check using seed7099,shape[4,7,32,3],independent SO(3) rotations perprimitive/persample gives maximum output difference0.0. Consequently relative rotation between different local bundles is unavailable to this feature alone. Quantifying how much this versus normalization,frequency truncation or other information changes causes each flow's performance loss requires a separate experiment; none was selected using these test results.
+
+Final deliverables: Chinese comparison report `outputs/Verify_FMTAllV2_report/report_zh.md`, all10-flow tables and per-run/per-scaleCSV forboth versions, and PDF/SVG/600dpiPNG figures. Both final PDFs have6.5pt minimum glyphs,0collisionFAIL/WARN; equal-panel geometry and allthree panels/fullfigures inspected. Figure source `experiments/Plot_FMTAllV2_Comparison.py`; plotting catalog entryP20 updated. Figure captions explicitly retain allfive runs of each plotted FMT arm and direct Raw controls to companion tables. Code,configs,seeds,input hashes and devices are preserved; no model was downloaded.
+
+
+## Verify_AIVDTransfer_1.1 — registered 2026-09-07, results pending
+
+User requests unchanged Task3 `aivd1w3_dft` transfer toTask1/Task2 and explicitly chooses late-cylinder t>=7.5 with old methods retrained. Freeze threeTask1 arms (`fmt_all+kin4`189, standalone`aivd1w3_dft`1, `aivd1w3_dft+kin4`29) and fourTask2 arms (same plusRaw672), all10datasets×5seeds. Same original split roles with metadata-only time filtering; Re160/Re6400 Task2 retains two eligible training slices(t7.7,8.8), same7000updates. Task1 scalar skips impossible PCA8; other arms retainPCA8. Task2 retains frozen[512,256]/latent64/beta1e-6/lr3e-4 VAE; input/output width changes, parametercounts reported. No new tuning; all outcomes reported on an alreadyused benchmark. No comparison of late new metrics against old fulltime metrics as the primary contrast.
+
+Core code remains `FMT_Utils/DFT_FMT_3D.py` and original dispatcher; new runner `experiments/Verify_AIVDTransfer_3D.py`, config/protocol share experimentID. Five synthetic checks passed locally: independentNumPy and Task3dispatch equality, centre independence, translation/constantrotation invariance, finite-step dynamicrotation failure with refinement improvement, meancontext and fourthframe dependence. These implementation checks are not performance evidence or a strict general dynamicrotation objectivity certificate. Method explanation: `docs/aivd1w3_dft_explained_zh.md`. All comparisons and resulting conclusions remain pending. Ibex jobs/source hashes tracked in runregistry.
+
+### Verify_AIVDTransfer_1.1 — Task1 complete, Task2 still pending
+
+All50Task1 shards/150rows were downloaded as prediction/metric-only results and locally checked against SHA256 and independently recomputed confusion-matrixF1. Archive SHA256 `2bc6daab743124feee0c2d4e233d7698660187f69ec7a6548bd8a4534d7121a5`; local certificate `outputs/Verify_AIVDTransfer_1.1/local_Task1_prediction_audit.json`. Late-time paired Task1 macroF1: retrained old`fmt_all+kin4` **0.59585617**, standalone`aivd1w3_dft` **0.63801972** (delta **+0.04216355**,6/10entries improve), `aivd1w3_dft+kin4` with frozenPCA8 **0.24621408** (delta **−0.34964209**,2/10improve). Standalone Re160/Re640/Re6400: old/new **0.54820/0.91444**, **0.56867/0.68003**, **0.52542/0.72770**; both deltaWingentries decrease, resampled **0.76866→0.40734**, LBM **0.74676→0.37924**. This supports mean improvement in this fixedTask1 protocol, not universal improvement or a claim that retainedkin4 is generally useless. The control jointly includes its fixed originalPCA8 treatment; no further tuning follows these results. Full100-shard/350-row audit andTask2 outcomes remain pending.
+
+### Verify_AIVDTransfer_1.1 — complete, independent audit PASS
+
+All100 scientific shards completed without failure (50Task1,50Task2), all350 per-run metric rows independently recomputed by audit job51456207, completed2026-09-07T15:15:39–15:15:45+03:00 on cn604-18,exit0. All10 datasets×5seeds, same original roles; every cylinder role t>=7.5; all baselines retrained. No hyperparameter or candidate adjustment after observing results.
+
+| Task | Retrained old fmt_all+kin4 | Standalone aivd1w3_dft | Paired delta F1 | Improved entries | aivd1w3_dft+kin4 | Control delta |
+|---|---:|---:|---:|---:|---:|---:|
+| Task1 | 0.59585617 | 0.63801972 | +0.04216355 | 6/10 | 0.24621408 | −0.34964209 |
+| Task2 | 0.57717493 | 0.63344946 | +0.05627453 | 7/10 | 0.30452918 | −0.27264575 |
+
+Task2 Raw+VAE meanF1=0.49059801; standalone is +0.14285145 aboveRaw on the equal-entry mean. Paired seed-macro delta standard deviations: Task1 standalone0.00015009/control0.00012159; Task2 standalone0.00690716/control0.01062210. These describe seed variation, not independent physical-family uncertainty or statistical significance. Both controls improve only2/10entries (Channel,Boeing); this does not establish that kin4 is universally harmful, because the finding is conditional on the frozen normalization/downstream pipeline. No follow-up tuning is performed.
+
+Standalone improves allthreeCylinder cases in bothtasks. Task2 old → standalone: Re160 `0.2985 → 0.7691`, Re640 `0.4261 → 0.5099`, Re6400 `0.5120 → 0.6185`. BothdeltaWingentries decline in bothtasks. Task1 resampled recall0.6242→0.2558 andLBM0.5998→0.2340, with standalone precision1.0 in both; the observed F1 loss corresponds to missed positives. The numerical feature is one scalar: sum of firstthree estimated sampled-mean vorticity-deviation magnitudes, no nonzero frequency bin. Thus improved averages support transfer of this geometry-derived scalar in the fixedprotocol, not a claim of nonzero Fourier-frequency benefit, universal flow improvement, or strict finite-step objectivity.
+
+Frozen-baseline stability check on40Task1 runs whose populations did not change: all source identities and raw/time/file hashes match1.1FMTAllV2 replay.39/40 oldF1 values match exactly; Channel seed7083 differs by+0.0000789313. Both values are preserved; no scientific recipe or data revision is inferred from this small replay difference, whose numerical cause was not isolated. Re160/Re6400 old fulltime metrics are excluded from this replication check because their populations intentionally changed.
+
+Code/config/protocol: `experiments/Verify_AIVDTransfer_3D.py`, `config/Verify_AIVDTransfer_1.1.json`, `docs/Verify_AIVDTransfer_1.1.md`. Full per-run predictions, metrics, audits and execution records remain at Ibex `/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_AIVDTransfer_1.1`. Approved local aggregates: `outputs/Verify_AIVDTransfer_1.1/{dataset_metrics,paired_comparisons,task_macro}.csv` and `report_zh.md`; local aggregate consistency audit PASS70dataset+40paired+7macro rows. The full100-shard prediction audit ran on Ibex; do not describe the local aggregate check as a local350-row prediction audit. Full report source hashes in aggregate_download_manifest.json.
+
+
+## Verify_AIVDTranslationObservers_1.1 — 2026-09-07
+
+User-requested Re160 3D seven-observer figure applies unchanged aivd1w3_dft to the existing correctly integrated observed-field paths. Evidence: config `config/Verify_AIVDTranslationObservers_1.1.json`, code `experiments/Verify_AIVDTranslationObservers_3D.py`, job51461382, output summary and observer_summary.csv. Same7,220 material primitives, t0=10.5; fractions0,1/6,2/6,1/2,2/3,5/6,1 of full-source mean translation velocity. All seven groups have697 vortex labels; changed labels=[0, 0, 0, 0, 0, 0, 0]. Each feature/label array was independently recomputed; one frozen late-time Task1 scalar StandardScaler+KMeans,seed7080,noPCA, calibration exactly reproduces Verify_AIVDTransfer_1.1. No fitting, threshold selection or label copying between observers.
+
+Maximum across observers: float32 feature absolute difference=2.50700395554e-05; relative L2 difference=1.16275759865e-05; float64 integrated-path feature difference=4.0785358979e-09; exact-transform float64 feature difference=6.63358257214e-15. Exact-transform float32 labels also unchanged; integrated-vs-exact labels all identical. Original float32-vs-float64 label disagreement=0. Path correspondence maximum=1.5177900013e-07; same-time neighbour separation maximum difference=7.84921538877e-09. Full observer final displacement=[2.4001311224970583,0.0030356506447779836,-0.0003413597505859615]. Original feature range=[0.000882230466232,1.88573026657].
+
+Conclusion boundary: this verifies translation invariance to numerical accuracy for this cohort and fixed classifier; it does not prove objectivity under arbitrary time-dependent rotations. The previous statement “finite-time derivative breaks strict general objectivity” remains, but must not be misread as “all temporal differences break translation invariance”: this code differentiates same-time neighbour pair separations, whose common translations cancel. Exact-transform float64 control nearly reaches machine precision; float32 coordinate rounding dominates this translation test's small feature residual. No claim of improved classification accuracy is inferred from the zero changed labels. Existing five mechanistic tests pass, including common translation/constant rotation invariance and a time-dependent-rotation finite-difference counterexample.
+
+Figure exports: seven equal vertical panels, original3D camera and shared union bounds, all centre paths,96 display steps/48 classification steps/32 samples, no bounding box. PDF font minima7pt/13pt; both alignment gatesPASS; collision0FAIL/7WARN each, all warnings inspected as intentional overlap of count text with invisible white axes background. Both whole figures and all14 panels visually reviewed. Registered plotting method P22.
+
+### Verify_JHTDB_DualFormatDownload_1.2 — expanded-domain fresh download in progress
+
+2026-09-07 user requested replacement downloads for channel and isotropic: double each physical-axis span, 128^3 grid, retain 32 times, save VTK plus one complete NetCDF per flow. Config: `config/Verify_JHTDB_DualFormatDownload_1.2.json`; downloader: `experiments/Download_JHTDB_DualFormat.py`; export/audit: `experiments/JHTDB_DualFormat.py`, `experiments/Audit_JHTDB_DualFormat.py`. Channel bounds [3,3.6] x [-0.9,-0.3] x [0.2,0.8], times 1+i*0.0065; isotropic1024coarse bounds [0,0.8]^3, times 1+i*0.002; i=0..31. Fixed physical coordinates, lag8 spatial interpolation; channel PCHIP, isotropic stored times. Each span and total volume increase by factors 2 and 8 respectively; old data are not upsampled. 22 focused local loader/format tests pass, including a noncubic multi-time VTK/NetCDF exact-value test. Full-download outcome remains pending in this entry; final manifests and audit provide completion evidence. This data-acquisition version changes no frozen research benchmark or scientific conclusion. Old download files will be removed only after complete replacement validation; historical records remain.
+
+## 2026-09-07 — aivd1w3_dft 客观性术语与计算解释纠正
+
+这是解释修订，没有启动新实验，也没有修改冻结 encoder、分类器、标签或既有结果。
+
+| 原表述 | 修正表述 | 原问题与依据 |
+|---|---|---|
+| 同时间点差“只是旋转协变”，容易被理解为相对位置不客观 | 同一时刻同一对物质点的相对位置是客观几何向量；d*=Qd 是客观向量的分量变换规律 | 此前把客观向量与分量不变的客观标量混用；基底变化不等于物理相对几何变化。不能用D*=QD否定相对位置的客观性。 |
+| “时间差分不客观”的笼统表述 | 要明确差分对象、运动基底项、后续抵消和离散误差 | 连续满秩D下，A*=QAQᵀ+Q̇Qᵀ，涡量加同时间统一旋转项；扣同一物质样本均值后取模可抵消。当前有限差分的具体算法边界不由输入相对向量的客观性单独决定。 |
+| “前三个标量，傅里叶零频”说明过短 | 三个是k=0,1,2的涡量偏差模长，需D0..D3；默认无时间间隔除数；零频未归一化，最终是三者的和[N,1] | 逐行依据DFT_FMT_3D.py:111–201、276–338与Task12Data_3D.py:26–54；不是涡量三个分量，也不输出振荡频率。 |
+
+展开后的说明在docs/aivd1w3_dft_explained_zh.md；在AGENTS.md持久记录“客观向量不等于坐标分量不变”。保持Verify_AIVDTranslationObservers_1.1的七档零changed labels及有限时间差分分析原证据边界，不把术语纠正伪装成一次新实验或推翻已记录的数值事实。
+
+## Verify_AIVDLongtime_1.1 — 2026-09-07 已冻结，尚无新性能结论
+
+用户授权Task1/2/3/5测试全轨线估计IVD零频汇总。新名称aivd1w3_dft_longtime，仅window=None，其余沿冻结短窗口；代码/config/比较臂/晚期Cylinder重建与Task5同步均值分组已登记于Verify_experiments.md。原方法与历史性能不改写。所有200分片在同一新版本下运行；结果待独立预测审计，不从未完成任务或原全时段结果作性能判断。
+
+### Verify_AIVDLongtime_1.1 — Task1 已完成，完整审计待运行
+
+Array51462940的50个Task1分片全部COMPLETED/exit0，200行per_run.csv已落盘。直接汇总CSV得到10条目等权F1：Raw0.42339042244、旧fmt_all+kin4 0.59585459396、短窗口0.63801972160、全32点窗口0.33864182878，长减短为−0.29937789282。Boeing及两个DeltaWing条目提高，其余7项下降。这里仅报告已完成Task1的CSV结果；200分片最终预测独立复算尚待Task2/3/5完成后由51463287执行，不把此阶段记录描述为完整审计PASS，也不据此调整特征或超参数。
+
+Task2 array51462941亦50/50 COMPLETED，200行CSV初步汇总：Raw0.48843485237、旧fmt_all+kin4 0.58257598489、短窗口0.63678140719、长窗口0.33081165302，差值−0.30596975416。Re160及两个DeltaWing条目提高，其余7项下降。与上轮短窗口Task2平均0.63344946089相比，本轮重训为0.63678140719；两个数值分别保留，不能把重训差异误称为原算法发生修改。当前所有短/长比较均在本轮同分片、同GPU、同种子下配对；完整预测审计仍待运行。
+
+Task3 array51462942随后50/50 COMPLETED，250行CSV汇总：Raw/Raw-PCA/Raw+短/Raw+长的F1分别0.63268687089/0.63749876269/0.86276280632/0.76464639993；短/长Average Precision为0.93512138455/0.81662501774。长减短F1−0.09811640639、Average Precision−0.11849636682；Boeing及两个DeltaWing条目F1提高，其余7项下降。两种特征分支均115266总参数、25345可训练残差参数，共享每分片同一个新训练Raw主干。长版本仍超过Raw和同结构Raw-PCA对照，但平均低于短版本。此为完整Task3的CSV结果，最终200分片独立预测审计仍等待Task5。
+
+### Verify_AIVDLongtime_1.1 — 全部完成，独立审计 PASS
+
+2026-09-07，四个任务各10个3D数据条目×5种子，共200分片均成功结束，无训练失败、重试、取消或预算调整。独立审计51463287于17:05:11–17:05:38+03:00在cn604-10完成，逐预测复算1000行总体指标和3150行Task5尺度指标全部通过。核对固定划分、所有Cylinder初始t>=7.5、相同输入、Task2每臂恰7000次更新、监督短/长分支容量一致及同一Raw主干。源清单SHA256 e798e3c3c2d3e81f88fa017eca2787f12d29fbe9d8b32f09efaf9c3bc9bc7fa3；config SHA256 fce12000c39c007a941f17093cd12b9f1dcd9072145ece15ecc13c9bce628eac。
+
+下表为各条目、各种子等权平均F1；Task3/5比较Raw加相应特征，Task1/2比较相应特征进入原聚类/VAE流程。变化为长减短。
+
+| Task | Raw | 原aivd1w3_dft | aivd1w3_dft_longtime | ΔF1 | 配对种子均值差的标准差 | 提高条目 |
+|---|---:|---:|---:|---:|---:|---:|
+| Task1 | 0.42339042 | 0.63801972 | 0.33864183 | −0.29937789 | 0.00014982 | 3/10 |
+| Task2 | 0.48843485 | 0.63678141 | 0.33081165 | −0.30596975 | 0.00935502 | 3/10 |
+| Task3 | 0.63268687 | 0.86276281 | 0.76464640 | −0.09811641 | 0.00630296 | 3/10 |
+| Task5 | 0.61067165 | 0.79359782 | 0.73282486 | −0.06077297 | 0.00580160 | 2/10 |
+
+Task3平均精确率（Average Precision）短/长0.93512138/0.81662502，差−0.11849637；Task5短/长0.87088824/0.78347186，差−0.08741638。原版保持独立名称、实现和历史记录；长版本的本轮四任务平均均下降，不支持用本版全轨线汇总替换原版。此结论限于当前固定32点、单零频、初始时刻IVD p95标签及冻结下游配置；没有搜索中间窗口，也没有从测试结果选择下一版参数。
+
+所有条目均报告：Task1/3提高的是Boeing及两个DeltaWing；Task2提高的是Re160及两个DeltaWing；Task5提高的是Boeing与DeltaWing resampled。Task5 DeltaWing LBM差约−0.0001，不能把这种小差异解释为可靠的物理差异；种子标准差不等于跨物理流场的不确定性或显著性检验。
+
+Task1/2平均精确率分别从0.8001/0.7469降到0.4291/0.4233，召回率从0.6972/0.7557升到0.8102/0.8050：下降伴随误报增多，而非仅漏报。Task3/5的长版本仍高于Raw与同结构Raw-PCA；Task5 Raw-PCA/旧fmt_all+gram2+kin6/短/长F1分别0.63194187/0.72773459/0.79359782/0.73282486，不能将“低于短版”改写成“低于所有FMT或Raw对照”。
+
+源码只新增窗口别名window=None，仍用全部32个估计IVD标量的未归一化零频和、输出1维；原DFT_FMT_3D.py未修改。Task5短/长分支使用同一物理时间分组，三种Cylinder晚期缓存是本版新增群体，因此主比较是本轮配对结果，不能将其与旧全时段Task5指标直接归因比较。模型选择只用训练/验证；没有为任何流场单独修改窗口、学习率、阈值或epoch预算。
+
+结果根目录outputs/Verify_AIVDLongtime_1.1：report_zh.md含全部40个任务/条目对比；dataset_metrics.csv含全部200个任务/条目/方法汇总，per_run.csv有1000行，per_scale.csv有3150行，task_macro.csv/paired_comparisons.csv记录均值、种子标准差及配对差。远端完整预测审计通过；本地另对11个交付文件逐一核对远端SHA256，并复算表间均值与标准差（local_delivery_audit.json PASS）。本地核验不是重新读取预测数组；预测仍保留在Ibex。per_run.csv SHA256 2c21a012899efcf8c01ce00379e5fe82351982dba4efe2cc24c9793335c45e8c。
+
+最终指标、报告写入后清理本实验550个临时checkpoint，共204843922bytes，远端剩余0，未下载模型。精确作业/节点/GPU/开始结束时间见execution_records.csv与scheduler_records.psv；源快照和完整配置保留在reproducibility。所有本节结论均来自本轮完整审计后的结果，取代上方阶段记录的“完整审计待运行”状态，不改写阶段数值。
+
+### 2026-09-07 — 后续采用短窗口；七联图仅添加相机标注
+
+用户明确要求忽略longtime，后续继续使用原aivd1w3_dft；停止继续研究本轮长窗口方案，保留已有代码和结果作为历史记录。新的Verify_AIVDTranslationObservers_1.2只修订Re160七联图的相机图标与速度标注，不产生新性能或客观性实验结论。1.1七档平移分类不变的证据仍有效，证据范围仍为该平移观察者集合。
+
+Verify_AIVDTranslationObservers_1.2标注版完成，job51466161，2026-09-07T17:43:05–17:43:55+03:00，cn604-03，exit0。两版每格增加相机和u_cam(t)=alpha*u_mean(t)，保持原7220条路径线、697个vortex标签、七档changedlabels全0；没有重新拟合或分类。标签数组及输入文件哈希核对通过，PNG在新增标注区域之外逐像素等于原1.1图。字体、面板几何及14格视觉审查通过。此次仅提高运动参考系的图示清晰度，未添加客观性验证范围或性能证据。绘图方法P23已登记。
+
+### Verify_JHTDB_DualFormatDownload_1.2 — complete; both formats and readers PASS
+
+2026-09-07: both expanded domains completed at 128^3 x 32 times. All 64 newly queried velocity frames passed binary VTK coordinate/value roundtrips. Each flow now has 32 per-frame VTK files, a `.vtk.series` index, one combined VTK with 32 named time arrays, and one complete NetCDF with float32 u/v/w(time,z,y,x) and float64 physical coordinates/times. NetCDF lossless sizes: channel 586337752 bytes; isotropic 611557167 bytes. Each combined VTK is 855639617 bytes. Config, sampling, interpolation and time intervals remain as specified in the preceding entry; concurrency was changed from 4 to 8 after 16 completed frames, recorded in `resume_history.json`, without changing numerical settings.
+
+Independent `outputs/Verify_JHTDB_DualFormatDownload_1.2/audit.json` PASS: all saved VTK coordinates/times/values, all NetCDF components at all times, all 32 frames through the original PyFlowVis VTKLoader, and all 32 frames through FMT load_jhtdb_netcdf match exactly. Both flows have 32 distinct velocity arrays. Separate first/last xz-plane queries and 17 fixed-seed random points at the final time produce maximum absolute differences 0 for both datasets. 23 focused tests pass, including a physical-coordinate analytic rotation/strain check for the additional display-only Q preview. These are data/implementation checks, not evidence of research-method performance or vortex-type ground truth.
+
+Both 32-step HTML velocity viewers were visually checked at the final time (channel 1.2015; isotropic 1.062). Additional Q isosurfaces use the first frame only and a fixed positive-Q p90 display rule; the rule changes no research label or benchmark. After the full dual-format audit passed, `experiments/Cleanup_JHTDB_64Grid.ps1` removed exactly 66 old 64^3 VTK files, 2 old series indices and 3 old previews; all 71 targets were resolved and hash-checked before deletion. `old_grid_cleanup.json` confirms completion. Old manifests, source snapshots, configs and audits remain; the previous successful 64^3 results are not reinterpreted as incorrect. Documentation: `docs/JHTDB_dual_format_download_1.2.md`.
+
+
+### Verify_AIVDTranslationObservers_1.3 — 2026-09-07 注释修订
+
+用户要求相机旁速度用矢量箭头描述。新增六个按速度缩放的箭头与零速圆点，箭头表示t0=10.5的实际observer速度在原取景中的投影，保留完整时变矢量公式。Job51467144完成，原输入哈希与标签数组不变；7220条路径线中每格697条涡轨线，changed labels仍全部0。两版PNG注释区外像素变化0，所有PDF与视觉检查通过。此版只改注释，没有新增分类实验或方法客观性结论；代码/配置见绘图方法表P24，输出outputs/Verify_AIVDTranslationObservers_1.3。
+# Verify_LargeNeighbor_1.1 — preliminary implementation checks, 2026-09-07
+
+User-requested scheme one is implemented as center plus24 material neighbors on radii r,1.5r,2r, eight cube-vertex directions per shell. Original FMT and aivd1w3_dft remain frozen comparison arms. New encoding extends the same-time Gram construction of fmt_all_v2 to300 scalar channels, complete32-point sequences and Fourier bins0..5 (3300 real-valued outputs); no center temporal differences, IVD/curl or old kin block enters the new encoding. Protocol/config and frozen source are registered in docs/Verify_experiments.md and docs/ibex_run_registry.md.
+
+Evidence: preflight job51477160 (22:13:22–22:13:51+03:00,cn604-02) checks32 corresponding material primitives from the first eligible training slice of each of10 datasets. Independent proper rotations and translations at every sampled time give relative feature error1.69e-13–9.44e-11, maximum absolute error7.45e-9. This numerical check supports encoder invariance and does not certify the coordinate-based Raw branch in Task3. Nonzero Fourier bins contain14.96%–46.37% of retained coefficient squared energy in these training slices, so the implementation is not DC-only. These checks do not establish prediction quality.
+
+Integrity job51477159 passes128 cached slices:486233 common valid samples,574 excluded because the new outer shell is incomplete. Original labels/seeds/seven-line coordinates match their retained-index subset exactly; the original p95 definition is not recomputed. All Cylinder initial times satisfyt>=7.5. Performance evaluation remains pending; do not infer gains from the implementation checks. Current tasks test initial-time IVD binary labels, not geometric tokenization quality.
+# Verify_LargeNeighbor_1.1 — Task1 interim aggregate, 2026-09-07 22:19+03:00
+
+All50 Task1 children of51477161 completed/exit0,300 native metric rows across10 datasets and5 seeds. Unchanged protocol/source/config as registered above. Direct scalar aggregation gives equal-dataset/equal-seed F1: Raw7=0.42383056; Raw25=0.42614239; oldFMT=0.59589572; shortIVD=0.63875495; six-neighbor Gram Fourier=0.14169753; largeNeighbor=0.12994169. This interim complete-Task1 aggregate indicates no gain from the added shells under the frozen PCA8/KMeans pipeline. It is not the final independently audited report: all-task audit still waits for Task2/3, and no experimental selection or configuration change is made from these test outcomes. Final audited figures must be compared explicitly against this interim record.
+# Verify_LargeNeighbor_1.1 — Task2 interim aggregate, 2026-09-07 22:50+03:00
+
+All50 Task2 children of51477162 completed/exit0;300 native metric rows. Complete-dataset/seed mean F1: Raw7=0.49449154; Raw25=0.42929984; oldFMT=0.58478122; shortIVD=0.62915818; six-neighbor Gram Fourier=0.14420214; largeNeighbor=0.13977928. Under the frozen shared VAE architecture and7000 updates, the new scheme remains substantially below oldFMT and shortIVD. This is a complete Task2 scalar aggregate pending the final independent all-task prediction audit. No method or hyperparameter selection is made from it; Task3 remains running. Final values must explicitly reconcile with this interim record.
+# Verify_LargeNeighbor_1.1 — remote completion; file delivery pending approval
+
+All Task1/2/3 scientific runs and the final independent audit completed successfully. The full report, per-run metrics, aggregate comparisons, input/source/device records and checkpoint cleanup record are retained in the registered Ibex output directory. Both attempted metric-file downloads were rejected by automatic approval; no rejected files were transferred through another route or reconstructed locally. The final requested conversational performance report uses the previously authorized remote report read. The earlier Task1/Task2 interim entries remain as historical records; no new local final metric table is created pending export approval. Detailed final evidence: remote `report_zh.md`, `per_run.csv`, `dataset_metrics.csv`, `task_macro.csv`, `paired_comparisons.csv`, `independent_audit.json`. Transfer status and audit job are recorded in docs/ibex_run_registry.md.
+
+<a id="large-neighbor-1-1-final"></a>
+
+## Verify_LargeNeighbor_1.1 — 最终实验结果（2026-09-08 记入）
+
+2026-09-08 用户明确要求将实验结果记入 Markdown。本节根据上一轮已经读取的 Ibex 最终报告及审计记录整理；实验于2026-09-07完成，本次没有重跑、改变配置或重新选择模型。下列数值按最终报告保留四位小数，完整精度、种子标准差和逐次预测证据仍见远端原始结果。此前“仅口头汇报、最终数值尚未记入本地”的状态由本节更新；此前文件下载拒绝记录作为历史保留，本次只执行明确要求的 Markdown 记录。
+
+### 结论与阶段记录核对
+
+**当前 largeNeighbor 实现不支持替代旧 FMT 或原短窗口 `aivd1w3_dft`。** Task1、Task2 的平均 F1 明显下降；Task3 相对同一 Raw25 骨干有小幅增益，但低于旧 FMT、短窗口方案和同结构 Raw-PCA 对照。与六邻居客观 Fourier 方案相比，三个任务的平均 F1 也均未提高。这里评价的是当前冻结编码器及下游配置，不能外推到全部大邻域设计。
+
+| 记录阶段 | 当时状态 | 最终状态与核对 |
+|---|---|---|
+| Task1阶段记录（2026-09-07 22:19） | 50次已完成，独立总审计待运行 | 总审计已通过；旧FMT/短窗口/largeNeighbor的0.59589572/0.63875495/0.12994169与最终报告四位小数一致 |
+| Task2阶段记录（2026-09-07 22:50） | 50次已完成，独立总审计待运行 | 总审计已通过；旧FMT/短窗口/largeNeighbor的0.58478122/0.62915818/0.13977928与最终报告四位小数一致 |
+| 上一轮最终回复 | Task1/2/3全部完成并给出平均F1 | 本节持久记录相同最终结果，补充全部流场和比较边界；没有修订前述数值 |
+
+### 方法、数据与比较条件
+
+`largeNeighbor` 使用中心加24条材料邻居路径线：半径r、1.5r、2r的三个球面各8点，方向为立方体顶点；r为原始最小网格间距的一半。邻居只在初始时刻播种，之后各自积分并保持材料点身份。编码器取每时刻24个中心—邻居相对向量的300个上三角内积，按初始平均平方邻距归一化并减去初始内积，再对完整32个时刻作离散傅里叶变换，保留零频和5个非零频，共3300维。没有中心点跨时刻坐标差分，也没有混入短窗口IVD或旧kin特征。频率按采样序号及轨线窗口解释。
+
+全场瞬时涡量偏差（Instantaneous Vorticity Deviation，IVD）的p95标签沿原缓存保留，只按共同有效样本索引取子集。三个Cylinder数据初始物理时间均t≥7.5。10个3D数据条目，每任务5个种子：Task1为7080–7084，Task2为100–104，Task3为40–44，共150次运行、950行方法指标。所有比较臂使用原7线和新25线均完整有效的同一批样本；128个缓存片共486233个共同有效primitive，新增外层轨线不完整排除574个，未按标签或分数筛样本。
+
+| 任务 | 固定比较条件 |
+|---|---|
+| Task1 | 表示进入标准化、主成分分析（Principal Component Analysis，PCA）和KMeans二类聚类；PCA固定8维，单标量不做PCA；验证集确定簇含义 |
+| Task2 | 同一变分自编码器（Variational Autoencoder，VAE）架构：隐藏层512/256、潜变量64、KL权重1e-6、学习率3e-4，每臂7000次更新；输入/输出宽度随表示变化，因此不能声称总参数量完全相同 |
+| Task3 | 各比较臂共用本轮重训的25线Raw骨干；五个残差分支均使用268维辅助输入、相同结构和参数量；largeNeighbor仅在训练集拟合标准化/PCA268，Raw25-PCA为同结构容量对照 |
+
+旧FMT指本轮冻结的 `fmt_all+kin4`；短窗口指原 `aivd1w3_dft`；六邻居客观方案指 `fmt_all_v2` 的同时间内积序列加Fourier编码。Task1/2的Raw7和Raw25分别直接使用原7线、新25线表示。Task3表中的旧FMT、短窗口、六邻居和largeNeighbor均表示“Raw25骨干加对应特征残差”，不能解释成仅靠该特征的分类分数。模型、标准化/PCA、epoch、融合权重及阈值仅用训练/验证集确定；测试不用于调参。既有benchmark已被使用过，本轮是配对复跑，不是新的独立confirmation。
+
+### 平均指标
+
+F1为精确率与召回率的调和平均；下表对每个流场的5个种子先取平均，再对10个流场等权平均。
+
+| 任务 | 旧FMT | 原aivd1w3_dft | 六邻居客观Fourier | largeNeighbor | largeNeighbor−旧FMT（约百分点） |
+|---|---:|---:|---:|---:|---:|
+| Task1 | 0.5959 | 0.6388 | 0.1417 | 0.1299 | −46.60 |
+| Task2 | 0.5848 | 0.6292 | 0.1442 | 0.1398 | −44.50 |
+| Task3 | 0.7623 | 0.8579 | 0.6802 | 0.6790 | −8.33 |
+
+Task3还需与Raw容量对照比较。平均精确率（Average Precision）是另一项基于预测分数排序的指标，不等同于单阈值下的precision。
+
+| Task3方法 | 平均F1 | Average Precision |
+|---|---:|---:|
+| Raw25 | 0.6548 | 0.7074 |
+| Raw25-wide | 0.6559 | 0.7081 |
+| Raw25-PCA残差 | 0.7170 | 0.7625 |
+| Raw25+旧FMT | 0.7623 | 0.8160 |
+| Raw25+原aivd1w3_dft | 0.8579 | 0.9260 |
+| Raw25+六邻居客观Fourier | 0.6802 | 0.7250 |
+| Raw25+largeNeighbor | 0.6790 | 0.7262 |
+
+Task3中largeNeighbor相对Raw25的F1约提高2.42个百分点，但相对Raw25-PCA残差约降低3.80个百分点。其Average Precision比六邻居方案高约0.12个百分点，而F1低约0.12个百分点；不能将“平均F1未提高”写成“所有指标都下降”。这些小差值没有经过显著性检验，不能据此作可靠的物理差异判断。变化量由报告中四位小数求差，故标“约”。
+
+### Task1逐流场F1
+
+各格为5个种子的均值。数据条目保留配置中的原名；`cylinder3d` 为Re160。这里展示均值，种子标准差及其它指标见远端 `dataset_metrics.csv`。
+
+| 数据条目 | Raw7 | Raw25 | 旧FMT | 短窗口IVD | 六邻居客观Fourier | largeNeighbor |
+|---|---:|---:|---:|---:|---:|---:|
+| channel | 0.0651 | 0.0651 | 0.1821 | 0.2067 | 0.0557 | 0.0653 |
+| cylinder3d | 0.2745 | 0.2777 | 0.5481 | 0.9150 | 0.1546 | 0.1537 |
+| halfcylinderRe640 | 0.3364 | 0.3400 | 0.5682 | 0.6847 | 0.1287 | 0.1290 |
+| halfcylinderRe6400 | 0.3873 | 0.3886 | 0.5236 | 0.7306 | 0.1242 | 0.1242 |
+| tangaroa | 0.5868 | 0.5846 | 0.7441 | 0.8499 | 0.1182 | 0.1157 |
+| deltaWing_resampled | 0.5633 | 0.5633 | 0.7687 | 0.4073 | 0.1397 | 0.0923 |
+| deltaWing_LBM | 0.5156 | 0.5168 | 0.7468 | 0.3792 | 0.1037 | 0.1037 |
+| f22raptor | 0.5020 | 0.5050 | 0.3139 | 0.7463 | 0.1496 | 0.1440 |
+| boeing747 | 0.4619 | 0.4724 | 0.8042 | 0.7778 | 0.3165 | 0.2559 |
+| smokeBuoyancy | 0.5455 | 0.5480 | 0.7592 | 0.6899 | 0.1261 | 0.1155 |
+| **10项等权平均** | 0.4238 | 0.4261 | 0.5959 | 0.6388 | 0.1417 | 0.1299 |
+
+### Task2逐流场F1
+
+| 数据条目 | Raw7 | Raw25 | 旧FMT | 短窗口IVD | 六邻居客观Fourier | largeNeighbor |
+|---|---:|---:|---:|---:|---:|---:|
+| channel | 0.1945 | 0.1947 | 0.2294 | 0.1747 | 0.0692 | 0.1642 |
+| cylinder3d | 0.2263 | 0.2138 | 0.2955 | 0.7631 | 0.0702 | 0.0693 |
+| halfcylinderRe640 | 0.3383 | 0.3119 | 0.4327 | 0.5202 | 0.1256 | 0.1195 |
+| halfcylinderRe6400 | 0.3679 | 0.3512 | 0.5157 | 0.5852 | 0.1301 | 0.1306 |
+| tangaroa | 0.7139 | 0.6897 | 0.7600 | 0.9179 | 0.1197 | 0.1230 |
+| deltaWing_resampled | 0.5394 | 0.2758 | 0.8216 | 0.4066 | 0.1157 | 0.1090 |
+| deltaWing_LBM | 0.6340 | 0.2649 | 0.7545 | 0.3925 | 0.1522 | 0.1179 |
+| f22raptor | 0.6248 | 0.6295 | 0.5736 | 0.8523 | 0.1495 | 0.1568 |
+| boeing747 | 0.8534 | 0.8711 | 0.7526 | 0.8199 | 0.3444 | 0.2392 |
+| smokeBuoyancy | 0.4524 | 0.4905 | 0.7123 | 0.8593 | 0.1654 | 0.1684 |
+| **10项等权平均** | 0.4945 | 0.4293 | 0.5848 | 0.6292 | 0.1442 | 0.1398 |
+
+### Task3逐流场F1
+
+特征列均含同一个Raw25骨干。Raw25-PCA列为同结构残差对照。
+
+| 数据条目 | Raw25 | Raw25-wide | Raw25-PCA残差 | 旧FMT | 短窗口IVD | 六邻居客观Fourier | largeNeighbor |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| channel | 0.1048 | 0.1079 | 0.2882 | 0.6518 | 0.7831 | 0.1915 | 0.1953 |
+| cylinder3d | 0.3382 | 0.3473 | 0.4843 | 0.5059 | 0.7055 | 0.3814 | 0.3589 |
+| halfcylinderRe640 | 0.7141 | 0.7044 | 0.7455 | 0.7364 | 0.8672 | 0.7160 | 0.7163 |
+| halfcylinderRe6400 | 0.5929 | 0.6003 | 0.6953 | 0.6549 | 0.8742 | 0.6017 | 0.6177 |
+| tangaroa | 0.7427 | 0.7484 | 0.7905 | 0.8207 | 0.9058 | 0.7633 | 0.7650 |
+| deltaWing_resampled | 0.8595 | 0.8636 | 0.8891 | 0.9181 | 0.9178 | 0.8936 | 0.8996 |
+| deltaWing_LBM | 0.8138 | 0.8140 | 0.8506 | 0.8850 | 0.9025 | 0.8592 | 0.8452 |
+| f22raptor | 0.8244 | 0.8180 | 0.8363 | 0.8259 | 0.8706 | 0.8282 | 0.8270 |
+| boeing747 | 0.8257 | 0.8268 | 0.8410 | 0.8679 | 0.8861 | 0.8385 | 0.8352 |
+| smokeBuoyancy | 0.7322 | 0.7278 | 0.7493 | 0.7562 | 0.8664 | 0.7282 | 0.7294 |
+| **10项等权平均** | 0.6548 | 0.6559 | 0.7170 | 0.7623 | 0.8579 | 0.6802 | 0.6790 |
+
+逐流场核对：Task1/2的largeNeighbor均低于旧FMT（各10/10个条目）；Task3仅F-22的F1略高于旧FMT，其余9项较低。Task3相对Raw25-PCA仅DeltaWing-resampled较高，另外9项较低。所有条目均保留，没有因结果好坏删除流场。
+
+### 客观性与解释边界
+
+训练片客观性检查对每个流场32个相同材料primitive施加逐时刻变化的正交旋转和平移，编码器相对误差最大9.44e-11；保留系数的平方和中，非零频占14.96%–46.37%。这些结果支持当前编码器实现保持客观性且使用了非零频，不能替代分类性能证据，也不保证Task3坐标Raw分支或完整网络客观。
+
+本描述符记录邻域形状随时间的变化。全25点邻域共同作刚体旋转时，同时间内积恒定，减去初始值后得到零信号。这是其数学性质；把它解释为本轮分类下降的原因仍是待验证假设。当前实验使用初始时刻IVD标签，没有测路径几何token化质量，因此不能据此证明或否定用户关于短窗口方案不擅长几何token化的判断。旧FMT、原短窗口和已停止采用的longtime版本均保留，本轮不修改论文冻结主表。
+
+### 可复现依据与完成状态
+
+| 项目 | 证据 |
+|---|---|
+| 实验版本/配置 | `Verify_LargeNeighbor_1.1`；[config](../config/Verify_LargeNeighbor_1.1.json) |
+| 编码/数据/运行代码 | [LargeNeighbor_3D.py](../FMT_Utils/LargeNeighbor_3D.py)、[Build_LargeNeighbor_3D.py](../experiments/Build_LargeNeighbor_3D.py)、[Run_LargeNeighbor_3D.py](../experiments/Run_LargeNeighbor_3D.py) |
+| 独立审计代码 | [Audit_LargeNeighbor_3D.py](../experiments/Audit_LargeNeighbor_3D.py) |
+| 基础commit | `aee4bd562d340158118f2e41f40129a9918e06a1`；新增代码以冻结源归档为准，不能将基础commit单独当成完整新实现 |
+| 冻结源归档SHA256 | `42d44ba73fb73cbac08eeb96f6a307ebc51000af964f0ead751c878d07ba2c8c` |
+| 源清单SHA256 | `7f424f8a70d3484cb348feaa5175ed49913e7e7212354f6b3d75ac5a8fe79d3a` |
+| 实际运行config SHA256 | `ff983045b66991a3f97bdaa5268b238420b3e5c8b9341e3872ea35f3430d58ce` |
+| Task1/2/3数组作业 | `51477161` / `51477162` / `51477163`，各50个子作业 |
+| 最终独立审计 | `51477164`，2026-09-07 23:01:04–23:01:21（UTC+03:00），cn511-15，CPU，exit0 |
+| 审计范围 | 全部150次运行、950行指标，逐预测重算及相同输入/标签/源代码/参数量检查均通过 |
+| 临时模型 | 最终指标落盘后删除350个checkpoint，远端剩余0，未下载模型 |
+| 作业历史 | [ibex_run_registry.md](ibex_run_registry.md)；Boeing缓存曾因磁盘配额失败，迁移并校验后原配置续跑；科学训练无失败重试 |
+
+远端结果根目录：`/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1`。最终证据文件包括 `report_zh.md`、`per_run.csv`、`dataset_metrics.csv`、`task_macro.csv`、`paired_comparisons.csv`、`independent_audit.json`、`execution_records.csv` 和 `checkpoint_cleanup.json`。本节依据上一轮成功读取的最终报告及已登记审计结果写入；本次没有下载这些原始文件，也没有声称完成本地逐预测复算。此前Task1/2阶段数值及下载审批历史仍保留。
+
+## 2026-09-08 — Other_Task2_VisualAnalysis_1.1：几何与潜在特征联动探索
+
+用户要求参考 FlowNet 实现 Task2 的多簇可视分析。论文核对修正：之前对话中说默认直接在高维空间 DBSCAN → 现按 FlowNet §3.2、附录 PDF 第12页明确的 **t-SNE 后 DBSCAN** 作为默认，同时提供高维空间模式。此前未读论文便作出的流程假设不成立。FlowNet §3.1 使用普通卷积自编码器，并非 VAE；本工具沿用我们的 Task2 VAE，不声称复现 FlowNet 网络。
+
+| 项目 | 实施与证据 |
+|---|---|
+| 实验版本/配置 | `Other_Task2_VisualAnalysis_1.1`；`config/Other_Task2_VisualAnalysis_1.1.json` |
+| 主要代码 | `experiments/Task2_Visual_Analysis.py`、`FMT_Utils/Task2VisualAnalysis.py` |
+| 固定配方来源 | `mainExp_Task2_3D_6.2_uniform_confirmation` 的配置/选择/审计文件通过冻结 manifest 哈希校验；`fmt_all+kin4`、hidden `[512,256]`、latent 64、两臂同 seed 100、各7000步骤 |
+| 本地示例 | Re160 / `cylinder3d`；CPU；未向 Ibex 提交任务 |
+| 训练时间片 | ordinal 4/5，t≈7.7/8.8；Cylinder 时间规则排除原冻结训练集中的0–3，本次是新采样下重训，不是严格复现原主表训练 |
+| 可视样本 | 开发集 cluster_calibration ordinal 6，t=10.0；源3584样本，seed7068均匀抽取1500；两臂共用原始行号 |
+| 处理与标签 | 确定性编码均值 mu，逐样本L1归一化，t-SNE perplexity30、seed7068、1000迭代；DBSCAN eps2/min_samples10；不读取参考标签数组，不打开confirmation/test |
+| 默认参数结果 | Raw：29簇、1036/1500噪声（69.07%）；FMT：26簇、1129/1500噪声（75.27%）。只描述此次投影和分析子集，不能据簇数/噪声比例推断谁更好，未按结果调参数 |
+| 逐样本证据 | `outputs/Other_Task2_VisualAnalysis_1.1/cylinder3d/reports/{raw,fmt}_tsne_eps2.0_min10/` 下 `analysis.npz`、`samples.csv`、`analysis.json` |
+| 训练与源码证据 | 同目录上级 `latent_bundle.npz`、`latent_bundle.json` 含数据/配置/源码哈希、设备、依赖版本和逐臂训练损失；基础commit `aee4bd562d340158118f2e41f40129a9918e06a1`，新增代码以记录的源码哈希区分 |
+| 保留规则 | 保存latent/几何及分析结果；输出目录无 `.pt/.pth/.ckpt`，训练模型仅在内存中 |
+| 验证 | 12项测试通过；真实页面簇筛选、七线切换、单点选择及框选联动通过。离线文件URL预览被浏览器策略阻止，离线HTML生成与ZIP内容检查通过，未声称离线浏览器验证通过 |
+
+本次支持的结论仅是工具能够按样本编号展示真实轨线与 VAE 表示的对应关系；尚不构成几何类别准确性或 FMT 优于 Raw 的证据。原主表、冻结训练代码和历史指标均未修改。使用见 `docs/Other_Task2_VisualAnalysis_1.1.md`。
+
+## 2026-09-08 — Other_Task2_VisualAnalysis_1.2：交互重积分与隐藏簇
+
+按用户要求，新增流场、积分步长dt和积分步数N控件，以及多选隐藏簇。总积分时长为dt×N，每条轨线仍采样32点。重算开发集几何后，按1.1使用的冻结统一配方重新训练Raw/FMT两臂并更新两图；隐藏簇只影响显示，不改变标签或聚类统计。实现与边界见 `docs/Other_Task2_VisualAnalysis_1.2.md`。
+
+| 项目 | 实施与证据 |
+|---|---|
+| 配置/代码 | `config/Other_Task2_VisualAnalysis_1.2.json`；`FMT_Utils/Task2GeometryRecompute.py`、`FMT_Utils/Task2VisualAnalysis.py`、`experiments/Task2_Visual_Analysis.py` |
+| 成功运行 | `outputs/Other_Task2_VisualAnalysis_1.2/halfcylinderRe640/20260908T111207_bd22d284/`；本地CPU，UTC 11:12:07–11:16:08，约240秒；未提交Ibex |
+| 参数与数据 | Re640，dt=0.0125，N=64，总时长0.8；训练ordinal0–5，显示ordinal6、t≈12.2；全部满足Cylinder t≥7.5且源窗口早于confirmation |
+| 几何/特征 | 7个时间片完成重积分；显示3832个有效primitive，paths形状[3832,7,32,3]，两臂mu均[3832,64]，样本ID一一对应；每片记录请求与实际dt均为0.0125 |
+| 固定训练 | hidden[512,256]、latent64、KL权重1e-6、学习率0.0003、seed100；两臂各完成7000优化步骤；逐臂损失及源码/速度数据哈希见latent_bundle.json |
+| 浏览器验证 | 从Re160自动切换到新Re640几何与特征；默认FMT投影分析1500样本，27簇、912噪声；这些仅是默认参数结果，不构成方法优劣判断 |
+| 隐藏验证 | Re160隐藏Noise(-1)时显示从1500降为371，左右图同步移除；原26簇、1129噪声统计不变。新Re640隐藏Cluster 0的49个样本后显示1451/1500，聚类统计不变；清空选框恢复。全部隐藏及标签不变另有自动测试 |
+| 失败保留与修正 | 首次请求`20260908T110921_0f186807`失败：目标时长0.8超过float32源时钟构造的局部窗口0.799995。保留job.json及异常；修正为必要时多读一个真实插值帧，不修改dt，并仍检查源末尾/confirmation边界 |
+| 自动验证 | 21项测试通过：实际常速度轨线终点随dt/N改变、float32时钟边界、拒绝confirmation帧、双视图隐藏及全隐藏、失败记录和恢复；输出无模型checkpoint |
+
+本次验证支持重积分、重新编码与双视图切换的实现正确性；未对10个流场逐一重训，未调整主表配置，也未使用参考标签或confirmation结果选择参数。
+
+## 2026-09-08 — Other_Task2_VisualAnalysis_1.3：取消交互时间划分限制，增加UMAP/KMeans
+
+用户明确纠正：自由交互界面不应受到实验划分时间限制，应允许指定起始时间并在源末尾截断。此前1.2在confirmation起始时间拒绝积分 → 1.3仅按真实源时间范围积分，允许跨越旧划分时间 → 原因是交互需求与独立评测不同，之前把评测约束擅自加到了用户的几何浏览操作中。旧实验和旧失败记录保留，1.3结果不替代主表。
+
+| 项目 | 实施与证据 |
+|---|---|
+| 版本 | `Other_Task2_VisualAnalysis_1.3`，配置及使用见`docs/Other_Task2_VisualAnalysis_1.3.md` |
+| 时间处理 | 任意源范围内t0、完整dt步和末尾短步；实际终点min(t0+N×dt,tmax)，按实际时间重采样为32点；界面明确请求/实际终点和是否截断 |
+| 数据使用 | 仅在用户指定t0生成一批primitive，全部用于VAE拟合和显示，不做训练/校准/测试划分，不读取参考标签；逐臂`eval_*`损失在此为同批样本内指标，不是独立泛化结果 |
+| 方法 | 两臂同冻结VAE配方，各7000步骤；新增真实umap-learn 0.5.12投影、sklearn KMeans（n_init=10、seed7068），支持二维投影/高维latent聚类；输出标明实际方法和坐标名称 |
+| 真实运行 | `outputs/Other_Task2_VisualAnalysis_1.3/halfcylinderRe640/20260908T113546_afd19b63/`；本地CPU，UTC 11:35:46–11:38:53；未提交Ibex |
+| 输入/输出 | Re640 t0=14.23、dt=0.025、N=64，请求终点15.83，实际终点15，时长0.77；3847个有效primitive，paths[3847,7,32,3]、两臂mu[3847,64]，分析子集1500；两臂各完成7000步骤，无checkpoint |
+| 浏览器验证 | 任意t0重算完成后自动切换新几何与特征；UMAP+KMeans K=8生效，8簇、无噪声；最新页面明确实际终点15和时长0.77。仅验证功能，不据此声称聚类准确性 |
+| 自动验证 | 24项测试通过，包括跨旧划分、源末尾截断、不足一个dt的短步、非帧起始时间的时变速度积分解析解、UMAP导出名称、KMeans高维标签不随投影改变，以及原隐藏/联动功能 |
+
+训练仍读取冻结配方及源manifest中的几何网格设置，但不使用其split成员选择交互训练/显示时间；源数据范围内的时间浏览不受旧confirmation边界约束。
+
+<a id="progress-2026-09-09"></a>
+
+## 2026-09-09 — 项目进展、现有证据的范围与 Task6 讨论
+
+本节按用户最新研究判断记录当前进展。已有数值只引用冻结实验；用户最新观察与本轮建议分开标明。本轮没有新增训练、修改冻结算法或重写历史指标。
+
+### 原 FMT 的性能优势与客观性限制
+
+Fourier Map Tokenizer（FMT）将邻近材料路径线组成的 primitive 编码为特征向量。原 `fmt_all` 包含中心播种点轨线的跨时间坐标差分，因此它的已有性能优势不能同时解释为任意时变刚体 observer 下的客观性。静态刚体变换下的不变性与时变 observer 客观性必须区分，源代码见 [DFT_FMT_3D.py](../FMT_Utils/DFT_FMT_3D.py)，此前 observer 推导与诊断保留。
+
+用户概括为“Task1/2/3/5 均表明原 FMT 有性能收益，但该版本不客观”。原 FMT 的收益有实验支持，但必须按具体配方解释，不能把所有历史表格中名为 FMT 的列当成同一个编码器。
+
+| 证据版本 | 任务及对照 | 已有结果 | 支持范围 |
+|---|---|---|---|
+| `Verify_LargeNeighbor_1.1` | Task1，Raw7 / 原 FMT | 平均 F1 0.4238 / 0.5959 | 固定聚类设置下原 FMT 优于 Raw |
+| 同上 | Task2，Raw7+VAE / 原 FMT+VAE | 平均 F1 0.4945 / 0.5848 | 同冻结变分自编码器（VAE）训练设置下，FMT 输入的聚类效果更好 |
+| 同上 | Task3，Raw25-PCA 残差 / Raw25+原 FMT | 平均 F1 0.7170 / 0.7623 | 对主成分分析（PCA）残差容量对照仍有收益 |
+| `Verify_AIVDLongtime_1.1` | Task5，Raw-PCA / 原 `fmt_all+gram2+kin6` | 平均 F1 0.63194187 / 0.72773459 | 本轮晚期 Cylinder、不同尺度 IVD 监督设置下有收益 |
+
+F1 是精确率和召回率的调和平均；上表是各数据条目等权平均，不代表每个条目都改善。前三行来自[完整 LargeNeighbor 结果](#large-neighbor-1-1-final)，最后一行来自本文件 2026-09-07 的 `Verify_AIVDLongtime_1.1` 最终审计记录及 [Longtime 配置](../config/Verify_AIVDLongtime_1.1.json)。这两组实验分别保留其输入线数、配方和对照，不合并成一次统一确认。
+
+**需要明确的历史解释修订**：把各任务表中的“FMT 增益”一概归为原 `fmt_all` → 现在按冻结配方区分 → 依据是 Task3 当前统一主表 `mainExp_Task3_3D_9.2_uniform_confirmation` 的 [manifest](../outputs/mainExp_Task3_3D_9.2_uniform_confirmation/frozen_recipe_manifest.json) 明确选择 `g08_aivd1w3_dft` → 先前笼统说法混淆了原 Fourier 几何描述符与短窗口 IVD 估计。该主表不是原中心差分 FMT 的证据；原 FMT 的 Task3 收益由上表的独立对照支持。数值和冻结算法都不改写。
+
+### 去中心时间差分后的客观版本
+
+`fmt_all_v2` 与 `largeNeighbor` 使用同一时刻相对几何的内积标量序列再作 Fourier 分析，保留独立名称。`largeNeighbor` 用 24 邻居的完整 32 点序列，不是短窗口 IVD。其代码及配置见 [LargeNeighbor_3D.py](../FMT_Utils/LargeNeighbor_3D.py)、[Verify_LargeNeighbor_1.1.json](../config/Verify_LargeNeighbor_1.1.json)。
+
+| `Verify_LargeNeighbor_1.1` | 原 FMT | 六邻居客观版本 | 24 邻居客观版本 |
+|---|---:|---:|---:|
+| Task1 平均 F1 | 0.5959 | 0.1417 | 0.1299 |
+| Task2 平均 F1 | 0.5848 | 0.1442 | 0.1398 |
+| Task3 平均 F1 | 0.7623 | 0.6802 | 0.6790 |
+
+这支持“目前测试的客观替代方案在冻结任务上的性能较差”，尤其 Task1/2；**尚不支持“客观表示必然较差”或“原 FMT 的全部优势都由中心差分造成”**。替代版本还改变了描述符构造、维度和信息保留方式，不能把这个比较等同于只删除一个输入块。
+
+Task5 的边界同样保留：`Verify_FMTAllV2_1.1` 中独立 v2 的 F1 从原方案 0.675298050 降到 0.615071320；保留旧邻居辅助块的 `Verify_FMTAllV2_1.2` 则是 0.678020588 → 0.676800723，平均精确率从 0.719512817 升到 0.723950925。后者没有证明完整网络客观，因为 Raw 分支和保留的运动学块不在客观核心的认证范围内。两轮含旧时间划分，不能与晚期 Cylinder 实验直接归因比较。证据与容量控制见本文件对应完成记录及 [1.2 控制定义](Verify_FMTAllV2_1.2.md)。
+
+### 短窗口 IVD 估计的定位
+
+Instantaneous Vorticity Deviation（IVD，瞬时涡量偏差）衡量局部涡量相对于同时间参考平均涡量的偏离。用户称作 a1ivd/1ivd 的方法，本记录统一指冻结名称 `aivd1w3_dft`。它从同步邻居间距的变化估算速度梯度及涡量，扣除同时间样本平均涡量，取偏差模长；最后只保留前三个标量的未归一化零频系数，即三者之和。前三个是时间样本，不是三个空间分量；有限差分使第三个标量还依赖第四帧坐标。详细符号、实现与离散客观性边界见 [实现说明](aivd1w3_dft_explained_zh.md)。
+
+用户当前解释是：这个方法恰好接近现有初始时刻 IVD p95 标签所需要的物理量，因而在这些任务上很强，却未证明对整个 primitive 的通用几何信息有良好表示。作为论文表述，本记录采用“**由几何估计一个任务相关物理量，不能替代全轨线几何表示的证据**”，不把它写成数学上完全不包含任何几何信息。
+
+其余后续时间样本不进入这个一维输出；这一实现事实及 `Verify_AIVDLongtime_1.1` 中长窗口汇总平均下降，与上述解释相符，但不能单凭分类结果确认唯一因果。保留原方案作为物理量估计对照；按用户既有决定不继续采用当前 longtime 版本，不删除其代码与结果。保留七 observer 平移验证，不将该验证单独扩大为任意时变旋转的完整数值认证。
+
+### 新的轮廓系数观察与数据限制
+
+**用户于 2026-09-09 报告，尚未在本轮定位到对应逐次结果与完整配置**：对 primitive 特征采用多种降维和多种聚类，汇总平均轮廓系数；FMT 优于普通 VAE 和曲率等传统微分几何基线，短窗口 IVD 估计方案较差。结合可视化，用户认为这是 FMT 抓取几何信息的积极证据。本轮明确保留该观察，不虚构数值、实验 ID、方法列表、种子或独立审计结论。
+
+当前已定位的 `Other_Task2_VisualAnalysis_1.1–1.3` 是交互可视化/重算记录，并不含上述完整轮廓系数比较，不能用其中簇数或噪声比例代替。归档这项新实验时需要记录数据时间窗、每种特征/降维/聚类配置、随机种子、在哪个空间计算距离、噪声及无有效聚类组合的处理、逐组合分数与平均规则。
+
+轮廓系数根据簇内距离与最近其他簇距离计算，度量选定空间里的紧凑与分离程度。[官方定义](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html) 因此，本轮推断是：更高的分数可支持当前流程下的可聚类性；结合原轨线可视化可以加强几何解释，但仅凭不同特征/降维空间的平均分数，还不能证明 token 保留了多少完整流映射信息。这正是 Task6 希望补充的证据。
+
+**用户最新数据判断与项目决定**：可用流体数据及可靠标签不足；用户检查 Task4 的 hairpin 人工标注时发现不少错误，目前基本放弃该方向。本轮据此将 Task4 记为暂缓后续推进，保留既有协议、标签问题与历史结果，不继续把它当作主要突破口。这里记录用户报告，不声称本轮独立审计了错标比例。
+
+### 下一步仅讨论 Task6
+
+新任务希望直接检验 token 对整段材料运动和相对几何的保留及使用能力，不再依赖人工涡标签。已写入[三个 Task6 候选](Task6_candidates.md)：A 可查询的局部流映射重建；B 遮挡区域的流映射补全；C 短流映射 token 的组合。当前建议优先讨论 A，用户尚未选定正式 Task6，本轮没有注册版本、运行实验或宣称新方案有效。
+
+## 2026-09-09 — mainExp_Task678_FlowMap_1.1：全部选题、代码及部署前验证
+
+用户随后明确选择三个方案全部执行，A/B/C 正式对应 Task6/Task7/Task8，并授权代码验证后 Git commit/push、Ibex Git 拉取和批量比较。此前“尚未选择”的记录是当时状态，不再代表当前决定。正式任务和预注册设置见 [Task6/7/8 协议 1.1](Task678_flowmap_protocol_1.1.md)，配置 SHA256 `e27e18f54c49a0da9477291f6c709f5a60cc47f4c1fb832896e5c9eaaad48e34`。
+
+| 项目 | 实施与证据 |
+|---|---|
+| 数据 | 九个真实时间序列条目，Channel 单时刻 VTK 不混入；每流场八个不共享插值源帧的窗口，4/2/2 拆分；Cylinder 起始 t≥7.5 |
+| 来源检查 | Ibex 只读核对九个来源均至少有八个可用窗口；稀疏导出按已写入帧清单选择。Re160/Re640 薄轴的每轴8点网格不满足区域隔离，按域宽度预先减少到3点，未读取任何新任务性能 |
+| Task6 | 独立随机旋转/缩放生成邻域内查询种子；输入32点，目标63点。两个短时间段各自训练查询；不只重构可见七条线 |
+| Task7 | 六个外部可见 primitive 的 token 聚合，恢复内部未输入轨线；目标与可见材料种子保持大于r的间隔，IVD均值只由可见集合计算 |
+| Task8 | 在内存中复用同一 Task6 解码器，第一段预测终点转为第二段局部查询；与125点真实长轨线比较，非未知未来预测 |
+| 比较 | 12种特征/诊断方案，以及真实存储量的七线仿射插值；32/64维、3种子；9×3×2=54个GPU分片，每分片39条任务/方法评估，共2106条评估、4212条测试窗口记录 |
+| 核心代码 | `FMT_Utils/FlowMapData_3D.py`、`FMT_Utils/FlowMapModels_3D.py`；Build/Run/Audit/Submit入口为 `experiments/*_Task678_FlowMap_1_1.py`；未修改冻结 `DFT_FMT_3D.py` |
+| 单元验证 | `python -m unittest discover -s tests -p test_task678_flowmap_3d.py -v`：10项PASS，包括解析非定常平移/剪切、RK4内部越界、缺帧和时间隔离、薄轴网格、隐藏目标不进入特征、上下文置换、初始条件和预测终点组合 |
+| 完整本地验证 | `outputs/Verify_Task678_LocalSmoke_1.1/local_20260909_02/`；全部12特征和插值完成39条评估，独立保存预测复算78条窗口指标PASS；每个模型仅3次更新，用于可执行验证，不是科学性能证据 |
+| 验证与保留 | `independent_audit.json`、`per_window_metrics.csv`、`summary.json`及源配置保留；0个checkpoint；早先固定查询点的开发验证`local_20260909_01`也保留，不用于选择方法 |
+| 部署计划 | 独立Git分支 `codex/task678-flowmap-tokenization`；Ibex旧实验目录不是Git检出，本批使用独立Git目录；source/smoke/build/cache_audit/train/final_audit依赖链，提交ID和设备另记作业登记表 |
+
+本节只支持实现可执行、数值/信息边界检查通过。真实流场方法性能尚未产生，不能用短步数解析流验证的误差排序评价FMT。任何真实数据失败、重试或实现修正继续追加，不覆盖原运行记录。

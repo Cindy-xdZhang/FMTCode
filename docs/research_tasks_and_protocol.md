@@ -1,15 +1,17 @@
 # FMT 研究任务与统一协议
 
-本文件是 Task1–Task5 的唯一任务定义。旧文档若与本文件冲突，以本文件为准。协议自 2026-08-23 起生效；Task5 自 2026-08-26 起加入；历史实验 ID 和输出目录不追溯改名。
+本文件是 Task1–Task8 的唯一任务定义。旧文档若与本文件冲突，以本文件为准。协议自 2026-08-23 起生效；Task5 自 2026-08-26 起加入；Task6/7/8 自 2026-09-09 起加入；历史实验 ID 和输出目录不追溯改名。
+
+**2026-09-09 当前推进状态**：暂缓 Task4 后续推进，保留其历史定义、代码、标签问题及结果。用户已选择全部三个新方案，正式增加 Task6 局部流映射查询、Task7 遮挡区域补全、Task8 短流映射组合，并授权实现、验证、Git 推送及 Ibex 批量运行。具体冻结设置见 [Task6/7/8 协议 1.1](Task678_flowmap_protocol_1.1.md)。Task1/2/3/5 冻结实验不改写；下文旧 Task4 范围文字不表示仍优先推进。方法证据和新轮廓系数观察见[进展记录](experiment_log.md#progress-2026-09-09)。
 
 ## 1. 总体研究命题
 
 研究对象是 pathline cross primitive。2D primitive 通常为中心线和 `x±、y±` 共 5 条线；3D primitive 为中心线和 `x±、y±、z±` 共 7 条线。
 
 FMT 是由 Fourier 变换、`sin/cos`、几何不变量和 aggregation 构成的 **training-free encoder**。这里“training-free”只描述 encoder 本身没有通过标签或重构损失更新的参数；KMeans、VAE 和监督分类器仍然需要训练拟合。
-当前研究包含 **3D Task1、Task2、Task3、Task5**，以及仅限 3D 的 **Task4-b proxy-label 实验**。Task4-b 1.1 因跨 split primitive 空间重叠被审计否决；channel 内标签与空间拆分协议冻结为 1.2。`mainExp_Task4B_ChannelToTBL_2.3` 只研究一个 channel source volume 到一个 TBL target volume 的跨 volume 迁移，不把 Task4-b 扩展解释为一般跨流场结论。Task1–Task3 和 Task5 在 2D、3D 都有定义，但 2D 扩展暂不进入当前实验计划；Task4 只在 3D 中成立。
+当前研究包含 **3D Task1、Task2、Task3、Task5**，以及仅限 3D 的 **Task4-b proxy-label 实验**。Task4-b 1.1 因跨 split primitive 空间重叠被审计否决；channel 内标签与空间拆分协议冻结为 1.2。`mainExp_Task4B_ChannelToTBL_2.3` 只研究一个 channel source volume 到一个 TBL target volume 的跨 volume 迁移，不把 Task4-b 扩展解释为一般跨流场结论。`mainExp_Task4B_PooledInstanceSplit_3.1` 把 channel 与 TBL 合并、按完整 hairpin 实例留出测试，回答同分布未见实例问题，同样不构成一般跨流场结论。Task1–Task3 和 Task5 在 2D、3D 都有定义，但 2D 扩展暂不进入当前实验计划；Task4 只在 3D 中成立。
 
-## 2. 五项任务的固定定义
+## 2. 八项任务的固定定义
 
 | 任务 | 维度 | 输入与方法 | 核心比较 | 主要输出 | 允许的核心结论 |
 |---|---|---|---|---|---|
@@ -18,6 +20,9 @@ FMT 是由 Fourier 变换、`sin/cos`、几何不变量和 aggregation 构成的
 | **Task3：有监督 IVD 涡识别** | 2D、3D | IVD 标签监督的涡/非涡二分类网络 | Raw、参数量控制 Raw、Raw+FMT | F1、Average Precision、AUROC、precision、recall；多训练 seed | 加入 FMT 是否提高有监督涡区域识别 |
 | **Task4：有监督涡类型分类** | **仅 3D** | 对已定义的 3D 涡型标签做多分类 | 不使用 FMT vs 加入 FMT | macro-F1、每类 F1、balanced accuracy、confusion matrix | 加入 FMT 是否提高 streamwise、spanwise、hairpin 等涡型分类 |
 | **Task5：不同尺度几何学习** | 2D、3D | 每个 primitive 的邻居距离、积分步长和积分步数可变；积分后统一重采样为固定 `K×L×C`，再做 IVD 监督二分类 | 固定尺度 Task3 迁移、variable-scale Raw、结构匹配 Raw-PCA residual、variable-scale Raw+FMT | unseen-scale confirmation 的 F1、Average Precision；逐尺度、逐流场及 family macro | 模型能否学习跨尺度 primitive；FMT 是否提高 variable-scale IVD 涡识别 |
+| **Task6：局部流映射查询** | 当前 3D | primitive token + 新粒子初始局部坐标 + 查询时间 → 轨迹位置；原流场积分自监督 | 原轨线压缩、VAE、FMT、客观版本、IVD估计、微分几何、坐标Fourier及插值 | 全轨线位置误差、相对几何误差、token字节数及时间曲线 | token 是否保留可供未输入材料点查询的流映射信息 |
+| **Task7：遮挡区域补全** | 当前 3D | 外部可见 primitive tokens → 隐藏区域材料轨迹；原流场积分自监督 | 同上下文网络与相同可见材料点下的各特征方案 | 隐藏区域位置及相对几何误差、存储/计算开销 | tokens 是否能支持区域间上下文推断 |
+| **Task8：短流映射组合** | 当前 3D | 已观测的短流映射 tokens 逐段查询，将预测到达位置输入下一段 | 同逐段解码器设置的特征方案与原轨线插值组合 | 组合轨迹位置和形变误差、分段误差增长 | token 是否支持流映射实际组合；不宣称预测未知未来 |
 
 Task4 的背景类处理必须在首个实验前冻结。Task4-b 1.2 冻结为涡候选内部四类：ordinary streamwise、ordinary spanwise、hairpin head、hairpin limb；non-vortex 使用 `ignore=-1`，不进入四分类损失或指标。若加入 non-vortex，必须建立五分类新版本；两种协议不得混在同一结果表中。
 
@@ -109,6 +114,7 @@ Task4 的背景类处理必须在首个实验前冻结。Task4-b 1.2 冻结为�
 - Channel Task4-b 1.2 的标签定义、阈值选择、空间/实例拆分和物理质检冻结在 `docs/Task4B_channel_proxy_label_protocol_1.2.md`。其中 `norm(omega-mean_xy(omega)(z))` 必须称为 channel-profile vorticity deviation，不得称为标准 IVD，也不得据此改写 Task1/Task2/Task3/Task5 的 whole-field IVD p95 协议。
 - `VortexIds>0` 只提供人工 hairpin support 与实例编号。ordinary streamwise/spanwise orientation 是 velocity–curl 45°规则产生的 proxy；hairpin head/limb 是 velocity–curl、`omega_y_prime` 及分量占优规则产生的 proxy。四类标签都不得表述为人工 anatomical ground truth；位置序和左右涡量符号只作逐实例物理质检。
 - `mainExp_Task4B_ChannelToTBL_2.3` 的 TBL 测试总体是 **oracle-enriched population**：先按冻结的 per-volume p80.5 规则产生 vortex candidates，再显式加入全部人工 `VortexIds>0` hairpin support。该实验衡量已知人工 support/identity 条件下的四类 proxy 迁移，不衡量 blind whole-field hairpin detection。
+- 合并 channel+TBL 的 3.1 按每 volume 内完整 `VortexId` 实例分块随机拆分（2 test / 1 validation / 7 train），ordinary cube 继承最近 hairpin 实例的拆分，并删除距任一测试种子小于一个 primitive 支持半径（`16×spatial_step+offset`）的 train/validation cube；测试 cube 不删除。缓冲半径必须在训练前用真实标签量化后冻结并写入 config；改变半径或拆分规则必须建立新版本。
 - Channel→TBL 2.3 使用全部 channel source rows 训练，并以连续三 epoch source 零错误和正 minimum true-logit margin 作为进入 TBL 一次评估的门禁；它回答“完全拟合 source 后能否迁移”，不是常规 source holdout 泛化。必须报告 streamline coverage，并把无有效 streamline 的人工 hairpin 行及完整 VortexId 计入 coverage-adjusted 失败指标。即使 Ibex 独立审计 `PASS`，证据仍只来自一个 source volume 和一个 target volume。
 
 ### Task5
@@ -119,3 +125,21 @@ Task4 的背景类处理必须在首个实验前冻结。Task4-b 1.2 冻结为�
 - 尺度 tuple 的分配必须与空间 seed 和 IVD 标签独立，且每个时间片中各 tuple 数量近似均衡；不得把大尺度主要分给涡区、小尺度主要分给背景。
 - 主表至少包含 variable-scale Raw、同结构同维度 Raw-PCA residual、variable-scale Raw+FMT；同时报告固定尺度 Task3 模型直接迁移到 variable-scale confirmation 的结果。
 - 除总体 F1 和 Average Precision 外，必须输出逐尺度 tuple 的指标，避免总体平均掩盖某一尺度范围的系统失败。
+
+## 2026-09-06 用户重新定义 Task4-b（4.1 起）
+
+以用户本次明确要求为准：channel+TBL 训练同一个有监督四分类网络。四类为 ordinary-streamwise、ordinary-spanwise、hairpin-head、hairpin-leg；在涡区内只根据 hairpin 标注内/外与 velocity–curl 更接近平行/垂直决定，45°归平行，反平行同属平行，hairpin 内平行为 leg、垂直为 head；不使用额外 head 判据或角度排除带。每流场重算全域 IVD，通过原始正标注单元中心及目标体素中心的全覆盖约束确定 a，固定 IVD>0.9a 为涡区。该 Task4-b 标签协议不修改 Task1/2/3/5 的 p95 规则。
+
+首先执行 `Verify_Task4B_VelocityCurlMemorization_4.1`：七条流线 primitive、固定 FMT、单个共享 fmt_only 四分类网络；fit=evaluation，只作有限样本记忆验证。具体离散支持、归一化、抽样、训练、通过判据见 [4.1 协议](Task4B_velocity_curl_protocol_4.1.md)。历史 1.2/2.x/3.x 的标签与结果保持不变，不混入本次结果；后续泛化实验另立版本。
+
+### 当前 Task4-b 阈值更新（2026-09-06，4.4）
+
+用户在软件检查并咨询CFD专家后指定 Channel IVD>5.785、TBL IVD>0.08；此固定物理阈值取代4.1–4.3的hairpin最小IVD阈值定义，旧配置与结果保留。当前 Other_Task4B_ProxyGTThreshold_4.4 只更新完整ground truth及三维图，不训练；四类方向规则、channel+TBL同一网络的后续目标不变。阈值以下hairpin标注不强制补回，覆盖率单独报告。该修改只适用于Task4-b，不改变Task1/2/3/5的p95。
+
+### 当前 Task4-b 小区域分割训练（2026-09-06，5.1）
+
+用户已授权新训练：channel与TBL各900个训练、100个测试小区域，含全部hairpin实例包围盒及同尺度随机滑窗，共享一个FMT四分类网络。mainExp_Task4B_PatchSegmentation_5.1冻结实例数Channel66/7、TBL52/6，跨集合patch至少1体素间隔；各点7条33点流线的积分与原生速度插值节点限制在其patch内部。保持4.4固定IVD阈值，非涡区不进四分类。训练200epoch后最终test一次、无test选模，输出完整test涡区分割与覆盖。细节见[5.1协议](Task4B_patch_segmentation_protocol_5.1.md)，旧版数值保留。
+
+### Task4-b 网络、学习率和几何差分探索（2026-09-06，5.2）
+
+用户授权调整网络结构、学习率，允许训练样本过拟合，并从几何点差构造curl代理量。Other_Task4B_GeometrySearch_5.2冻结8个候选，以5.1原训练patch内部、有1体素间隔的验证集选模型及epoch；最终恢复原900+900训练区域重训。七线primitive保留33点，比较等弧长与保留相对速度大小的等时间几何，附加邻线空间差分、梯度/curl序列的FMT和局部描述量。所有输入均来自patch内部速度积分几何，真实curl、IVD及hairpin成员关系只用于监督，不进入网络输入。原5.1的test只在冻结选择后评估一次，并声明为重复使用的benchmark，不作为新confirmation。完整预注册见[5.2协议](Task4B_geometry_search_protocol_5.2.md)，方法结论只记入experiment_log。
