@@ -1102,3 +1102,12 @@ Task5 fixed Task3 Raw transfer的宏F1为0.377967，variable-scale Raw为0.61062
 上一版1.1为两个不同均匀流场的中心query示例，说明原token丢失方向信息；本项目每流场独立训练且Task6要求query未输入，因此不能直接将1.1误差下界称为本项目任务的单流场下界。1.2明确修正该论证范围：采用同一平滑非定常流场`v=(1/8+t/8)*(1-g(z),g(z),0)`，`g`在z≤-2为0、z≥2为1，中间用光滑过渡。两个primitive中心为(0,0,-4)/(0,0,4)，所有可见轨迹分别处于各自均匀区域；query偏移(1/32,1/64,0)与全部输入播种点不同。Task6第一段以及Task7均逐比特验证tokens/query/geometry/scales相同、正确局部轨迹不同。
 
 同一确定性解码器的两例等权位置误差/半径下界仍为0.2779337031。源码`experiments/Verify_Task678_FMTDirectionalAmbiguity_1_2.py`，完整输入和报告`outputs/Verify_Task678_FMTDirectionalAmbiguity_1.2`，输入SHA256`1c7046458d23d19f15f9c7486024841503884ab1589eb0b7faa001c2966bfdd9`。该反例约束原161维FMT与当前合法查询元数据的普遍坐标重建能力，不替代九流场实际性能；不涉及运动观察者客观性结论。旧1.1不删除，本轮HanSampling配方不因此静默改变。
+
+
+## 2026-09-10 — Verify_Task678_VectorFMT_1.1：保留方向的冻结Fourier token（已提交）
+
+由上述独立解析1.2反例触发，在读取HanSampling实际流场测试指标之前固定本扩展：保留原6个频率，但直接保存中心及六邻居相对增量的三维Fourier实部、非DC虚部和邻居对应关系，不取旋转不变量、不排序邻居。新`vector_fmt6`为231维/924字节，不是原161维FMT；原FMT与全部对照继续独立完成，不改历史代码。编码器仍无训练参数，接同一512宽可训练网络。另有逆Fourier补零重建+仿射查询的无训练`vector_affine`对照。六频截断仍有损，不宣称任意时变观察者客观，也不预先声称查询充分性。协议`docs/Task678_vector_fmt_protocol_1.1.md`。
+
+固定代码commit`d9d04b41f0b01af0a2236707a369e1bb2d58cbeb`，新配置`config/Verify_Task678_VectorFMT_1.1.json`，Linux SHA256 `843eee14d04bc4a2d47a5bd9e43d811dcc5f0ea96508eef46c1be5a0d3ff724d`。完整复用已审计HanSampling缓存，基础数据配置SHA256仍为`dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9`；同query ID、轨迹、区域、窗口、种子及50遍曝光量，不能重采样择优。新维度仅改变第一层参数量，记录实际参数而不声称等总参数。27个神经分片+9个无训练对照，预期999条评估，与原批次2376条分开独立复算后配对。
+
+本地3项解析检查与51条全流程短运行复算通过：低频支撑重建、保持净位移、相同原FMT token的方向反例可区分、隐藏目标不进入新token。以上是实现证据，不是实际流场性能结论。

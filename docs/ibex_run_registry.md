@@ -2422,3 +2422,16 @@ All use Verify_LargeNeighbor_1.1 and recorded frozen source/config; GPU arrays e
 - recovery1 `51701047` | affine | SUBMITTED 2026-09-10T14:04:29.130421+03:00 | CPU | commit `45eefee828f5439f6aad6940b01aafe7803aa691` | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9`
 
 - recovery1 `51701048` | audit | SUBMITTED 2026-09-10T14:04:29.198825+03:00 | CPU | commit `45eefee828f5439f6aad6940b01aafe7803aa691` | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9`
+
+
+## 2026-09-10 — Verify_Task678_VectorFMT_1.1 提交
+
+独立checkout `/home/zhanx0o/FMT_Task678Vector_20260910`，输出直接存于`/ibex/user/zhanx0o/FMT_Task678Vector_20260910/outputs`并由工作目录链接访问，避免home配额。固定源码`d9d04b41f0b01af0a2236707a369e1bb2d58cbeb`，科学配置及基础缓存不改变。
+
+- `51701309` | smoke | SUBMITTED 2026-09-10T14:21:27.186205+03:00 | CPU | config `config/Verify_Task678_VectorFMT_1.1.json` SHA256 `843eee14d04bc4a2d47a5bd9e43d811dcc5f0ea96508eef46c1be5a0d3ff724d` | commit `d9d04b41f0b01af0a2236707a369e1bb2d58cbeb`
+
+- `51701310` | train | SUBMITTED 2026-09-10T14:21:27.261262+03:00 | one A100 or V100 per array element | config `config/Verify_Task678_VectorFMT_1.1.json` SHA256 `843eee14d04bc4a2d47a5bd9e43d811dcc5f0ea96508eef46c1be5a0d3ff724d` | commit `d9d04b41f0b01af0a2236707a369e1bb2d58cbeb`
+
+- `51701311` | affine | SUBMITTED 2026-09-10T14:21:27.323686+03:00 | CPU | config `config/Verify_Task678_VectorFMT_1.1.json` SHA256 `843eee14d04bc4a2d47a5bd9e43d811dcc5f0ea96508eef46c1be5a0d3ff724d` | commit `d9d04b41f0b01af0a2236707a369e1bb2d58cbeb`
+
+- `51701312` | audit | SUBMITTED 2026-09-10T14:21:27.387187+03:00 | CPU | config `config/Verify_Task678_VectorFMT_1.1.json` SHA256 `843eee14d04bc4a2d47a5bd9e43d811dcc5f0ea96508eef46c1be5a0d3ff724d` | commit `d9d04b41f0b01af0a2236707a369e1bb2d58cbeb`
