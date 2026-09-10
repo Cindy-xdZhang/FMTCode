@@ -159,6 +159,7 @@ def main():
                         values=[float(r[metric]) for r in normal if r.get(metric) not in ('',None)]
                         assert len(values) in (0,len(normal))
                         item[metric]=float(np.mean(values)) if values else ''
+                    item['true_arrival_second_stage_nrmse_radius1']=item.pop('true_arrival_diagnostic_nrmse')
                     item['time_interpolation_ratio']=item['unseen_time_nrmse']/item['supervised_time_nrmse'] if item['supervised_time_nrmse']>0 else ''
                     if shuffled:
                         assert len(shuffled)==len(normal)==3
@@ -179,6 +180,9 @@ def main():
         uncertainty='Every neural seed macro is shown as a small tick; connected marker is the three-seed mean. Deterministic interpolation has one result.',
         exclusions='Training and validation roles are kept in CSV and excluded only from this held-out comparison figure',
         transforms='Log error axis, positive guard; no curve fitting or smoothing',
+        training_figure='Every fixed supervised-time training probe for all nine flows and all three seeds; Task6/7 only; no time smoothing',
+        diagnostic_normalization='True-arrival second-stage errors use the second-stage radius; main Task8 errors use the initial radius and cover both stages. Do not subtract these different statistics.',
+        token_bytes='Per visible primitive, excluding neural-network parameters and legal query metadata',
         base_audit=ar,vector_audit=br)
     (out/'figure_contract.json').write_text(json.dumps(contract,indent=2)+'\n',encoding='utf-8')
     mpl.rcParams.update({'font.family':'sans-serif','font.sans-serif':['Arial','DejaVu Sans'],'font.size':7,
