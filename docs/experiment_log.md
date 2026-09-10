@@ -951,3 +951,21 @@ Instantaneous Vorticity Deviation（IVD，瞬时涡量偏差）衡量局部涡�
 | 总计 | 4017 | 2020 | 1980 |
 
 证据为远端`outputs/mainExp_Task678_FlowMap_1.1/build/<dataset>.json`及`cache_audit.json`，初始物理时间、半径、实际网格形状、保留/排除原因及文件SHA256逐窗口保存。上述记录属于输入/实现审计，尚不支持任何方法性能排名。
+
+
+### 2026-09-10 — Verify_Task1235_ObjectiveFMTnTDO_1.1（预注册，尚无性能结论）
+
+用户明确要求直接测试完整 objective_fmt_nTDO 1.1 在 Task1/2/3/5 的性能。配置 `config/Verify_Task1235_ObjectiveFMTnTDO_1.1.json`，执行代码 `experiments/Verify_Task1235_ObjectiveFMTnTDO_1_1.py`。模块保持 369 维（相对向量 Fourier 138 + 同时间 21 点对距离 Fourier 231），六个频率；不加 aivd、运动学块或额外归一化到编码器，不修改冻结 DFT。预处理在下游仅用训练集拟合。
+
+| 任务 | 固定对照 | 训练与评估 |
+|---|---|---|
+| Task1 | Raw / 旧 fmt_all+kin4 / 完整 nTDO | 训练集 StandardScaler/PCA8/KMeans；验证集定 cluster-to-vortex；7380/7381/7382 三种子 |
+| Task2 | Raw / 旧 fmt_all+kin4 / 完整 nTDO | 三臂补零到700维，同一 VAE 512/256、latent64、beta1e-6、lr3e-4、7000步；310/311/312 三种子 |
+| Task3 | Raw / Raw-wide / Raw-PCA residual / Raw+旧 fmt_all+kin4 / Raw+nTDO | 各辅助分支369维、同结构138818总参数；最多100epoch、patience20；原验证集融合选择规则；40/41/42 |
+| Task5 | 上述五臂（旧FMT用冻结 fmt_all+gram2+kin6）及 fixed-scale Task3 Raw transfer | 辅助分支同样369维，融合系数固定1；原18/6/9个train/validation/test尺度tuple；40/41/42 |
+
+全部10个3D条目均跑三种子，预期120个task/dataset/seed结果包、510行逐臂指标。Task3旧FMT是非aivd历史参考，不能冒充现有aivd主表配方。每个结果包在载入test特征和标签前冻结所有模型、阈值及归一化。保存逐样本预测与分数，独立复算F1/AP；临时checkpoint仅供同一Task3→Task5依赖链使用，审计后删除，不下载。
+
+时间策略：fixed缓存沿用既有late-cylinder划分；Task5 Re160/Re6400旧development不满足t>=7.5，按独立新YAML重建。原始索引development[75,77,79,81,95,97]，test[125,128,131,134]；Re6400使用已导出的原索引75..149片段，文件索引相应减75，不再次截半。其余8组Task5复用冻结缓存。所有方法同一条目使用完全相同的有效样本与标签，p95不变。新建两组Task5内train/validation/test完整加载时间窗互不重叠。
+
+证据边界：这是复用benchmark的配对性能诊断，不是新的独立confirmation。历史Task1/2/3和fixed Task3 transfer的不同缓存文件仍可能有物理时间窗重叠，不声称完全时间独立；不依据此次test指标改配方。性能结果不替代客观性代数验证。当前仅预注册，F1待真实运行。
