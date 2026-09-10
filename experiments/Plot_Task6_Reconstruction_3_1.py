@@ -24,10 +24,10 @@ NAMES={"cylinder3d":"Cylinder Re160","halfcylinderRe640":"Cylinder Re640",
     "f22raptor":"F22","boeing747":"Boeing747","smokeBuoyancy":"Smoke buoyancy"}
 
 
-def main(root,audit_scripts,examples_only=False):
+def main(root,audit_scripts,examples_only=False,curved_examples=False):
     sys.path.insert(0,str(audit_scripts))
     from audit_panel_alignment import require_matplotlib_panel_alignment
-    folder=root/("figures_partial" if examples_only else "figures");folder.mkdir(exist_ok=True)
+    folder=root/("figures_curved" if curved_examples else "figures_partial" if examples_only else "figures");folder.mkdir(exist_ok=True)
     plt.rcParams.update({"font.family":"sans-serif","font.sans-serif":["Arial","DejaVu Sans"],
         "font.size":7,"axes.titlesize":7,"axes.labelsize":7,"xtick.labelsize":7,"ytick.labelsize":7,
         "legend.fontsize":7,"pdf.fonttype":42,"svg.fonttype":"none","axes.spines.top":False,"axes.spines.right":False})
@@ -64,12 +64,13 @@ def main(root,audit_scripts,examples_only=False):
         ax.legend(loc="lower left",bbox_to_anchor=(0,1.035),ncol=2,borderaxespad=0)
         fig.text(.24,.945,"Same historical test trajectories; mean ± standard deviation, 3 seeds",fontsize=7)
         save(fig,"legacy_test_reconstruction")
-    source=np.load(root/("fixed_examples.partial.npz" if examples_only else "fixed_examples.npz"))
+    source=np.load(root/("curved_examples.npz" if curved_examples else "fixed_examples.partial.npz" if examples_only else "fixed_examples.npz"))
     roles=[("truth","Ground truth","#242424"),("original_fmt","Original FMT + VAE","#8B8B8B"),
         ("signed_fmt_vae","Signed FMT + VAE","#2475AC"),("raw_vae","Raw + VAE","#69A6A1")]
     for dataset in NAMES:
         if examples_only and dataset+"__truth" not in source: continue
-        for sample,example_id in enumerate(source["example_ids"]):
+        example_ids=source[dataset+'__ids'] if curved_examples else source['example_ids']
+        for sample,example_id in enumerate(example_ids):
             paths=[source[dataset+"__"+r][sample] for r,_,_ in roles]
             all_points=np.concatenate([x.reshape(-1,3) for x in paths])
             lower=all_points.min(0);upper=all_points.max(0)
@@ -86,7 +87,8 @@ def main(root,audit_scripts,examples_only=False):
                 ax.text2D(.5,1.02,title,transform=ax.transAxes,ha="center",fontsize=7)
                 score=geometry_metrics(x[None],paths[0][None])["position_rmse_r"]
                 ax.text2D(.5,-.03,f"RMSE/r = {score:.3g}",transform=ax.transAxes,ha="center",fontsize=7)
-            fig.text(.02,.95,f"{NAMES[dataset]} · fixed primitive {int(example_id)} · common view and coordinate limits",fontsize=8)
+            selection=f"GT turning percentile {[95,99,99.9][sample]}" if curved_examples else "fixed"
+            fig.text(.02,.95,f"{NAMES[dataset]} · {selection} primitive {int(example_id)} · common view and limits",fontsize=8)
             save(fig,f"{dataset}_primitive_{int(example_id)}")
     notes=dict(backend="Python/matplotlib",archetype="quantitative comparison plus fixed-index geometry plates",
         metrics="same historical test, all nine flows and three seeds; mean and sample standard deviation",
@@ -96,6 +98,8 @@ def main(root,audit_scripts,examples_only=False):
         exports="PDF and SVG with editable text, 600 dpi PNG; glyph floor 7 pt",
         method_scope="Paired historical comparison shows old/new FMT; Raw is in the geometry plates and full result table")
     notes["export_scope"]="available first-seed pairs only; no aggregate conclusion" if examples_only else "all nine flows and all three seeds"
+    if curved_examples:
+        notes['examples']='Additional legacy-test GT total-turning percentiles 95/99/99.9; seven-line mean, zero-length segments ignored; no prediction or error used in selection; fixed examples retained separately'
     (folder/"figure_contract.json").write_text(json.dumps(notes,indent=2),encoding="utf-8")
 
 
@@ -103,4 +107,7 @@ if __name__=="__main__":
     parser=argparse.ArgumentParser();parser.add_argument("--root",type=Path,default=Path("outputs/mainExp_Task6_Reconstruction_3.1"))
     parser.add_argument("--audit-scripts",type=Path,required=True)
     parser.add_argument("--examples-only",action="store_true")
-    args=parser.parse_args();main(args.root,args.audit_scripts,args.examples_only)
+    parser.add_argument("--curved-examples",action="store_true")
+    args=parser.parse_args()
+    if args.curved_examples and not args.examples_only: parser.error('--curved-examples requires --examples-only')
+    main(args.root,args.audit_scripts,args.examples_only,args.curved_examples)
