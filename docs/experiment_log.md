@@ -1084,3 +1084,14 @@ Task5 fixed Task3 Raw transfer的宏F1为0.377967，variable-scale Raw为0.61062
 用户授权依照Han 2024的数据组织改进Task6/7/8。固定源码`45eefee828f5439f6aad6940b01aafe7803aa691`，配置`config/Verify_Task678_HanSampling_1.1.json`，Linux SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9`；协议`docs/Task678_han_sampling_protocol_1.1.md`。冻结完整161维FMT和现有512宽可训练残差网络；每primitive用128条训练查询及独立验证/测试材料轨迹，仅偶数时刻监督，奇数时刻单列。50遍等效查询曝光；Raw全672维、零token、仿射插值及同窗口token置换作为对照。Task8扩大仅由可见支持确定的第二段覆盖，正式输出仍传递预测终点。9个非定常3D条目、3个种子、81个神经网络分片，仿射9个独立CPU分片。新共同数据集合不能与旧结果混为配对表。
 
 本地9项测试通过，全部4臂短运行102条指标独立复算通过，篡改指标被审计拒绝。奇数时刻真值任意更改不影响训练统计和最终权重；解析流场验证真实梯度优化可以降低拟合误差。这些是实现正确性证据，不是实际流场FMT能力结论。Ibex流程依次为短运行、数据构建、数据隔离审计、训练/仿射、最终预测复算；尚无本轮正式性能结论。
+
+
+### 2026-09-10 — HanSampling 实际数据预检与方向信息边界
+
+本地`Verify_Task678_HanDataPreflight_1.1`检查四个已有源文件的首个预定窗口，使用正式采样配置，Re6400/DeltaWing LBM/F22/Boeing分别保留114/111/101/111个区域，角色划分和隐藏输入缓冲均通过；脚本commit`4d32f729`，逐项JSON在同名outputs目录。这是数据可构建性检查，不是性能结论。
+
+独立解析检验`Verify_Task678_FMTDirectionalAmbiguity_1.1`（commit `eb887539`，`experiments/Verify_Task678_FMTDirectionalAmbiguity_1_1.py`）构造两个不同的平滑均匀速度场：`v_a(t)=(1/8+t/8,0,0)`、`v_b(t)=(0,1/8+t/8,0)`，相同轴向七线、相同初始查询及半径0.25。Task6和Task7的161维原FMT token、query、geometry、scales均逐比特相同，而正确坐标轨迹不同。两样本等权平方误差的最佳共同预测是均值，解析例的不可约位置误差/半径为0.2779337031。完整输入与JSON报告在`outputs/Verify_Task678_FMTDirectionalAmbiguity_1.1`；编码器SHA仍为`efff993f10a8db7b481784198beecce1c3c74b2f81cd2eddf5a523ba0a19222d`。
+
+结论边界：此前“扩大网络能降低已有训练集误差”的实验观察仍成立；不能由此推出“原旋转不变token足以唯一恢复任意绝对坐标流映射”。新增解析证据指出原token存在方向信息缺失，增加训练数据和网络不能消除这个反例的输入歧义。这不是客观性测试，也不预判九个实际流场的排名；各方法在其数据分布上的误差仍由已提交实验测量。不能把全部泛化误差归因于没训练好。
+
+本轮正式批次发生home存储配额失败，尚未训练或读取新测试性能；科学配置保持固定，修复存储后重跑失败分片。详见运行登记，不把执行失败作为方法性能。

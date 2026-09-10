@@ -2405,3 +2405,20 @@ All use Verify_LargeNeighbor_1.1 and recorded frozen source/config; GPU arrays e
 - `51700835` | affine | SUBMITTED | 2026-09-10T13:50:43.274047+03:00 | CPU | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9` | commit `45eefee828f5439f6aad6940b01aafe7803aa691`
 
 - `51700836` | audit | SUBMITTED | 2026-09-10T13:50:43.335264+03:00 | CPU | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9` | commit `45eefee828f5439f6aad6940b01aafe7803aa691`
+
+
+### 2026-09-10 HanSampling：存储失败及恢复1
+
+首轮smoke `51700831`于13:52:35在cn604-18开始，13:53:46完成，9项测试+102条结果复算及篡改拒绝通过。构建`51700832_0-4`完成，`_5-8`失败；实际写入探测返回`OSError(122, Disk quota exceeded)`，home已达200GB硬限额。后续`51700833/51700834/51700835/51700836`在训练前取消，保留初次提交及事件记录。
+
+仅本轮输出目录迁往`/ibex/user/zhanx0o/FMT_Task678Han_20260910/outputs/Verify_Task678_HanSampling_1.1`，297个文件、1,649,066,641字节逐项SHA256一致后，原home路径替换为链接；配置原路径不变。失败的不完整缓存保留于`failed_attempts/51700832`。迁移证据`outputs/Verify_Task678_HanSampling_1.1/storage_migration.json`。恢复使用原源码`45eefee828f5439f6aad6940b01aafe7803aa691`、原配置SHA256`dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9`，不改数据划分或优化预算。
+
+- recovery1 `51701044` | build | SUBMITTED 2026-09-10T14:04:28.901480+03:00 | CPU | commit `45eefee828f5439f6aad6940b01aafe7803aa691` | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9`
+
+- recovery1 `51701045` | data_audit | SUBMITTED 2026-09-10T14:04:28.983635+03:00 | CPU | commit `45eefee828f5439f6aad6940b01aafe7803aa691` | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9`
+
+- recovery1 `51701046` | train | SUBMITTED 2026-09-10T14:04:29.054434+03:00 | one A100 or V100 per element | commit `45eefee828f5439f6aad6940b01aafe7803aa691` | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9`
+
+- recovery1 `51701047` | affine | SUBMITTED 2026-09-10T14:04:29.130421+03:00 | CPU | commit `45eefee828f5439f6aad6940b01aafe7803aa691` | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9`
+
+- recovery1 `51701048` | audit | SUBMITTED 2026-09-10T14:04:29.198825+03:00 | CPU | commit `45eefee828f5439f6aad6940b01aafe7803aa691` | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9`
