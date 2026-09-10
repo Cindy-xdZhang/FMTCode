@@ -2906,3 +2906,55 @@ Full per-process records follow. All times are on 2026-09-10 in UTC+03; start/en
 | 51716649_6 | f22raptor | 2026-09-10T21:08:53 | 2026-09-10T21:09:48 | cn604-15/CPU | COMPLETED/0:0 |
 | 51716649_7 | boeing747 | 2026-09-10T21:08:53 | 2026-09-10T21:09:48 | cn604-15/CPU | COMPLETED/0:0 |
 | 51716649_8 | smokeBuoyancy | 2026-09-10T21:11:09 | 2026-09-10T21:12:38 | cn604-13/CPU | COMPLETED/0:0 |
+
+### 2026-09-10 — mainExp_Task6_Reconstruction_3.1 首轮提交
+
+checkout `/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910`；commit `9d73a0736b907478d1dc7cc3ac75d764a9aeefce`；配置SHA256 `eaf8c0cf6e902589cd5c68b8811601b593fe040e51d660c354e320b705cca6cb`。数据扩至每流场24万train，54组主训练，含已用历史test benchmark复评。前序afterok依赖。
+
+| Job | 阶段 | 提交时间(+03:00) | 设备 | Array | 状态 |
+|---|---|---|---|---|---|
+| 51717895 | preflight | 2026-09-10T21:15:26.900685+03:00 | CPU | None | SUBMITTED |
+| 51717896 | build | 2026-09-10T21:15:26.963842+03:00 | CPU | 0-8%3 | SUBMITTED |
+| 51717897 | audit-data | 2026-09-10T21:15:27.027859+03:00 | CPU | None | SUBMITTED |
+| 51717898 | train | 2026-09-10T21:15:27.097585+03:00 | GPU A100/V100 | 0-53%6 | SUBMITTED |
+| 51717899 | audit-results | 2026-09-10T21:15:27.158745+03:00 | CPU | None | SUBMITTED |
+
+- 2026-09-10 21:29 +03:00 | 51717898 | 调度更新：ArrayTaskThrottle 从 6 调为 18，仍为相同 54 次已登记训练；数据、config、commit、训练更新次数均不变。减少串行等待，不增补实验。
+
+- 2026-09-10 21:48 +03:00 | 51717898 | 提议将预留 TimeLimit 从 6h 降为 1h 未执行：自动审批以可能提前终止运行中实验为由拒绝。保留原时限，不重试、不通过其他方式实施该调整；实验继续运行。
+
+
+### 2026-09-10 — Task6重建3.1运行中快照
+
+此表为 2026-09-10T21:59:31.245256+03:00 的运行记录，非最终状态；54组训练继续，已完成部分尚待统一最终审计。作业代码与配置同首轮提交。
+
+| Job | 阶段/流场/方法/种子 | 开始(+03:00) | 结束(+03:00) | 节点/实际设备 | 状态 |
+|---|---|---|---|---|---|
+| 51717895 | data preparation / audit | 2026-09-10T21:15:40 | 2026-09-10T21:16:01 | cn604-13/CPU | COMPLETED/0:0 |
+| 51717896_0 | data preparation / audit | 2026-09-10T21:19:54 | 2026-09-10T21:21:32 | cn604-14/CPU | COMPLETED/0:0 |
+| 51717896_1 | data preparation / audit | 2026-09-10T21:19:54 | 2026-09-10T21:22:12 | cn604-14/CPU | COMPLETED/0:0 |
+| 51717896_2 | data preparation / audit | 2026-09-10T21:19:54 | 2026-09-10T21:22:31 | cn604-13/CPU | COMPLETED/0:0 |
+| 51717896_3 | data preparation / audit | 2026-09-10T21:22:10 | 2026-09-10T21:27:00 | cn604-15/CPU | COMPLETED/0:0 |
+| 51717896_4 | data preparation / audit | 2026-09-10T21:24:24 | 2026-09-10T21:26:32 | cn604-17/CPU | COMPLETED/0:0 |
+| 51717896_5 | data preparation / audit | 2026-09-10T21:24:24 | 2026-09-10T21:28:55 | cn604-17/CPU | COMPLETED/0:0 |
+| 51717896_6 | data preparation / audit | 2026-09-10T21:26:38 | 2026-09-10T21:31:52 | cn604-17/CPU | COMPLETED/0:0 |
+| 51717896_7 | data preparation / audit | 2026-09-10T21:28:51 | 2026-09-10T21:34:09 | cn604-15/CPU | COMPLETED/0:0 |
+| 51717896_8 | data preparation / audit | 2026-09-10T21:31:03 | 2026-09-10T21:33:26 | cn604-17/CPU | COMPLETED/0:0 |
+| 51717897 | data preparation / audit | 2026-09-10T21:35:28 | 2026-09-10T21:35:45 | cn604-14/CPU | COMPLETED/0:0 |
+| 51717898_0 / 51719304 | cylinder3d/signed_fmt_vae/93110 | 2026-09-10T21:37:40 | 2026-09-10T21:54:39 | gpu213-14/Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51717898_1 / 51719305 | cylinder3d/signed_fmt_vae/93111 | 2026-09-10T21:37:40 | 2026-09-10T21:54:37 | gpu213-14/Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51717898_2 / 51719332 | cylinder3d/signed_fmt_vae/93112 | 2026-09-10T21:39:49 | 2026-09-10T21:45:00 | gpu212-14/Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51717898_3 / 51719374 | cylinder3d/raw_vae/93110 | 2026-09-10T21:42:08 | 2026-09-10T21:45:04 | gpu201-16-r/NVIDIA A100-SXM4-80GB | COMPLETED/0:0 |
+| 51717898_4 / 51719375 | cylinder3d/raw_vae/93111 | 2026-09-10T21:42:08 | 2026-09-10T21:45:04 | gpu201-16-l/NVIDIA A100-SXM4-80GB | COMPLETED/0:0 |
+| 51717898_5 / 51719428 | cylinder3d/raw_vae/93112 | 2026-09-10T21:46:39 | 2026-09-10T21:49:24 | gpu201-16-r/NVIDIA A100-SXM4-80GB | COMPLETED/0:0 |
+| 51717898_6 / 51719429 | halfcylinderRe640/signed_fmt_vae/93110 | 2026-09-10T21:46:39 | 2026-09-10T21:49:31 | gpu201-16-l/NVIDIA A100-SXM4-80GB | COMPLETED/0:0 |
+| 51717898_7 / 51719482 | halfcylinderRe640/signed_fmt_vae/93111 | 2026-09-10T21:51:09 | 2026-09-10T21:53:56 | gpu201-16-r/NVIDIA A100-SXM4-80GB | COMPLETED/0:0 |
+| 51717898_8 / 51719483 | halfcylinderRe640/signed_fmt_vae/93112 | 2026-09-10T21:51:09 | 2026-09-10T21:53:53 | gpu201-16-l/NVIDIA A100-SXM4-80GB | COMPLETED/0:0 |
+| 51717898_9 / 51719523 | halfcylinderRe640/raw_vae/93110 | 2026-09-10T21:53:23 | 2026-09-10T21:56:40 | gpu211-18/Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51717898_10 / 51719607 | halfcylinderRe640/raw_vae/93111 | 2026-09-10T21:55:37 | 2026-09-10T21:58:19 | gpu201-16-r/NVIDIA A100-SXM4-80GB | COMPLETED/0:0 |
+| 51717898_11 / 51719608 | halfcylinderRe640/raw_vae/93112 | 2026-09-10T21:55:37 | 2026-09-10T21:58:19 | gpu201-16-l/NVIDIA A100-SXM4-80GB | COMPLETED/0:0 |
+| 51717898_12 / 51719635 | halfcylinderRe6400/signed_fmt_vae/93110 | 2026-09-10T21:57:51 | Unknown | gpu211-18/Tesla V100-SXM2-32GB | RUNNING/0:0 |
+
+辅助检查：51719304分配内的两个只读Slurm步骤检查本用户进程和1000条合成FFT的CPU耗时；不修改训练或读取test，保留原训练。SSH直接连接gpu213-14被集群禁用，后使用集群支持的既有分配内srun读取进程；未改变访问权限。
+
+结果收集与前台只读监测为轻量SSH分析（无独立Slurm ID，不训练）；固定图样例导出只选择已完成的预注册首种子配对，索引固定0/2000/4000，不含模型文件。
