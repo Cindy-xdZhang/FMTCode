@@ -3042,3 +3042,16 @@ checkout `/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910`；commit `9d73a07
 额外弯曲样例导出`Other_Task6_CurvedVisualization_1.1`：实际时间`2026-09-10T22:34:26.635214+03:00`，脚本SHA256 `e70a1d6d58824dfacb01d8646d9ce3897061004529a9583c3f698e1a1083c069`；9流场×3个样例，按真实总转角95/99/99.9百分位选取，完整索引保存在`curved_examples.metadata.json`。先前首批导出记录保留。
 
 前台只读监测已在final_audit完成后退出；没有后台定时任务。未生成/保留模型checkpoint。
+
+### 2026-09-10 — Verify_Task6_ScarceGeneralization_4.1 搜索提交
+
+独立checkout `/ibex/user/zhanx0o/FMT_Task6Scarce_20260910`；先运行小训练集子集准备和324个train/validation搜索模型，测试阶段尚未提交。完整参数见冻结配置与协议。
+
+| Job | 阶段 | 提交(+03:00) | 配置SHA256 | 代码commit | 设备/数组 | 状态 |
+|---|---|---|---|---|---|---|
+| 51722505 | preflight | 2026-09-10T23:35:03.034014+03:00 | 2b6006ac4f01441dfd44b7f70655f115b82061fdac5b891bb9fdd33eb6b069c8 | bc874a1eb4508293b07f0989e07e170b4a102140 | CPU / None | SUBMITTED |
+| 51722506 | prepare | 2026-09-10T23:35:03.093948+03:00 | 2b6006ac4f01441dfd44b7f70655f115b82061fdac5b891bb9fdd33eb6b069c8 | bc874a1eb4508293b07f0989e07e170b4a102140 | CPU / 0-8%3 | SUBMITTED |
+| 51722507 | search | 2026-09-10T23:35:03.156162+03:00 | 2b6006ac4f01441dfd44b7f70655f115b82061fdac5b891bb9fdd33eb6b069c8 | bc874a1eb4508293b07f0989e07e170b4a102140 | GPU A100/V100 / 0-26%18 | SUBMITTED |
+| 51722508 | select | 2026-09-10T23:35:03.215744+03:00 | 2b6006ac4f01441dfd44b7f70655f115b82061fdac5b891bb9fdd33eb6b069c8 | bc874a1eb4508293b07f0989e07e170b4a102140 | CPU / None | SUBMITTED |
+
+51722505已于2026-09-10T23:36:08至23:36:19在cn113-35-l完成，9项测试通过，COMPLETED/0:0。前台轻量SSH监测只读本实验search与调度状态，无独立Slurm ID、无定时任务；selection.json产生或发现失败时退出。

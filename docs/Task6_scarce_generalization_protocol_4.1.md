@@ -48,5 +48,7 @@ Raw执行4种正则化候选。Raw无需因FMT频率不同重复训练。搜索�
 | 冻结配置 | `config/Verify_Task6_ScarceGeneralization_4.1.json` |
 | 核心行为测试 | `tests/test_task6_scarce_4_1.py` |
 | 分阶段提交 | `Submit_Task6_Scarce_4_1.py search`及`final` |
+| 最终指标核对及日志表 | `experiments/Report_Task6_Scarce_4_1.py` |
+| 标量/日志收集，不含模型与数据缓存 | `experiments/Package_Task6_Scarce_4_1.py` |
 
 搜索与最终评估分开提交，先检查完整validation结果，再冻结测试。若validation不支持候选改进，可另建版本继续train/validation研究；本版本记录不得删除或用后续配置覆盖。
