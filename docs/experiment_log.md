@@ -1278,3 +1278,43 @@ Task8主测试方向网络宏误差8.403275包含Re6400的58.152762、F22的9.42
 完整结果在 `outputs/Task678_HanAndVector_1.1/`：per_flow.csv、macro.csv、paired_differences.csv、diagnostics.csv、training_fit.csv、training_curve_source.csv；各实验目录保留原metrics.csv、summary.json、independent_audit.json、完整config和evidence_metadata。绘图代码及方法索引见 `docs/Task678_plotting_methods_1.1.md`。共同三任务测试图held_out_comparison、九流场训练曲线training_fit以及fixed_examples/figures内九套轨迹图，全部有PDF/SVG/600dpi PNG。固定轨迹样例来自每流场第一个主测试primitive、前8个query、seed9110；Task6只展示第一段，定量测试包含两段；Task7显示全部42条外部支持线。每行共享完整取景范围和正交相机，未裁剪错误预测，样例只作解释不替代全量统计。
 
 最终图形审计：11张完整图、120个面板已逐一目视检查；全部PDF最低字体7pt，碰撞与面板布局审计均PASS且无WARN，实际宽度全部183mm。测试对比/训练曲线/轨迹图高度分别100/164/157mm。静态预检的宽度解析、log检测与不确定性编码提示均已人工核查；本次交付PDF/SVG及600dpi PNG，没有要求TIFF。审计JSON、覆盖层、预览及逐项说明见figure_qa/final_visual_audit.json和同目录文件。
+
+<a id="ntdo-v2-task1235-final-20260910"></a>
+
+## 2026-09-10 — Verify_Task1235_ObjectiveFMTnTDO_2.1 完整结果
+
+Task1/2/3/5 各 30/30，120 个任务/数据/种子分片全部完成。93 个 Slurm 进程均 COMPLETED。630 行主指标、1890 行 Task5 分尺度指标通过 Ibex 和本地独立预测复核。以下全是本次 2.1 同批复跑的宏平均 F1，不替换或混用 1.1 历史值。
+
+| 任务 | Raw | Raw 主成分残差 | 原始 FMT | nTDO 1.1 | nTDO v2 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Task1 | 0.423539 | — | 0.595775 | 0.411354 | 0.305793 |
+| Task2 | 0.488126 | — | 0.559912 | 0.488721 | 0.238937 |
+| Task3 | 0.629017 | 0.681284 | 0.763586 | 0.750525 | 0.668700 |
+| Task5 | 0.615603 | 0.629601 | 0.733821 | 0.729262 | 0.661876 |
+
+| 任务 | Raw AP | Raw 主成分残差 AP | 原始 FMT AP | nTDO 1.1 AP | nTDO v2 AP |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Task3 | 0.678259 | 0.727559 | 0.813825 | 0.806733 | 0.709402 |
+| Task5 | 0.651294 | 0.673811 | 0.800243 | 0.780464 | 0.691802 |
+
+AP 指 Average Precision（平均精确率），用于衡量分类分数的排序表现。宏平均每任务覆盖相同 10 数据 × 3 种子；逐数据和逐种子结果分别在 `per_dataset.csv`、`per_seed_macro.csv`，summary 中 std 跨 30 次运行，不应解释为仅随机种子误差。
+
+**本批支持的结论：**距离标量 v2 在冻结的 Task1、Task2 管线中低于 Raw、原始 FMT 和第一版 nTDO；Task3、Task5 相对 Raw 仍有提升，但均低于原始 FMT 和第一版 nTDO。Task3 还低于同结构 Raw 主成分残差，而 Task5 高于该对照。该结果只评估本版距离傅里叶特征及既定分类/聚类流程的性能，不说明所有客观特征都无效，也未单独识别下降的机制。本轮遵照用户要求未进行客观性变换验证。
+
+| 任务 | v2−Raw F1 | v2−第一版 F1 | v2−原始 FMT F1 |
+| --- | ---: | ---: | ---: |
+| Task1 | -0.117746 | -0.105561 | -0.289982 |
+| Task2 | -0.249189 | -0.249784 | -0.320975 |
+| Task3 | +0.039684 | -0.081825 | -0.094886 |
+| Task5 | +0.046273 | -0.067387 | -0.071946 |
+
+逐数据均值胜出数量（先平均 3 个种子；不以 test 选配方）：
+
+- Task1：raw: 1/10, old_fmt: 1/10, ntdo: 2/10。
+- Task2：raw: 0/10, old_fmt: 0/10, ntdo: 1/10。
+- Task3：raw: 10/10, raw_pca: 5/10, old_fmt: 1/10, ntdo: 1/10。
+- Task5：raw: 10/10, raw_pca: 7/10, old_fmt: 1/10, ntdo: 0/10。
+
+**可复核证据：**固定执行 commit `55928e99130d5209f2ee027be3a1a94b55d0be56`；配置 SHA256 `cc137f5104c4835330d2e2e2da7f53d56c46a47b46b0ea7f93e5a0c2a07a9598`；源清单 SHA256 `5e817c49a8557a84c8d3d1b04a8fd4ec949f2e7a59bab1c09de36d4d4595b2ff`。
+
+本地完整证据目录 `outputs/Verify_Task1235_ObjectiveFMTnTDO_2.1/`；`summary.csv` SHA256 `8ff23680f07fe59f896dfacb2ff579a4731677b47910b4dcd1bfb45919c3bb66`；结果包 `complete_evidence.tar.gz` SHA256 `64a17ae3dd5c554141ee1fe6e7bcc711c2ae80f80afed4bb2f9dac9c9fe90207`。归档 1457 个证据文件，无模型。360 个依赖链临时 checkpoint 全部删除，Ibex 剩余 checkpoint 为 0。Task5 的 18/6/9 个训练/验证/测试尺度组合互不重叠。继承旧 benchmark 的时间窗口与复用评估边界，不声称新的独立确认。
