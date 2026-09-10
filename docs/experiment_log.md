@@ -1077,3 +1077,10 @@ Task5 fixed Task3 Raw transfer的宏F1为0.377967，variable-scale Raw为0.61062
 证据范围仍为预注册的复用benchmark配对诊断，非新的独立confirmation；历史固定尺度窗口重叠及Task3 transfer的边界见本节预注册。Re160/Re6400的新Task5缓存使用正确的原始时间索引及t>=7.5，初次错误缓存/取消作业保留在原目录和登记中，未进入本表。
 
 完整输出在 `outputs/Verify_Task1235_ObjectiveFMTnTDO_1.1/`：per_run_metrics.csv、summary.csv、paired_f1.csv、per_dataset.csv、per_seed_macro.csv、所有shards预测/阈值/输入证据、final_audit.json、local_independent_audit.json、slurm_accounting.psv及run_config.json。远端和本地独立审计均PASS：510行主指标F1/IoU（监督任务另复算AP）、1620行Task5分尺度F1/AP及配置/来源哈希一致。完整证据包complete_evidence.tar.gz的SHA256为 `471a80424c0a1a65f5883ace2c98d710098802da72c1d4eac3ecad628c107fc1`。90份执行链审计记录删除了300个临时checkpoint，未下载模型；最后总审计于2026-09-10 13:22:47+03完成。
+
+
+## 2026-09-10 — Verify_Task678_HanSampling_1.1：Han式密集查询重跑（已预注册并提交）
+
+用户授权依照Han 2024的数据组织改进Task6/7/8。固定源码`45eefee828f5439f6aad6940b01aafe7803aa691`，配置`config/Verify_Task678_HanSampling_1.1.json`，Linux SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9`；协议`docs/Task678_han_sampling_protocol_1.1.md`。冻结完整161维FMT和现有512宽可训练残差网络；每primitive用128条训练查询及独立验证/测试材料轨迹，仅偶数时刻监督，奇数时刻单列。50遍等效查询曝光；Raw全672维、零token、仿射插值及同窗口token置换作为对照。Task8扩大仅由可见支持确定的第二段覆盖，正式输出仍传递预测终点。9个非定常3D条目、3个种子、81个神经网络分片，仿射9个独立CPU分片。新共同数据集合不能与旧结果混为配对表。
+
+本地9项测试通过，全部4臂短运行102条指标独立复算通过，篡改指标被审计拒绝。奇数时刻真值任意更改不影响训练统计和最终权重；解析流场验证真实梯度优化可以降低拟合误差。这些是实现正确性证据，不是实际流场FMT能力结论。Ibex流程依次为短运行、数据构建、数据隔离审计、训练/仿射、最终预测复算；尚无本轮正式性能结论。

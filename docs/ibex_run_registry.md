@@ -2388,3 +2388,20 @@ All use Verify_LargeNeighbor_1.1 and recorded frozen source/config; GPU arrays e
 | 51696574 | FMTnTDO_audit | COMPLETED | 2026-09-10T13:22:32 | 2026-09-10T13:22:47 | cn604-15 |
 | 51696568_0 | FMTnTDO_build | COMPLETED | 2026-09-10T12:20:46 | 2026-09-10T12:21:06 | cn604-17 |
 | 51696568_1 | FMTnTDO_build | COMPLETED | 2026-09-10T12:20:46 | 2026-09-10T12:21:58 | cn604-17 |
+
+
+## 2026-09-10 — Verify_Task678_HanSampling_1.1 初次提交
+
+独立checkout `/home/zhanx0o/FMT_Task678Han_20260910`。固定commit `45eefee828f5439f6aad6940b01aafe7803aa691`；配置及源码已经Git推送，旧实验不改。
+
+- `51700831` | smoke | SUBMITTED | 2026-09-10T13:50:43.019752+03:00 | CPU | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9` | commit `45eefee828f5439f6aad6940b01aafe7803aa691`
+
+- `51700832` | build | SUBMITTED | 2026-09-10T13:50:43.086053+03:00 | CPU | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9` | commit `45eefee828f5439f6aad6940b01aafe7803aa691`
+
+- `51700833` | data_audit | SUBMITTED | 2026-09-10T13:50:43.148951+03:00 | CPU | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9` | commit `45eefee828f5439f6aad6940b01aafe7803aa691`
+
+- `51700834` | train | SUBMITTED | 2026-09-10T13:50:43.211020+03:00 | one A100 or V100 per array element | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9` | commit `45eefee828f5439f6aad6940b01aafe7803aa691`
+
+- `51700835` | affine | SUBMITTED | 2026-09-10T13:50:43.274047+03:00 | CPU | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9` | commit `45eefee828f5439f6aad6940b01aafe7803aa691`
+
+- `51700836` | audit | SUBMITTED | 2026-09-10T13:50:43.335264+03:00 | CPU | config `config/Verify_Task678_HanSampling_1.1.json` SHA256 `dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9` | commit `45eefee828f5439f6aad6940b01aafe7803aa691`
