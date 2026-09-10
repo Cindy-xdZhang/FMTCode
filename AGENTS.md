@@ -14,7 +14,7 @@
 - **Task3（2D/3D）**：有监督 IVD 涡识别。核心比较固定为不使用 FMT 与加入 FMT 的神经网络在涡/非涡二分类上的性能。
 - **Task4（仅 3D）**：有监督涡类型多分类，例如 streamwise、spanwise、hairpin。Task4 与 Task3 严格分开。
 - **Task5（2D/3D）**：Task3 的不同尺度扩展。primitive 的邻居距离、积分步长和积分步数可变，但输出保持固定线数和每线采样点数；使用同一 IVD 二分类监督。核心比较为 fixed-scale Task3 transfer、variable-scale Raw、同结构 Raw-PCA residual 与 variable-scale Raw+FMT，并在训练未见尺度组合上确认。
-- **Task6（当前3D，2026-09-10重新定义）**：单流场、多尺度primitive的VAE几何重建。每个网络只在一个流场训练；大量不同起始时间、位置、积分时长与邻居距离的七线primitive，经冻结FMT变成token，再由VAE重建同一簇七条完整路径线。测试整个未见primitive，不是查询额外粒子；VAE解码器输出geometry而非token。新版本`mainExp_Task6_PrimitiveVAE_2.1`，详见`docs/Task6_primitive_vae_protocol_2.1.md`。
+- **Task6（当前3D，2026-09-10重新定义）**：单流场、多尺度primitive的VAE几何重建。每个网络只在一个流场训练；大量不同起始时间、位置、积分时长与邻居距离的七线primitive，经冻结FMT变成token，再由VAE重建同一簇七条完整路径线。测试整个未见primitive，不是查询额外粒子；VAE解码器输出geometry而非token。原基线`mainExp_Task6_PrimitiveVAE_2.1`保持冻结；当前修复版为`mainExp_Task6_Reconstruction_3.1`，详见`docs/Task6_reconstruction_protocol_3.1.md`，原协议见`docs/Task6_primitive_vae_protocol_2.1.md`。
 - **Task7（当前3D）**：遮挡区域补全。仅由隐藏区域外的可见 primitive tokens 恢复内部材料轨迹；必须防止重叠邻居泄漏。
 - **Task8（当前3D）**：短流映射组合。使用各段已知 tokens，把第一段预测到达位置传入下一段查询，评估真实长轨迹；不是未知未来预测。
 

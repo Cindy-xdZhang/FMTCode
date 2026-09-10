@@ -1407,3 +1407,13 @@ AP 指 Average Precision（平均精确率），用于衡量分类分数的排�
 下一轮`mainExp_Task6_Reconstruction_3.1`训练前冻结：signed_fmt10(399维)→192潜变量VAE→672几何，与同结构Raw-VAE对照；旧161维FMT仍是2.1历史对照，不能给它记新编码成绩。每流场240000train+12000validation+12000test+12000未见尺度，新的固定数据种子；十频与192维仅按本次validation诊断选择（分别满足全流场逆变换<0.25、PCA<0.1）。32epoch、同曝光预算、正KL；只选正步数的validation最低模型，validation>=0.8不读test。另评估原2.1固定legacy_test，检查同一轨迹/同一单位的误差是否下降。完整冻结见`docs/Task6_reconstruction_protocol_3.1.md`和`config/mainExp_Task6_Reconstruction_3.1.json`。
 
 本地11项测试通过，包括完整物理积分/缺失值处理、复系数回环、潜变量确实影响输出、解码器仅收潜变量、后验方差梯度、正训练步模型选择；约9.8秒。此时新神经网络真实流场测试尚未运行，目标<1尚不能宣称达到。
+
+### 2026-09-10 — Task6重建3.1阶段结果：Re6400原高误差benchmark已低于1
+
+这是运行中结果，54组模型仍在继续，尚未完成统一最终审计，不据此宣布九流场全部达标。编码是新399维signed_fmt10，不是原161维fmt_all。
+
+Re6400首个种子93110：新test 0.023288174，未见尺度 0.024521196，原2.1固定legacy_test 0.025753942。旧2.1在该固定test的三种子均值13.747953；此处明确是旧三种子均值与新首种子的阶段比较，完整新三种子结果结束后另列。误差公式/单位/对应点与旧版不变。
+
+真实训练证据：初始化validation 0.131825545 → 正训练步选择后的validation 0.022886942；选择step 15008，总更新15008，训练primitive曝光7680000。模型仅使用训练数据拟合初始化，再由validation选择；配置、潜变量及频率在读取新test前已冻结。
+
+代码9d73a0736b907478d1dc7cc3ac75d764a9aeefce，config SHA256 eaf8c0cf6e902589cd5c68b8811601b593fe040e51d660c354e320b705cca6cb；实际job 51719635 / array 51717898_12，节点gpu211-18，设备Tesla V100-SXM2-32GB。证据文件`outputs/mainExp_Task6_Reconstruction_3.1/runs/halfcylinderRe6400/signed_fmt_vae/93110/result.json`；最终仍需对保存的预测独立复算。
