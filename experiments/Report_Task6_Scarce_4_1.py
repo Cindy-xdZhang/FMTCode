@@ -23,6 +23,7 @@ def report(root, record=False):
     assert len(rows)==audit['rows']
     index={(r['dataset'],int(r['train_size']),int(r['seed']),r['comparison'],r['role'],int(r['scale_id'])):r for r in rows}
     assert len(index)==len(rows)
+    initialization_rows=[]
     for dataset in spec['datasets']:
         for n in spec['train_sizes']:
             folder=root/'final'/dataset/str(n)
@@ -35,6 +36,10 @@ def report(root, record=False):
                 assert fitting['initialization']['train_samples']==n
                 assert fitting['initialization']['latent_dim']==spec['training']['latent_dim']
                 assert fitting['selected_step']>0
+                for comparison in fit['roles']:
+                    initialization_rows.append(dict(dataset=dataset,train_size=n,seed=fit['seed'],comparison=comparison,
+                        initial_validation_rmse_r=fitting['curve'][0]['validation_rmse_r'],
+                        trained_validation_rmse_r=fitting['validation_rmse_r'],train_rmse_r=fitting['train_rmse_r']))
             for metric in result['metrics']:
                 for comparison in metric['comparisons']:
                     row=index[(dataset,n,metric['seed'],comparison,metric['role'],metric['scale_id'])]
@@ -71,7 +76,7 @@ def report(root, record=False):
             aggregate.append(summary)
     summary=dict(experiment=spec['experiment'],audit=audit,selection_sha256=sha256(root/'selection.json'),
         selected_candidates={k:selection[k] for k in ('fmt','raw_frozen','raw_matched','raw_selected')},
-        per_flow=summaries,aggregate=aggregate,primary_train_size=spec['primary_train_size'],
+        per_flow=summaries,aggregate=aggregate,initialization=initialization_rows,primary_train_size=spec['primary_train_size'],
         test_usage='Already used 3.1 benchmark; selection and model fitting use validation only',
         metrics_sha256=sha256(root/'metrics.csv'))
     write_json(root/'summary.json',summary)
@@ -102,6 +107,13 @@ def report(root, record=False):
         for row in summaries:
             if row['train_size']==spec['primary_train_size']:
                 lines.append('| '+row['dataset']+' | '+' | '.join(f"{row[c+'_test_mean']:.8g} ± {row[c+'_test_std']:.3g}" for c in comparisons)+' |')
+        lines += ['\n主设置的初始化与训练后validation（九流场/三子集种子等权均值；不用于追加测试选择）：\n',
+            '| 方法角色 | 初始化validation | 训练后validation | 训练集误差 |',
+            '|---|---:|---:|---:|']
+        for comparison in comparisons:
+            values=[r for r in initialization_rows if r['train_size']==spec['primary_train_size'] and r['comparison']==comparison]
+            lines.append('| '+comparison+' | '+' | '.join(f"{np.mean([r[key] for r in values]):.9g}" for key in
+                ('initial_validation_rmse_r','trained_validation_rmse_r','train_rmse_r'))+' |')
         if selection['fmt']['frequencies']==16:
             lines.append('\n所选16频编码保留全部651个独立系数，相对31间隔信号不做频谱压缩；最终192维VAE潜变量才是压缩。结果不能归因于丢弃高频，也不属于旧161维fmt_all。')
         lines.append('\n不同Raw角色若候选相同，使用同一模型预测，不能当成独立证据。完整训练曲线、选择记录与逐次指标保存在`outputs/Verify_Task6_ScarceGeneralization_4.1/`；不保留checkpoint。')
