@@ -175,7 +175,7 @@ def main():
     contract=dict(question='How do the original and directional Fourier tokens compare on held-out flow-map queries?',
         claim='Quantitative comparison only; capability conclusions must use the complete per-flow evidence',
         archetype='quantitative grid',panels='Task6 new material queries, Task7 hidden-region reconstruction, Task8 predicted-arrival composition',
-        backend='python',size_mm=[183,100],data='All 9 flows, all registered seeds and all six arms; three test roles',
+        backend='python',size_mm=[183,100],training_size_mm=[183,164],data='All 9 flows, all registered seeds and all six arms; three test roles',
         mean='Equal-flow mean of position RMSE divided by the initial primitive radius',
         uncertainty='Every neural seed macro is shown as a small tick; connected marker is the three-seed mean. Deterministic interpolation has one result.',
         exclusions='Training and validation roles are kept in CSV and excluded only from this held-out comparison figure',

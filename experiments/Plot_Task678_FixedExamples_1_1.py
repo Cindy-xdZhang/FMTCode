@@ -58,7 +58,8 @@ def main():
             lo,hi=center-span/2,center+span/2
             views.append(dict(task=task,limits_min=lo.tolist(),limits_max=hi.tolist(),elevation=22,azimuth=-65,projection='orthographic'))
             for col,(key,title,color) in enumerate(columns):
-                ax=axes[row,col];ax.set_proj_type('ortho');ax.view_init(elev=22,azim=-65)
+                ax=axes[row,col];ax.patch.set_visible(False)
+                ax.set_proj_type('ortho');ax.view_init(elev=22,azim=-65)
                 for line in support:ax.plot(*line.T,color='#BFBFBF',lw=.35,alpha=.5)
                 for line in lines[key]:
                     ax.plot(*line.T,color=color,lw=.8)

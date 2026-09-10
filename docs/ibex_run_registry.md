@@ -2508,3 +2508,191 @@ The pending serial audits `51701048` and `51701312` were cancelled only to repla
 - Before cancelling the original process, audit array `51703005` was changed to the AND dependency `afterany:51701046,afterok:51707303`. It still checks every canonical completion record and all 2376 metrics; the dependency change permits the deliberately cancelled execution attempt while requiring successful recovery. Collector and fixed-example dependencies remain intact.
 - Cancellation was requested at **15:54:18 +03**; after the process ended, all 10 original output files were moved intact to `failed_attempts/stalled_eval_51701046_22`, with a SHA256 recorded for every file. Recovery was released at **15:54:27 +03**. No completed test result was discarded, and the interrupted attempt is retained as an execution failure, not an extra seed. Metadata: `runtime_recovery_dependency.json`, `runtime_recovery_state.json`; stack and counter evidence: `outputs/Task678_HanAndVector_1.1/diagnostics/`.
 - This is an execution recovery, not a new feature-method candidate or a change selected from test performance. Canonical audit provenance will therefore list both execution commits; the eight frozen algorithm-source hashes establish that the compared method is unchanged. Actual recovery node, GPU, start/end and final status will be included in the completion record.
+
+
+## 2026-09-10 Task6/7/8 HanSampling + VectorFMT completion register
+
+Both frozen experiments completed: HanSampling 81 canonical neural shards + 9 deterministic shards, 2376 replayed evaluation records; VectorFMT 27 neural + 9 deterministic shards, 999 records. Each neural shard trains Task6 and Task7; Task8 reuses Task6. All nine per-flow audits and both collectors passed. Method-level conclusions, including failed generalization, are recorded only in `docs/experiment_log.md#task678-han-vector-final-20260910`.
+
+- Han final collector 51703006: program start/end 16:12:12.585/16:12:19.458 +03, cn604-18, CPU, audit commit ea1054f9af40e68ab318c7e96d02406c535f56d9. Vector collector 51703008: 15:58:45.866/15:58:53.123 +03, cn604-18, CPU, same audit commit. These are auditing commits, not the training commits.
+- Recovery 51707303 completed on gpu210-14, Tesla V100-SXM2-32GB; scheduler 15:54:37–16:04:01 +03 (9m24s), actual predictor metadata begins 15:54:44.346. Frozen training/config/seed verified; Task6/7/8 fit prediction archives match the interrupted run byte for byte. `runtime_recovery_prediction_comparison.json` records SHA256 2779ad1a263b708ed83a807dc0e94f44fc691e3722b872e7dd26ce5d0a2d66ce / 0beca9b66e2a58f503239afa507c0f4a12a642ad38c6cd79facba7055c87b663 / 2365e2324fd351525b295937c9babc2724f6e5292da28c4aac1266ba7b981f55. Original attempt and all 10 files remain preserved.
+- Two generic wrapper fields are inaccurate and are preserved rather than silently rewritten: the recovery phase was labeled CPU in job_events, but its completed.json and scheduler allocation identify the V100; the canceled original 51701046_22 wrapper emitted COMPLETED/0 after cancellation, but Slurm 51701871 is CANCELLED at 15:54:18 and it lacked a canonical completed.json. The table uses scheduler cancellation and actual predictor device. The accepted replacement alone contributes the scientific seed.
+- Quota-failed build 51700832_7 had no ending JSONL event; an explicit JobID/JobIDRaw scheduler check maps it to 51700972, FAILED at 14:01:20 on cn511-19. The table uses that scheduler end state and preserves the missing-event record.
+- Fixed examples 51704726 completed 16:14:33.078–16:14:37.915 +03 on cn604-17, CPU, commit b8d3a53bfbed1c7251af33f0860c2d6db3ba8817. All nine first-index examples and source hashes exported after both audits passed; local rendering changes no predictions.
+- Audited metadata delivery: Han archive SHA256 86dd3b8be6b5ca4aa55490f1d42b8ee1a6cab6ccbc8f0a1f12fb5d37607a449a, 2797 verified files; Vector archive 82115d4457503da09646e31b5b98dfa3df162091c749f017f24c6879d3bfb94a, 1161 verified files. Full event JSONL, Slurm accounting, submission records, configs, seeds, source hashes and metrics are in each local evidence_metadata directory. No checkpoint files saved or downloaded. Only nine small fixed-example NPZ arrays were downloaded for these figures.
+- Home-quota failures, all pretraining cancellations, replaced serial audits and the interrupted evaluation remain in this register and the immutable source metadata. No failed test case, seed or dataset was removed to improve metrics.
+
+Full per-process records follow. All times are on 2026-09-10 in UTC+03; start/end are program event times except the explicitly documented scheduler cancellation and missing-event build failure. Missing start means no RUNNING event was recorded; it does not imply zero duration. Exact timestamps, full commits/config hashes and actual neural job IDs are in `outputs/Task678_HanAndVector_1.1/run_records.csv`. Initial submission times and expected devices are in the preceding registration entries and preserved submission JSONL. Configs: HanSampling dd58fefe… / VectorFMT 843eee14… (full hashes in the original entries); each row retains its runtime commit.
+
+| Job / array index | Dataset / arm / seed or phase | Start | End | Final execution state | Node | Actual device | Commit |
+|---|---|---|---|---|---|---|---|
+| 51700831 | smoke | 13:52:43.568974 | 13:53:46.526546 | COMPLETED | cn604-18 | CPU | 45eefee8 |
+| 51700832_0 | build | 13:54:50.838375 | 13:55:48.785337 | COMPLETED | cn604-18 | CPU | 45eefee8 |
+| 51700832_1 | build | 13:54:50.089199 | 13:55:53.703178 | COMPLETED | cn604-08 | CPU | 45eefee8 |
+| 51700832_2 | build | 13:54:50.239531 | 13:56:54.545579 | COMPLETED | cn604-04 | CPU | 45eefee8 |
+| 51700832_3 | build | 13:56:58.379743 | 13:59:04.597576 | COMPLETED | cn511-19 | CPU | 45eefee8 |
+| 51700832_4 | build | 13:57:02.822192 | 13:58:35.440158 | COMPLETED | cn511-12 | CPU | 45eefee8 |
+| 51700832_5 | build | 13:59:07.105171 | 13:59:40.664027 | FAILED | cn604-04 | CPU | 45eefee8 |
+| 51700832_6 | build | 13:59:14.072188 | 13:59:51.050844 | FAILED | cn511-18 | CPU | 45eefee8 |
+| 51700832_7 | build | 14:01:15.871116 | 14:01:20 | FAILED | cn511-19 | CPU | 45eefee8 |
+| 51700832_8 | build | 14:01:15.889164 | 14:01:18.212899 | FAILED | cn511-18 | CPU | 45eefee8 |
+| 51700833 | FMThan_data_audit | — | 14:02:47 | CANCELLED before start | None | None | see submission |
+| 51700834 | FMThan_train | — | 14:02:47 | CANCELLED before start | None | None | see submission |
+| 51700835 | FMThan_affine | — | 14:02:47 | CANCELLED before start | None | None | see submission |
+| 51700836 | FMThan_audit | — | 14:02:47 | CANCELLED before start | None | None | see submission |
+| 51701044_5 | build | 14:05:32.785174 | 14:07:59.059503 | COMPLETED | cn604-13 | CPU | 45eefee8 |
+| 51701044_6 | build | 14:05:32.916375 | 14:08:07.432538 | COMPLETED | cn604-12 | CPU | 45eefee8 |
+| 51701044_7 | build | 14:05:31.930072 | 14:08:13.033777 | COMPLETED | cn511-19 | CPU | 45eefee8 |
+| 51701044_8 | build | 14:09:47.926922 | 14:10:59.409792 | COMPLETED | cn604-13 | CPU | 45eefee8 |
+| 51701045 | data_audit | 14:11:58.998326 | 14:12:29.532850 | COMPLETED | cn604-18 | CPU | 45eefee8 |
+| 51701046_0 | cylinder3d/fmt_all/9110 | 14:14:10.622479 | 14:28:33.562998 | COMPLETED | gpu214-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_1 | cylinder3d/raw_positions/9110 | 14:14:10.649910 | 14:28:45.270527 | COMPLETED | gpu214-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_2 | cylinder3d/coordinates_only/9110 | 14:14:10.533615 | 14:27:08.652794 | COMPLETED | gpu214-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_3 | halfcylinderRe640/fmt_all/9110 | 14:14:10.569965 | 14:28:32.152544 | COMPLETED | gpu214-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_4 | halfcylinderRe640/raw_positions/9110 | 14:14:15.547767 | 14:28:30.350223 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_5 | halfcylinderRe640/coordinates_only/9110 | 14:14:12.612712 | 14:26:52.667102 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_6 | halfcylinderRe6400/fmt_all/9110 | 14:14:15.583557 | 14:28:42.681261 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_7 | halfcylinderRe6400/raw_positions/9110 | 14:14:07.158832 | 14:28:41.390332 | COMPLETED | gpu213-06 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_8 | halfcylinderRe6400/coordinates_only/9110 | 14:14:17.858038 | 14:27:07.162152 | COMPLETED | gpu212-18 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_9 | tangaroa/fmt_all/9110 | 14:25:01.968691 | 14:40:24.047137 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_10 | tangaroa/raw_positions/9110 | 14:27:11.993716 | 14:41:49.496365 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_11 | tangaroa/coordinates_only/9110 | 14:29:27.707544 | 14:42:45.804894 | COMPLETED | gpu214-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_12 | deltaWing_resampled/fmt_all/9110 | 14:29:27.637054 | 14:43:39.116915 | COMPLETED | gpu214-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_13 | deltaWing_resampled/raw_positions/9110 | 14:29:27.676694 | 14:43:42.145664 | COMPLETED | gpu214-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_14 | deltaWing_resampled/coordinates_only/9110 | 14:29:25.298024 | 14:42:11.319818 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_15 | deltaWing_LBM/fmt_all/9110 | 14:29:25.323481 | 14:43:43.886896 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_16 | deltaWing_LBM/raw_positions/9110 | 14:29:24.926673 | 14:43:35.763564 | COMPLETED | gpu213-06 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_17 | deltaWing_LBM/coordinates_only/9110 | 14:29:25.510729 | 14:41:49.005717 | COMPLETED | gpu212-18 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_18 | f22raptor/fmt_all/9110 | 14:31:38.737311 | 14:44:12.907609 | COMPLETED | gpu214-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_19 | f22raptor/raw_positions/9110 | 14:33:49.814860 | 14:55:28.471468 | COMPLETED | gpu212-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_20 | f22raptor/coordinates_only/9110 | 14:33:51.552455 | 14:45:05.158398 | COMPLETED | gpu212-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_21 | boeing747/fmt_all/9110 | 14:33:50.295587 | 14:47:42.928593 | COMPLETED | gpu211-18 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_22 | boeing747/raw_positions/9110; recovered as 51707303 | 14:33:50.218851 | 15:54:18 | CANCELLED (preserved) | gpu210-02 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_23 | boeing747/coordinates_only/9110 | 14:36:03.469537 | 14:49:11.330179 | COMPLETED | gpu214-02 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_24 | smokeBuoyancy/fmt_all/9110 | 14:38:27.257237 | 15:05:50.421214 | COMPLETED | gpu609-09 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_25 | smokeBuoyancy/raw_positions/9110 | 14:40:26.952160 | 14:56:55.575531 | COMPLETED | gpu609-04 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_26 | smokeBuoyancy/coordinates_only/9110 | 14:40:26.894075 | 15:00:48.872183 | COMPLETED | gpu609-04 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_27 | cylinder3d/fmt_all/9111 | 14:40:26.933939 | 14:54:51.832327 | COMPLETED | gpu609-04 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_28 | cylinder3d/raw_positions/9111 | 14:40:25.520562 | 14:54:42.121776 | COMPLETED | gpu214-18 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_29 | cylinder3d/coordinates_only/9111 | 14:40:26.568533 | 14:53:17.394207 | COMPLETED | gpu214-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_30 | halfcylinderRe640/fmt_all/9111 | 14:42:42.312755 | 14:57:15.872072 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_31 | halfcylinderRe640/raw_positions/9111 | 14:42:42.357885 | 14:56:35.264850 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_32 | halfcylinderRe640/coordinates_only/9111 | 14:42:42.363512 | 14:55:25.700161 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_33 | halfcylinderRe6400/fmt_all/9111 | 14:42:43.023406 | 14:57:52.594193 | COMPLETED | gpu214-06 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_34 | halfcylinderRe6400/raw_positions/9111 | 14:42:41.671534 | 14:56:57.612120 | COMPLETED | gpu212-18 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_35 | halfcylinderRe6400/coordinates_only/9111 | 14:44:46.734570 | 14:57:43.662449 | COMPLETED | gpu214-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_36 | tangaroa/fmt_all/9111 | 14:44:46.652313 | 14:59:37.696773 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_37 | tangaroa/raw_positions/9111 | 14:44:46.439908 | 14:59:47.239352 | COMPLETED | gpu213-06 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_38 | tangaroa/coordinates_only/9111 | 14:44:46.776355 | 14:58:03.942667 | COMPLETED | gpu214-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_39 | deltaWing_resampled/fmt_all/9111 | 14:44:46.711858 | 14:59:26.587362 | COMPLETED | gpu214-06 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_40 | deltaWing_resampled/raw_positions/9111 | 14:47:04.720992 | 15:01:14.847703 | COMPLETED | gpu214-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_41 | deltaWing_resampled/coordinates_only/9111 | 14:49:20.586335 | 15:02:08.856151 | COMPLETED | gpu212-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_42 | deltaWing_LBM/fmt_all/9111 | 14:49:20.534640 | 15:03:05.898392 | COMPLETED | gpu211-18 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_43 | deltaWing_LBM/raw_positions/9111 | 14:53:45.591447 | 15:07:57.405411 | COMPLETED | gpu609-07 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_44 | deltaWing_LBM/coordinates_only/9111 | 14:55:56.186928 | 15:08:36.012804 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_45 | f22raptor/fmt_all/9111 | 14:55:57.350561 | 15:09:50.357132 | COMPLETED | gpu211-18 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_46 | f22raptor/raw_positions/9111 | 14:55:57.298333 | 15:09:44.245403 | COMPLETED | gpu211-18 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_47 | f22raptor/coordinates_only/9111 | 14:55:57.922901 | 15:13:40.753256 | COMPLETED | gpu214-02 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_48 | boeing747/fmt_all/9111 | 14:58:11.023775 | 15:12:13.542605 | COMPLETED | gpu214-18 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_49 | boeing747/raw_positions/9111 | 14:58:10.350337 | 15:13:40.365131 | COMPLETED | gpu214-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_50 | boeing747/coordinates_only/9111 | 14:58:10.733478 | 15:38:38.732744 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_51 | smokeBuoyancy/fmt_all/9111 | 14:58:10.759638 | 15:14:52.193667 | COMPLETED | gpu214-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_52 | smokeBuoyancy/raw_positions/9111 | 14:58:09.801371 | 15:15:17.619953 | COMPLETED | gpu214-06 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_53 | smokeBuoyancy/coordinates_only/9111 | 14:58:10.523402 | 15:12:31.314035 | COMPLETED | gpu212-18 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_54 | cylinder3d/fmt_all/9112 | 15:00:43.444290 | 15:14:26.483790 | COMPLETED | gpu211-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_55 | cylinder3d/raw_positions/9112 | 15:00:44.088393 | 15:14:46.139360 | COMPLETED | gpu211-06 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_56 | cylinder3d/coordinates_only/9112 | 15:00:43.788145 | 15:14:12.933240 | COMPLETED | gpu211-02 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_57 | halfcylinderRe640/fmt_all/9112 | 15:00:44.314587 | 15:16:05.461476 | COMPLETED | gpu210-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_58 | halfcylinderRe640/raw_positions/9112 | 15:00:44.374092 | 15:16:10.630806 | COMPLETED | gpu210-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_59 | halfcylinderRe640/coordinates_only/9112 | 15:03:05.982853 | 15:17:41.194194 | COMPLETED | gpu210-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_60 | halfcylinderRe6400/fmt_all/9112 | 15:03:06.029775 | 15:19:25.914958 | COMPLETED | gpu210-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_61 | halfcylinderRe6400/raw_positions/9112 | 15:03:13.768525 | 15:18:21.564326 | COMPLETED | gpu210-06 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_62 | halfcylinderRe6400/coordinates_only/9112 | 15:05:07.613731 | 15:18:14.057522 | COMPLETED | gpu210-06 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_63 | tangaroa/fmt_all/9112 | 15:16:13.368499 | 15:32:58.090518 | COMPLETED | gpu210-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_64 | tangaroa/raw_positions/9112 | 15:16:26.951264 | 15:31:20.630250 | COMPLETED | gpu208-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_65 | tangaroa/coordinates_only/9112 | 15:18:29.853888 | 15:33:39.585843 | COMPLETED | gpu210-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_66 | deltaWing_resampled/fmt_all/9112 | 15:18:29.977501 | 15:32:55.438892 | COMPLETED | gpu210-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_67 | deltaWing_resampled/raw_positions/9112 | 15:18:29.869140 | 15:32:52.527134 | COMPLETED | gpu210-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_68 | deltaWing_resampled/coordinates_only/9112 | 15:18:29.840903 | 15:31:21.013251 | COMPLETED | gpu210-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_69 | deltaWing_LBM/fmt_all/9112 | 15:18:29.940843 | 15:32:52.553129 | COMPLETED | gpu210-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_70 | deltaWing_LBM/raw_positions/9112 | 15:18:29.907759 | 15:33:55.195288 | COMPLETED | gpu210-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_71 | deltaWing_LBM/coordinates_only/9112 | 15:20:44.794862 | 15:31:24.200862 | COMPLETED | gpu201-23-l | NVIDIA A100-SXM4-80GB | 45eefee8 |
+| 51701046_72 | f22raptor/fmt_all/9112 | 15:20:45.385259 | 15:34:21.864638 | COMPLETED | gpu210-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_73 | f22raptor/raw_positions/9112 | 15:20:46.078875 | 15:33:28.043028 | COMPLETED | gpu210-06 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_74 | f22raptor/coordinates_only/9112 | 15:20:44.740132 | 15:32:03.318811 | COMPLETED | gpu208-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_75 | boeing747/fmt_all/9112 | 15:20:44.777208 | 15:35:05.512249 | COMPLETED | gpu208-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_76 | boeing747/raw_positions/9112 | 15:22:59.201984 | 15:37:44.630372 | COMPLETED | gpu211-02 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_77 | boeing747/coordinates_only/9112 | 15:22:59.427761 | 15:35:32.136318 | COMPLETED | gpu208-14 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_78 | smokeBuoyancy/fmt_all/9112 | 15:25:15.933527 | 15:41:37.833750 | COMPLETED | gpu210-06 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_79 | smokeBuoyancy/raw_positions/9112 | 15:32:03.042801 | 15:48:52.100873 | COMPLETED | gpu214-02 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701046_80 | smokeBuoyancy/coordinates_only/9112 | 15:34:14.948435 | 15:48:19.985551 | COMPLETED | gpu211-10 | Tesla V100-SXM2-32GB | 45eefee8 |
+| 51701047_0 | cylinder3d/affine/0 | 14:14:10.471769 | 14:17:41.340018 | COMPLETED | cn604-18 | CPU | 45eefee8 |
+| 51701047_1 | halfcylinderRe640/affine/0 | 14:14:10.472017 | 14:17:41.340704 | COMPLETED | cn604-18 | CPU | 45eefee8 |
+| 51701047_2 | halfcylinderRe6400/affine/0 | 14:14:06.568828 | 14:16:28.705485 | COMPLETED | cn604-17 | CPU | 45eefee8 |
+| 51701047_3 | tangaroa/affine/0 | 14:18:29.074621 | 14:22:18.169851 | COMPLETED | cn604-18 | CPU | 45eefee8 |
+| 51701047_4 | deltaWing_resampled/affine/0 | 14:18:29.074912 | 14:22:17.861650 | COMPLETED | cn604-18 | CPU | 45eefee8 |
+| 51701047_5 | deltaWing_LBM/affine/0 | 14:18:26.113104 | 14:20:35.284255 | COMPLETED | cn604-17 | CPU | 45eefee8 |
+| 51701047_6 | f22raptor/affine/0 | 14:22:51.750074 | 14:27:06.123092 | COMPLETED | cn604-18 | CPU | 45eefee8 |
+| 51701047_7 | boeing747/affine/0 | 14:22:51.749824 | 14:27:45.336551 | COMPLETED | cn604-18 | CPU | 45eefee8 |
+| 51701047_8 | smokeBuoyancy/affine/0 | 14:22:47.595598 | 14:25:09.182316 | COMPLETED | cn604-17 | CPU | 45eefee8 |
+| 51701048 | FMThanR1_audit | — | 14:42:28 | CANCELLED before start | None | None | see submission |
+| 51701309 | smoke | 14:22:47.612210 | 14:23:05.375233 | COMPLETED | cn604-17 | CPU | d9d04b41 |
+| 51701310_0 | cylinder3d/vector_fmt6/9110 | 14:25:12.584042 | 14:39:24.920976 | COMPLETED | gpu211-14 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_1 | halfcylinderRe640/vector_fmt6/9110 | 14:25:08.500144 | 14:39:17.637403 | COMPLETED | gpu211-10 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_2 | halfcylinderRe6400/vector_fmt6/9110 | 14:25:08.467524 | 14:39:16.545790 | COMPLETED | gpu211-10 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_3 | tangaroa/vector_fmt6/9110 | 14:25:08.517023 | 14:39:46.584405 | COMPLETED | gpu211-10 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_4 | deltaWing_resampled/vector_fmt6/9110 | 14:25:02.008470 | 14:39:13.668099 | COMPLETED | gpu211-06 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_5 | deltaWing_LBM/vector_fmt6/9110 | 14:25:01.963884 | 14:39:05.554884 | COMPLETED | gpu211-06 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_6 | f22raptor/vector_fmt6/9110 | 14:25:01.997083 | 14:37:34.123179 | COMPLETED | gpu211-06 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_7 | boeing747/vector_fmt6/9110 | 14:25:02.061478 | 14:39:54.211816 | COMPLETED | gpu211-02 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_8 | smokeBuoyancy/vector_fmt6/9110 | 14:25:08.022123 | 14:42:21.114239 | COMPLETED | gpu210-14 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_9 | cylinder3d/vector_fmt6/9111 | 14:40:24.990042 | 14:54:37.901826 | COMPLETED | gpu211-14 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_10 | halfcylinderRe640/vector_fmt6/9111 | 14:40:24.972500 | 14:54:35.911647 | COMPLETED | gpu211-14 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_11 | halfcylinderRe6400/vector_fmt6/9111 | 14:44:46.336844 | 14:59:13.246635 | COMPLETED | gpu211-14 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_12 | tangaroa/vector_fmt6/9111 | 14:56:06.009458 | 15:10:52.347833 | COMPLETED | gpu212-06 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_13 | deltaWing_resampled/vector_fmt6/9111 | 14:56:06.027626 | 15:10:21.507328 | COMPLETED | gpu212-06 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_14 | deltaWing_LBM/vector_fmt6/9111 | 15:27:52.330119 | 15:42:31.474603 | COMPLETED | gpu208-18 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_15 | f22raptor/vector_fmt6/9111 | 15:29:50.499736 | 15:42:31.445127 | COMPLETED | gpu208-18 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_16 | boeing747/vector_fmt6/9111 | 15:29:50.526883 | 15:44:16.984720 | COMPLETED | gpu208-18 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_17 | smokeBuoyancy/vector_fmt6/9111 | 15:32:01.581479 | 15:45:31.005183 | COMPLETED | gpu201-23-l | NVIDIA A100-SXM4-80GB | d9d04b41 |
+| 51701310_18 | cylinder3d/vector_fmt6/9112 | 15:32:02.733646 | 15:46:15.752867 | COMPLETED | gpu211-06 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_19 | halfcylinderRe640/vector_fmt6/9112 | 15:32:02.930682 | 15:46:46.408555 | COMPLETED | gpu210-06 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_20 | halfcylinderRe6400/vector_fmt6/9112 | 15:32:02.869432 | 15:47:20.097799 | COMPLETED | gpu210-06 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_21 | tangaroa/vector_fmt6/9112 | 15:34:15.721950 | 15:49:48.757765 | COMPLETED | gpu210-14 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_22 | deltaWing_resampled/vector_fmt6/9112 | 15:34:15.746396 | 15:49:23.852957 | COMPLETED | gpu210-14 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_23 | deltaWing_LBM/vector_fmt6/9112 | 15:36:29.349923 | 15:50:39.981555 | COMPLETED | gpu210-10 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_24 | f22raptor/vector_fmt6/9112 | 15:36:29.177832 | 15:49:09.190017 | COMPLETED | gpu210-06 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_25 | boeing747/vector_fmt6/9112 | 15:36:29.419812 | 15:51:08.928416 | COMPLETED | gpu208-18 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701310_26 | smokeBuoyancy/vector_fmt6/9112 | 15:38:40.697742 | 15:55:44.674599 | COMPLETED | gpu211-02 | Tesla V100-SXM2-32GB | d9d04b41 |
+| 51701311_0 | cylinder3d/vector_affine/0 | 14:25:02.080115 | 14:27:52.702777 | COMPLETED | cn604-17 | CPU | d9d04b41 |
+| 51701311_1 | halfcylinderRe640/vector_affine/0 | 14:25:02.080089 | 14:27:39.326860 | COMPLETED | cn604-17 | CPU | d9d04b41 |
+| 51701311_2 | halfcylinderRe6400/vector_affine/0 | 14:25:02.079826 | 14:27:41.040197 | COMPLETED | cn604-17 | CPU | d9d04b41 |
+| 51701311_3 | tangaroa/vector_affine/0 | 14:29:31.361435 | 14:34:03.177695 | COMPLETED | cn604-18 | CPU | d9d04b41 |
+| 51701311_4 | deltaWing_resampled/vector_affine/0 | 14:29:31.361448 | 14:33:47.027081 | COMPLETED | cn604-18 | CPU | d9d04b41 |
+| 51701311_5 | deltaWing_LBM/vector_affine/0 | 14:29:31.361659 | 14:36:48.048258 | COMPLETED | cn604-18 | CPU | d9d04b41 |
+| 51701311_6 | f22raptor/vector_affine/0 | 14:36:05.731371 | 14:40:28.685234 | COMPLETED | cn604-18 | CPU | d9d04b41 |
+| 51701311_7 | boeing747/vector_affine/0 | 14:36:05.731106 | 14:40:55.807673 | COMPLETED | cn604-18 | CPU | d9d04b41 |
+| 51701311_8 | smokeBuoyancy/vector_affine/0 | 14:38:15.162337 | 14:47:45.702622 | COMPLETED | cn604-18 | CPU | d9d04b41 |
+| 51701312 | FMTvec_audit | — | 14:43:16 | CANCELLED before start | None | None | see submission |
+| 51703005_0 | audit_dataset | 16:05:36.385458 | 16:10:23.183235 | COMPLETED | cn604-17 | CPU | ea1054f9 |
+| 51703005_1 | audit_dataset | 16:05:36.343851 | 16:10:18.940589 | COMPLETED | cn604-17 | CPU | ea1054f9 |
+| 51703005_2 | audit_dataset | 16:05:35.433057 | 16:10:07.154989 | COMPLETED | cn604-15 | CPU | ea1054f9 |
+| 51703005_3 | audit_dataset | 16:05:35.496813 | 16:10:13.618472 | COMPLETED | cn604-15 | CPU | ea1054f9 |
+| 51703005_4 | audit_dataset | 16:05:35.527908 | 16:10:03.996273 | COMPLETED | cn604-15 | CPU | ea1054f9 |
+| 51703005_5 | audit_dataset | 16:05:35.925356 | 16:10:08.956586 | COMPLETED | cn604-13 | CPU | ea1054f9 |
+| 51703005_6 | audit_dataset | 16:05:35.847993 | 16:09:36.359677 | COMPLETED | cn604-13 | CPU | ea1054f9 |
+| 51703005_7 | audit_dataset | 16:05:35.859527 | 16:10:08.953471 | COMPLETED | cn604-13 | CPU | ea1054f9 |
+| 51703005_8 | audit_dataset | 16:05:35.874211 | 16:10:49.745389 | COMPLETED | cn604-13 | CPU | ea1054f9 |
+| 51703006 | audit_collect | 16:12:12.585488 | 16:12:19.458348 | COMPLETED | cn604-18 | CPU | ea1054f9 |
+| 51703007_0 | audit_dataset | 15:56:24.702466 | 15:58:28.428155 | COMPLETED | cn604-17 | CPU | ea1054f9 |
+| 51703007_1 | audit_dataset | 15:56:23.799401 | 15:58:20.005815 | COMPLETED | cn604-15 | CPU | ea1054f9 |
+| 51703007_2 | audit_dataset | 15:56:23.799389 | 15:58:19.264764 | COMPLETED | cn604-15 | CPU | ea1054f9 |
+| 51703007_3 | audit_dataset | 15:56:24.980264 | 15:58:23.277825 | COMPLETED | cn604-13 | CPU | ea1054f9 |
+| 51703007_4 | audit_dataset | 15:56:24.971997 | 15:58:18.702998 | COMPLETED | cn604-13 | CPU | ea1054f9 |
+| 51703007_5 | audit_dataset | 15:56:25.003314 | 15:58:19.040840 | COMPLETED | cn604-13 | CPU | ea1054f9 |
+| 51703007_6 | audit_dataset | 15:56:25.026408 | 15:58:06.453648 | COMPLETED | cn604-13 | CPU | ea1054f9 |
+| 51703007_7 | audit_dataset | 15:56:24.918882 | 15:58:19.967256 | COMPLETED | cn604-13 | CPU | ea1054f9 |
+| 51703007_8 | audit_dataset | 15:56:25.035764 | 15:58:36.429395 | COMPLETED | cn604-13 | CPU | ea1054f9 |
+| 51703008 | audit_collect | 15:58:45.866175 | 15:58:53.122841 | COMPLETED | cn604-18 | CPU | ea1054f9 |
+| 51704726 | fixed_examples_export | 16:14:33.077537 | 16:14:37.914605 | COMPLETED | cn604-17 | CPU | b8d3a53b |
+| 51707303 | boeing747/raw_positions/9110 | 15:54:41.204971 | 16:04:01.206279 | COMPLETED | gpu210-14 | Tesla V100-SXM2-32GB | fddec88b |

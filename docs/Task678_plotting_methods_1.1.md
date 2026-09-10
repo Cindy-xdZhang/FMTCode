@@ -14,3 +14,5 @@
 统一指标为三维位置欧氏均方根误差除以初始primitive半径；Task8正式结果传递预测终点。真实到达位置的第二段诊断使用第二段半径归一化，不能直接与整段Task8误差相减来估计误差来源。Token字节数只描述每个可见primitive的编码大小，不包含神经网络参数和查询几何信息。
 
 主要输出目录：`outputs/Task678_HanAndVector_1.1/`。方法性能与其支持的结论只记录在`docs/experiment_log.md`。
+
+2026-09-10正式渲染完成：共11张图、120个面板。`held_out_comparison`为183×100mm，`training_fit`为183×164mm，九流场固定轨迹图为183×157mm；各有PDF/SVG/600dpi PNG。全部最终PDF最低字体7pt，文字碰撞和面板布局检查均通过，完整图片已逐一检查。审计报告位于输出目录的`figure_qa/final_visual_audit.json`；固定轨迹样例清单在`fixed_examples/fixed_examples.json`。样例均按预先固定的索引选取，不用于取代全量统计。
