@@ -1,0 +1,52 @@
+"""Submit the preregistered run once, recording each job immediately."""
+import datetime
+import json
+import os
+import shutil
+from pathlib import Path
+import subprocess
+from experiments.Run_Task135_GeometricControls import sha, write_json
+
+
+def main():
+    config='config/Verify_Task1235_ObjectiveFMTnTDO_2.1.json'
+    spec=json.loads(Path(config).read_text());root=Path(spec['output_root'])
+    revision=int(spec.get('execution_revision',1))
+    marker=root/f'submitted_revision_{revision}.json'
+    if marker.exists():raise FileExistsError('This revision was already submitted; inspect existing jobs')
+    (root/'logs').mkdir(parents=True,exist_ok=True)
+    shutil.copyfile(config, root/'run_config.json')
+    shutil.copyfile('SOURCE_MANIFEST.sha256', root/'SOURCE_MANIFEST.sha256')
+    gpu=['--gres=gpu:1','--constraint=a100|v100','--exclude=gpu203-02-r']
+    phases=[('smoke',[],['--time=00:10:00']),
+            ('preflight',[],['--time=00:30:00']),
+            ('Task1',['preflight','smoke'],['--array=0-29%6','--time=00:30:00']),
+            ('Task2',['preflight','smoke'],['--array=0-29%6','--time=00:30:00']+gpu),
+            ('Task35',['preflight','smoke'],['--array=0-29%6','--time=00:45:00']+gpu),
+            ('audit',['Task1','Task2','Task35'],['--time=00:15:00'])]
+    jobs={}
+    commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+    for phase,deps,extra in phases:
+        command=['sbatch','--parsable','--nodes=1','--ntasks=1','--cpus-per-task=4','--mem=32G',
+                 f'--job-name=FMTnTDOv2_{phase}',f'--output={root}/logs/{phase}.%A_%a.out',
+                 f'--error={root}/logs/{phase}.%A_%a.err']+extra
+        if deps:command+=['--dependency=afterok:'+':'.join(jobs[k] for k in deps)]
+        command+=['ibex_bash/verify_task1235_ntdo_2p1.sh',phase]
+        job=subprocess.check_output(command,text=True).strip().split(';')[0]
+        assert job.isdigit();jobs[phase]=job
+        item={'experiment':spec['experiment'],'phase':phase,'job':job,
+              'execution_revision':revision,
+              'submitted':datetime.datetime.now().astimezone().isoformat(),'config':config,
+              'config_sha256':sha(config),'git_commit':commit,'source_manifest_sha256':sha('SOURCE_MANIFEST.sha256'),
+              'expected_device':'A100 or V100' if phase in ('Task2','Task35') else 'CPU','command':command}
+        for path in [root/'submissions.jsonl',Path('docs/ibex_run_registry.md')]:
+            with path.open('a',encoding='utf-8') as f:
+                f.write(json.dumps(item)+'\n' if path.suffix=='.jsonl' else '\n- **SUBMITTED nTDO v2 2.1** '+json.dumps(item)+'\n')
+                f.flush();os.fsync(f.fileno())
+        print(json.dumps(item),flush=True)
+        write_json(marker, jobs)
+    write_json(root/f'jobs_revision_{revision}.json',jobs)
+    write_json(root/'jobs.json',jobs)
+
+
+if __name__=='__main__':main()

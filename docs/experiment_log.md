@@ -1111,3 +1111,15 @@ Task5 fixed Task3 Raw transfer的宏F1为0.377967，variable-scale Raw为0.61062
 固定代码commit`d9d04b41f0b01af0a2236707a369e1bb2d58cbeb`，新配置`config/Verify_Task678_VectorFMT_1.1.json`，Linux SHA256 `843eee14d04bc4a2d47a5bd9e43d811dcc5f0ea96508eef46c1be5a0d3ff724d`。完整复用已审计HanSampling缓存，基础数据配置SHA256仍为`dd58fefe440bc75c5eaa49d1d017a2ccb04ed457977226da167d04da15247ce9`；同query ID、轨迹、区域、窗口、种子及50遍曝光量，不能重采样择优。新维度仅改变第一层参数量，记录实际参数而不声称等总参数。27个神经分片+9个无训练对照，预期999条评估，与原批次2376条分开独立复算后配对。
 
 本地3项解析检查与51条全流程短运行复算通过：低频支撑重建、保持净位移、相同原FMT token的方向反例可区分、隐藏目标不进入新token。以上是实现证据，不是实际流场性能结论。
+
+## 2026-09-10 — Verify_Task1235_ObjectiveFMTnTDO_2.1：距离标量 v2 预注册
+
+用户授权新增 `objective_fmt_nTDO_v2` 并部署 Task1/2/3/5。本版直接对全部 21 个同时间欧氏点对距离做傅里叶编码，保留 6 个频率，共 231 维；删除第一版的相对向量傅里叶分支。依用户要求不做客观性验证。原 nTDO 1.1 和历史原始 FMT 均冻结，并在本批作为配对对照重新运行。
+
+| 版本 | 技术及代码 | 指标状态 |
+| --- | --- | --- |
+| objective_fmt_nTDO_v2 2.1 | `FMT_Utils/objective_fmt_nTDO_v2.py`；无时间差分、无 IVD 估算，仅标量距离傅里叶；`experiments/Verify_Task1235_ObjectiveFMTnTDO_2_1.py` | 预注册，尚无性能结论 |
+
+10 个三维数据 × 3 个种子 × 4 个任务；所有划分、标签、训练预算沿用完整 1.1。Task2 输入统一填充至 700，Task3/5 辅助输入统一填充至 369，以保持网络参数量相同。预计 120 分片、630 行主指标及 1890 行 Task5 分尺度指标。Task5 Re160/Re6400 只读复用已修正的前批 `late_task5_cache_r2`。本地三个实现接口测试和四任务合成数据训练/评分流程检查通过，不能作为性能证据。
+
+完整协议：`docs/Verify_Task1235_ObjectiveFMTnTDO_2.1_protocol_zh.md`；配置：`config/Verify_Task1235_ObjectiveFMTnTDO_2.1.json`。每个 Slurm 进程提交、开始、结束分别记录，训练链结束删除临时 checkpoint；仅保留可复核的预测、指标与配置。本批复用已评估 benchmark，不声称新的独立确认。
