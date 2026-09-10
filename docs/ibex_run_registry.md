@@ -2472,3 +2472,19 @@ VectorFMT短运行`51701309`于14:22:47在cn604-17开始、14:23:05完成：3项
 - **nTDO v2 END** {"experiment": "Verify_Task1235_ObjectiveFMTnTDO_2.1", "event": "end", "phase": "smoke", "time": "2026-09-10T14:38:36.902102+03:00", "job": "51702594", "array_job": null, "array_task": null, "node": "cn604-17", "device": "CPU", "config": "config/Verify_Task1235_ObjectiveFMTnTDO_2.1.json", "config_sha256": "cc137f5104c4835330d2e2e2da7f53d56c46a47b46b0ea7f93e5a0c2a07a9598", "git_commit": "55928e99130d5209f2ee027be3a1a94b55d0be56", "exit_code": 0}
 
 - **nTDO v2 END** {"experiment": "Verify_Task1235_ObjectiveFMTnTDO_2.1", "event": "end", "phase": "preflight", "time": "2026-09-10T14:39:12.905879+03:00", "job": "51702595", "array_job": null, "array_task": null, "node": "cn604-17", "device": "CPU", "config": "config/Verify_Task1235_ObjectiveFMTnTDO_2.1.json", "config_sha256": "cc137f5104c4835330d2e2e2da7f53d56c46a47b46b0ea7f93e5a0c2a07a9598", "git_commit": "55928e99130d5209f2ee027be3a1a94b55d0be56", "exit_code": 0}
+
+
+## 2026-09-10 Task6/7/8 independent audit parallel execution
+
+Training and scientific metric definitions remain frozen. The audit uses all particle pairs with an equivalent SciPy Euclidean-distance kernel, checked against the original implementation to 1e-11 on multiple numerical cases and by full 102-record/51-record smoke replays locally and on Ibex. Audit commit: `ea1054f9af40e68ab318c7e96d02406c535f56d9`. Training commits remain `45eefee828f5439f6aad6940b01aafe7803aa691` (HanSampling) and `d9d04b41f0b01af0a2236707a369e1bb2d58cbeb` (VectorFMT).
+
+| Experiment | Phase | Job | Submitted (+03) | Expected device | Dependency |
+|---|---|---|---|---|---|
+| Verify_Task678_HanSampling_1.1 | audit_dataset | 51703005 | 2026-09-10T14:43:15.879126+03:00 | CPU; 4 cores; no GPU | afterok:51701046 |
+| Verify_Task678_HanSampling_1.1 | audit_collect | 51703006 | 2026-09-10T14:43:15.946435+03:00 | CPU; 4 cores; no GPU | afterok:51703005 |
+| Verify_Task678_VectorFMT_1.1 | audit_dataset | 51703007 | 2026-09-10T14:43:16.262206+03:00 | CPU; 4 cores; no GPU | afterok:51701310:51701311 |
+| Verify_Task678_VectorFMT_1.1 | audit_collect | 51703008 | 2026-09-10T14:43:16.328844+03:00 | CPU; 4 cores; no GPU | afterok:51703007 |
+
+Each dataset audit uses 48 GB and a 2-hour limit; collection uses 8 GB and 20 minutes. Nine dataset audits can run concurrently. Commands and config SHA256 values are saved in each experiment’s `parallel_audit_submissions.jsonl`; execution changes and kernel SHA256 are saved in `audit_execution_change.json`.
+
+The pending serial audits `51701048` and `51701312` were cancelled only to replace their execution with the registered parallel audit chain. The first replacement submission was rejected before any job was accepted because Slurm no longer retained completed affine array `51701047` as a dependency. All nine affine `completed.json` records were verified PASS (21 records each and matching config SHA256); the accepted Han audit still depends on active neural array `51701046`. No training or prediction job was cancelled, and no result was selected or discarded. Actual start, node and completion events will be preserved in `job_events.jsonl` and the final registry entry.

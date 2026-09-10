@@ -50,7 +50,8 @@ def main():
         uncertainty='Training curves: mean and sample SD over three seeds; test charts: every seed as a tick and mean as a marker; affine has one deterministic result',
         scope='No claimed improvement over old cohorts; no significance test; actual inference must follow inspected results',
         transforms='Positive logarithmic error axes; no temporal curve smoothing; recorded exposure coordinates must match across seeds',
-        source_metrics_sha256=audit['metrics_sha256'],runtime_commit=audit['git_commit'],size_mm=[183,157])
+        source_metrics_sha256=audit['metrics_sha256'],audit_commit=audit['git_commit'],
+        training_git_commits=audit.get('training_git_commits',[audit['git_commit']]),size_mm=[183,157])
     (out/'figure_contract.json').write_text(json.dumps(contract,indent=2)+'\n',encoding='utf-8')
     # The fitting figure addresses optimization; zero-token and affine belong to held-out control figures.
     fig,axes=plt.subplots(3,3,figsize=(183/25.4,157/25.4),sharex=True,sharey=True)
