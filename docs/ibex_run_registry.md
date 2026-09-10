@@ -2811,3 +2811,79 @@ Full per-process records follow. All times are on 2026-09-10 in UTC+03; start/en
 | 51713660 | audit-results | 2026-09-10T18:22:38.050450+03:00 | CPU; single | SUBMITTED，首查PENDING |
 
 依赖：51713656 → 51713657 → 51713658 → 51713659 → 51713660，afterok；前序失败不启动后续。每个训练array index依dataset→arm→seed展开，9×2×3=54。预期train为GPU，其余CPU；实际开始时间、节点及GPU以`logs/*`的EVENT START、nvidia-smi输出和`runs/*/started.json`为据，后续补记。提交凭据：`outputs/mainExp_Task6_PrimitiveVAE_2.1/submissions.jsonl`。
+
+
+### 2026-09-10 — mainExp_Task6_PrimitiveVAE_2.1 完成状态补记
+
+对应首轮提交commit `59d74fc4`、配置SHA256 `a20f11d93d462df22b1af96b414de1e0d6e09e1715bea267f869a8b71f70836d`；所有66个实际作业记录（1预检+9构建+1数据审计+54训练+1最终审计）均COMPLETED/0:0。54组实际GPU均为Tesla V100-SXM2-32GB。数据每流场train/validation/test/unseen_scale=60000/6000/6000/6000；最终1566条指标复算通过。主要结果与支持/反对的科学结论见`docs/experiment_log.md`同名完成节；本表只登记作业事实。
+
+| 作业/实际Job ID | 阶段/流场/方法/seed | 开始（+03:00） | 结束（+03:00） | 节点 | 实际设备 | 状态/退出码 |
+|---|---|---|---|---|---|---|
+| 51713656 | preflight | 2026-09-10T18:24:34 | 2026-09-10T18:24:54 | cn604-18 | CPU | COMPLETED/0:0 |
+| 51713658 | audit-data | 2026-09-10T18:38:29 | 2026-09-10T18:38:36 | cn604-18 | CPU | COMPLETED/0:0 |
+| 51713657_0 | build/cylinder3d | 2026-09-10T18:26:54 | 2026-09-10T18:27:32 | cn604-18 | CPU | COMPLETED/0:0 |
+| 51713657_1 | build/halfcylinderRe640 | 2026-09-10T18:26:54 | 2026-09-10T18:27:31 | cn604-17 | CPU | COMPLETED/0:0 |
+| 51713657_2 | build/halfcylinderRe6400 | 2026-09-10T18:26:54 | 2026-09-10T18:28:16 | cn604-17 | CPU | COMPLETED/0:0 |
+| 51713657_3 | build/tangaroa | 2026-09-10T18:29:14 | 2026-09-10T18:33:17 | cn604-18 | CPU | COMPLETED/0:0 |
+| 51713657_4 | build/deltaWing_resampled | 2026-09-10T18:29:14 | 2026-09-10T18:30:37 | cn604-18 | CPU | COMPLETED/0:0 |
+| 51713657_5 | build/deltaWing_LBM | 2026-09-10T18:29:14 | 2026-09-10T18:31:42 | cn604-17 | CPU | COMPLETED/0:0 |
+| 51713657_6 | build/f22raptor | 2026-09-10T18:31:32 | 2026-09-10T18:35:37 | cn604-18 | CPU | COMPLETED/0:0 |
+| 51713657_7 | build/boeing747 | 2026-09-10T18:33:51 | 2026-09-10T18:36:45 | cn604-18 | CPU | COMPLETED/0:0 |
+| 51713657_8 | build/smokeBuoyancy | 2026-09-10T18:33:51 | 2026-09-10T18:34:45 | cn604-17 | CPU | COMPLETED/0:0 |
+| 51713659_0 / 51713965 | train/cylinder3d/fmt_all_vae/9110 | 2026-09-10T18:40:45 | 2026-09-10T18:42:54 | gpu213-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_1 / 51713966 | train/cylinder3d/fmt_all_vae/9111 | 2026-09-10T18:40:45 | 2026-09-10T18:42:54 | gpu212-14 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_2 / 51713967 | train/cylinder3d/fmt_all_vae/9112 | 2026-09-10T18:40:45 | 2026-09-10T18:42:53 | gpu211-18 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_3 / 51713968 | train/cylinder3d/raw_vae/9110 | 2026-09-10T18:40:45 | 2026-09-10T18:42:54 | gpu210-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_4 / 51713969 | train/cylinder3d/raw_vae/9111 | 2026-09-10T18:40:45 | 2026-09-10T18:42:57 | gpu214-06 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_5 / 51713970 | train/cylinder3d/raw_vae/9112 | 2026-09-10T18:40:45 | 2026-09-10T18:44:17 | gpu214-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_6 / 51714058 | train/halfcylinderRe640/fmt_all_vae/9110 | 2026-09-10T18:43:02 | 2026-09-10T18:45:20 | gpu213-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_7 / 51714059 | train/halfcylinderRe640/fmt_all_vae/9111 | 2026-09-10T18:43:02 | 2026-09-10T18:45:36 | gpu212-14 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_8 / 51714060 | train/halfcylinderRe640/fmt_all_vae/9112 | 2026-09-10T18:43:02 | 2026-09-10T18:45:09 | gpu211-18 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_9 / 51714061 | train/halfcylinderRe640/raw_vae/9110 | 2026-09-10T18:43:02 | 2026-09-10T18:45:09 | gpu210-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_10 / 51714062 | train/halfcylinderRe640/raw_vae/9111 | 2026-09-10T18:43:02 | 2026-09-10T18:45:14 | gpu214-06 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_11 / 51714167 | train/halfcylinderRe640/raw_vae/9112 | 2026-09-10T18:45:20 | 2026-09-10T18:47:27 | gpu211-18 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_12 / 51714168 | train/halfcylinderRe6400/fmt_all_vae/9110 | 2026-09-10T18:45:20 | 2026-09-10T18:47:30 | gpu214-06 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_13 / 51714169 | train/halfcylinderRe6400/fmt_all_vae/9111 | 2026-09-10T18:45:20 | 2026-09-10T18:47:35 | gpu214-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_14 / 51714170 | train/halfcylinderRe6400/fmt_all_vae/9112 | 2026-09-10T18:45:20 | 2026-09-10T18:54:08 | gpu213-14 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_15 / 51714171 | train/halfcylinderRe6400/raw_vae/9110 | 2026-09-10T18:45:20 | 2026-09-10T18:47:32 | gpu212-18 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_16 / 51714245 | train/halfcylinderRe6400/raw_vae/9111 | 2026-09-10T18:47:39 | 2026-09-10T18:50:59 | gpu609-03 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_17 / 51714246 | train/halfcylinderRe6400/raw_vae/9112 | 2026-09-10T18:47:39 | 2026-09-10T18:49:52 | gpu214-06 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_18 / 51714247 | train/tangaroa/fmt_all_vae/9110 | 2026-09-10T18:47:39 | 2026-09-10T18:49:52 | gpu214-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_19 / 51714248 | train/tangaroa/fmt_all_vae/9111 | 2026-09-10T18:47:39 | 2026-09-10T18:50:12 | gpu213-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_20 / 51714249 | train/tangaroa/fmt_all_vae/9112 | 2026-09-10T18:47:39 | 2026-09-10T18:49:47 | gpu213-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_21 / 51714317 | train/tangaroa/raw_vae/9110 | 2026-09-10T18:49:56 | 2026-09-10T18:52:09 | gpu214-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_22 / 51714318 | train/tangaroa/raw_vae/9111 | 2026-09-10T18:49:56 | 2026-09-10T18:52:15 | gpu213-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_23 / 51714319 | train/tangaroa/raw_vae/9112 | 2026-09-10T18:49:56 | 2026-09-10T18:52:04 | gpu213-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_24 / 51714401 | train/deltaWing_resampled/fmt_all_vae/9110 | 2026-09-10T18:52:15 | 2026-09-10T18:54:30 | gpu609-08 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_25 / 51714402 | train/deltaWing_resampled/fmt_all_vae/9111 | 2026-09-10T18:52:15 | 2026-09-10T18:54:29 | gpu609-06 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_26 / 51714403 | train/deltaWing_resampled/fmt_all_vae/9112 | 2026-09-10T18:52:15 | 2026-09-10T18:54:34 | gpu609-06 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_27 / 51714404 | train/deltaWing_resampled/raw_vae/9110 | 2026-09-10T18:52:15 | 2026-09-10T18:55:43 | gpu609-04 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_28 / 51714405 | train/deltaWing_resampled/raw_vae/9111 | 2026-09-10T18:52:15 | 2026-09-10T18:54:30 | gpu609-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_29 / 51714485 | train/deltaWing_resampled/raw_vae/9112 | 2026-09-10T18:54:35 | 2026-09-10T18:56:50 | gpu609-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_30 / 51714486 | train/deltaWing_LBM/fmt_all_vae/9110 | 2026-09-10T18:54:35 | 2026-09-10T18:56:41 | gpu211-18 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_31 / 51714487 | train/deltaWing_LBM/fmt_all_vae/9111 | 2026-09-10T18:54:35 | 2026-09-10T18:56:45 | gpu210-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_32 / 51714488 | train/deltaWing_LBM/fmt_all_vae/9112 | 2026-09-10T18:54:35 | 2026-09-10T18:56:45 | gpu210-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_33 / 51714489 | train/deltaWing_LBM/raw_vae/9110 | 2026-09-10T18:54:35 | 2026-09-10T18:56:46 | gpu210-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_34 / 51714568 | train/deltaWing_LBM/raw_vae/9111 | 2026-09-10T18:56:50 | 2026-09-10T18:59:12 | gpu609-06 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_35 / 51714569 | train/deltaWing_LBM/raw_vae/9112 | 2026-09-10T18:56:51 | 2026-09-10T19:00:15 | gpu609-04 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_36 / 51714570 | train/f22raptor/fmt_all_vae/9110 | 2026-09-10T18:56:51 | 2026-09-10T18:59:01 | gpu214-06 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_37 / 51714571 | train/f22raptor/fmt_all_vae/9111 | 2026-09-10T18:56:51 | 2026-09-10T18:59:01 | gpu214-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_38 / 51714572 | train/f22raptor/fmt_all_vae/9112 | 2026-09-10T18:56:51 | 2026-09-10T18:58:57 | gpu213-10 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_39 / 51714573 | train/f22raptor/raw_vae/9110 | 2026-09-10T18:56:51 | 2026-09-10T18:59:02 | gpu213-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_40 / 51714651 | train/f22raptor/raw_vae/9111 | 2026-09-10T18:59:10 | 2026-09-10T19:01:22 | gpu609-08 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_41 / 51714652 | train/f22raptor/raw_vae/9112 | 2026-09-10T18:59:10 | 2026-09-10T19:01:22 | gpu609-06 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_42 / 51714653 | train/boeing747/fmt_all_vae/9110 | 2026-09-10T18:59:10 | 2026-09-10T19:01:24 | gpu609-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_43 / 51714654 | train/boeing747/fmt_all_vae/9111 | 2026-09-10T18:59:10 | 2026-09-10T19:01:19 | gpu214-06 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_44 / 51714735 | train/boeing747/fmt_all_vae/9112 | 2026-09-10T19:01:26 | 2026-09-10T19:03:38 | gpu609-08 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_45 / 51714736 | train/boeing747/raw_vae/9110 | 2026-09-10T19:01:26 | 2026-09-10T19:03:38 | gpu609-06 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_46 / 51714737 | train/boeing747/raw_vae/9111 | 2026-09-10T19:01:26 | 2026-09-10T19:03:42 | gpu609-06 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_47 / 51714738 | train/boeing747/raw_vae/9112 | 2026-09-10T19:01:26 | 2026-09-10T19:04:53 | gpu609-04 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_48 / 51714739 | train/smokeBuoyancy/fmt_all_vae/9110 | 2026-09-10T19:01:26 | 2026-09-10T19:03:58 | gpu609-03 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_49 / 51714740 | train/smokeBuoyancy/fmt_all_vae/9111 | 2026-09-10T19:01:26 | 2026-09-10T19:03:45 | gpu609-03 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_50 / 51714910 | train/smokeBuoyancy/fmt_all_vae/9112 | 2026-09-10T19:05:49 | 2026-09-10T19:09:20 | gpu609-04 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_51 / 51714911 | train/smokeBuoyancy/raw_vae/9110 | 2026-09-10T19:05:49 | 2026-09-10T19:08:19 | gpu609-03 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_52 / 51714912 | train/smokeBuoyancy/raw_vae/9111 | 2026-09-10T19:05:49 | 2026-09-10T19:08:11 | gpu609-03 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713659_53 / 51713659 | train/smokeBuoyancy/raw_vae/9112 | 2026-09-10T19:05:49 | 2026-09-10T19:08:03 | gpu609-02 | Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+| 51713660 | audit-results | 2026-09-10T19:10:10 | 2026-09-10T19:12:13 | cn113-35-l | CPU | COMPLETED/0:0 |
+
+证据：`slurm_status_final.txt`为sacct快照，各`started.json`保存实际array子进程Job ID/GPU/开始时间。首轮SUBMITTED/PENDING为历史提交快照，现已全部完成。结果元数据收集为SSH只读分析（无Slurm ID，不训练）；元数据包`metadata_report.zip`为1,541,564字节，不含checkpoint。

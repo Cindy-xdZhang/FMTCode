@@ -1337,3 +1337,46 @@ AP 指 Average Precision（平均精确率），用于衡量分类分数的排�
 - 数值配置：`config/mainExp_Task6_PrimitiveVAE_2.1.json`。九流场各60,000 train+6,000 validation+6,000同尺度test+6,000未见尺度test；18训练尺度、9未见尺度；512宽度、64潜变量、编码解码各3残差块，beta=1e-5；512样本4,000更新拟合检查后重新初始化、120epoch，3随机种子。详细时间表与代码路径见`docs/Task6_primitive_vae_protocol_2.1.md`第7节。
 - 本地验证：`tmp/jhtdb-venv/Scripts/python.exe -m unittest tests.test_task6_primitive_vae_2_1`，7项通过（8.616s）。覆盖解析仿射场积分终点、均匀时间重采样、Cylinder原时间范围、稀疏源帧隔离、masked voxel不补零、VAE梯度/均值确定性、数据构建审计与损坏检测。合成小样本训练误差1.131→0.166仅验证代码可以学习，不构成真实流场的FMT优越性证据。
 - 原FMT源码SHA256保持`efff993f10a8db7b481784198beecce1c3c74b2f81cd2eddf5a523ba0a19222d`；没有修改冻结算法或旧Task6/7/8结果。当前尚无新真实流场训练结果，不能预写性能提升结论。
+
+
+### 2026-09-10 — mainExp_Task6_PrimitiveVAE_2.1：54组训练与最终审计完成
+
+**结论：当前原FMT-VAE没有在七线完整坐标重建任务中优于Raw-VAE。九个流场的主测试均为FMT-VAE误差更高。** 这是对本次冻结原FMT配方和相同VAE隐藏结构/预算的实测结论，不推广成所有傅里叶编码或所有tokenizer都失败；此前“适合几何模式学习”是待验证假设，本次没有证实其完整几何重建优势。
+
+证据：代码`59d74fc42904ea45ab75775e11d84c492ca10124`，配置`config/mainExp_Task6_PrimitiveVAE_2.1.json`，SHA256 `a20f11d93d462df22b1af96b414de1e0d6e09e1715bea267f869a8b71f70836d`。9个数据构建和数据审计全部通过；54/54训练完成，全部使用Tesla V100-SXM2-32GB；每组先在512个train样本上拟合4000更新，再全新初始化正式训练120epoch=14160更新、720万primitive曝光。最终审计`51713660`于2026-09-10 19:12:13(+03:00)成功结束，重新从预测核算1566条指标记录。本地报告再次逐项核对CSV与54个result.json、配置、commit和预算，一致。
+
+主指标为七条对应路径线31个非初始时刻的三维位置均方根误差，除以初始邻居半径r；越小越好。下表为每流场三个优化种子的均值±样本标准差；不旋转预测、不重排邻居、不按真实目标挑选潜变量样本。
+
+| Flow | FMT-VAE test RMSE/r | Raw-VAE test RMSE/r |
+|---|---:|---:|
+| cylinder3d | 5.199786 ± 0.032362 | 0.321845 ± 0.040424 |
+| halfcylinderRe640 | 3.696060 ± 0.011607 | 0.388623 ± 0.053366 |
+| halfcylinderRe6400 | 13.747953 ± 0.315997 | 1.679649 ± 0.096684 |
+| tangaroa | 4.418128 ± 0.018612 | 0.411473 ± 0.002665 |
+| deltaWing_resampled | 0.421725 ± 0.008864 | 0.031181 ± 0.000222 |
+| deltaWing_LBM | 0.467661 ± 0.014513 | 0.034554 ± 0.000341 |
+| f22raptor | 11.746878 ± 0.051456 | 1.947621 ± 0.234189 |
+| boeing747 | 0.961566 ± 0.028935 | 0.063205 ± 0.003495 |
+| smokeBuoyancy | 1.642650 ± 0.016142 | 0.049045 ± 0.000678 |
+
+九流场等权平均（先对各流场三个种子平均，再平均九流场，不是所有点合并RMSE）：主test FMT-VAE 4.700267，Raw-VAE 0.547466；FMT误差为Raw的8.59倍。独立未见尺度test：FMT 3.940238，Raw 0.600285。未见尺度仅DeltaWing LBM的整体RMSE中FMT略低（0.370366 vs 0.372950）；该集合混合组合插值和半径外推，不能将这个局部结果改写为原FMT普遍优于Raw。逐尺度数字保留在metrics.csv。
+
+拟合诊断（512样本拟合与正式训练是不同初始化的模型）：
+
+| 流场 | FMT小集拟合 | Raw小集拟合 | FMT正式train probe | Raw正式train probe |
+|---|---:|---:|---:|---:|
+| cylinder3d | 0.377525 | 0.254418 | 2.438337 | 0.275078 |
+| halfcylinderRe640 | 0.537474 | 0.358633 | 2.636909 | 0.350661 |
+| halfcylinderRe6400 | 2.034719 | 2.234147 | 10.684015 | 1.364500 |
+| tangaroa | 0.515096 | 0.248833 | 1.950374 | 0.347521 |
+| deltaWing_resampled | 0.060701 | 0.018792 | 0.172570 | 0.023254 |
+| deltaWing_LBM | 0.056910 | 0.023213 | 0.183989 | 0.024325 |
+| f22raptor | 2.392846 | 2.366213 | 8.190403 | 1.676505 |
+| boeing747 | 0.096259 | 0.062317 | 0.532395 | 0.049787 |
+| smokeBuoyancy | 0.071628 | 0.015909 | 0.436312 | 0.030130 |
+
+正式train probe固定抽4096个训练primitive，并非全部60000样本误差。以Re160为例，FMT小集误差0.377525，正式train probe 2.438337，test 5.199786；Raw分别0.254418、0.275078、0.321845。小集拟合改善不能替代未见primitive泛化。两臂均真实训练、均使用可训练VAE，结果不是“只有FMT没有神经网络”或作业未跑完造成的。
+
+误差位置诊断：主test宏平均中心线误差FMT 4.691805 vs Raw 0.397423；同时间21对粒子间距离RMSE为0.602123 vs 0.499212。绝对对应坐标误差的差距远大于同时间距离误差的差距，与原FMT未保留完整朝向、轨迹对应信息的解释相容；**这只是解释，不是本实验对唯一原因的证明**。本实验无法单独排除网络结构、优化预算等影响，也不能据此声称FMT完全没有几何信息。不得读取本test后更改超参数再把原test当新确认集。
+
+结果文件：`outputs/mainExp_Task6_PrimitiveVAE_2.1/{summary.json,per_flow_summary.csv,metrics.csv,final_audit.json,config.frozen.json,slurm_status_final.txt}`；各次训练曲线和fit_check在`runs/`。报告代码`experiments/Report_Task6_PrimitiveVAE_2_1.py`。下载只包含元数据/指标/曲线，不含模型；原始几何缓存与预测仍在Ibex，最终审计确认未生成checkpoint文件。配置原始字节另存config.frozen.json，Windows工作副本仅CRLF换行不同，解析配置与部署内容一致。
