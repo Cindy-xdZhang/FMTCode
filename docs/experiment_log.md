@@ -1042,3 +1042,38 @@ Task8：同一原训练数据上，大网络加更多训练更新使训练域宏
 Ibex最终审计51696913重读保存预测与真值，复算全部270项task/role/condition/dataset记录及相关指标PASS，预测文件哈希核对通过，模型checkpoint文件数为0。已取回 `outputs/Verify_Task678_DirectFMTFit_1.1/metrics.csv`、summary.json、independent_audit.json、job_events.jsonl及完整配置；本地local_delivery_audit.json另核对文件哈希、270行唯一性和30个九流场宏平均分组PASS。运行开始/结束、节点和GPU见docs/ibex_run_registry.md本版本完整登记。
 
 小训练集学习曲线：`outputs/Verify_Task678_DirectFMTFit_1.1/figures/small_set_fitting.pdf`，另有SVG/PNG、全部1238个原始曲线点CSV、source_snapshot.json及figure_contract.json。绘图代码 `experiments/Plot_Task678_DirectFMTFit_1_1.py`，commit `51f4be5a971e7964e9beaeb6179a43b82e494477`。图展示九流场全部训练误差点，无平滑；画布183×157mm、最低字体7pt，文本/布局/碰撞审计无失败，九面板目视检查通过。
+
+
+<a id="ntdo-task1235-final-20260910"></a>
+### 2026-09-10 — Verify_Task1235_ObjectiveFMTnTDO_1.1 四任务最终结果
+
+完整369维 objective_fmt_nTDO 1.1 已完成10个3D条目×3种子×4任务，共120份结果包、510行主指标。执行revision 2的95个Slurm作业全部COMPLETED/exit0；训练代码commit `d04f5609923bc67a1d523e56fab3e71c18c8eb2d`。编码器SHA256仍为 `9ddb3bc4471d4ef3191b78567061956cdfd5bb9c11e9ebbcff888c9f18246e4c`，运行中没有修改特征、数据划分、训练预算或选择规则。仅按实际耗时调整Slurm预留时限，记录在resource_updates.jsonl。
+
+以下为10条目等权、每条目三种子平均的宏F1；Task3/5的FMT列均表示Raw+FMT残差分支，Raw-PCA为原始轨线经主成分分析后接相同分支的参数量对照。旧FMT在Task1/2/3采用fmt_all+kin4，在Task5采用fmt_all+gram2+kin6；本表不使用a1ivd，不替换历史aivd主表。
+
+| 任务 | Raw | Raw-wide | Raw-PCA | 旧FMT | 完整nTDO |
+|---|---:|---:|---:|---:|---:|
+| Task1 | 0.423525 | — | — | 0.595744 | 0.411354 |
+| Task2 | 0.488298 | — | — | 0.559528 | 0.488735 |
+| Task3 | 0.632093 | 0.627990 | 0.686009 | 0.761062 | 0.753333 |
+| Task5 | 0.610622 | 0.616785 | 0.620485 | 0.732271 | 0.723182 |
+
+监督任务的平均精确率（Average Precision）：
+
+| 任务 | Raw | Raw-wide | Raw-PCA | 旧FMT | 完整nTDO | fixed Task3 Raw transfer |
+|---|---:|---:|---:|---:|---:|---:|
+| Task3 | 0.680141 | 0.680030 | 0.728698 | 0.813913 | 0.803540 | — |
+| Task5 | 0.646098 | 0.649700 | 0.660146 | 0.797662 | 0.780242 | 0.429579 |
+
+Task5 fixed Task3 Raw transfer的宏F1为0.377967，variable-scale Raw为0.610622。Task3的nTDO三种子宏F1标准差为0.004130，Task5为0.008418；这些是三个种子宏平均的标准差，不是把30个异质条目混在一起的离散度，也不是置信区间。逐种子宏平均见per_seed_macro.csv，逐条目均值/种子标准差见per_dataset.csv。
+
+结果解释：
+
+1. Task1的nTDO低于Raw和旧FMT；Task2与Raw接近、低于旧FMT。因此完整369维nTDO没有保持旧配方在本次两个无监督任务上的宏平均优势。
+2. Task3的Raw+nTDO比Raw提高0.121240、比同结构Raw-PCA提高0.067324，比旧FMT低0.007729。逐条目三种子平均高于Raw 10/10、高于Raw-PCA 9/10、高于旧FMT 6/10。30次nTDO的验证集选择融合系数全部大于0，没有退化为alpha=0的纯Raw输出。channel差距较大（nTDO 0.514060、旧FMT 0.654929），保留原定10条目宏平均，不删除该条目改变排名。
+3. Task5的Raw+nTDO比variable Raw提高0.112561、比Raw-PCA提高0.102698，比旧FMT低0.009089。逐条目高于Raw及Raw-PCA各10/10，高于旧FMT 4/10。训练/验证/测试分别18/6/9个尺度tuple，10条目的三组tuple均已核查互不重叠；1620行逐尺度F1/AP从保存预测独立复算通过。
+4. 这组结果支持nTDO作为额外输入表示在当前有监督Task3/5上提供有用分类信号，同时说明其无监督聚类表现没有保留旧FMT优势。它不是“仅nTDO独立输入”的监督实验，不能把Raw+nTDO结果写成仅凭nTDO的性能；也不从F1推断客观性或把性能差异归因于未经消融检验的特定分支。当前nTDO与此前“只删除中心、保留旧邻居编码”的方案不同，实验ID和代码保持分开。
+
+证据范围仍为预注册的复用benchmark配对诊断，非新的独立confirmation；历史固定尺度窗口重叠及Task3 transfer的边界见本节预注册。Re160/Re6400的新Task5缓存使用正确的原始时间索引及t>=7.5，初次错误缓存/取消作业保留在原目录和登记中，未进入本表。
+
+完整输出在 `outputs/Verify_Task1235_ObjectiveFMTnTDO_1.1/`：per_run_metrics.csv、summary.csv、paired_f1.csv、per_dataset.csv、per_seed_macro.csv、所有shards预测/阈值/输入证据、final_audit.json、local_independent_audit.json、slurm_accounting.psv及run_config.json。远端和本地独立审计均PASS：510行主指标F1/IoU（监督任务另复算AP）、1620行Task5分尺度F1/AP及配置/来源哈希一致。完整证据包complete_evidence.tar.gz的SHA256为 `471a80424c0a1a65f5883ace2c98d710098802da72c1d4eac3ecad628c107fc1`。90份执行链审计记录删除了300个临时checkpoint，未下载模型；最后总审计于2026-09-10 13:22:47+03完成。
