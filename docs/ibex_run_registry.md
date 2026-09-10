@@ -2435,3 +2435,12 @@ All use Verify_LargeNeighbor_1.1 and recorded frozen source/config; GPU arrays e
 - `51701311` | affine | SUBMITTED 2026-09-10T14:21:27.323686+03:00 | CPU | config `config/Verify_Task678_VectorFMT_1.1.json` SHA256 `843eee14d04bc4a2d47a5bd9e43d811dcc5f0ea96508eef46c1be5a0d3ff724d` | commit `d9d04b41f0b01af0a2236707a369e1bb2d58cbeb`
 
 - `51701312` | audit | SUBMITTED 2026-09-10T14:21:27.387187+03:00 | CPU | config `config/Verify_Task678_VectorFMT_1.1.json` SHA256 `843eee14d04bc4a2d47a5bd9e43d811dcc5f0ea96508eef46c1be5a0d3ff724d` | commit `d9d04b41f0b01af0a2236707a369e1bb2d58cbeb`
+
+
+### 2026-09-10 — HanSampling与VectorFMT训练已启动
+
+HanSampling全部九流场构建通过。数据审计`51701045`于14:11:58在cn604-18开始，14:12:29完成：9流场×7角色、查询和primitive隔离、Cylinder时间范围、隐藏输入缓冲及冻结特征复算全部通过。基础训练区域共2516，单段训练query共322048；Task6每流场47082–61807步、Task7 23541–30904步，均遵循50遍等效曝光公式。首批`51701046_0-8`在14:14左右于gpu214-14/gpu214-10/gpu213-06/gpu212-18的Tesla V100-SXM2-32GB开始，原无训练仿射对照9/9已完成。
+
+VectorFMT短运行`51701309`于14:22:47在cn604-17开始、14:23:05完成：3项测试及51条预测复算通过；27分片训练数组`51701310`已启动首批9流场，实际设备/时间详见job_events.jsonl。
+
+14:23:55仅调整数组并行上限：`51701046`从9改27，`51701310`从6改9。总作业数、每作业设备、数据、种子、训练步数均不变；实际启动数量仍由Slurm可用资源决定，调度记录见两输出目录的resource_adjustments.jsonl。完整运行事件持续由作业写入各自job_events.jsonl与远端登记。当前尚无完整最终审计，不形成宏平均性能结论。
