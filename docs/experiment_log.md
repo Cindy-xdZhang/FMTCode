@@ -1318,3 +1318,14 @@ AP 指 Average Precision（平均精确率），用于衡量分类分数的排�
 **可复核证据：**固定执行 commit `55928e99130d5209f2ee027be3a1a94b55d0be56`；配置 SHA256 `cc137f5104c4835330d2e2e2da7f53d56c46a47b46b0ea7f93e5a0c2a07a9598`；源清单 SHA256 `5e817c49a8557a84c8d3d1b04a8fd4ec949f2e7a59bab1c09de36d4d4595b2ff`。
 
 本地完整证据目录 `outputs/Verify_Task1235_ObjectiveFMTnTDO_2.1/`；`summary.csv` SHA256 `8ff23680f07fe59f896dfacb2ff579a4731677b47910b4dcd1bfb45919c3bb66`；结果包 `complete_evidence.tar.gz` SHA256 `64a17ae3dd5c554141ee1fe6e7bcc711c2ae80f80afed4bb2f9dac9c9fe90207`。归档 1457 个证据文件，无模型。360 个依赖链临时 checkpoint 全部删除，Ibex 剩余 checkpoint 为 0。Task5 的 18/6/9 个训练/验证/测试尺度组合互不重叠。继承旧 benchmark 的时间窗口与复用评估边界，不声称新的独立确认。
+
+
+## 2026-09-10 — Task6任务定义更新：mainExp_Task6_PrimitiveVAE_2.1
+
+用户要求当前只专注Task6，并将目标改为单流场内大量多时间、多位置、多积分时长和多邻居距离的七线primitive自重建。输入是完整七线geometry的冻结FMT token，VAE编码器接收token、VAE解码器直接输出同一簇完整七线geometry；测试整个未见primitive，不再查询未输入播种粒子的轨迹。每个网络及预处理统计只属于一个流场。旧查询任务的定义、源码、3375项审计记录和负结果保留原编号，不追溯修改，也不能与新任务混表。
+
+新协议为 `docs/Task6_primitive_vae_protocol_2.1.md`，并已同步AGENTS.md和唯一任务定义。一般流场播种时刻为裁剪前原始时段的10%–80%，Cylinder为50%–80%且保持t>=7；当前三个[0,15]源数据对应[7.5,12]。80%是播种上限，完整积分区间和插值源帧需另行验证。尺度完整记录邻居距离r、数值积分时间步长h、积分步数N及总时长H=N*h，积分后统一成7×32×3，参考Task5接口而不复用其旧时间切片或IVD标签。
+
+首个核心比较为原fmt_all token→VAE→geometry与Raw geometry→相同隐藏结构及潜变量维数的VAE→geometry；共享同一物理primitive和几何目标，不将token重建误差冒充几何重建误差。训练覆盖完整采样时间区间，未见primitive按完整源时间组隔离；未见尺度重建另列。用户关于FMT更适合几何模式学习的解释作为新任务研究假设，不作为已证实的性能结论。
+
+本次仅完成协议更新；新Task6的训练/数据构建代码及数值运行配置尚未实现或冻结，没有提交新Ibex作业或产生新指标。Task7/8暂不推进。旧Task8仍使用其冻结的旧Task6逐粒子查询器，不能自动替换为新VAE重建网络。

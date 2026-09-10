@@ -1,5 +1,7 @@
 # Task6/7/8 流映射 token 实验协议 1.1
 
+> 历史冻结协议：2026-09-10用户将当前Task6重新定义为[单流场、多尺度primitive的VAE几何重建2.1](Task6_primitive_vae_protocol_2.1.md)。以下旧Task6查询任务及其配置、结果完整保留，不作为新任务定义。当前只推进新Task6；Task7/8暂不推进，旧Task8仍绑定本历史逐粒子查询器。
+
 登记日期：2026-09-09。用户已选择原三个候选全部执行：A → Task6，B → Task7，C → Task8，并授权实现、验证、Git commit/push、Ibex Git 拉取及批量实验。版本分别为 `mainExp_Task6_FlowMap_1.1`、`mainExp_Task7_FlowMap_1.1`、`mainExp_Task8_FlowMap_1.1`；共同编排版本 `mainExp_Task678_FlowMap_1.1`。配置：[mainExp_Task678_FlowMap_1.1.json](../config/mainExp_Task678_FlowMap_1.1.json)。以下设置在读取新任务测试性能前确定。
 
 ## 任务与实现范围

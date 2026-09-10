@@ -1,5 +1,7 @@
 # Task6/7/8 密集查询与流映射token验证协议 1.1
 
+> 历史冻结协议：2026-09-10用户将当前Task6重新定义为[单流场、多尺度primitive的VAE几何重建2.1](Task6_primitive_vae_protocol_2.1.md)。以下旧Task6查询任务及其配置、结果完整保留，不作为新任务定义。当前只推进新Task6；Task7/8暂不推进，旧Task8仍绑定本历史逐粒子查询器。
+
 2026-09-10，用户授权参考Han et al. 2024改进并重跑Task6/7/8。实验版本`Verify_Task678_HanSampling_1.1`。目的为检验FMT作为局部流映射token的拟合、粒子插值、primitive迁移和短映射组合能力；不预先承诺结果为正，不按test选择网络或删除失败流场。阅读依据见`docs/Han2024_particle_tracing_reading_zh.md`。旧mainExp与DirectFMTFit实验冻结保留，本版不能与旧数据直接混合宏平均。
 
 ## 保持与改变

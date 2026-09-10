@@ -14,11 +14,13 @@
 - **Task3（2D/3D）**：有监督 IVD 涡识别。核心比较固定为不使用 FMT 与加入 FMT 的神经网络在涡/非涡二分类上的性能。
 - **Task4（仅 3D）**：有监督涡类型多分类，例如 streamwise、spanwise、hairpin。Task4 与 Task3 严格分开。
 - **Task5（2D/3D）**：Task3 的不同尺度扩展。primitive 的邻居距离、积分步长和积分步数可变，但输出保持固定线数和每线采样点数；使用同一 IVD 二分类监督。核心比较为 fixed-scale Task3 transfer、variable-scale Raw、同结构 Raw-PCA residual 与 variable-scale Raw+FMT，并在训练未见尺度组合上确认。
-- **Task6（当前3D）**：局部流映射查询。将可见 primitive 编码成 token，预测未输入播种点在同一观察区间内的完整轨迹，以原流场积分自监督。
+- **Task6（当前3D，2026-09-10重新定义）**：单流场、多尺度primitive的VAE几何重建。每个网络只在一个流场训练；大量不同起始时间、位置、积分时长与邻居距离的七线primitive，经冻结FMT变成token，再由VAE重建同一簇七条完整路径线。测试整个未见primitive，不是查询额外粒子；VAE解码器输出geometry而非token。新版本`mainExp_Task6_PrimitiveVAE_2.1`，详见`docs/Task6_primitive_vae_protocol_2.1.md`。
 - **Task7（当前3D）**：遮挡区域补全。仅由隐藏区域外的可见 primitive tokens 恢复内部材料轨迹；必须防止重叠邻居泄漏。
 - **Task8（当前3D）**：短流映射组合。使用各段已知 tokens，把第一段预测到达位置传入下一段查询，评估真实长轨迹；不是未知未来预测。
 
-2026-09-09 用户选择 Task6/7/8 全部执行，并授权代码验证、Git commit/push、Ibex Git 拉取及批量实验；当前版本见 `docs/Task678_flowmap_protocol_1.1.md`。Task4 暂缓推进，保留以下历史协议及结果。Task6/7/8 不使用 IVD p95 或人工类别标签，不能把 Task1–5 的分类指标直接沿用为新任务目标。
+2026-09-10 当前只推进重新定义后的Task6；Task7/8暂不推进，旧Task8仍依赖旧版Task6逐粒子查询器，不能自动接入新VAE。Task6播种时刻按裁剪前原始时段的一般流场10%–80%、Cylinder 50%–80%选择，Cylinder另保留t>=7；当前[0,15]数据对应[7.5,12]。该范围只限制播种时刻，仍需保证完整积分；不能对窗口文件重新截百分比。
+
+2026-09-09 用户选择Task6/7/8全部执行的历史定义及授权记录保留于`docs/Task678_flowmap_protocol_1.1.md`，已完成代码、实验和结果不改写。Task4暂缓推进，保留以下历史协议及结果。Task6/7/8不使用IVD p95或人工类别标签，不能把Task1–5的分类指标直接沿用为新任务目标。
 
 当前研究范围包含 **3D Task1、Task2、Task3、Task5**，以及 **Task4-b 有监督四分类**。2026-09-06 用户重新定义 Task4-b：channel+TBL 合并训练同一个网络；涡区按 hairpin 标注内/外及 velocity–curl 更接近平行/垂直明确二分为 ordinary-streamwise、ordinary-spanwise、hairpin-head、hairpin-leg（平行含反平行，45°归平行；hairpin 内平行为 leg、垂直为 head），不加额外 head 条件。当前先执行 `Verify_Task4B_VelocityCurlMemorization_4.1` 过拟合验证，阈值使用标注全覆盖约束下的每流场 IVD>0.9a，详见 `docs/Task4B_velocity_curl_protocol_4.1.md`。历史 Task4-b 1.1 因跨 split primitive 空间重叠被否决，1.2/2.x/3.x 结果保留原协议与证据边界，不能替代新标签实验。Task4-b 与 Task3 的 whole-field IVD 二分类结果严格分开；旧实验 ID 不因本协议改名。
 

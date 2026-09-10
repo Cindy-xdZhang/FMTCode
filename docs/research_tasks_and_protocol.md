@@ -2,7 +2,9 @@
 
 本文件是 Task1–Task8 的唯一任务定义。旧文档若与本文件冲突，以本文件为准。协议自 2026-08-23 起生效；Task5 自 2026-08-26 起加入；Task6/7/8 自 2026-09-09 起加入；历史实验 ID 和输出目录不追溯改名。
 
-**2026-09-09 当前推进状态**：暂缓 Task4 后续推进，保留其历史定义、代码、标签问题及结果。用户已选择全部三个新方案，正式增加 Task6 局部流映射查询、Task7 遮挡区域补全、Task8 短流映射组合，并授权实现、验证、Git 推送及 Ibex 批量运行。具体冻结设置见 [Task6/7/8 协议 1.1](Task678_flowmap_protocol_1.1.md)。Task1/2/3/5 冻结实验不改写；下文旧 Task4 范围文字不表示仍优先推进。方法证据和新轮廓系数观察见[进展记录](experiment_log.md#progress-2026-09-09)。
+**2026-09-10 当前推进状态**：当前只推进Task6，按用户新定义改为**单流场、多尺度primitive的VAE几何重建**：七线geometry→冻结FMT token→VAE→同一簇七线geometry，测试整个未见primitive。每个网络只在一个流场中训练；一般流场播种于原始时段10%–80%，Cylinder于50%–80%且t>=7，完整积分另行保证。新版本`mainExp_Task6_PrimitiveVAE_2.1`，详见[Task6协议2.1](Task6_primitive_vae_protocol_2.1.md)。Task7/8暂不推进；Task4继续暂缓。Task1/2/3/5及旧Task6/7/8冻结源码、配置与历史结果不改写。
+
+**2026-09-09 历史登记**：当时增加的Task6局部流映射查询、Task7遮挡区域补全、Task8短流映射组合及实现、验证、Git推送和Ibex批量运行授权见[Task6/7/8旧协议1.1](Task678_flowmap_protocol_1.1.md)。旧Task8使用旧Task6的逐粒子查询器，不能因当前任务定义改变而自动改用VAE几何重建网络。方法证据和轮廓系数观察见[进展记录](experiment_log.md#progress-2026-09-09)。
 
 ## 1. 总体研究命题
 
@@ -20,7 +22,7 @@ FMT 是由 Fourier 变换、`sin/cos`、几何不变量和 aggregation 构成的
 | **Task3：有监督 IVD 涡识别** | 2D、3D | IVD 标签监督的涡/非涡二分类网络 | Raw、参数量控制 Raw、Raw+FMT | F1、Average Precision、AUROC、precision、recall；多训练 seed | 加入 FMT 是否提高有监督涡区域识别 |
 | **Task4：有监督涡类型分类** | **仅 3D** | 对已定义的 3D 涡型标签做多分类 | 不使用 FMT vs 加入 FMT | macro-F1、每类 F1、balanced accuracy、confusion matrix | 加入 FMT 是否提高 streamwise、spanwise、hairpin 等涡型分类 |
 | **Task5：不同尺度几何学习** | 2D、3D | 每个 primitive 的邻居距离、积分步长和积分步数可变；积分后统一重采样为固定 `K×L×C`，再做 IVD 监督二分类 | 固定尺度 Task3 迁移、variable-scale Raw、结构匹配 Raw-PCA residual、variable-scale Raw+FMT | unseen-scale confirmation 的 F1、Average Precision；逐尺度、逐流场及 family macro | 模型能否学习跨尺度 primitive；FMT 是否提高 variable-scale IVD 涡识别 |
-| **Task6：局部流映射查询** | 当前 3D | primitive token + 新粒子初始局部坐标 + 查询时间 → 轨迹位置；原流场积分自监督 | 原轨线压缩、VAE、FMT、客观版本、IVD估计、微分几何、坐标Fourier及插值 | 全轨线位置误差、相对几何误差、token字节数及时间曲线 | token 是否保留可供未输入材料点查询的流映射信息 |
+| **Task6：单流场primitive几何重建（2.1）** | 当前 3D | 多时间、多位置、多尺度七线geometry→冻结FMT token→VAE→同一簇完整七线geometry；每流场单独训练，测试完整未见primitive | 原FMT token→VAE→geometry，与同数据、同隐藏结构及同潜变量维数的Raw geometry→VAE→geometry | 七条对应路径线全时段几何重建误差、同时间粒子间距误差、逐尺度/时长及训练/测试分项 | FMT是否帮助VAE学习和重建该流场的primitive几何分布 |
 | **Task7：遮挡区域补全** | 当前 3D | 外部可见 primitive tokens → 隐藏区域材料轨迹；原流场积分自监督 | 同上下文网络与相同可见材料点下的各特征方案 | 隐藏区域位置及相对几何误差、存储/计算开销 | tokens 是否能支持区域间上下文推断 |
 | **Task8：短流映射组合** | 当前 3D | 已观测的短流映射 tokens 逐段查询，将预测到达位置输入下一段 | 同逐段解码器设置的特征方案与原轨线插值组合 | 组合轨迹位置和形变误差、分段误差增长 | token 是否支持流映射实际组合；不宣称预测未知未来 |
 
