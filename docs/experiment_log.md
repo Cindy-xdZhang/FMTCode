@@ -1329,3 +1329,11 @@ AP 指 Average Precision（平均精确率），用于衡量分类分数的排�
 首个核心比较为原fmt_all token→VAE→geometry与Raw geometry→相同隐藏结构及潜变量维数的VAE→geometry；共享同一物理primitive和几何目标，不将token重建误差冒充几何重建误差。训练覆盖完整采样时间区间，未见primitive按完整源时间组隔离；未见尺度重建另列。用户关于FMT更适合几何模式学习的解释作为新任务研究假设，不作为已证实的性能结论。
 
 本次仅完成协议更新；新Task6的训练/数据构建代码及数值运行配置尚未实现或冻结，没有提交新Ibex作业或产生新指标。Task7/8暂不推进。旧Task8仍使用其冻结的旧Task6逐粒子查询器，不能自动替换为新VAE重建网络。
+
+
+### 2026-09-10 — mainExp_Task6_PrimitiveVAE_2.1 实现与部署前冻结
+
+- 用户要求部署Ibex测试新Task6。实现为单流场七线geometry→冻结原161维FMT→可训练VAE→同一七线geometry，Raw-VAE使用相同隐藏结构/潜变量/解码器及训练预算。Task7/8不启动。
+- 数值配置：`config/mainExp_Task6_PrimitiveVAE_2.1.json`。九流场各60,000 train+6,000 validation+6,000同尺度test+6,000未见尺度test；18训练尺度、9未见尺度；512宽度、64潜变量、编码解码各3残差块，beta=1e-5；512样本4,000更新拟合检查后重新初始化、120epoch，3随机种子。详细时间表与代码路径见`docs/Task6_primitive_vae_protocol_2.1.md`第7节。
+- 本地验证：`tmp/jhtdb-venv/Scripts/python.exe -m unittest tests.test_task6_primitive_vae_2_1`，7项通过（8.616s）。覆盖解析仿射场积分终点、均匀时间重采样、Cylinder原时间范围、稀疏源帧隔离、masked voxel不补零、VAE梯度/均值确定性、数据构建审计与损坏检测。合成小样本训练误差1.131→0.166仅验证代码可以学习，不构成真实流场的FMT优越性证据。
+- 原FMT源码SHA256保持`efff993f10a8db7b481784198beecce1c3c74b2f81cd2eddf5a523ba0a19222d`；没有修改冻结算法或旧Task6/7/8结果。当前尚无新真实流场训练结果，不能预写性能提升结论。

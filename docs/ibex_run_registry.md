@@ -2796,3 +2796,18 @@ Full per-process records follow. All times are on 2026-09-10 in UTC+03; start/en
 | 51702599_28 (51708203) | Task35 | 2026-09-10T16:09:52.394617+03:00 | 2026-09-10T16:18:27.915591+03:00 | gpu210-14 | Tesla V100-SXM2-32GB | 0 |
 | 51702599_29 (51702599) | Task35 | 2026-09-10T16:12:12.529285+03:00 | 2026-09-10T16:18:25.153420+03:00 | gpu203-16-r | NVIDIA A100-SXM4-80GB | 0 |
 | 51702600 | audit | 2026-09-10T16:19:08.063844+03:00 | 2026-09-10T16:19:27.058058+03:00 | cn604-17 | CPU | 0 |
+
+
+### 2026-09-10 — mainExp_Task6_PrimitiveVAE_2.1 首轮部署
+
+代码commit `59d74fc42904ea45ab75775e11d84c492ca10124`；配置`config/mainExp_Task6_PrimitiveVAE_2.1.json`，SHA256 `a20f11d93d462df22b1af96b414de1e0d6e09e1715bea267f869a8b71f70836d`。独立checkout `/ibex/user/zhanx0o/FMT_Task6PrimitiveVAE_20260910`；源码已推送。此前源文件元数据预检为SSH只读操作（login节点、无Slurm ID、无训练），检查了九个源文件时间轴、可用帧、容量和队列。
+
+| Job ID | 阶段 | 提交时间（+03:00） | 预期设备/并发 | 状态 |
+|---|---|---|---|---|
+| 51713656 | preflight | 2026-09-10T18:22:37.805461+03:00 | CPU; single | SUBMITTED，首查PENDING |
+| 51713657 | build | 2026-09-10T18:22:37.876615+03:00 | CPU; 0-8%3 | SUBMITTED，首查PENDING |
+| 51713658 | audit-data | 2026-09-10T18:22:37.934754+03:00 | CPU; single | SUBMITTED，首查PENDING |
+| 51713659 | train | 2026-09-10T18:22:37.993578+03:00 | GPU A100/V100; 0-53%6 | SUBMITTED，首查PENDING |
+| 51713660 | audit-results | 2026-09-10T18:22:38.050450+03:00 | CPU; single | SUBMITTED，首查PENDING |
+
+依赖：51713656 → 51713657 → 51713658 → 51713659 → 51713660，afterok；前序失败不启动后续。每个训练array index依dataset→arm→seed展开，9×2×3=54。预期train为GPU，其余CPU；实际开始时间、节点及GPU以`logs/*`的EVENT START、nvidia-smi输出和`runs/*/started.json`为据，后续补记。提交凭据：`outputs/mainExp_Task6_PrimitiveVAE_2.1/submissions.jsonl`。
