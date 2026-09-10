@@ -1,0 +1,270 @@
+{
+  "datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "deltaWing_resampled",
+    "deltaWing_LBM",
+    "f22raptor",
+    "boeing747",
+    "smokeBuoyancy"
+  ],
+  "source_fields": {
+    "cylinder3d": "/home/zhanx0o/DeepVortex/FLowDataFolder/halfcylinderRe160Resampled.nc",
+    "halfcylinderRe640": "/home/zhanx0o/DeepVortex/FLowDataFolder/halfcylinderRe640resampled.nc",
+    "halfcylinderRe6400": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_AIVDLongtime_1.1/source/halfcylinderRe6400_late96.nc",
+    "tangaroa": "/home/zhanx0o/DeepVortex/FLowDataFolder/tangaroa.nc",
+    "deltaWing_resampled": "/home/zhanx0o/DeepVortex/FLowDataFolder/deltaWing_mag0_3reesampled.nc",
+    "deltaWing_LBM": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1/source/deltaWing_LBM_windows96.nc",
+    "f22raptor": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1/source/f22raptor_windows96.nc",
+    "boeing747": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1/source/boeing747_windows96.nc",
+    "smokeBuoyancy": "/home/zhanx0o/DeepVortex/FLowDataFolder/SmokeBuoyancy80_239.nc"
+  },
+  "available_frame_ranges": {
+    "halfcylinderRe6400": [
+      75,
+      149
+    ]
+  },
+  "cylinder_datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400"
+  ],
+  "frozen_encoder_sha256": "efff993f10a8db7b481784198beecce1c3c74b2f81cd2eddf5a523ba0a19222d",
+  "experiment": "mainExp_Task6_PrimitiveVAE_2.1",
+  "output_root": "outputs/mainExp_Task6_PrimitiveVAE_2.1",
+  "original_time_ranges": {
+    "cylinder3d": [
+      0,
+      15
+    ],
+    "halfcylinderRe640": [
+      0,
+      15
+    ],
+    "halfcylinderRe6400": [
+      0,
+      15
+    ]
+  },
+  "arms": [
+    "fmt_all_vae",
+    "raw_vae"
+  ],
+  "seeds": [
+    9110,
+    9111,
+    9112
+  ],
+  "sampling": {
+    "data_seed": 9106021,
+    "max_spatial_dim": 96,
+    "max_candidate_multiplier": 40,
+    "retained_samples": {
+      "train": 60000,
+      "validation": 6000,
+      "test": 6000,
+      "unseen_scale": 6000
+    }
+  },
+  "scales": [
+    {
+      "name": "r0.25_h0.125_n32",
+      "offset_grid_scale": 0.25,
+      "dt_scale": 0.125,
+      "integration_steps": 32
+    },
+    {
+      "name": "r0.25_h0.125_n48",
+      "offset_grid_scale": 0.25,
+      "dt_scale": 0.125,
+      "integration_steps": 48
+    },
+    {
+      "name": "r0.25_h0.25_n32",
+      "offset_grid_scale": 0.25,
+      "dt_scale": 0.25,
+      "integration_steps": 32
+    },
+    {
+      "name": "r0.25_h0.125_n64",
+      "offset_grid_scale": 0.25,
+      "dt_scale": 0.125,
+      "integration_steps": 64
+    },
+    {
+      "name": "r0.25_h0.25_n40",
+      "offset_grid_scale": 0.25,
+      "dt_scale": 0.25,
+      "integration_steps": 40
+    },
+    {
+      "name": "r0.25_h0.25_n48",
+      "offset_grid_scale": 0.25,
+      "dt_scale": 0.25,
+      "integration_steps": 48
+    },
+    {
+      "name": "r0.5_h0.125_n32",
+      "offset_grid_scale": 0.5,
+      "dt_scale": 0.125,
+      "integration_steps": 32
+    },
+    {
+      "name": "r0.5_h0.125_n48",
+      "offset_grid_scale": 0.5,
+      "dt_scale": 0.125,
+      "integration_steps": 48
+    },
+    {
+      "name": "r0.5_h0.25_n32",
+      "offset_grid_scale": 0.5,
+      "dt_scale": 0.25,
+      "integration_steps": 32
+    },
+    {
+      "name": "r0.5_h0.125_n64",
+      "offset_grid_scale": 0.5,
+      "dt_scale": 0.125,
+      "integration_steps": 64
+    },
+    {
+      "name": "r0.5_h0.25_n40",
+      "offset_grid_scale": 0.5,
+      "dt_scale": 0.25,
+      "integration_steps": 40
+    },
+    {
+      "name": "r0.5_h0.25_n48",
+      "offset_grid_scale": 0.5,
+      "dt_scale": 0.25,
+      "integration_steps": 48
+    },
+    {
+      "name": "r1.0_h0.125_n32",
+      "offset_grid_scale": 1.0,
+      "dt_scale": 0.125,
+      "integration_steps": 32
+    },
+    {
+      "name": "r1.0_h0.125_n48",
+      "offset_grid_scale": 1.0,
+      "dt_scale": 0.125,
+      "integration_steps": 48
+    },
+    {
+      "name": "r1.0_h0.25_n32",
+      "offset_grid_scale": 1.0,
+      "dt_scale": 0.25,
+      "integration_steps": 32
+    },
+    {
+      "name": "r1.0_h0.125_n64",
+      "offset_grid_scale": 1.0,
+      "dt_scale": 0.125,
+      "integration_steps": 64
+    },
+    {
+      "name": "r1.0_h0.25_n40",
+      "offset_grid_scale": 1.0,
+      "dt_scale": 0.25,
+      "integration_steps": 40
+    },
+    {
+      "name": "r1.0_h0.25_n48",
+      "offset_grid_scale": 1.0,
+      "dt_scale": 0.25,
+      "integration_steps": 48
+    }
+  ],
+  "unseen_scales": [
+    {
+      "name": "r0.33_h0.15_n40",
+      "offset_grid_scale": 0.33,
+      "dt_scale": 0.15,
+      "integration_steps": 40,
+      "category": "combination_interpolation"
+    },
+    {
+      "name": "r0.33_h0.2_n45",
+      "offset_grid_scale": 0.33,
+      "dt_scale": 0.2,
+      "integration_steps": 45,
+      "category": "combination_interpolation"
+    },
+    {
+      "name": "r0.33_h0.3_n40",
+      "offset_grid_scale": 0.33,
+      "dt_scale": 0.3,
+      "integration_steps": 40,
+      "category": "combination_interpolation"
+    },
+    {
+      "name": "r0.67_h0.15_n40",
+      "offset_grid_scale": 0.67,
+      "dt_scale": 0.15,
+      "integration_steps": 40,
+      "category": "combination_interpolation"
+    },
+    {
+      "name": "r0.67_h0.2_n45",
+      "offset_grid_scale": 0.67,
+      "dt_scale": 0.2,
+      "integration_steps": 45,
+      "category": "combination_interpolation"
+    },
+    {
+      "name": "r0.67_h0.3_n40",
+      "offset_grid_scale": 0.67,
+      "dt_scale": 0.3,
+      "integration_steps": 40,
+      "category": "combination_interpolation"
+    },
+    {
+      "name": "r1.25_h0.15_n40",
+      "offset_grid_scale": 1.25,
+      "dt_scale": 0.15,
+      "integration_steps": 40,
+      "category": "radius_extrapolation"
+    },
+    {
+      "name": "r1.25_h0.2_n45",
+      "offset_grid_scale": 1.25,
+      "dt_scale": 0.2,
+      "integration_steps": 45,
+      "category": "radius_extrapolation"
+    },
+    {
+      "name": "r1.25_h0.3_n40",
+      "offset_grid_scale": 1.25,
+      "dt_scale": 0.3,
+      "integration_steps": 40,
+      "category": "radius_extrapolation"
+    }
+  ],
+  "vae": {
+    "width": 512,
+    "latent_dim": 64,
+    "blocks": 3,
+    "batch_size": 512,
+    "beta": 1e-05,
+    "learning_rate": 0.0003,
+    "epochs": 120,
+    "probe_every": 500,
+    "fit_samples": 512,
+    "fit_steps": 4000
+  },
+  "evaluation": {
+    "model_selection": "fixed final epoch; validation curves diagnostic only",
+    "primary": "corresponding 7x31 noninitial position Euclidean RMSE / initial radius",
+    "inference": "posterior mean; no best-of-samples, rotation or permutation",
+    "source_time": "full supplied source axis before task cropping; cylinder original [0,15] override; sparse original indices retained",
+    "input_statistics": "train only per feature mean/std; no target scaling beyond initial radius",
+    "geometry_loss": "mean over 7x32 of sum_xyz squared error",
+    "KL": "mean per latent coordinate and example; positive beta=1e-5 throughout",
+    "unseen_scales": "separate from main test; radius1.25 extrapolation, others combination interpolation",
+    "checkpoint": "in-memory only"
+  }
+}
