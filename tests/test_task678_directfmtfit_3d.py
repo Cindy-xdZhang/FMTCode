@@ -49,6 +49,17 @@ class DirectFitTests(unittest.TestCase):
         d=np.linalg.norm(a[:,None]-a[None],axis=-1);np.fill_diagonal(d,np.inf)
         self.assertGreater(d.min(),.3)
 
+    def test_relative_manifest_paths_resolve_under_source_root(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder)
+            path=root/'cache/test_flow/window_00_rep00.npz';path.parent.mkdir(parents=True)
+            np.savez_compressed(path,origin0=np.ones((4,3),np.float32))
+            row=dict(cache_file='outputs/original_location/cache/test_flow/window_00_rep00.npz',
+                     cache_sha256=sha256(path),config_sha256='test',ordinal=0,replicate=0,role='train')
+            write_json(root/'build/test_flow_base.json',dict(status='PASS',config_sha256='test',records=[row]))
+            data,_=load_data(dict(output_root=str(root),_config_sha256='test'),'test_flow','train',dict(data='base'))
+            self.assertEqual(data['origin0'].shape,(4,3))
+
     def test_feature_construction_cannot_read_hidden_targets(self):
         d,_=build_window(analytic_field(),np.random.default_rng(2).uniform(-1,1,(4,3)),.1,.5)
         c=compact(d)

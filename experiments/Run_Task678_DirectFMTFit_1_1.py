@@ -30,6 +30,8 @@ def load_data(spec,dataset,role,condition=None):
     source=[]
     for r in rows:
         path=Path(r['cache_file'])
+        if not path.is_absolute():
+            path=Path(spec['output_root'])/'cache'/dataset/path.name
         assert sha256(path)==r['cache_sha256'] and r['config_sha256']==spec['_config_sha256']
         with np.load(path,allow_pickle=False) as a:
             record={k:a[k] for k in a.files}
