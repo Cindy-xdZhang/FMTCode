@@ -972,3 +972,18 @@ Instantaneous Vorticity Deviation（IVD，瞬时涡量偏差）衡量局部涡�
 
 
 执行纠正（同一方法1.1，execution revision 2）：首次build 51696322中错误地对Re6400文件索引减75，读到未填充帧，产生全正标签。原因是将“仅填充原索引75..149”误读为“裁剪为75帧”；源码 Prepare_Task5_AIVDLongtime_1_1_Source.py 明确保留完整t维并写入 var[i]。已取消51696324–51696328下游作业，未将这批错误缓存用于性能结论。原无效缓存保留在late_task5_cache，修正缓存另写late_task5_cache_r2；物理时间、尺度tuple、训练预算和nTDO配方不变。新增构建前时间坐标/有效数据检查及二分类样本检查。
+
+
+### Verify_Task1235_ObjectiveFMTnTDO_1.1 — Task1 已完成（2026-09-10，execution revision 2）
+
+运行代码commit `d04f5609923bc67a1d523e56fab3e71c18c8eb2d`；job `51696571`，10数据×3种子，90行指标；训练集StandardScaler/PCA8/KMeans，验证集定涡cluster，全部配方已预注册。`outputs/Verify_Task1235_ObjectiveFMTnTDO_1.1/Task1_local_audit.json` 本地独立逐样本F1复算PASS，30份prediction文件哈希一致。
+
+| 方法 | 宏平均 F1 | 三个种子宏平均的标准差 |
+|---|---:|---:|
+| Raw | 0.423525 | 0.000058 |
+| 旧 fmt_all+kin4 | 0.595744 | 0.000209 |
+| 完整 objective_fmt_nTDO 1.1 | 0.411354 | 0.003247 |
+
+本固定Task1设置下，完整nTDO宏平均比Raw低0.012171，比旧FMT低0.184390；不支持其优于这两个对照。逐数据三种子平均：nTDO高于Raw的6/10组，高于旧FMT的1/10组（f22raptor）；宏平均下降较大的条目包括Re160、Re6400和smokeBuoyancy。此处只报告性能，不把下降归因于客观性或指定某一分支，未做相应因果消融。先前只删中心的编码与当前369维“无时间预差分+距离分支”的完整nTDO不是同一方案，不能混写为同一实验结果。Task2/3/5尚待完成；不根据本次Task1结果修改后续已冻结配方。
+
+逐次表 `Task1_per_run.csv`，汇总 `Task1_summary.csv`，原始预测包 `Task1_evidence.tar.gz`，均位于上述输出目录，无模型文件。
