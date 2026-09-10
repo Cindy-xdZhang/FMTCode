@@ -15,6 +15,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+from matplotlib.ticker import NullLocator
 import numpy as np
 
 NAMES={'cylinder3d':'Re160','halfcylinderRe640':'Re640','halfcylinderRe6400':'Re6400',
@@ -58,6 +59,9 @@ def main(root,scripts):
             a.scatter(np.full(3,n),values[j],color=color,s=8,alpha=.55,zorder=4)
     a.set_xscale('log');a.set_yscale('log')
     a.set_xticks(spec['train_sizes'],[str(n) for n in spec['train_sizes']])
+    a.xaxis.set_minor_locator(NullLocator())
+    a.set_yticks([.015,.02,.03,.04],['0.015','0.02','0.03','0.04'])
+    a.yaxis.set_minor_locator(NullLocator())
     a.set_xlabel('Training primitives per flow')
     a.set_ylabel('Mean position RMSE / initial radius')
     a.set_title('a  Sample efficiency',loc='left',fontweight='bold',pad=8)

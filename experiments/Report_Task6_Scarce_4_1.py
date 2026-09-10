@@ -89,7 +89,7 @@ def report(root, record=False):
         assert marker not in log.read_text(encoding='utf-8')
         lines=[f'\n\n### {datetime.date.today().isoformat()} — {marker}\n',
             f"证据：训练代码`{audit['provenance']['git_commit']}`、配置SHA256 `{audit['provenance']['config_sha256']}`、选择SHA256 `{audit['selection_sha256']}`；独立复算9396条比较/尺度指标通过，实际唯一模型数{audit['models']}。\n",
-            '此前3.1在24万训练primitive下Raw九流场均优于signed_fmt10；本版改变为有限训练数据及预注册正则化，结论需按本版条件报告，旧结果不改写。小训练集包含全部标准化/初始化/网络训练输入。测试仍为3.1已用benchmark，不是新的确认集。\n',
+            '此前3.1在24万训练primitive下Raw九流场均优于signed_fmt10；本版改变为有限训练数据及预注册正则化，并搜索10频与完整16频，结论需按本版条件报告，旧结果不改写。小训练集包含全部标准化/初始化/网络训练输入。测试仍为3.1已用benchmark，不是新的确认集。\n',
             '选择只使用1024样本的九流场平均validation；同一候选用于全部流场与三个样本量。实际选择：\n']
         for name in ('fmt','raw_frozen','raw_matched','raw_selected'):
             lines.append('- '+name+': `'+json.dumps(selection[name],ensure_ascii=False)+'`')
@@ -100,7 +100,8 @@ def report(root, record=False):
             lines.append(f"| {row['train_size']} | {row['role']} | {row['fmt']:.9g} | {row['raw_frozen']:.9g} | {row['raw_matched']:.9g} | {row['raw_selected']:.9g} | {row['fmt_winning_flows_vs_raw_frozen']}/9 |")
         primary=next(r for r in aggregate if r['train_size']==spec['primary_train_size'] and r['role']=='test')
         for control in comparisons[1:]:
-            lines.append(f"\n主比较n={spec['primary_train_size']}：相对{control}的误差降低率{100*primary['fmt_reduction_vs_'+control]:.6g}%；负值表示FMT更差。三个配对子集种子的宏平均误差差值(FMT−Raw)为{primary['paired_macro_differences_vs_'+control]}。")
+            lines.append(f"\n主比较n={spec['primary_train_size']}：相对{control}的误差降低率{100*primary['fmt_reduction_vs_'+control]:.6g}%，获胜流场{primary['fmt_winning_flows_vs_'+control]}/9；负值表示FMT更差。三个配对子集种子的宏平均误差差值(FMT−Raw)为{primary['paired_macro_differences_vs_'+control]}。")
+        lines.append('\n结论边界：相对原Raw的总改善包含正则化收益；FMT本身的额外收益应看相同正则化Raw及独立选择Raw，不能把总改善全部归给傅里叶编码。三个随机种子的方向不等于统计显著性，也不能替代逐流场结果。')
         lines += ['\n主设置逐流场（均值±样本标准差）：\n',
             '| 流场 | FMT | Raw原配方 | Raw相同正则化 | Raw验证最优 |',
             '|---|---:|---:|---:|---:|']
@@ -108,12 +109,14 @@ def report(root, record=False):
             if row['train_size']==spec['primary_train_size']:
                 lines.append('| '+row['dataset']+' | '+' | '.join(f"{row[c+'_test_mean']:.8g} ± {row[c+'_test_std']:.3g}" for c in comparisons)+' |')
         lines += ['\n主设置的初始化与训练后validation（九流场/三子集种子等权均值；不用于追加测试选择）：\n',
-            '| 方法角色 | 初始化validation | 训练后validation | 训练集误差 |',
-            '|---|---:|---:|---:|']
+            '| 方法角色 | 初始化validation | 训练后validation | 训练集误差 | 训练后优于初始化次数 |',
+            '|---|---:|---:|---:|---:|']
         for comparison in comparisons:
             values=[r for r in initialization_rows if r['train_size']==spec['primary_train_size'] and r['comparison']==comparison]
             lines.append('| '+comparison+' | '+' | '.join(f"{np.mean([r[key] for r in values]):.9g}" for key in
-                ('initial_validation_rmse_r','trained_validation_rmse_r','train_rmse_r'))+' |')
+                ('initial_validation_rmse_r','trained_validation_rmse_r','train_rmse_r'))+
+                f" | {sum(r['trained_validation_rmse_r']<r['initial_validation_rmse_r'] for r in values)}/{len(values)} |")
+        lines.append('\n初始化诊断必须保留：如果训练后validation仍高于初始化，说明该神经网络训练尚未改善线性初始化的泛化；不能把Raw/FMT间的排名改善等同于网络已优于线性几何表示。这里没有根据初始化诊断重新选择测试模型。')
         if selection['fmt']['frequencies']==16:
             lines.append('\n所选16频编码保留全部651个独立系数，相对31间隔信号不做频谱压缩；最终192维VAE潜变量才是压缩。结果不能归因于丢弃高频，也不属于旧161维fmt_all。')
         lines.append('\n不同Raw角色若候选相同，使用同一模型预测，不能当成独立证据。完整训练曲线、选择记录与逐次指标保存在`outputs/Verify_Task6_ScarceGeneralization_4.1/`；不保留checkpoint。')
