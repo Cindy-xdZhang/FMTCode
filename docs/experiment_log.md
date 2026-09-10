@@ -1123,3 +1123,9 @@ Task5 fixed Task3 Raw transfer的宏F1为0.377967，variable-scale Raw为0.61062
 10 个三维数据 × 3 个种子 × 4 个任务；所有划分、标签、训练预算沿用完整 1.1。Task2 输入统一填充至 700，Task3/5 辅助输入统一填充至 369，以保持网络参数量相同。预计 120 分片、630 行主指标及 1890 行 Task5 分尺度指标。Task5 Re160/Re6400 只读复用已修正的前批 `late_task5_cache_r2`。本地三个实现接口测试和四任务合成数据训练/评分流程检查通过，不能作为性能证据。
 
 完整协议：`docs/Verify_Task1235_ObjectiveFMTnTDO_2.1_protocol_zh.md`；配置：`config/Verify_Task1235_ObjectiveFMTnTDO_2.1.json`。每个 Slurm 进程提交、开始、结束分别记录，训练链结束删除临时 checkpoint；仅保留可复核的预测、指标与配置。本批复用已评估 benchmark，不声称新的独立确认。
+
+### nTDO v2 2.1 已部署（2026-09-10 14:37 +03）
+
+固定执行 commit `55928e99130d5209f2ee027be3a1a94b55d0be56`。Ibex 单元接口检查通过；提交 smoke `51702594`、数据预检 `51702595`、Task1 `51702596`、Task2 `51702598`、Task3→Task5 `51702599`、最终汇总及独立预测审计 `51702600`。GPU 阵列各最多并行 6 个 A100/V100 作业。当前为已提交状态，不能报告 F1。
+
+配置 SHA256 `cc137f5104c4835330d2e2e2da7f53d56c46a47b46b0ea7f93e5a0c2a07a9598`；源文件清单 SHA256 `5e817c49a8557a84c8d3d1b04a8fd4ec949f2e7a59bab1c09de36d4d4595b2ff`。本地提交证据位于 `outputs/Verify_Task1235_ObjectiveFMTnTDO_2.1/`。
