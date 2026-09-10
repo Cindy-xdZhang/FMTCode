@@ -1,0 +1,126 @@
+{
+  "datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "deltaWing_resampled",
+    "deltaWing_LBM",
+    "f22raptor",
+    "boeing747",
+    "smokeBuoyancy"
+  ],
+  "families": {
+    "cylinder3d": "cylinder",
+    "halfcylinderRe640": "cylinder",
+    "halfcylinderRe6400": "cylinder",
+    "tangaroa": "free_surface",
+    "deltaWing_resampled": "deltaWing",
+    "deltaWing_LBM": "deltaWing",
+    "f22raptor": "aircraft",
+    "boeing747": "aircraft",
+    "smokeBuoyancy": "buoyancy"
+  },
+  "source_fields": {
+    "cylinder3d": "/home/zhanx0o/DeepVortex/FLowDataFolder/halfcylinderRe160Resampled.nc",
+    "halfcylinderRe640": "/home/zhanx0o/DeepVortex/FLowDataFolder/halfcylinderRe640resampled.nc",
+    "halfcylinderRe6400": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_AIVDLongtime_1.1/source/halfcylinderRe6400_late96.nc",
+    "tangaroa": "/home/zhanx0o/DeepVortex/FLowDataFolder/tangaroa.nc",
+    "deltaWing_resampled": "/home/zhanx0o/DeepVortex/FLowDataFolder/deltaWing_mag0_3reesampled.nc",
+    "deltaWing_LBM": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1/source/deltaWing_LBM_windows96.nc",
+    "f22raptor": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1/source/f22raptor_windows96.nc",
+    "boeing747": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1/source/boeing747_windows96.nc",
+    "smokeBuoyancy": "/home/zhanx0o/DeepVortex/FLowDataFolder/SmokeBuoyancy80_239.nc"
+  },
+  "available_frame_ranges": {
+    "halfcylinderRe6400": [
+      75,
+      149
+    ]
+  },
+  "cylinder_datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400"
+  ],
+  "minimum_cylinder_time": 7.5,
+  "splits": {
+    "train": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "validation": [
+      4,
+      5
+    ],
+    "test": [
+      6,
+      7
+    ]
+  },
+  "experiment": "Verify_Task678_HanSampling_1.1",
+  "output_root": "outputs/Verify_Task678_HanSampling_1.1",
+  "frozen_encoder_sha256": "efff993f10a8db7b481784198beecce1c3c74b2f81cd2eddf5a523ba0a19222d",
+  "seeds": [
+    9110,
+    9111,
+    9112
+  ],
+  "neural_arms": [
+    "fmt_all",
+    "raw_positions",
+    "coordinates_only"
+  ],
+  "sampling": {
+    "windows": 8,
+    "source_frames": 9,
+    "max_spatial_dim": 96,
+    "seed_grid_side": 8,
+    "max_bundles": 128,
+    "minimum_bundles": 24,
+    "minimum_role_bundles": 2,
+    "radius_grid_fraction": 0.5,
+    "steps_per_segment": 62,
+    "context_offset_radii": 3.0,
+    "data_seed": 911026,
+    "train_queries": 128,
+    "validation_queries": 32,
+    "test_queries": 64,
+    "query_candidates": 512,
+    "query_extent": 0.95,
+    "second_radius_factor": 2.0,
+    "integration_bundle_chunk": 8
+  },
+  "decoder": {
+    "hidden_width": 512,
+    "support_blocks": 2,
+    "query_blocks": 4,
+    "equivalent_epochs": 50,
+    "bundle_batch": 64,
+    "queries_per_bundle": 32,
+    "learning_rate": 0.0003,
+    "probe_every": 2000
+  },
+  "evaluation": {
+    "primary_role": "primitive_test",
+    "secondary_roles": [
+      "query_test",
+      "time_test"
+    ],
+    "metrics": [
+      "position_nrmse",
+      "supervised_time_nrmse",
+      "unseen_time_nrmse",
+      "physical_mean_position_error",
+      "centered_shape_error",
+      "pair_distance_error"
+    ],
+    "token_necessity": "within-source-window derangement on all three test roles",
+    "model_selection": "none; every preregistered arm and seed at fixed exposure",
+    "source_cohort": "all methods share source boundary and second-hull coverage filtering before training"
+  },
+  "checkpoint_policy": "in_memory_only_no_model_files",
+  "scope": "Han-inspired dense data diagnostic; frozen original FMT; not an exact Han reproduction; no preselected favorable conclusion"
+}
