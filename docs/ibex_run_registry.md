@@ -2887,3 +2887,22 @@ Full per-process records follow. All times are on 2026-09-10 in UTC+03; start/en
 | 51713660 | audit-results | 2026-09-10T19:10:10 | 2026-09-10T19:12:13 | cn113-35-l | CPU | COMPLETED/0:0 |
 
 证据：`slurm_status_final.txt`为sacct快照，各`started.json`保存实际array子进程Job ID/GPU/开始时间。首轮SUBMITTED/PENDING为历史提交快照，现已全部完成。结果元数据收集为SSH只读分析（无Slurm ID，不训练）；元数据包`metadata_report.zip`为1,541,564字节，不含checkpoint。
+
+- 2026-09-10T21:02:34.781983+03:00 | 51716649 | Verify_Task6_ReconstructionAudit_2.2 Task6 独立诊断 | config/Verify_Task6_ReconstructionAudit_2.2.json | commit 7ca9fe12f124c055d5beee00dee1bb235d189522 | config SHA256 e4671821662e38148f346001e65bc0fe5c8a674be930720ba8a6604f96b9a587 | CPU，array 0–8，最多3并发 | SUBMITTED；仅train/validation
+
+
+### 2026-09-10 — Verify_Task6_ReconstructionAudit_2.2 完成
+
+全部9个CPU诊断成功，均只读train/validation。配置hash e4671821662e38148f346001e65bc0fe5c8a674be930720ba8a6604f96b9a587，commit 7ca9fe12；方法证据见experiment_log同名节。
+
+| Job | 流场 | 开始(+03:00) | 结束(+03:00) | 节点/设备 | 状态 |
+|---|---|---|---|---|---|
+| 51716649_0 | cylinder3d | 2026-09-10T21:04:08 | 2026-09-10T21:04:48 | cn604-08/CPU | COMPLETED/0:0 |
+| 51716649_1 | halfcylinderRe640 | 2026-09-10T21:04:08 | 2026-09-10T21:05:04 | cn604-08/CPU | COMPLETED/0:0 |
+| 51716649_2 | halfcylinderRe6400 | 2026-09-10T21:04:08 | 2026-09-10T21:05:16 | cn604-08/CPU | COMPLETED/0:0 |
+| 51716649_3 | tangaroa | 2026-09-10T21:06:25 | 2026-09-10T21:09:47 | cn604-13/CPU | COMPLETED/0:0 |
+| 51716649_4 | deltaWing_resampled | 2026-09-10T21:06:25 | 2026-09-10T21:07:21 | cn604-08/CPU | COMPLETED/0:0 |
+| 51716649_5 | deltaWing_LBM | 2026-09-10T21:06:25 | 2026-09-10T21:07:44 | cn604-08/CPU | COMPLETED/0:0 |
+| 51716649_6 | f22raptor | 2026-09-10T21:08:53 | 2026-09-10T21:09:48 | cn604-15/CPU | COMPLETED/0:0 |
+| 51716649_7 | boeing747 | 2026-09-10T21:08:53 | 2026-09-10T21:09:48 | cn604-15/CPU | COMPLETED/0:0 |
+| 51716649_8 | smokeBuoyancy | 2026-09-10T21:11:09 | 2026-09-10T21:12:38 | cn604-13/CPU | COMPLETED/0:0 |

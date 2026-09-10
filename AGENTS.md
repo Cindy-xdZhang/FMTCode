@@ -53,3 +53,5 @@ Task4-b 当前阈值以2026-09-06用户最新指定为准：**Channel IVD>5.785�
 - 训练模型 checkpoint 不属于长期实验结果。默认不得在本地保存、下载或归档 `.pt`、`.pth`、`.ckpt` 及包含这些文件的压缩包。
 - 如果 Ibex 上的后续依赖作业必须读取 checkpoint，可以只在该实验依赖链运行期间临时保存；最终评估的逐次 CSV/JSON 和总实验表写完后必须删除 checkpoint。
 - 可复现依据是代码 commit、完整 config、随机种子、数据时间片/划分、设备记录、逐次指标和汇总表，不是训练好的模型文件。只有用户明确要求保留某个模型时才可例外。
+
+2026-09-10 用户要求继续修复Task6高重建误差，当前修复版本为`mainExp_Task6_Reconstruction_3.1`：新signed_fmt10保留复系数方向/相位和七线身份，192维VAE重建完整几何，每流场24万训练primitive。旧161维fmt_all和2.1历史结果保持；两者不可混称。新配置仅由train/validation诊断选择，目标每流场test RMSE/r<1，保持原误差单位与完整轨迹；详见`docs/Task6_reconstruction_protocol_3.1.md`。
