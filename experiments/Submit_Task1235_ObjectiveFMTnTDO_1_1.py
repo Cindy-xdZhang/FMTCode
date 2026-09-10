@@ -10,7 +10,9 @@ from experiments.Run_Task135_GeometricControls import sha, write_json
 def main():
     config='config/Verify_Task1235_ObjectiveFMTnTDO_1.1.json'
     spec=json.loads(Path(config).read_text());root=Path(spec['output_root'])
-    if (root/'submissions.jsonl').exists():raise FileExistsError('Already submitted; inspect existing jobs')
+    revision=int(spec.get('execution_revision',1))
+    marker=root/f'submitted_revision_{revision}.json'
+    if marker.exists():raise FileExistsError('This revision was already submitted; inspect existing jobs')
     (root/'logs').mkdir(parents=True,exist_ok=True)
     gpu=['--gres=gpu:1','--constraint=a100|v100','--exclude=gpu203-02-r']
     phases=[('build',[],['--array=0-1','--time=02:00:00']),
@@ -31,6 +33,7 @@ def main():
         job=subprocess.check_output(command,text=True).strip().split(';')[0]
         assert job.isdigit();jobs[phase]=job
         item={'experiment':spec['experiment'],'phase':phase,'job':job,
+              'execution_revision':revision,
               'submitted':datetime.datetime.now().astimezone().isoformat(),'config':config,
               'config_sha256':sha(config),'git_commit':commit,'source_manifest_sha256':sha('SOURCE_MANIFEST.sha256'),
               'expected_device':'A100 or V100' if phase in ('Task2','Task35') else 'CPU','command':command}
@@ -39,6 +42,8 @@ def main():
                 f.write(json.dumps(item)+'\n' if path.suffix=='.jsonl' else '\n- **SUBMITTED nTDO 1.1** '+json.dumps(item)+'\n')
                 f.flush();os.fsync(f.fileno())
         print(json.dumps(item),flush=True)
+        write_json(marker, jobs)
+    write_json(root/f'jobs_revision_{revision}.json',jobs)
     write_json(root/'jobs.json',jobs)
 
 

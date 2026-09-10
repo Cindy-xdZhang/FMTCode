@@ -379,5 +379,23 @@
     "patience": 20,
     "min_delta": 0.0001
   },
-  "late_cache_config": "config/Verify_Task1235_ObjectiveFMTnTDO_1.1_task5_cache.yaml"
+  "late_cache_config": "config/Verify_Task1235_ObjectiveFMTnTDO_1.1_task5_cache.yaml",
+  "task5_cache_directory": "late_task5_cache_r2",
+  "execution_revision": 2,
+  "task5_source_times": {
+    "development": [
+      7.5,
+      7.7,
+      7.9,
+      8.1,
+      9.5,
+      9.7
+    ],
+    "confirmation": [
+      12.5,
+      12.8,
+      13.1,
+      13.4
+    ]
+  }
 }

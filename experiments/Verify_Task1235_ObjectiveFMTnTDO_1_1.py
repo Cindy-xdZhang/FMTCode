@@ -43,7 +43,7 @@ def source_paths(spec, task, dataset, role):
     phase = 'confirmation' if role == 'confirmation' and task in ('Task1', 'Task5') else 'development'
     rebuilt = task == 'Task5' and dataset in spec['task5_rebuilt_datasets']
     if rebuilt:
-        cache = Path(spec['output_root']) / 'late_task5_cache' / phase / dataset
+        cache = Path(spec['output_root']) / spec['task5_cache_directory'] / phase / dataset
         expected = 6 if phase == 'development' else 4
     else:
         cache, _, _, expected = sources(spec, 'Task1' if task == 'Task2' else task, dataset, phase)
@@ -68,6 +68,8 @@ def records(spec, task, dataset, role):
         result = load_records(spec, 'Task1' if task == 'Task2' else task, dataset, phase, ids)
     if dataset in spec['cylinder_datasets']:
         assert all(float(r['metadata']['source_time']) >= 7.5 - 1e-6 for r in result)
+    y=labels(result)
+    assert 0 < y.sum() < len(y), f'{task}/{dataset}/{role}: both binary classes are required'
     return result
 
 
@@ -441,7 +443,26 @@ def main():
     args=parser.parse_args();spec=json.loads(Path(args.config).read_text())
     if args.phase=='build':
         from experiments.Build_Task5_Multiscale_Cache import build
+        import yaml
+        import netCDF4 as nc
+        from FMT_Utils.NetCDF_window_3D import _axis_dimension, _coordinate
         dataset=spec['task5_rebuilt_datasets'][args.index]
+        cache_spec=yaml.safe_load(Path(spec['late_cache_config']).read_text())
+        item=next(d for d in cache_spec['datasets'] if d['id']==dataset)
+        source=next(Path(p) for p in item['paths'] if Path(p).is_file())
+        with nc.Dataset(source) as data:
+            tdim=_axis_dimension(data,'t')
+            for phase in ('development','confirmation'):
+                indices=cache_spec['phases'][phase]['time_indices_by_dataset'][dataset]
+                actual=_coordinate(data,tdim,np.asarray(indices))
+                np.testing.assert_allclose(actual,spec['task5_source_times'][phase],atol=1e-6)
+                names=next(names for names in [('u','v','w'),('velocity_x','velocity_y','velocity_z'),
+                      ('Component1','Component2','Component3')] if all(n in data.variables for n in names))
+                for index in sorted({i for first in indices for i in range(first,first+14)}):
+                    for name in names:
+                        v=data.variables[name]
+                        a=np.ma.asarray(v[tuple(index if d==tdim else slice(None,None,8) for d in v.dimensions)])
+                        assert a.count()>0 and np.isfinite(a.compressed()).all(), (source,name,index)
         for phase in ('development','confirmation'):build(spec['late_cache_config'],phase,dataset)
     elif args.phase=='preflight':preflight(spec,args.config)
     elif args.phase=='smoke':smoke(spec)

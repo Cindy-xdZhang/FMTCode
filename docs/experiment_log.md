@@ -966,6 +966,9 @@ Instantaneous Vorticity Deviation（IVD，瞬时涡量偏差）衡量局部涡�
 
 全部10个3D条目均跑三种子，预期120个task/dataset/seed结果包、510行逐臂指标。Task3旧FMT是非aivd历史参考，不能冒充现有aivd主表配方。每个结果包在载入test特征和标签前冻结所有模型、阈值及归一化。保存逐样本预测与分数，独立复算F1/AP；临时checkpoint仅供同一Task3→Task5依赖链使用，审计后删除，不下载。
 
-时间策略：fixed缓存沿用既有late-cylinder划分；Task5 Re160/Re6400旧development不满足t>=7.5，按独立新YAML重建。原始索引development[75,77,79,81,95,97]，test[125,128,131,134]；Re6400使用已导出的原索引75..149片段，文件索引相应减75，不再次截半。其余8组Task5复用冻结缓存。所有方法同一条目使用完全相同的有效样本与标签，p95不变。新建两组Task5内train/validation/test完整加载时间窗互不重叠。
+时间策略：fixed缓存沿用既有late-cylinder划分；Task5 Re160/Re6400旧development不满足t>=7.5，按独立新YAML重建。原始索引development[75,77,79,81,95,97]，test[125,128,131,134]；Re6400使用已导出的原索引75..149片段，文件保留原始索引75..149，不减75，不再次截半。其余8组Task5复用冻结缓存。所有方法同一条目使用完全相同的有效样本与标签，p95不变。新建两组Task5内train/validation/test完整加载时间窗互不重叠。
 
 证据边界：这是复用benchmark的配对性能诊断，不是新的独立confirmation。历史Task1/2/3和fixed Task3 transfer的不同缓存文件仍可能有物理时间窗重叠，不声称完全时间独立；不依据此次test指标改配方。性能结果不替代客观性代数验证。当前仅预注册，F1待真实运行。
+
+
+执行纠正（同一方法1.1，execution revision 2）：首次build 51696322中错误地对Re6400文件索引减75，读到未填充帧，产生全正标签。原因是将“仅填充原索引75..149”误读为“裁剪为75帧”；源码 Prepare_Task5_AIVDLongtime_1_1_Source.py 明确保留完整t维并写入 var[i]。已取消51696324–51696328下游作业，未将这批错误缓存用于性能结论。原无效缓存保留在late_task5_cache，修正缓存另写late_task5_cache_r2；物理时间、尺度tuple、训练预算和nTDO配方不变。新增构建前时间坐标/有效数据检查及二分类样本检查。

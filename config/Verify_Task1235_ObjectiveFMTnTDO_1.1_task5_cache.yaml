@@ -180,12 +180,12 @@ phases:
       - 95
       - 97
       halfcylinderRe6400:
-      - 0
-      - 2
-      - 4
-      - 6
-      - 20
-      - 22
+      - 75
+      - 77
+      - 79
+      - 81
+      - 95
+      - 97
   confirmation:
     ordinal_scale_sets:
       confirmation:
@@ -200,10 +200,10 @@ phases:
       - 131
       - 134
       halfcylinderRe6400:
-      - 50
-      - 53
-      - 56
-      - 59
+      - 125
+      - 128
+      - 131
+      - 134
 encoder:
   num_freq: 6
   mode: gram
@@ -216,5 +216,5 @@ cache_generation:
   device: cpu
   minimum_valid_per_scale: 20
 cache_roots:
-  development: /home/zhanx0o/FMT_nTDO_20260910/outputs/Verify_Task1235_ObjectiveFMTnTDO_1.1/late_task5_cache/development
-  confirmation: /home/zhanx0o/FMT_nTDO_20260910/outputs/Verify_Task1235_ObjectiveFMTnTDO_1.1/late_task5_cache/confirmation
+  development: /home/zhanx0o/FMT_nTDO_20260910/outputs/Verify_Task1235_ObjectiveFMTnTDO_1.1/late_task5_cache_r2/development
+  confirmation: /home/zhanx0o/FMT_nTDO_20260910/outputs/Verify_Task1235_ObjectiveFMTnTDO_1.1/late_task5_cache_r2/confirmation
