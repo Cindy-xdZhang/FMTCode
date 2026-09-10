@@ -25,6 +25,9 @@ def main():
     selected=set(root.glob('*.json'))|set(root.glob('*.jsonl'))|{root/'metrics.csv'}
     selected.update((root/'build').glob('*.json'))
     selected.update((root/'runs').glob('*/*/*/*.json'))
+    selected.update((root/'runtime_recovery_checks').glob('*.json'))
+    selected.update((root/'failed_attempts').glob('stalled_eval_*/*.json'))
+    selected.update((root/'failed_attempts').glob('stalled_eval_*/*.jsonl'))
     for part in (root/'audit_shards_fast').glob('*'):
         if part.is_dir():
             selected.update(part.glob('*.json'))
@@ -48,6 +51,7 @@ def main():
         audit_sha256=digest(root/'independent_audit.json'),
         training_git_commits=audit.get('training_git_commits',[]),
         audit_git_commit=audit['git_commit'],
+        packager_sha256=digest(Path(__file__)),
         source_root=str(root),jobs=sorted(jobs),
         scope='JSON/JSONL/CSV only. No model checkpoint, trajectory array, or raw flow field is included.',
         files=[dict(path=p.relative_to(root).as_posix(),bytes=p.stat().st_size,sha256=digest(p)) for p in sorted(selected)])
