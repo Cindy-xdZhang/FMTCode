@@ -1,0 +1,34 @@
+{
+  "experiment": "Verify_Task6_ReconstructionAudit_2.2",
+  "datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "deltaWing_resampled",
+    "deltaWing_LBM",
+    "f22raptor",
+    "boeing747",
+    "smokeBuoyancy"
+  ],
+  "source_cache": "/ibex/user/zhanx0o/FMT_Task6PrimitiveVAE_20260910/outputs/mainExp_Task6_PrimitiveVAE_2.1",
+  "output_root": "outputs/Verify_Task6_ReconstructionAudit_2.2",
+  "seed": 9116022,
+  "integration_cases": 4,
+  "frequencies": [
+    6,
+    10,
+    16
+  ],
+  "latent_dimensions": [
+    64,
+    128,
+    192,
+    256,
+    384
+  ],
+  "roles": [
+    "train",
+    "validation"
+  ]
+}
