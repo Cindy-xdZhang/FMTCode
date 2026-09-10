@@ -1,0 +1,86 @@
+{
+  "experiment": "Verify_Task678_DirectFMTFit_1.1",
+  "output_root": "outputs/Verify_Task678_DirectFMTFit_1.1",
+  "base_output_root": "/home/zhanx0o/FMT_Task678_20260909/outputs/mainExp_Task678_FlowMap_1.1",
+  "base_config": "config/mainExp_Task678_FlowMap_1.1.json",
+  "base_config_sha256": "e27e18f54c49a0da9477291f6c709f5a60cc47f4c1fb832896e5c9eaaad48e34",
+  "frozen_encoder_sha256": "efff993f10a8db7b481784198beecce1c3c74b2f81cd2eddf5a523ba0a19222d",
+  "datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "deltaWing_resampled",
+    "deltaWing_LBM",
+    "f22raptor",
+    "boeing747",
+    "smokeBuoyancy"
+  ],
+  "families": {
+    "cylinder3d": "cylinder",
+    "halfcylinderRe640": "cylinder",
+    "halfcylinderRe6400": "cylinder",
+    "tangaroa": "free_surface",
+    "deltaWing_resampled": "deltaWing",
+    "deltaWing_LBM": "deltaWing",
+    "f22raptor": "aircraft",
+    "boeing747": "aircraft",
+    "smokeBuoyancy": "buoyancy"
+  },
+  "training_replicates": 8,
+  "data_seed": 911006,
+  "seeds": [
+    9100
+  ],
+  "conditions": {
+    "memorize16": {
+      "hidden_width": 512,
+      "support_blocks": 2,
+      "query_blocks": 4,
+      "optimizer_steps": 40000,
+      "bundle_batch": 64,
+      "queries_per_bundle": 16,
+      "learning_rate": 0.0003,
+      "probe_every": 500,
+      "data": "memorize",
+      "memorize_regions": 16,
+      "minimum_steps": 2000,
+      "stop_train_nrmse": 0.001
+    },
+    "small_base": {
+      "data": "base",
+      "small": true,
+      "hidden_width": 128,
+      "optimizer_steps": 2000,
+      "bundle_batch": 64,
+      "queries_per_bundle": 8,
+      "learning_rate": 0.001,
+      "probe_every": 250
+    },
+    "large_base": {
+      "hidden_width": 512,
+      "support_blocks": 2,
+      "query_blocks": 4,
+      "optimizer_steps": 30000,
+      "bundle_batch": 64,
+      "queries_per_bundle": 16,
+      "learning_rate": 0.0003,
+      "probe_every": 1000,
+      "data": "base"
+    },
+    "large_expanded": {
+      "hidden_width": 512,
+      "support_blocks": 2,
+      "query_blocks": 4,
+      "optimizer_steps": 30000,
+      "bundle_batch": 64,
+      "queries_per_bundle": 16,
+      "learning_rate": 0.0003,
+      "probe_every": 1000,
+      "data": "expanded"
+    }
+  },
+  "checkpoint_policy": "in_memory_only_no_model_files",
+  "selection": "No test selection; fixed training budgets except preregistered full-training fit threshold for memorize16",
+  "scope": "Fit diagnostic with full frozen FMT, no PCA or VAE; historical metrics remain frozen; one optimization seed, no seed-robust ranking claim"
+}
