@@ -1,0 +1,26 @@
+{
+  "experiment": "Verify_Task6_ScarceGeneralization_4.1",
+  "output_root": "outputs/Verify_Task6_ScarceGeneralization_4.1",
+  "source_cache": "/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910/outputs/mainExp_Task6_Reconstruction_3.1",
+  "source_config_sha256": "eaf8c0cf6e902589cd5c68b8811601b593fe040e51d660c354e320b705cca6cb",
+  "datasets": ["cylinder3d", "halfcylinderRe640", "halfcylinderRe6400", "tangaroa", "deltaWing_resampled", "deltaWing_LBM", "f22raptor", "boeing747", "smokeBuoyancy"],
+  "train_sizes": [256, 1024, 4096],
+  "primary_train_size": 1024,
+  "search_seed": 94110,
+  "seeds": [94111, 94112, 94113],
+  "training": {"width": 512, "blocks": 3, "latent_dim": 192, "batch_size": 256, "updates": 4000, "probe_every": 500, "learning_rate": 0.0001, "beta": 0.00001, "gradient_clip": 1.0},
+  "validation_gate_rmse_r": 3.0,
+  "candidates": [
+    {"id": "c0", "frequencies": 10, "regularizer_index": 0, "dropout": 0.0, "weight_decay": 0.0, "noise_sigma": 0.0},
+    {"id": "c1", "frequencies": 10, "regularizer_index": 1, "dropout": 0.1, "weight_decay": 0.0001, "noise_sigma": 0.0},
+    {"id": "c2", "frequencies": 10, "regularizer_index": 2, "dropout": 0.25, "weight_decay": 0.01, "noise_sigma": 0.0},
+    {"id": "c3", "frequencies": 10, "regularizer_index": 3, "dropout": 0.1, "weight_decay": 0.0001, "noise_sigma": 0.005},
+    {"id": "c4", "frequencies": 16, "regularizer_index": 0, "dropout": 0.0, "weight_decay": 0.0, "noise_sigma": 0.0},
+    {"id": "c5", "frequencies": 16, "regularizer_index": 1, "dropout": 0.1, "weight_decay": 0.0001, "noise_sigma": 0.0},
+    {"id": "c6", "frequencies": 16, "regularizer_index": 2, "dropout": 0.25, "weight_decay": 0.01, "noise_sigma": 0.0},
+    {"id": "c7", "frequencies": 16, "regularizer_index": 3, "dropout": 0.1, "weight_decay": 0.0001, "noise_sigma": 0.005}
+  ],
+  "selection": "A single FMT candidate selected by lowest equal-flow mean validation RMSE at n=1024; fixed across nine flows and all sizes. Raw frozen, matched and independently validation-selected controls retained.",
+  "evaluation": "Test only after selection.json is frozen. Same previously used 3.1 test and unseen-scale benchmark; unchanged position RMSE divided by initial radius. Three new subset+optimizer seeds. No test-based tuning.",
+  "models": "No checkpoints; best state only in RAM. Final predictions and scalar metrics retained."
+}

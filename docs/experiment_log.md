@@ -1481,3 +1481,11 @@ Re6400首个种子93110：新test 0.023288174，未见尺度 0.024521196，原2.
 新test使用新primitive采样种子，源时间块沿用原协议；legacy_test为同一已用benchmark。训练、模型选择与评价角色保持区分。额外按真实几何总转角选择的弯曲图只作可视化核对，原固定样例和全量指标均保留。
 
 完整证据：`outputs/mainExp_Task6_Reconstruction_3.1/{summary.json,per_flow_summary.csv,metrics.csv,final_audit.json,config.frozen.json,slurm_status_final.txt}`及`runs/`逐次结果；复算代码`experiments/Report_Task6_Reconstruction_3_1.py`，图形规则`docs/Task6_reconstruction_artifacts_3.1.md`。
+
+### 2026-09-10 — Verify_Task6_ScarceGeneralization_4.1 预注册
+
+用户要求尝试训练数据匮乏与dropout等泛化操作，并以测试优于Raw为目标。前一轮3.1新test九流场宏平均Raw 0.009185594、signed_fmt10 0.012517155，Raw在9/9流场更低；此事实和旧算法保持。本版按训练数量256/1024/4096比较，1024为预注册主设置；标准化与几何主成分初始化也仅使用小训练集。
+
+候选为10频/完整16频signed编码各搭配无正则化、dropout+权重衰减、较强正则化、dropout+权重衰减+干净目标去噪，共8个FMT；Raw运行同样4种正则化。九流场共324个搜索模型只读train/validation，先按1024样本的九流场平均validation选择跨流场统一候选。测试前冻结选择，再使用三个新子集/优化种子；报告Raw原配方、相同正则化和单独validation最佳Raw。不能把16频可逆表示说成频谱压缩。完整配置和方法见docs/Task6_scarce_generalization_protocol_4.1.md。
+
+本地9项行为测试通过，包括嵌套相同子集、train-only初始化、相同物理输入扰动且干净目标不变、dropout推断关闭、完整频率与Raw初始化几何一致、正步数validation选择和独立误差公式。尚无4.1真实流场结果，不预写胜利结论。

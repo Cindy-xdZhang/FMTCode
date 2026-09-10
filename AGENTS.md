@@ -55,3 +55,5 @@ Task4-b 当前阈值以2026-09-06用户最新指定为准：**Channel IVD>5.785�
 - 可复现依据是代码 commit、完整 config、随机种子、数据时间片/划分、设备记录、逐次指标和汇总表，不是训练好的模型文件。只有用户明确要求保留某个模型时才可例外。
 
 2026-09-10 用户要求继续修复Task6高重建误差，当前修复版本为`mainExp_Task6_Reconstruction_3.1`：新signed_fmt10保留复系数方向/相位和七线身份，192维VAE重建完整几何，每流场24万训练primitive。旧161维fmt_all和2.1历史结果保持；两者不可混称。新配置仅由train/validation诊断选择，目标每流场test RMSE/r<1，保持原误差单位与完整轨迹；详见`docs/Task6_reconstruction_protocol_3.1.md`。
+
+2026-09-10 用户要求小训练集与dropout等泛化验证，新增 `Verify_Task6_ScarceGeneralization_4.1`：每流场256/1024/4096个primitive，1024为主比较；初始化也只读取小训练集。8个FMT与4个Raw候选只用validation选择，最后以3个新子集/优化种子评估。保留无正则化Raw、相同正则化Raw及validation选择Raw对照；3.1代码与结果冻结。协议见 `docs/Task6_scarce_generalization_protocol_4.1.md`。
