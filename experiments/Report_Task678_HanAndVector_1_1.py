@@ -17,6 +17,8 @@ STYLE={'fmt_all':('#267B9E','o','Original FMT + network'), 'vector_fmt6':('#875A
        'raw_positions':('#707070','^','Raw + network'), 'coordinates_only':('#C68B4F','v','No flow token'),
        'affine':('#333333','d','Raw interpolation'), 'vector_affine':('#5F9F9D','D','Fourier reconstruction')}
 NORMALIZED=['position_nrmse','supervised_time_nrmse','unseen_time_nrmse','mean_position_error','centered_shape_error','pair_distance_error','endpoint_error']
+FLOW_NAMES=['Half-cylinder Re160','Half-cylinder Re640','Half-cylinder Re6400','Tangaroa',
+            'DeltaWing (resampled)','DeltaWing (LBM)','F22','Boeing 747','Smoke buoyancy']
 
 
 def export(fig,target):
@@ -43,6 +45,53 @@ def load(root, expected):
 def save_csv(path,rows):
     with path.open('w',newline='',encoding='utf-8') as f:
         w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
+
+
+def plot_training(base,vector,out,spec):
+    """Show every registered seed/probe, with no smoothing or selected epoch."""
+    source=[]
+    fig,axes=plt.subplots(3,3,figsize=(183/25.4,164/25.4),sharex=True,sharey=True)
+    fig.subplots_adjust(left=.112,right=.98,bottom=.115,top=.82,wspace=.24,hspace=.40)
+    limits=[]
+    for index,(dataset,name,ax) in enumerate(zip(spec['datasets'],FLOW_NAMES,axes.flat)):
+        for arm in ('fmt_all','vector_fmt6','raw_positions'):
+            root=vector if arm=='vector_fmt6' else base
+            color=STYLE[arm][0]
+            for task,linestyle in [('Task6','-'),('Task7','--')]:
+                curves=[];times=None
+                for seed in spec['seeds']:
+                    path=root/'evidence_metadata/runs'/dataset/arm/f'seed{seed}'/f'{task}_training.json'
+                    curve=json.loads(path.read_text())['learning_curve']
+                    x=np.array([c['equivalent_exposure'] for c in curve])
+                    y=np.array([c['train_position_nrmse'] for c in curve])
+                    assert np.isfinite(y).all() and (y>0).all() and (np.diff(x)>0).all()
+                    if times is not None:np.testing.assert_array_equal(times,x)
+                    times=x;curves.append(y)
+                    source.extend(dict(dataset=dataset,arm=arm,task=task,seed=seed,exposure=float(a),training_probe_nrmse=float(b)) for a,b in zip(x,y))
+                curves=np.array(curves);mean=curves.mean(0)
+                for curve in curves:
+                    ax.plot(times,curve,color=color,ls=linestyle,lw=.35,alpha=.23)
+                ax.plot(times,mean,color=color,ls=linestyle,lw=1.05,
+                        label=f"{task}: "+{'fmt_all':'original FMT','vector_fmt6':'vector FMT','raw_positions':'Raw'}[arm])
+                limits.extend(curves.ravel().tolist())
+        ax.set_yscale('log');ax.set_xlim(0,51);ax.set_xticks([0,10,20,30,40,50])
+        ax.yaxis.set_minor_locator(NullLocator());ax.grid(axis='y',color='#E5E5E5',lw=.45)
+        ax.set_title(name,pad=8)
+        ax.annotate(chr(97+index),xy=(0,1),xycoords='axes fraction',xytext=(-18,8),textcoords='offset points',
+                    fontsize=9,fontweight='bold',ha='left',va='bottom')
+    lo=int(np.floor(np.log10(min(limits))));hi=int(np.ceil(np.log10(max(limits))))
+    ticks=10.**np.arange(lo,hi+1)
+    for ax in axes.flat:
+        ax.set_ylim(10.**lo,10.**hi);ax.yaxis.set_major_locator(FixedLocator(ticks))
+        ax.yaxis.set_major_formatter(FixedFormatter([f'{v:g}' for v in ticks]))
+    fig.suptitle('Fitting dense trajectory queries with frozen tokens',x=.54,y=.985,fontsize=10,fontweight='bold')
+    handles,labels=axes[0,0].get_legend_handles_labels()
+    fig.legend(handles,labels,loc='upper center',bbox_to_anchor=(.54,.95),ncol=3,fontsize=7,handlelength=2.4,columnspacing=1.3)
+    fig.text(.014,.47,'Training position error / initial radius',rotation=90,rotation_mode='anchor',ha='center',va='center',fontsize=8)
+    fig.text(.54,.060,'Equivalent query exposure (passes)',ha='center',fontsize=8)
+    fig.text(.54,.025,'Thin lines: all seeds; thick lines: mean · Task8 has no separate training loss',ha='center',fontsize=7)
+    export(fig,out/'training_fit')
+    save_csv(out/'training_curve_source.csv',source)
 
 
 def main():
@@ -97,6 +146,31 @@ def main():
                             row[metric+'_ratio']=values[method][metric]/denominator if denominator>0 else ''
                         paired.append(row)
     save_csv(out/'paired_differences.csv',paired)
+    diagnostics=[]
+    for dataset in ac['datasets']:
+        for arm in ARMS:
+            for role in ('fit','query_test','primitive_test','time_test'):
+                selected=[r for r in rows if (r['dataset'],r['arm'],r['role'],r['variant'])==(dataset,arm,role,'normal')]
+                for task in ('Task6','Task7','Task8'):
+                    normal=[r for r in selected if r['task']==task]
+                    shuffled=[r for r in rows if (r['dataset'],r['arm'],r['role'],r['task'],r['variant'])==(dataset,arm,role,task,'shuffled_tokens')]
+                    item=dict(dataset=dataset,arm=arm,role=role,task=task,seeds=len(normal))
+                    for metric in ('supervised_time_nrmse','unseen_time_nrmse','predicted_arrival_outside_fraction','true_arrival_diagnostic_nrmse'):
+                        values=[float(r[metric]) for r in normal if r.get(metric) not in ('',None)]
+                        assert len(values) in (0,len(normal))
+                        item[metric]=float(np.mean(values)) if values else ''
+                    item['time_interpolation_ratio']=item['unseen_time_nrmse']/item['supervised_time_nrmse'] if item['supervised_time_nrmse']>0 else ''
+                    if shuffled:
+                        assert len(shuffled)==len(normal)==3
+                        normal_by_seed={r['seed']:float(r['position_nrmse']) for r in normal}
+                        item['shuffled_token_mean_nrmse']=float(np.mean([float(r['position_nrmse']) for r in shuffled]))
+                        item['shuffled_token_mean_paired_ratio']=float(np.mean([float(r['position_nrmse'])/normal_by_seed[r['seed']] for r in shuffled]))
+                    else:
+                        item['shuffled_token_mean_nrmse']=''
+                        item['shuffled_token_mean_paired_ratio']=''
+                    diagnostics.append(item)
+    save_csv(out/'diagnostics.csv',diagnostics)
+    save_csv(out/'training_fit.csv',[r for r in means if r['role']=='fit' and r['variant']=='normal'])
     contract=dict(question='How do the original and directional Fourier tokens compare on held-out flow-map queries?',
         claim='Quantitative comparison only; capability conclusions must use the complete per-flow evidence',
         archetype='quantitative grid',panels='Task6 new material queries, Task7 hidden-region reconstruction, Task8 predicted-arrival composition',
@@ -147,6 +221,7 @@ def main():
     fig.text(.55,.047,'Task8 passes predicted endpoints; all future segment tokens are known.',ha='center',fontsize=7)
     export(fig,out/'held_out_comparison')
     save_csv(out/'figure_source.csv',plot_rows)
+    plot_training(base,vector,out,ac)
     print('JOINED AUDIT PASS: 3375 evaluations; all paired tables and comparison figure exported.',flush=True)
 
 
