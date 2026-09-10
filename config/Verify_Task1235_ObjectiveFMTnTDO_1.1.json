@@ -1,0 +1,383 @@
+{
+  "experiment": "Verify_Task1235_ObjectiveFMTnTDO_1.1",
+  "output_root": "/home/zhanx0o/FMT_nTDO_20260910/outputs/Verify_Task1235_ObjectiveFMTnTDO_1.1",
+  "base_commit": "aee4bd562d340158118f2e41f40129a9918e06a1",
+  "datasets": [
+    "channel",
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "deltaWing_resampled",
+    "deltaWing_LBM",
+    "f22raptor",
+    "boeing747",
+    "smokeBuoyancy"
+  ],
+  "tasks": [
+    "Task1",
+    "Task2",
+    "Task3",
+    "Task5"
+  ],
+  "roots": {
+    "fixed": "/home/zhanx0o/FMT_Uniform_3D_20260901",
+    "multiscale": "/home/zhanx0o/FMT_Task12_3D_20260823"
+  },
+  "cylinder_datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400"
+  ],
+  "minimum_cylinder_time": 7.5,
+  "dataset_splits": {
+    "cylinder3d": {
+      "Task1": {
+        "train": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "validation": [
+          8,
+          9
+        ],
+        "confirmation": [
+          2,
+          3
+        ]
+      },
+      "Task2": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      },
+      "Task3": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      }
+    },
+    "halfcylinderRe640": {
+      "Task1": {
+        "train": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "validation": [
+          8,
+          9
+        ],
+        "confirmation": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "Task2": {
+        "train": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      },
+      "Task3": {
+        "train": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      }
+    },
+    "halfcylinderRe6400": {
+      "Task1": {
+        "train": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "validation": [
+          8,
+          9
+        ],
+        "confirmation": [
+          2,
+          3
+        ]
+      },
+      "Task2": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      },
+      "Task3": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      }
+    }
+  },
+  "protocol": {
+    "reused_benchmark": true,
+    "no_model_selection_on_test": true,
+    "task2_capacity": "All arms padded to 700 dimensions without truncation; identical VAE and 7000 updates.",
+    "benchmark_limit": "Reused benchmark, not new independent confirmation. Distinct cache files do not guarantee disjoint physical trajectory windows in historical Task1/2/3 or fixed Task3 transfer. No claim of full temporal independence.",
+    "encoder": "Complete 369-dimensional nTDO 1.1; no aivd, kin, scale correction, feature selection or added pre-FFT operations.",
+    "task3_legacy": "fmt_all+kin4 is a non-aivd historical reference, not the current aivd main-table recipe.",
+    "test_policy": "All arm models and thresholds frozen before loading evaluation features/labels in each shard; no selection by test performance."
+  },
+  "task1": {
+    "train": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "validation": [
+      8,
+      9
+    ],
+    "confirmation": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "seeds": [
+      7380,
+      7381,
+      7382
+    ],
+    "kmeans_n_init": 20,
+    "pca_dim": 8,
+    "arms": [
+      "raw",
+      "old_fmt",
+      "ntdo"
+    ]
+  },
+  "task2": {
+    "train": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "validation": [
+      6,
+      7
+    ],
+    "confirmation": [
+      8,
+      9
+    ],
+    "seeds": [
+      310,
+      311,
+      312
+    ],
+    "kmeans_seed": 7068,
+    "kmeans_n_init": 20,
+    "architecture": {
+      "hidden_dims": [
+        512,
+        256
+      ],
+      "latent_dim": 64,
+      "beta": 1e-06,
+      "learning_rate": 0.0003,
+      "optimizer_steps": 7000,
+      "relational_weight": 0.0,
+      "pair_count": 2048
+    },
+    "batch_size": 256,
+    "weight_decay": 1e-05,
+    "arms": [
+      "raw",
+      "old_fmt",
+      "ntdo"
+    ]
+  },
+  "input_width": 700,
+  "features": {
+    "raw": "raw",
+    "old_fmt": "fmt_all+kin4",
+    "ntdo": "objective_fmt_nTDO"
+  },
+  "task3": {
+    "train": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "validation": [
+      6,
+      7
+    ],
+    "confirmation": [
+      8,
+      9
+    ],
+    "seeds": [
+      40,
+      41,
+      42
+    ],
+    "arms": [
+      "raw",
+      "raw_wide",
+      "raw_pca",
+      "old_fmt",
+      "ntdo"
+    ],
+    "auxiliary_input_width": 369,
+    "fusion": {
+      "alpha_min": 0.0,
+      "alpha_max": 3.0,
+      "alpha_steps": 61,
+      "selection_metric": "minimum_gain",
+      "minimum_f1_gain": 0.0
+    }
+  },
+  "task5": {
+    "train": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "validation": [
+      4,
+      5
+    ],
+    "confirmation": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "seeds": [
+      40,
+      41,
+      42
+    ],
+    "arms": [
+      "raw",
+      "raw_wide",
+      "raw_pca",
+      "old_fmt",
+      "ntdo",
+      "fixed_task3_raw"
+    ],
+    "auxiliary_input_width": 369,
+    "fusion": {
+      "fixed_alpha": 1.0,
+      "selection_metric": "average_precision"
+    },
+    "features": {
+      "raw": "raw",
+      "old_fmt": "fmt_all+gram2+kin6",
+      "ntdo": "objective_fmt_nTDO"
+    }
+  },
+  "task5_rebuilt_datasets": [
+    "cylinder3d",
+    "halfcylinderRe6400"
+  ],
+  "raw_model": {
+    "temporal_width": 64,
+    "embedding_dim": 128,
+    "auxiliary_dim": 64
+  },
+  "model": {
+    "embedding_dim": 128,
+    "auxiliary_dim": 64,
+    "residual_input": "geometry_fmt"
+  },
+  "training": {
+    "device": "cuda",
+    "batch_size": 512,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "max_epochs": 100,
+    "patience": 20,
+    "min_delta": 0.0001
+  },
+  "late_cache_config": "config/Verify_Task1235_ObjectiveFMTnTDO_1.1_task5_cache.yaml"
+}
