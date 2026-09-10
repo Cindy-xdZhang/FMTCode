@@ -1129,3 +1129,7 @@ Task5 fixed Task3 Raw transfer的宏F1为0.377967，variable-scale Raw为0.61062
 固定执行 commit `55928e99130d5209f2ee027be3a1a94b55d0be56`。Ibex 单元接口检查通过；提交 smoke `51702594`、数据预检 `51702595`、Task1 `51702596`、Task2 `51702598`、Task3→Task5 `51702599`、最终汇总及独立预测审计 `51702600`。GPU 阵列各最多并行 6 个 A100/V100 作业。当前为已提交状态，不能报告 F1。
 
 配置 SHA256 `cc137f5104c4835330d2e2e2da7f53d56c46a47b46b0ea7f93e5a0c2a07a9598`；源文件清单 SHA256 `5e817c49a8557a84c8d3d1b04a8fd4ec949f2e7a59bab1c09de36d4d4595b2ff`。本地提交证据位于 `outputs/Verify_Task1235_ObjectiveFMTnTDO_2.1/`。
+
+### nTDO v2 2.1 前置检查通过
+
+Ibex 的四任务训练/评分流程检查与全部数据预检均为 PASS，记录已同步至 `outputs/Verify_Task1235_ObjectiveFMTnTDO_2.1/{smoke,preflight}.json`。性能阵列依赖已解除，目前等待 Priority 调度；尚未完成性能测试，无 F1 结论。
