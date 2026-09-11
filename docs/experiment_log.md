@@ -1870,3 +1870,7 @@ Ibex实际时间（+03）：Raw 18:12:37–18:17:05；筛选18:19:05–18:35:30�
 ### 2026-09-12 — Verify_Task6_FMTGeometryMoE_1.1 Ibex 首次部署
 
 实现已提交并推送：`4859c0caec1ac519f5932ed8772a8c775e71f688`。Ibex 独立工作目录已检出该 commit，Bash 语法检查通过，8 个阶段作业于 2026-09-12 01:40:34（+03:00）登记提交：51758242–51758249。本地五项测试通过；截至首次提交仅为排队，尚无真实 MoE 性能结果。配置 SHA256 为 `2ad8965a5240f59ef8543f44c53a7d41d5f55e265117c1a49c059a400e76249c`。完整协议见 `docs/Task6_fmt_geometry_moe_protocol_1.1.md`；作业详情见 `docs/ibex_run_registry.md`。
+
+### 2026-09-12 — Verify_Task6_FMTGeometryMoE_1.1 集群预检通过
+
+Ibex 独立 checkout（科学 commit `4859c0caec1ac519f5932ed8772a8c775e71f688`）上五项测试全部通过，26.646 秒；作业 `51758242`、节点 `cn604-18`、CPU。作业运行脚本起止时间为 01:42:02.584436–01:42:32.289479（+03:00），exit=0。证据：远端 `outputs/Verify_Task6_FMTGeometryMoE_1.1/logs/preflight_51758242_4294967294.err` 与 `runtime_events.jsonl`。截至此次核验，数据准备作业 `51758243` 等待优先级调度，GPU 训练尚未开始，不能把预检拟合结果当作真实流场性能。
