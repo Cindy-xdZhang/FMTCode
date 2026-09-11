@@ -3759,3 +3759,29 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 - 2026-09-11T16:05:24.679464+03:00 | 51740516 | Verify_Task6_PNNTrans_1.2 Task6 select | ENDED node=cn604-18 device=CPU exit=0
 - 2026-09-11T16:07:29.152911+03:00 | 51740517 | Verify_Task6_PNNTrans_1.2 Task6 advance | STARTED node=cn604-18 device=CPU exit=None
 - 2026-09-11T16:07:31.552705+03:00 | 51740517 | Verify_Task6_PNNTrans_1.2 Task6 advance | ENDED node=cn604-18 device=CPU exit=1
+
+### 2026-09-11 — Verify_Task6_PNNTrans_1.3 Ibex部署
+
+科学commit `9b33826c91ece524d3ed36b9f42e288a8658eb3c`，配置SHA256 `67ac3e6397689f71e4cef9360a3629c2ea365871c0fc5063296e9f658c46703a`。独立目录`/ibex/user/zhanx0o/FMT_Task6PNNDataSchedule_20260911`。2026-09-11 18:07:00–01 +03提交预检51743949、数据核验51743950、九流场Raw重训51743953、27模型学习率筛选51743954、保留参考组的四候选选择51743955、72模型配对验证51743956、冻结选择51743957、条件启动最终测试51743958。每GPU作业独占一张分配到的GPU，最多18个作业并行；不代表一个模型使用18张GPU。最终81模型尚未提交，需验证门槛通过。
+
+- 2026-09-11T18:07:00.923267+03:00 | 51743949 | Verify_Task6_PNNTrans_1.3 Task6 preflight | config/Verify_Task6_PNNTrans_1.3.json SHA256=67ac3e6397689f71e4cef9360a3629c2ea365871c0fc5063296e9f658c46703a | 9b33826c91ece524d3ed36b9f42e288a8658eb3c | CPU array=None dependency=None | SUBMITTED
+
+- 2026-09-11T18:07:00.982415+03:00 | 51743950 | Verify_Task6_PNNTrans_1.3 Task6 prepare | config/Verify_Task6_PNNTrans_1.3.json SHA256=67ac3e6397689f71e4cef9360a3629c2ea365871c0fc5063296e9f658c46703a | 9b33826c91ece524d3ed36b9f42e288a8658eb3c | CPU array=None dependency=51743949 | SUBMITTED
+
+- 2026-09-11T18:07:01.132177+03:00 | 51743953 | Verify_Task6_PNNTrans_1.3 Task6 baseline | config/Verify_Task6_PNNTrans_1.3.json SHA256=67ac3e6397689f71e4cef9360a3629c2ea365871c0fc5063296e9f658c46703a | 9b33826c91ece524d3ed36b9f42e288a8658eb3c | GPU A100/V100 array=0-8%9 dependency=51743950 | SUBMITTED
+
+- 2026-09-11T18:07:01.192365+03:00 | 51743954 | Verify_Task6_PNNTrans_1.3 Task6 screen | config/Verify_Task6_PNNTrans_1.3.json SHA256=67ac3e6397689f71e4cef9360a3629c2ea365871c0fc5063296e9f658c46703a | 9b33826c91ece524d3ed36b9f42e288a8658eb3c | GPU A100/V100 array=0-26%18 dependency=51743953 | SUBMITTED
+
+- 2026-09-11T18:07:01.251575+03:00 | 51743955 | Verify_Task6_PNNTrans_1.3 Task6 promote | config/Verify_Task6_PNNTrans_1.3.json SHA256=67ac3e6397689f71e4cef9360a3629c2ea365871c0fc5063296e9f658c46703a | 9b33826c91ece524d3ed36b9f42e288a8658eb3c | CPU array=None dependency=51743954 | SUBMITTED
+
+- 2026-09-11T18:07:01.310134+03:00 | 51743956 | Verify_Task6_PNNTrans_1.3 Task6 refine | config/Verify_Task6_PNNTrans_1.3.json SHA256=67ac3e6397689f71e4cef9360a3629c2ea365871c0fc5063296e9f658c46703a | 9b33826c91ece524d3ed36b9f42e288a8658eb3c | GPU A100/V100 array=0-35%18 dependency=51743955 | SUBMITTED
+
+- 2026-09-11T18:07:01.369216+03:00 | 51743957 | Verify_Task6_PNNTrans_1.3 Task6 select | config/Verify_Task6_PNNTrans_1.3.json SHA256=67ac3e6397689f71e4cef9360a3629c2ea365871c0fc5063296e9f658c46703a | 9b33826c91ece524d3ed36b9f42e288a8658eb3c | CPU array=None dependency=51743956 | SUBMITTED
+
+- 2026-09-11T18:07:01.436212+03:00 | 51743958 | Verify_Task6_PNNTrans_1.3 Task6 advance | config/Verify_Task6_PNNTrans_1.3.json SHA256=67ac3e6397689f71e4cef9360a3629c2ea365871c0fc5063296e9f658c46703a | 9b33826c91ece524d3ed36b9f42e288a8658eb3c | CPU array=None dependency=51743957 | SUBMITTED
+
+已同步实际运行事件：
+
+- 2026-09-11T18:08:26.618237+03:00 | 51743949 | Verify_Task6_PNNTrans_1.3 Task6 preflight | STARTED node=cn113-35-l device=CPU exit=None
+
+- 2026-09-11T18:09:15.543478+03:00 | 51743949 | Verify_Task6_PNNTrans_1.3 Task6 preflight | ENDED node=cn113-35-l device=CPU exit=0
