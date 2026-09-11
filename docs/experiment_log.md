@@ -1726,3 +1726,17 @@ pnn_trans验证均值比配对Raw高72.44%，胜场0/9。训练均值相近且pn
 F22验证误差3.162693753≥3，触发门槛。选择作业51737885于13:05:23 +03正常完成；启动器51737886于13:07:31 +03以exit 1结束，原因明确为`Validation gate failed: final training/testing forbidden`。最终162模型批次没有提交，256/4096样本与三个最终种子的测试尚未执行，本轮没有test或unseen_scale指标。目前无本实验运行中作业。
 
 核验：`experiments/Report_Task6_PNNTrans_1_1.py`逐一比对36份fit/result/selection、正训练步最低validation、样本数、优化步数、配置/选择哈希和6条提交记录，全部一致。仅是保存记录的一致性核对，没有重放模型权重或重新积分。完整标量见`outputs/Verify_Task6_PNNTrans_1.1/validation_results.csv`和`validation_summary.json`；旧4.1/5.1结果保持不变。
+
+### 2026-09-11 — Verify_Task6_PNNTrans_1.2 扩大网络与正则化搜索
+
+用户要求增加网络大小、层数、Transformer深度、Dropout及训练正则化，以超过原始坐标对照。新协议`docs/Task6_pnn_trans_protocol_1.2.md`保留1.1空间Point-NN算子和192维压缩；旧1.1结果保持冻结。代码`FMT_Utils/Task6PNNTuning_3D.py`，流程`experiments/Task6_PNNTuning_1_2.py`。
+
+| 版本/方法 | 技术细节 | 对照与选择 | 当前证据 |
+|---|---|---|---|
+| Verify_Task6_PNNTrans_1.2 / pnn_trans | 16候选，Transformer 6–12层、宽128–512；解码器宽512–1024、4–6残差块；Dropout .1–.4、权重衰减.001–.03；部分候选有训练集特征尺度处理、额外全连接、去噪/几何混合增强 | 三流场48模型筛选，前4候选在九流场训练PNN与配对Raw共72模型；只用validation选择 | 新增4项算子/正则化/训练测试与1项完整两阶段、三臂流程测试通过；尚无真实流场新结果 |
+| Verify_Task6_PNNTrans_1.2 / raw_trans | 与PNN相同的入选网络和正则化；每时刻输入原始21坐标 | 同时保留冻结1.1 Raw c1，不能用调弱Raw替换baseline | 最终需分别报告胜负 |
+| 冻结1.1 / raw_frozen | 原128宽、3层Transformer和原12000更新训练代码不改 | 搜索参照已冻结validation=0.624913022，最终重训对应子集/种子 | 该数值不是test |
+
+新PNN和配对Raw完整训练均24000更新，batch128；统计量只从相应训练子集拟合，去噪仅训练启用。混合增强为训练几何凸组合后重新执行Point-NN，不混合三角函数特征，不声称新样本来自真实流场积分。更大网络同时改变多个设计，不把搜索结果直接视为单因素消融。
+
+仅在选中候选全部九流场两臂validation<3，且PNN宏平均同时优于配对Raw及冻结Raw时自动提交最终243模型。最终test才能回答超过baseline与否；如果未达到，则完整保留失败，不能改标签、测试集、单位或筛掉困难流场。模型checkpoint不落盘。

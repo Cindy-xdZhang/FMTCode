@@ -1,0 +1,442 @@
+{
+  "source_cache": "/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910/outputs/mainExp_Task6_Reconstruction_3.1",
+  "source_config_sha256": "eaf8c0cf6e902589cd5c68b8811601b593fe040e51d660c354e320b705cca6cb",
+  "subset_cache": "/ibex/user/zhanx0o/FMT_Task6Scarce_20260910/outputs/Verify_Task6_ScarceGeneralization_4.1",
+  "subset_config_sha256": "2b6006ac4f01441dfd44b7f70655f115b82061fdac5b891bb9fdd33eb6b069c8",
+  "datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "deltaWing_resampled",
+    "deltaWing_LBM",
+    "f22raptor",
+    "boeing747",
+    "smokeBuoyancy"
+  ],
+  "train_sizes": [
+    256,
+    1024,
+    4096
+  ],
+  "primary_train_size": 1024,
+  "search_seed": 94110,
+  "seeds": [
+    94111,
+    94112,
+    94113
+  ],
+  "upstream_commit": "a85bfc365258a2c65a5f6ac289537b4d7a7cec0f",
+  "experiment": "Verify_Task6_PNNTrans_1.2",
+  "output_root": "outputs/Verify_Task6_PNNTrans_1.2",
+  "arms": [
+    "pnn_trans",
+    "raw_trans",
+    "raw_frozen"
+  ],
+  "screen_datasets": [
+    "cylinder3d",
+    "f22raptor",
+    "smokeBuoyancy"
+  ],
+  "promote_count": 4,
+  "validation_gate_rmse_r": 3.0,
+  "training": {
+    "batch_size": 128,
+    "updates": 24000,
+    "warmup_updates": 1000,
+    "probe_every": 2000,
+    "gradient_clip": 1.0
+  },
+  "screening": {
+    "batch_size": 128,
+    "updates": 4000,
+    "warmup_updates": 400,
+    "probe_every": 1000,
+    "gradient_clip": 1.0
+  },
+  "baseline_training": {
+    "architecture": {
+      "width": 128,
+      "heads": 4,
+      "layers": 3,
+      "latent_dim": 192,
+      "decoder_width": 512,
+      "decoder_blocks": 3,
+      "frequencies": 8,
+      "alpha": 1000.0,
+      "beta": 1.0
+    },
+    "batch_size": 128,
+    "updates": 12000,
+    "warmup_updates": 200,
+    "probe_every": 1000,
+    "gradient_clip": 1.0
+  },
+  "baseline_candidate": {
+    "id": "c1",
+    "learning_rate": 0.0003,
+    "dropout": 0.1,
+    "weight_decay": 0.001
+  },
+  "baseline_cache": "/ibex/user/zhanx0o/FMT_Task6PNNTrans_20260911/outputs/Verify_Task6_PNNTrans_1.1",
+  "baseline_config_sha256": "8c91aa9abfec86f493ccb38c4033437d090001d799652eb7d49ea07113223fe2",
+  "baseline_selection_sha256": "ac2938acce4c363ba42d38914292d8163e3caa3563b11e65da90647f1230c0df",
+  "selection": "Screen PNN only on three preregistered flows using equal-flow mean validation error ratio to frozen Raw c1. Promote four candidates, then retrain both PNN and matched Raw on all nine flows. Select a single PNN candidate by nine-flow mean validation RMSE. Permit final testing only when all selected PNN/matched Raw errors are below 3 and PNN macro beats both matched Raw and frozen 1.1 Raw. Retain every failed candidate.",
+  "evaluation": "Frozen n=1024 search seed94110. Final n=256/1024/4096 seeds94111/94112/94113. The 192D latent, seven lines, 32 points and physical RMSE/r are unchanged. No test-informed selection. Geometry mixtures are synthetic training-only augmentation, not flow integrations.",
+  "checkpoints": "No checkpoint files; best state in RAM only.",
+  "candidates": [
+    {
+      "id": "c00",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.1,
+      "weight_decay": 0.001,
+      "input_mlp": false,
+      "feature_conditioning": "none",
+      "input_dropout": 0.0,
+      "feature_noise": 0.0,
+      "geometry_mix_fraction": 0.0
+    },
+    {
+      "id": "c01",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.25,
+      "weight_decay": 0.01,
+      "input_mlp": false,
+      "feature_conditioning": "none",
+      "input_dropout": 0.0,
+      "feature_noise": 0.0,
+      "geometry_mix_fraction": 0.0
+    },
+    {
+      "id": "c02",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.4,
+      "weight_decay": 0.03,
+      "input_mlp": false,
+      "feature_conditioning": "none",
+      "input_dropout": 0.0,
+      "feature_noise": 0.0,
+      "geometry_mix_fraction": 0.0
+    },
+    {
+      "id": "c03",
+      "architecture": {
+        "width": 384,
+        "heads": 8,
+        "layers": 8,
+        "latent_dim": 192,
+        "decoder_width": 1024,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.15,
+      "weight_decay": 0.003,
+      "input_mlp": false,
+      "feature_conditioning": "none",
+      "input_dropout": 0.0,
+      "feature_noise": 0.0,
+      "geometry_mix_fraction": 0.0
+    },
+    {
+      "id": "c04",
+      "architecture": {
+        "width": 384,
+        "heads": 8,
+        "layers": 8,
+        "latent_dim": 192,
+        "decoder_width": 1024,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.3,
+      "weight_decay": 0.02,
+      "input_mlp": false,
+      "feature_conditioning": "none",
+      "input_dropout": 0.0,
+      "feature_noise": 0.0,
+      "geometry_mix_fraction": 0.0
+    },
+    {
+      "id": "c05",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 12,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 6,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.25,
+      "weight_decay": 0.01,
+      "input_mlp": false,
+      "feature_conditioning": "none",
+      "input_dropout": 0.0,
+      "feature_noise": 0.0,
+      "geometry_mix_fraction": 0.0
+    },
+    {
+      "id": "c06",
+      "architecture": {
+        "width": 512,
+        "heads": 8,
+        "layers": 8,
+        "latent_dim": 192,
+        "decoder_width": 1024,
+        "decoder_blocks": 6,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": false,
+      "feature_conditioning": "none",
+      "input_dropout": 0.0,
+      "feature_noise": 0.0,
+      "geometry_mix_fraction": 0.0
+    },
+    {
+      "id": "c07",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.0,
+      "geometry_mix_fraction": 0.0
+    },
+    {
+      "id": "c08",
+      "architecture": {
+        "width": 384,
+        "heads": 8,
+        "layers": 8,
+        "latent_dim": 192,
+        "decoder_width": 1024,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.25,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.0,
+      "geometry_mix_fraction": 0.0
+    },
+    {
+      "id": "c09",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.25,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.1,
+      "feature_noise": 0.02,
+      "geometry_mix_fraction": 0.0
+    },
+    {
+      "id": "c10",
+      "architecture": {
+        "width": 384,
+        "heads": 8,
+        "layers": 8,
+        "latent_dim": 192,
+        "decoder_width": 1024,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.3,
+      "weight_decay": 0.02,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.1,
+      "feature_noise": 0.02,
+      "geometry_mix_fraction": 0.0
+    },
+    {
+      "id": "c11",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.01,
+      "geometry_mix_fraction": 0.5
+    },
+    {
+      "id": "c12",
+      "architecture": {
+        "width": 384,
+        "heads": 8,
+        "layers": 8,
+        "latent_dim": 192,
+        "decoder_width": 1024,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.01,
+      "geometry_mix_fraction": 0.5
+    },
+    {
+      "id": "c13",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0001,
+      "dropout": 0.1,
+      "weight_decay": 0.003,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.0,
+      "geometry_mix_fraction": 0.0
+    },
+    {
+      "id": "c14",
+      "architecture": {
+        "width": 512,
+        "heads": 8,
+        "layers": 12,
+        "latent_dim": 192,
+        "decoder_width": 1024,
+        "decoder_blocks": 6,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.3,
+      "weight_decay": 0.02,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.0,
+      "geometry_mix_fraction": 0.0
+    },
+    {
+      "id": "c15",
+      "architecture": {
+        "width": 128,
+        "heads": 4,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 512,
+        "decoder_blocks": 6,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.1,
+      "feature_noise": 0.02,
+      "geometry_mix_fraction": 0.0
+    }
+  ]
+}
