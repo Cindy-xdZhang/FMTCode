@@ -1,0 +1,294 @@
+{
+  "source_cache": "/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910/outputs/mainExp_Task6_Reconstruction_3.1",
+  "source_config_sha256": "eaf8c0cf6e902589cd5c68b8811601b593fe040e51d660c354e320b705cca6cb",
+  "subset_cache": "/ibex/user/zhanx0o/FMT_Task6Scarce_20260910/outputs/Verify_Task6_ScarceGeneralization_4.1",
+  "subset_config_sha256": "2b6006ac4f01441dfd44b7f70655f115b82061fdac5b891bb9fdd33eb6b069c8",
+  "datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "deltaWing_resampled",
+    "deltaWing_LBM",
+    "f22raptor",
+    "boeing747",
+    "smokeBuoyancy"
+  ],
+  "primary_train_size": 3072,
+  "train_sizes": [
+    3072
+  ],
+  "search_seed": 94110,
+  "seeds": [
+    94111,
+    94112,
+    94113
+  ],
+  "screen_datasets": [
+    "cylinder3d",
+    "f22raptor",
+    "smokeBuoyancy"
+  ],
+  "baseline_training": {
+    "architecture": {
+      "width": 128,
+      "heads": 4,
+      "layers": 3,
+      "latent_dim": 192,
+      "decoder_width": 512,
+      "decoder_blocks": 3,
+      "frequencies": 8,
+      "alpha": 1000.0,
+      "beta": 1.0
+    },
+    "batch_size": 128,
+    "updates": 12000,
+    "warmup_updates": 200,
+    "probe_every": 1000,
+    "gradient_clip": 1.0
+  },
+  "baseline_candidate": {
+    "id": "c1",
+    "learning_rate": 0.0003,
+    "dropout": 0.1,
+    "weight_decay": 0.001
+  },
+  "experiment": "Verify_Task6_FMTGeometryMoE_1.1",
+  "output_root": "outputs/Verify_Task6_FMTGeometryMoE_1.1",
+  "baseline_cache": "/ibex/user/zhanx0o/FMT_Task6PNNDataSchedule_20260911/outputs/Verify_Task6_PNNTrans_1.3",
+  "baseline_config_sha256": "67ac3e6397689f71e4cef9360a3629c2ea365871c0fc5063296e9f658c46703a",
+  "baseline_selection_sha256": "545e07fca5cb0bfa331d2c95984d6dfbd8512f129a845a9a5ee65aeaaee21039",
+  "families": [
+    "raw_mlp",
+    "pointnn"
+  ],
+  "arms": [
+    "fmt_moe",
+    "geometry_moe",
+    "geometry_only"
+  ],
+  "promote_per_family": 2,
+  "validation_gate_rmse_r": 3.0,
+  "training": {
+    "batch_size": 128,
+    "updates": 72000,
+    "warmup_updates": 3000,
+    "probe_every": 3000,
+    "gradient_clip": 1.0
+  },
+  "screening": {
+    "batch_size": 128,
+    "updates": 12000,
+    "warmup_updates": 1200,
+    "probe_every": 2000,
+    "gradient_clip": 1.0
+  },
+  "fit_check": {
+    "samples": 32,
+    "updates": 3000,
+    "batch_size": 32,
+    "probe_every": 1000,
+    "warmup_updates": 100,
+    "gradient_clip": 1.0,
+    "maximum_error_ratio": 0.15,
+    "minimum_zero_latent_error_ratio": 2.0
+  },
+  "selection": "For each geometry branch, rank FMT MoE configurations using validation only and choose one global configuration across nine flows. Controls use that same configuration. A family qualifies for final testing only if every selected FMT MoE and control validation RMSE/r is below 3. Beating Raw is an outcome, not a condition for accessing test in this new version. Retain every failure.",
+  "checkpoints": "No checkpoints; best weights in RAM only.",
+  "original_fmt": {
+    "num_freq": 6,
+    "neighbor_weight": 0.5,
+    "neighbor_scale": 100.0,
+    "neighbor_pool": "sort",
+    "mode": "gram",
+    "include_chirality": true
+  },
+  "original_fmt_dimension": 161,
+  "latent_dimension": 192,
+  "candidates": [
+    {
+      "id": "m00",
+      "geometry_branch": "raw_mlp",
+      "architecture": {
+        "latent_dim": 192,
+        "expert_width": 512,
+        "expert_blocks": 3,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "temporal_width": 256,
+        "temporal_heads": 8,
+        "temporal_layers": 6,
+        "gate_width": 128
+      },
+      "gate": "scalar",
+      "learning_rate": 0.0001,
+      "scheduler": {
+        "name": "cosine_legacy"
+      },
+      "dropout": 0.1,
+      "weight_decay": 0.001,
+      "auxiliary_weight": 0.05
+    },
+    {
+      "id": "m01",
+      "geometry_branch": "raw_mlp",
+      "architecture": {
+        "latent_dim": 192,
+        "expert_width": 512,
+        "expert_blocks": 3,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "temporal_width": 256,
+        "temporal_heads": 8,
+        "temporal_layers": 6,
+        "gate_width": 128
+      },
+      "gate": "scalar",
+      "learning_rate": 0.0003,
+      "scheduler": {
+        "name": "cosine_legacy"
+      },
+      "dropout": 0.1,
+      "weight_decay": 0.001,
+      "auxiliary_weight": 0.05
+    },
+    {
+      "id": "m02",
+      "geometry_branch": "raw_mlp",
+      "architecture": {
+        "latent_dim": 192,
+        "expert_width": 512,
+        "expert_blocks": 3,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "temporal_width": 256,
+        "temporal_heads": 8,
+        "temporal_layers": 6,
+        "gate_width": 128
+      },
+      "gate": "channel",
+      "learning_rate": 0.0001,
+      "scheduler": {
+        "name": "cosine_legacy"
+      },
+      "dropout": 0.1,
+      "weight_decay": 0.001,
+      "auxiliary_weight": 0.05
+    },
+    {
+      "id": "m03",
+      "geometry_branch": "raw_mlp",
+      "architecture": {
+        "latent_dim": 192,
+        "expert_width": 512,
+        "expert_blocks": 3,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "temporal_width": 256,
+        "temporal_heads": 8,
+        "temporal_layers": 6,
+        "gate_width": 128
+      },
+      "gate": "channel",
+      "learning_rate": 0.0003,
+      "scheduler": {
+        "name": "cosine_legacy"
+      },
+      "dropout": 0.1,
+      "weight_decay": 0.001,
+      "auxiliary_weight": 0.05
+    },
+    {
+      "id": "m04",
+      "geometry_branch": "pointnn",
+      "architecture": {
+        "latent_dim": 192,
+        "expert_width": 512,
+        "expert_blocks": 3,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "temporal_width": 256,
+        "temporal_heads": 8,
+        "temporal_layers": 6,
+        "gate_width": 128
+      },
+      "gate": "scalar",
+      "learning_rate": 0.0001,
+      "scheduler": {
+        "name": "cosine_legacy"
+      },
+      "dropout": 0.1,
+      "weight_decay": 0.001,
+      "auxiliary_weight": 0.05
+    },
+    {
+      "id": "m05",
+      "geometry_branch": "pointnn",
+      "architecture": {
+        "latent_dim": 192,
+        "expert_width": 512,
+        "expert_blocks": 3,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "temporal_width": 256,
+        "temporal_heads": 8,
+        "temporal_layers": 6,
+        "gate_width": 128
+      },
+      "gate": "scalar",
+      "learning_rate": 0.0003,
+      "scheduler": {
+        "name": "cosine_legacy"
+      },
+      "dropout": 0.1,
+      "weight_decay": 0.001,
+      "auxiliary_weight": 0.05
+    },
+    {
+      "id": "m06",
+      "geometry_branch": "pointnn",
+      "architecture": {
+        "latent_dim": 192,
+        "expert_width": 512,
+        "expert_blocks": 3,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "temporal_width": 256,
+        "temporal_heads": 8,
+        "temporal_layers": 6,
+        "gate_width": 128
+      },
+      "gate": "channel",
+      "learning_rate": 0.0001,
+      "scheduler": {
+        "name": "cosine_legacy"
+      },
+      "dropout": 0.1,
+      "weight_decay": 0.001,
+      "auxiliary_weight": 0.05
+    },
+    {
+      "id": "m07",
+      "geometry_branch": "pointnn",
+      "architecture": {
+        "latent_dim": 192,
+        "expert_width": 512,
+        "expert_blocks": 3,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "temporal_width": 256,
+        "temporal_heads": 8,
+        "temporal_layers": 6,
+        "gate_width": 128
+      },
+      "gate": "channel",
+      "learning_rate": 0.0003,
+      "scheduler": {
+        "name": "cosine_legacy"
+      },
+      "dropout": 0.1,
+      "weight_decay": 0.001,
+      "auxiliary_weight": 0.05
+    }
+  ]
+}

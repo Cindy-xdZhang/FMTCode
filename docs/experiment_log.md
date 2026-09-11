@@ -1848,3 +1848,21 @@ Ibex实际时间（+03）：Raw 18:12:37–18:17:05；筛选18:19:05–18:35:30�
 科学commit `9b33826c91ece524d3ed36b9f42e288a8658eb3c`；配置SHA256 `67ac3e6397689f71e4cef9360a3629c2ea365871c0fc5063296e9f658c46703a`；冻结选择SHA256 `545e07fca5cb0bfa331d2c95984d6dfbd8512f129a845a9a5ee65aeaaee21039`。Ibex目录`/ibex/user/zhanx0o/FMT_Task6PNNDataSchedule_20260911`。`experiments/Report_Task6_PNNDataSchedule_1_3.py`复核108个模型的候选配置、训练样本数、更新数、样本曝光、学习率日志、最低验证步、配置/选择哈希、全局选择及门槛，均一致；此为保存记录核对，未重放权重/重新积分。只下载JSON/CSV/文本，不下载模型或轨迹数组。
 
 证据：`outputs/Verify_Task6_PNNTrans_1.3/checked_training_results.csv`、`selected_validation_comparison.csv`、`selection.json`、`status_summary.json`及`runtime_events.jsonl`。旧1.1/1.2及其他任务历史结果保持不变。
+
+### 2026-09-12 — Verify_Task6_FMTGeometryMoE_1.1 原 FMT 与几何双分支预注册
+
+用户提出频域分支 A（原 FMT）与几何分支 B 的混合专家重建。协议见 `docs/Task6_fmt_geometry_moe_protocol_1.1.md`；每流场使用冻结 3072 样本，九流场各自训练，输入七条完整路径线并重建它们。保持 192 维 token，仅 token 输入共享全连接解码器。
+
+| 版本/方法 | 技术与代码 | 当前性能证据 |
+|---|---|---|
+| Verify_Task6_FMTGeometryMoE_1.1 / fmt_moe + raw_mlp | 原 161 维 fmt_all → 可训练全连接专家 A；原几何 → 全连接专家 B；scalar/channel 门控；`FMT_Utils/Task6FMTGeometryMoE_3D.py` | 本地原配方一致性、容量/路由检查、实际小样本拟合和完整微型流程五项测试通过；无真实新测试结果 |
+| Verify_Task6_FMTGeometryMoE_1.1 / fmt_moe + pointnn | B 换为逐帧冻结 Point-NN + 6 层 256 宽 Transformer；其余相同 | 同上，性能待 Ibex 验证 |
+| Verify_Task6_FMTGeometryMoE_1.1 / geometry_moe | A 换成原几何全连接专家；与对应 FMT MoE 参数量、数据、预算相同 | 控制增加专家容量的作用 |
+| Verify_Task6_FMTGeometryMoE_1.1 / geometry_only | B + 相同解码器，保留相同 B/解码器初始参数 | 判断融合是否优于单几何分支 |
+| Verify_Task6_FMTGeometryMoE_1.1 / raw_frozen | 冻结 1.1 c1 Raw Transformer，原代码及 12000 更新 | 开发复用经配置/索引哈希核验的 1.3 同 3072 基线；最终三种子按冻结代码重训 |
+
+首先 18 个训练集过拟合检查，之后 24 个初筛模型、108 个完整开发模型。两种几何 B 各用验证选择一套跨九流场的统一候选；若两个家族均通过数值门槛，最终 189 个模型。学习率 0.0001/0.0003；dropout 0.1、weight decay 0.001；完整新方法均 72000 更新。门控依赖输入，初始 A/B=0.1/0.9，允许自行舍弃无益专家；早期共享解码辅助损失逐步归零。记录强制关 A、关 B 及错配 A 的验证误差作为依赖性诊断。
+
+本次与 1.3 并列的协议修订：旧版要求验证误差超过两种 Raw 才进入测试；新版仅要求所选家族各流场各方法验证误差有限且 <3，再诚实比较测试胜负。超过 Raw 是结果，不是测试准入条件。全连接 B 是新候选；此前最强 Raw 是 Transformer，不将它误称为已验证的纯全连接网络。
+
+原 FMT 的具体冻结调用包含六频率截断、范数/夹角/手性与邻居排序，不可逆；不能把完整有符号 DFT 也说成丢失信息。本版本无逆 DFT、无 PCA、无原坐标到输出的旁路。五项本地测试包含破坏预测文件后审计必失败；最终位置误差独立复算，缺方法/种子/流场不出完整平均值。无 checkpoint 文件。此条仅记录实现与预注册，不证明 MoE 优于基线。
