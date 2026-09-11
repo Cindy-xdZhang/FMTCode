@@ -1,0 +1,28 @@
+{
+  "experiment": "Verify_Task6_PNNTrans_1.1",
+  "output_root": "outputs/Verify_Task6_PNNTrans_1.1",
+  "source_cache": "/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910/outputs/mainExp_Task6_Reconstruction_3.1",
+  "source_config_sha256": "eaf8c0cf6e902589cd5c68b8811601b593fe040e51d660c354e320b705cca6cb",
+  "subset_cache": "/ibex/user/zhanx0o/FMT_Task6Scarce_20260910/outputs/Verify_Task6_ScarceGeneralization_4.1",
+  "subset_config_sha256": "2b6006ac4f01441dfd44b7f70655f115b82061fdac5b891bb9fdd33eb6b069c8",
+  "upstream_commit": "a85bfc365258a2c65a5f6ac289537b4d7a7cec0f",
+  "datasets": ["cylinder3d", "halfcylinderRe640", "halfcylinderRe6400", "tangaroa", "deltaWing_resampled", "deltaWing_LBM", "f22raptor", "boeing747", "smokeBuoyancy"],
+  "train_sizes": [256, 1024, 4096],
+  "primary_train_size": 1024,
+  "search_seed": 94110,
+  "seeds": [94111, 94112, 94113],
+  "arms": ["pnn_trans", "raw_trans"],
+  "training": {
+    "architecture": {"width": 128, "heads": 4, "layers": 3, "latent_dim": 192, "decoder_width": 512, "decoder_blocks": 3, "frequencies": 8, "alpha": 1000.0, "beta": 1.0},
+    "batch_size": 128, "updates": 12000, "warmup_updates": 200, "probe_every": 1000, "gradient_clip": 1.0
+  },
+  "fit_check": {"samples": 32, "updates": 2000, "batch_size": 32, "probe_every": 500, "learning_rate": 0.001, "maximum_error_ratio": 0.15, "minimum_zero_latent_error_ratio": 1.1},
+  "candidates": [
+    {"id": "c0", "learning_rate": 0.001, "dropout": 0.0, "weight_decay": 0.0001},
+    {"id": "c1", "learning_rate": 0.0003, "dropout": 0.1, "weight_decay": 0.001}
+  ],
+  "validation_gate_rmse_r": 3.0,
+  "selection": "One candidate minimizing equal-flow full-validation mean for pnn_trans at n=1024. All nine selected PNN and matched Raw validation RMSE/r must be below 3 before final-stage submission. Raw uses the identical candidate, architecture after input projection, and optimization budget. If the gate fails, report all validation results and do not open test.",
+  "evaluation": "Frozen seven-line 32-step 3.1/4.1 data. Position RMSE/r over 7x31 noninitial points. Test is a previously used benchmark, not new confirmation. Failed final models remain in reports and receive no test evaluation. Compare frozen 4.1/5.1 historical baselines separately, never replace them.",
+  "checkpoints": "No model files. Best state RAM only; retain predictions and scalar records."
+}

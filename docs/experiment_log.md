@@ -1678,3 +1678,16 @@ FMT由验证集选择c2（学习率1e-4、dropout .25、权重衰减 .01）；�
 **边界：** 本次未重训模型，训练/验证误差核对的是保存日志和选择逻辑；由于按协议不保留checkpoint，不能对原最优权重重新运行validation。测试和未见尺度预测已逐项独立复算。未重新积分原始流场，物理积分正确性仍引用3.1既有验证。本审计没有证明单一失败原因，也没有修改5.1算法或开始下一版训练。
 
 审计输出：`outputs/Verify_Task6_DirectAudit_1.1/scalar_audit.json`、`per_model_validation.csv`、`complete_validation_and_controls.csv`以及九流场独立JSON。5.1应作为失败版本保留，不能用于论文中声称FMT已优于Raw或已证明其tokenizer优势。
+
+### 2026-09-11 — Verify_Task6_PNNTrans_1.1 实施与预注册
+
+用户要求实现 `pnn_trans`：每个时间步用固定 Point-NN 空间算子编码七点，再经注意力 Transformer 压缩为小 latent，最后由全连接网络重建完整 primitive。已阅读原论文及固定源码 `a85bfc365258a2c65a5f6ac289537b4d7a7cec0f`，适配与协议见 `docs/Task6_pnn_trans_protocol_1.1.md`。此版不修改或解释性重命名4.1/5.1历史结果，也不预先将5.1失败归因于傅里叶变换的信息丢失。
+
+| 版本/方法 | 技术细节 | 主要代码 | 当前证据 |
+|---|---|---|---|
+| Verify_Task6_PNNTrans_1.1 / pnn_trans | 每帧7个48维位置编码+96维邻域聚合，保留身份得到1008维；3层128宽Transformer；192维latent；512宽全连接解码器 | FMT_Utils/Task6PNNTrans_3D.py | 本地4项算子/梯度/拟合测试和1项完整数据/选择/评价流程测试通过；尚无真实流场性能结论 |
+| Verify_Task6_PNNTrans_1.1 / raw_trans | 每帧21个坐标；相同Transformer、latent、解码器和训练配置，输入投影维数不同 | 同上 | 相同测试通过；这是新结构配对对照，不能替换冻结Raw-VAE基线 |
+
+固定前端没有可训练参数、没有跨批次统计、没有时间差分/时间离散傅里叶变换。单时刻邻域标准化不抹去全局漂移，因为原始位置编码仍进入latent。仅192维latent进入解码器，无解析逆变换、PCA或原始几何跳接。本版为确定性自编码器，未使用VAE后验/KL。
+
+沿用九流场、三种训练规模、原冻结数据及Cylinder时间政策；先真实训练集拟合，随后1024样本的36模型validation搜索。只有选定候选两臂在九流场全部validation<3，才提交162模型最终阶段；否则保留全部失败验证结果且不访问test。实际运行与结果待补，不保证优于既有FMT/Raw/PCA。
