@@ -1594,3 +1594,28 @@ Re6400首个种子93110：新test 0.023288174，未见尺度 0.024521196，原2.
 沿用3.1/4.1九流场、256/1024/4096嵌套训练集，1024主设置，搜索94110，最终94111/94112/94113。72个搜索模型仅使用validation；统一FMT配置，主Raw采用相同配置，另保留独立validation最佳Raw；选择JSON冻结后才最终评估。测试仍是已用benchmark，不是新confirmation。数据时间、积分长度及物理RMSE/r均不变。变更包含取消固定通路、数值标准化及训练预算，不能视为单因素消融。
 
 本地7项测试通过：完整前向FMT系数一致、Raw/FMT初始可训练权重相同、统计量仅来自train、清零网络消除全部输入相关重建、禁用逆傅里叶/PCA函数仍能实际训练、独立PCA基线、合成小数据完整部署链。完整链覆盖配置选择冻结、Raw重复配置只拟合一次、禁止提前读test，以及篡改选择或预测时审计拒绝。合成拟合误差1.146439→.010191只是程序测试，不是流场实验性能。真实小样本GPU拟合检查及正式结果以Ibex登记/输出为准。
+
+真实训练数据32样本拟合检查（不是test性能）：
+
+| 流场 | 输入 | 未训练RMSE/r | 拟合RMSE/r | 误差下降比例 | 潜变量清零/正常误差 | 通过 |
+|---|---|---:|---:|---:|---:|---|
+| cylinder3d | signed_fmt16_neural | 11.71856281 | 0.01060726 | 99.909% | 1104.92 | True |
+| cylinder3d | raw_neural | 11.71856281 | 0.01666272 | 99.858% | 703.30 | True |
+| halfcylinderRe640 | signed_fmt16_neural | 11.86779772 | 0.00774584 | 99.935% | 1532.41 | True |
+| halfcylinderRe640 | raw_neural | 11.86779772 | 0.00991118 | 99.916% | 1197.43 | True |
+| halfcylinderRe6400 | signed_fmt16_neural | 38.84255944 | 0.02146553 | 99.945% | 1809.81 | True |
+| halfcylinderRe6400 | raw_neural | 38.84255944 | 0.02984566 | 99.923% | 1301.52 | True |
+| tangaroa | signed_fmt16_neural | 15.03150517 | 0.00749647 | 99.950% | 2005.74 | True |
+| tangaroa | raw_neural | 15.03150517 | 0.00755313 | 99.950% | 1990.12 | True |
+| deltaWing_resampled | signed_fmt16_neural | 3.53901189 | 0.00018418 | 99.995% | 19215.64 | True |
+| deltaWing_resampled | raw_neural | 3.53901189 | 0.00147974 | 99.958% | 2391.65 | True |
+| deltaWing_LBM | signed_fmt16_neural | 3.95821481 | 0.00015564 | 99.996% | 25433.90 | True |
+| deltaWing_LBM | raw_neural | 3.95821481 | 0.00121934 | 99.969% | 3246.20 | True |
+| f22raptor | signed_fmt16_neural | 58.83550697 | 0.00454862 | 99.992% | 12936.75 | True |
+| f22raptor | raw_neural | 58.83550697 | 0.05080833 | 99.914% | 1158.05 | True |
+| boeing747 | signed_fmt16_neural | 2.98054267 | 0.00029286 | 99.990% | 10180.60 | True |
+| boeing747 | raw_neural | 2.98054267 | 0.00317809 | 99.893% | 937.84 | True |
+| smokeBuoyancy | signed_fmt16_neural | 1.47963361 | 0.00433093 | 99.707% | 341.75 | True |
+| smokeBuoyancy | raw_neural | 1.47963361 | 0.00209452 | 99.858% | 706.69 | True |
+
+来源：科学commit `1496fd7c31a6dae3d71fd25228dfba6bafa3b289`，作业51724746_0..8，outputs/Verify_Task6_DirectNeural_5.1/fit_check/*/result.json。该检查只证明随机初始化网络可以学习这些训练几何，不证明未见primitive上的泛化或优于Raw。
