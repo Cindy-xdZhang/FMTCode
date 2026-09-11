@@ -3785,3 +3785,313 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 - 2026-09-11T18:08:26.618237+03:00 | 51743949 | Verify_Task6_PNNTrans_1.3 Task6 preflight | STARTED node=cn113-35-l device=CPU exit=None
 
 - 2026-09-11T18:09:15.543478+03:00 | 51743949 | Verify_Task6_PNNTrans_1.3 Task6 preflight | ENDED node=cn113-35-l device=CPU exit=0
+
+### 2026-09-11 — Verify_Task6_PNNTrans_1.3 验证完成：误差改善，仍未超过Raw
+
+9/9冻结Raw、27/27筛选、36/36配对GPU作业（72模型）成功。51743957于20:54:20 +03完成选择；51743958于20:56:25因性能门槛未过exit 1，最终81模型没有提交。选择l00：PNN=0.706685554、同结构Raw=0.566086842、冻结Raw=0.460250170；PNN两种比较均0/9胜场，方法解释见experiment_log同名条目。
+
+补全已下载的实际运行事件：
+
+- 2026-09-11T18:10:34.057951+03:00 | 51743950 | Verify_Task6_PNNTrans_1.3 Task6 prepare | STARTED node=cn113-35-l device=CPU exit=None
+
+- 2026-09-11T18:10:39.278846+03:00 | 51743950 | Verify_Task6_PNNTrans_1.3 Task6 prepare | ENDED node=cn113-35-l device=CPU exit=0
+
+- 2026-09-11T18:12:41.759645+03:00 | 51743953_1 | Verify_Task6_PNNTrans_1.3 Task6 baseline | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:12:41.759673+03:00 | 51743953_0 | Verify_Task6_PNNTrans_1.3 Task6 baseline | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:14:45.151759+03:00 | 51743953_0 | Verify_Task6_PNNTrans_1.3 Task6 baseline | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:14:45.151795+03:00 | 51743953_1 | Verify_Task6_PNNTrans_1.3 Task6 baseline | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:14:51.042729+03:00 | 51743953_8 | Verify_Task6_PNNTrans_1.3 Task6 baseline | STARTED node=gpu211-06 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:14:56.466005+03:00 | 51743953_2 | Verify_Task6_PNNTrans_1.3 Task6 baseline | STARTED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:14:56.466000+03:00 | 51743953_3 | Verify_Task6_PNNTrans_1.3 Task6 baseline | STARTED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:14:56.466014+03:00 | 51743953_4 | Verify_Task6_PNNTrans_1.3 Task6 baseline | STARTED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:14:58.860375+03:00 | 51743953_7 | Verify_Task6_PNNTrans_1.3 Task6 baseline | STARTED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:14:58.860383+03:00 | 51743953_5 | Verify_Task6_PNNTrans_1.3 Task6 baseline | STARTED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:14:58.860370+03:00 | 51743953_6 | Verify_Task6_PNNTrans_1.3 Task6 baseline | STARTED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:16:46.369643+03:00 | 51743953_8 | Verify_Task6_PNNTrans_1.3 Task6 baseline | ENDED node=gpu211-06 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:16:56.862774+03:00 | 51743953_4 | Verify_Task6_PNNTrans_1.3 Task6 baseline | ENDED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:16:56.859981+03:00 | 51743953_2 | Verify_Task6_PNNTrans_1.3 Task6 baseline | ENDED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:16:56.859395+03:00 | 51743953_3 | Verify_Task6_PNNTrans_1.3 Task6 baseline | ENDED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:16:57.875735+03:00 | 51743953_6 | Verify_Task6_PNNTrans_1.3 Task6 baseline | ENDED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:16:58.387234+03:00 | 51743953_7 | Verify_Task6_PNNTrans_1.3 Task6 baseline | ENDED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:17:04.829557+03:00 | 51743953_5 | Verify_Task6_PNNTrans_1.3 Task6 baseline | ENDED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:19:09.682167+03:00 | 51743954_1 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:19:09.681789+03:00 | 51743954_2 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:19:09.800243+03:00 | 51743954_3 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu213-06 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:19:09.972697+03:00 | 51743954_0 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu214-06 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:21:19.340550+03:00 | 51743954_4 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu214-06 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:23:30.504242+03:00 | 51743954_5 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:23:30.525699+03:00 | 51743954_8 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:23:30.523860+03:00 | 51743954_6 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:23:30.523833+03:00 | 51743954_7 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:23:30.627326+03:00 | 51743954_10 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-06 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:23:30.625107+03:00 | 51743954_11 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-06 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:23:30.625124+03:00 | 51743954_9 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-06 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:23:30.761869+03:00 | 51743954_13 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-02 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:23:30.761871+03:00 | 51743954_12 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-02 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:23:30.761895+03:00 | 51743954_14 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-02 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:23:36.674191+03:00 | 51743954_16 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu210-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:23:36.674201+03:00 | 51743954_15 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu210-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:23:36.674191+03:00 | 51743954_17 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu210-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:24:40.548698+03:00 | 51743954_1 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:24:40.548739+03:00 | 51743954_2 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:24:43.253265+03:00 | 51743954_0 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu214-06 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:24:52.894692+03:00 | 51743954_3 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu213-06 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:25:40.370915+03:00 | 51743954_20 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu213-06 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:25:40.706096+03:00 | 51743954_18 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:25:40.706121+03:00 | 51743954_19 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:26:53.202135+03:00 | 51743954_4 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu214-06 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:27:49.964499+03:00 | 51743954_21 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:27:49.964529+03:00 | 51743954_22 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:28:58.556278+03:00 | 51743954_11 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-06 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:28:59.421144+03:00 | 51743954_9 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-06 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:29:00.735268+03:00 | 51743954_7 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:29:00.735296+03:00 | 51743954_8 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:29:01.322173+03:00 | 51743954_10 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-06 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:29:01.771156+03:00 | 51743954_12 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-02 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:29:01.771114+03:00 | 51743954_14 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-02 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:29:02.721031+03:00 | 51743954_13 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-02 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:29:03.366736+03:00 | 51743954_6 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:29:07.121662+03:00 | 51743954_5 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:29:12.694307+03:00 | 51743954_16 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu210-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:29:12.693535+03:00 | 51743954_15 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu210-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:29:12.892352+03:00 | 51743954_17 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu210-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:29:58.681911+03:00 | 51743954_23 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:29:59.037443+03:00 | 51743954_24 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:29:59.037497+03:00 | 51743954_26 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:29:59.037406+03:00 | 51743954_25 | Verify_Task6_PNNTrans_1.3 Task6 screen | STARTED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:31:11.637553+03:00 | 51743954_19 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:31:11.637585+03:00 | 51743954_18 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:31:13.881472+03:00 | 51743954_20 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu213-06 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:33:17.865375+03:00 | 51743954_22 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:33:17.865305+03:00 | 51743954_21 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:35:29.108519+03:00 | 51743954_23 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-14 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:35:29.125971+03:00 | 51743954_26 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:35:29.124933+03:00 | 51743954_25 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:35:29.832490+03:00 | 51743954_24 | Verify_Task6_PNNTrans_1.3 Task6 screen | ENDED node=gpu211-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T18:36:25.547202+03:00 | 51743955 | Verify_Task6_PNNTrans_1.3 Task6 promote | STARTED node=cn113-35-l device=CPU exit=None
+
+- 2026-09-11T18:36:29.759999+03:00 | 51743955 | Verify_Task6_PNNTrans_1.3 Task6 promote | ENDED node=cn113-35-l device=CPU exit=0
+
+- 2026-09-11T18:38:31.981678+03:00 | 51743956_0 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:38:31.981644+03:00 | 51743956_1 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:38:32.227063+03:00 | 51743956_2 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu213-06 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:40:42.558084+03:00 | 51743956_3 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu214-06 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:42:52.423642+03:00 | 51743956_10 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu211-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:42:52.423626+03:00 | 51743956_11 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu211-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:42:52.512587+03:00 | 51743956_8 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:42:52.512622+03:00 | 51743956_9 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:42:52.617564+03:00 | 51743956_5 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu214-02 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:42:52.618431+03:00 | 51743956_6 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu212-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:42:52.617521+03:00 | 51743956_4 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu214-02 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:42:52.618417+03:00 | 51743956_7 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu212-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:45:02.069739+03:00 | 51743956_12 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu210-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:45:02.069774+03:00 | 51743956_13 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu210-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:45:02.118642+03:00 | 51743956_14 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu210-14 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:45:02.118619+03:00 | 51743956_15 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu210-14 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:45:05.599548+03:00 | 51743956_16 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu210-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T18:45:05.599555+03:00 | 51743956_17 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu210-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:39:24.505328+03:00 | 51743956_0 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:39:34.551575+03:00 | 51743956_1 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:40:07.646105+03:00 | 51743956_2 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu213-06 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:40:43.705085+03:00 | 51743956_19 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:40:43.704979+03:00 | 51743956_20 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:40:43.914038+03:00 | 51743956_18 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu213-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:41:29.480352+03:00 | 51743956_3 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu214-06 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:42:52.005595+03:00 | 51743956_21 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu203-09-r device=NVIDIA A100-SXM4-80GB exit=None
+
+- 2026-09-11T19:43:45.595363+03:00 | 51743956_8 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:43:47.753187+03:00 | 51743956_7 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu212-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:43:48.100510+03:00 | 51743956_11 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu211-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:43:52.731608+03:00 | 51743956_6 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu212-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:43:56.112352+03:00 | 51743956_10 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu211-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:44:06.543639+03:00 | 51743956_4 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu214-02 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:44:30.456055+03:00 | 51743956_9 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:44:31.414448+03:00 | 51743956_5 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu214-02 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:44:57.706331+03:00 | 51743956_24 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu214-02 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:44:57.706303+03:00 | 51743956_25 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu214-02 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:44:58.443564+03:00 | 51743956_27 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu212-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:44:58.459556+03:00 | 51743956_29 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:44:58.443593+03:00 | 51743956_28 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu212-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:44:58.523178+03:00 | 51743956_23 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu214-06 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:44:58.608771+03:00 | 51743956_26 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu213-06 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:44:58.751830+03:00 | 51743956_22 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu214-14 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:47:43.097631+03:00 | 51743956_17 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu210-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:48:06.301571+03:00 | 51743956_16 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu210-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:49:11.487460+03:00 | 51743956_15 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu210-14 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:49:18.145424+03:00 | 51743956_32 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu211-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:49:18.329988+03:00 | 51743956_31 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:49:18.340585+03:00 | 51743956_30 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu214-18 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:49:41.146824+03:00 | 51743956_13 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu210-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:49:42.170209+03:00 | 51743956_14 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu210-14 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:50:14.522613+03:00 | 51743956_12 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu210-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T19:51:28.039513+03:00 | 51743956_33 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu214-14 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:51:28.083611+03:00 | 51743956_35 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu213-14 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T19:51:28.083555+03:00 | 51743956_34 | Verify_Task6_PNNTrans_1.3 Task6 refine | STARTED node=gpu213-14 device=Tesla V100-SXM2-32GB exit=None
+
+- 2026-09-11T20:25:41.990726+03:00 | 51743956_21 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu203-09-r device=NVIDIA A100-SXM4-80GB exit=0
+
+- 2026-09-11T20:41:39.387847+03:00 | 51743956_19 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:41:46.645020+03:00 | 51743956_20 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:42:07.812985+03:00 | 51743956_18 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu213-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:45:42.881241+03:00 | 51743956_23 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu214-06 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:45:54.085539+03:00 | 51743956_29 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:45:55.299161+03:00 | 51743956_28 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu212-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:46:02.726229+03:00 | 51743956_27 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu212-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:46:08.512489+03:00 | 51743956_26 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu213-06 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:46:17.301420+03:00 | 51743956_24 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu214-02 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:46:18.534875+03:00 | 51743956_22 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu214-14 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:46:38.796359+03:00 | 51743956_25 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu214-02 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:50:22.937142+03:00 | 51743956_32 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu211-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:50:57.369536+03:00 | 51743956_31 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu212-10 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:51:02.351252+03:00 | 51743956_30 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu214-18 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:52:00.420793+03:00 | 51743956_35 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu213-14 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:52:48.881351+03:00 | 51743956_33 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu214-14 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:52:58.607889+03:00 | 51743956_34 | Verify_Task6_PNNTrans_1.3 Task6 refine | ENDED node=gpu213-14 device=Tesla V100-SXM2-32GB exit=0
+
+- 2026-09-11T20:54:14.104063+03:00 | 51743957 | Verify_Task6_PNNTrans_1.3 Task6 select | STARTED node=cn113-35-l device=CPU exit=None
+
+- 2026-09-11T20:54:19.721828+03:00 | 51743957 | Verify_Task6_PNNTrans_1.3 Task6 select | ENDED node=cn113-35-l device=CPU exit=0
+
+- 2026-09-11T20:56:20.706668+03:00 | 51743958 | Verify_Task6_PNNTrans_1.3 Task6 advance | STARTED node=cn113-35-l device=CPU exit=None
+
+- 2026-09-11T20:56:25.000100+03:00 | 51743958 | Verify_Task6_PNNTrans_1.3 Task6 advance | ENDED node=cn113-35-l device=CPU exit=1
