@@ -1,0 +1,14 @@
+{
+  "experiment": "Verify_Task6_DirectAudit_1.1",
+  "source_run": "/ibex/user/zhanx0o/FMT_Task6DirectNeural_20260911/outputs/Verify_Task6_DirectNeural_5.1",
+  "output_root": "outputs/Verify_Task6_DirectAudit_1.1",
+  "scientific_commit": "1496fd7c31a6dae3d71fd25228dfba6bafa3b289",
+  "source_config_sha256": "6b3c62a72994b7d870259895ee3b5d74c65e80f0ce7b5fd2044df19fe3ec9227",
+  "selection_sha256": "97654b01dd5e2208bb8eebd6205dc7fb22f9c4a1c203878d9ad74d99a761ce64",
+  "scientific_file_sha256": {
+    "FMT_Utils/Task6DirectNeural_3D.py": "5188dc420f4be1d28bbd31d84dddbdf2f2e3d79787657a7577382054f2ccc1ad",
+    "FMT_Utils/Task6PCABaseline_3D.py": "8e4f711c342492b7dfdb1f342a279315a1c6477ef2c5e0df2c8fddfc721b14b0",
+    "experiments/Task6_DirectNeural_5_1.py": "0b498bfb501cae63eb290a4430085f4550b3a5530a16d4a8c821a2f9419f27d8",
+    "FMT_Utils/PrimitiveVAE_3D.py": "0e585cb66a815458d472cac7e63e2c4a0756b060a90641cbbd569ebdea2c2d14"
+  }
+}
