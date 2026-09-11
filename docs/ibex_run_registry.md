@@ -3542,3 +3542,30 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 - 2026-09-11T13:05:22.959394+03:00 | 51737885 | Verify_Task6_PNNTrans_1.1 Task6 select | ENDED node=cn113-35-l device=CPU exit=0
 - 2026-09-11T13:07:26.428926+03:00 | 51737886 | Verify_Task6_PNNTrans_1.1 Task6 advance | STARTED node=cn113-35-l device=CPU exit=None
 - 2026-09-11T13:07:30.649089+03:00 | 51737886 | Verify_Task6_PNNTrans_1.1 Task6 advance | ENDED node=cn113-35-l device=CPU exit=1
+
+### 2026-09-11 — Verify_Task6_PNNTrans_1.2 Ibex提交
+
+独立目录`/ibex/user/zhanx0o/FMT_Task6PNNTransTuning_20260911`，科学代码固定`4a206bc1d02f74e006643ac20b85425f846e7673`。开始/结束事件由远端任务脚本自动登记。
+
+- 2026-09-11T14:11:23.372565+03:00 | 51740510 | Verify_Task6_PNNTrans_1.2 Task6 preflight | config/Verify_Task6_PNNTrans_1.2.json SHA256=ef8ea7cda2498d7bebcfaec42997fb14e4f4f1a0728db0d5f3dbbd089c6e78c1 | 4a206bc1d02f74e006643ac20b85425f846e7673 | CPU array=None dependency=None | SUBMITTED
+
+- 2026-09-11T14:11:23.433684+03:00 | 51740511 | Verify_Task6_PNNTrans_1.2 Task6 prepare | config/Verify_Task6_PNNTrans_1.2.json SHA256=ef8ea7cda2498d7bebcfaec42997fb14e4f4f1a0728db0d5f3dbbd089c6e78c1 | 4a206bc1d02f74e006643ac20b85425f846e7673 | CPU array=None dependency=51740510 | SUBMITTED
+
+- 2026-09-11T14:11:23.493720+03:00 | 51740512 | Verify_Task6_PNNTrans_1.2 Task6 capacity_check | config/Verify_Task6_PNNTrans_1.2.json SHA256=ef8ea7cda2498d7bebcfaec42997fb14e4f4f1a0728db0d5f3dbbd089c6e78c1 | 4a206bc1d02f74e006643ac20b85425f846e7673 | GPU A100/V100 array=0-1%2 dependency=51740511 | SUBMITTED
+
+- 2026-09-11T14:11:23.553626+03:00 | 51740513 | Verify_Task6_PNNTrans_1.2 Task6 screen | config/Verify_Task6_PNNTrans_1.2.json SHA256=ef8ea7cda2498d7bebcfaec42997fb14e4f4f1a0728db0d5f3dbbd089c6e78c1 | 4a206bc1d02f74e006643ac20b85425f846e7673 | GPU A100/V100 array=0-47%18 dependency=51740512 | SUBMITTED
+
+- 2026-09-11T14:11:23.617171+03:00 | 51740514 | Verify_Task6_PNNTrans_1.2 Task6 promote | config/Verify_Task6_PNNTrans_1.2.json SHA256=ef8ea7cda2498d7bebcfaec42997fb14e4f4f1a0728db0d5f3dbbd089c6e78c1 | 4a206bc1d02f74e006643ac20b85425f846e7673 | CPU array=None dependency=51740513 | SUBMITTED
+
+- 2026-09-11T14:11:23.677273+03:00 | 51740515 | Verify_Task6_PNNTrans_1.2 Task6 refine | config/Verify_Task6_PNNTrans_1.2.json SHA256=ef8ea7cda2498d7bebcfaec42997fb14e4f4f1a0728db0d5f3dbbd089c6e78c1 | 4a206bc1d02f74e006643ac20b85425f846e7673 | GPU A100/V100 array=0-35%18 dependency=51740514 | SUBMITTED
+
+- 2026-09-11T14:11:23.738193+03:00 | 51740516 | Verify_Task6_PNNTrans_1.2 Task6 select | config/Verify_Task6_PNNTrans_1.2.json SHA256=ef8ea7cda2498d7bebcfaec42997fb14e4f4f1a0728db0d5f3dbbd089c6e78c1 | 4a206bc1d02f74e006643ac20b85425f846e7673 | CPU array=None dependency=51740515 | SUBMITTED
+
+- 2026-09-11T14:11:23.798946+03:00 | 51740517 | Verify_Task6_PNNTrans_1.2 Task6 advance | config/Verify_Task6_PNNTrans_1.2.json SHA256=ef8ea7cda2498d7bebcfaec42997fb14e4f4f1a0728db0d5f3dbbd089c6e78c1 | 4a206bc1d02f74e006643ac20b85425f846e7673 | CPU array=None dependency=51740516 | SUBMITTED
+
+已同步的实际开始/结束事件（后续自动写入远端registry和events）：
+
+- 2026-09-11T14:11:53.824833+03:00 | 51740510 | Verify_Task6_PNNTrans_1.2 Task6 preflight | STARTED node=cn604-17 device=CPU exit=None
+- 2026-09-11T14:12:16.470349+03:00 | 51740510 | Verify_Task6_PNNTrans_1.2 Task6 preflight | ENDED node=cn604-17 device=CPU exit=0
+- 2026-09-11T14:14:03.113283+03:00 | 51740511 | Verify_Task6_PNNTrans_1.2 Task6 prepare | STARTED node=cn113-35-l device=CPU exit=None
+- 2026-09-11T14:14:08.324542+03:00 | 51740511 | Verify_Task6_PNNTrans_1.2 Task6 prepare | ENDED node=cn113-35-l device=CPU exit=0
