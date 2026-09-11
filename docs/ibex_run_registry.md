@@ -3432,3 +3432,30 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 | 51736122_8 / 51736122 | t6-independent-audit | 2026-09-11T12:10:08 | 2026-09-11T12:11:41 | 2026-09-11T12:12:18 | cn604-18 / CPU | COMPLETED/0:0 |
 
 5.1所有Slurm进程退出0，但科学验收失败：37个FMT最终模型validation>=3，未生成其test预测；完整比较不能丢弃失败后重算FMT总体平均。独立审计九流场通过，287组预测/8323行记录全部复算，最大差1.0614e-13；没有checkpoint。方法级结论见experiment_log中新审计条目。
+
+### 2026-09-11 — Verify_Task6_PNNTrans_1.1 提交
+
+独立目录：`/ibex/user/zhanx0o/FMT_Task6PNNTrans_20260911`。科学代码固定 `21108d729e36a5d4186c673d361d9a913171ea0e`。每阶段开始/结束由任务脚本自动补写远端registry及events；验证门槛失败时不提交最终训练。
+
+- 2026-09-11T12:47:25.528937+03:00 | 51737881 | Verify_Task6_PNNTrans_1.1 Task6 preflight | config/Verify_Task6_PNNTrans_1.1.json SHA256=8c91aa9abfec86f493ccb38c4033437d090001d799652eb7d49ea07113223fe2 | 21108d729e36a5d4186c673d361d9a913171ea0e | CPU array=None dependency=None | SUBMITTED
+
+- 2026-09-11T12:47:25.604491+03:00 | 51737882 | Verify_Task6_PNNTrans_1.1 Task6 prepare | config/Verify_Task6_PNNTrans_1.1.json SHA256=8c91aa9abfec86f493ccb38c4033437d090001d799652eb7d49ea07113223fe2 | 21108d729e36a5d4186c673d361d9a913171ea0e | CPU array=0-8%3 dependency=51737881 | SUBMITTED
+
+- 2026-09-11T12:47:25.666644+03:00 | 51737883 | Verify_Task6_PNNTrans_1.1 Task6 fit_check | config/Verify_Task6_PNNTrans_1.1.json SHA256=8c91aa9abfec86f493ccb38c4033437d090001d799652eb7d49ea07113223fe2 | 21108d729e36a5d4186c673d361d9a913171ea0e | GPU A100/V100 array=0-8%9 dependency=51737882 | SUBMITTED
+
+- 2026-09-11T12:47:25.728970+03:00 | 51737884 | Verify_Task6_PNNTrans_1.1 Task6 search | config/Verify_Task6_PNNTrans_1.1.json SHA256=8c91aa9abfec86f493ccb38c4033437d090001d799652eb7d49ea07113223fe2 | 21108d729e36a5d4186c673d361d9a913171ea0e | GPU A100/V100 array=0-17%18 dependency=51737883 | SUBMITTED
+
+- 2026-09-11T12:47:25.795048+03:00 | 51737885 | Verify_Task6_PNNTrans_1.1 Task6 select | config/Verify_Task6_PNNTrans_1.1.json SHA256=8c91aa9abfec86f493ccb38c4033437d090001d799652eb7d49ea07113223fe2 | 21108d729e36a5d4186c673d361d9a913171ea0e | CPU array=None dependency=51737884 | SUBMITTED
+
+- 2026-09-11T12:47:25.858079+03:00 | 51737886 | Verify_Task6_PNNTrans_1.1 Task6 advance | config/Verify_Task6_PNNTrans_1.1.json SHA256=8c91aa9abfec86f493ccb38c4033437d090001d799652eb7d49ea07113223fe2 | 21108d729e36a5d4186c673d361d9a913171ea0e | CPU array=None dependency=51737885 | SUBMITTED
+
+已核验的实际运行事件（来自远端自动登记；后续事件继续留在远端registry/events）：
+
+- 2026-09-11T12:48:10.994122+03:00 | 51737881 | Verify_Task6_PNNTrans_1.1 Task6 preflight | STARTED node=cn604-18 device=CPU exit=None
+- 2026-09-11T12:48:23.739980+03:00 | 51737881 | Verify_Task6_PNNTrans_1.1 Task6 preflight | ENDED node=cn604-18 device=CPU exit=0
+- 2026-09-11T12:50:19.303638+03:00 | 51737882_0 | Verify_Task6_PNNTrans_1.1 Task6 prepare | STARTED node=cn604-18 device=CPU exit=None
+- 2026-09-11T12:50:19.303726+03:00 | 51737882_2 | Verify_Task6_PNNTrans_1.1 Task6 prepare | STARTED node=cn604-18 device=CPU exit=None
+- 2026-09-11T12:50:19.303678+03:00 | 51737882_1 | Verify_Task6_PNNTrans_1.1 Task6 prepare | STARTED node=cn604-18 device=CPU exit=None
+- 2026-09-11T12:50:21.646277+03:00 | 51737882_0 | Verify_Task6_PNNTrans_1.1 Task6 prepare | ENDED node=cn604-18 device=CPU exit=0
+- 2026-09-11T12:50:22.018140+03:00 | 51737882_1 | Verify_Task6_PNNTrans_1.1 Task6 prepare | ENDED node=cn604-18 device=CPU exit=0
+- 2026-09-11T12:50:22.100645+03:00 | 51737882_2 | Verify_Task6_PNNTrans_1.1 Task6 prepare | ENDED node=cn604-18 device=CPU exit=0
