@@ -4095,3 +4095,22 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 - 2026-09-11T20:56:20.706668+03:00 | 51743958 | Verify_Task6_PNNTrans_1.3 Task6 advance | STARTED node=cn113-35-l device=CPU exit=None
 
 - 2026-09-11T20:56:25.000100+03:00 | 51743958 | Verify_Task6_PNNTrans_1.3 Task6 advance | ENDED node=cn113-35-l device=CPU exit=1
+
+### 2026-09-12 — Verify_Task6_FMTGeometryMoE_1.1 Ibex 首次部署
+
+工作目录 `/ibex/user/zhanx0o/FMT_Task6FMTGeometryMoE_20260912`；Task6，每流场 3072 条训练 primitive，九流场分别训练。
+
+科学代码 commit `4859c0caec1ac519f5932ed8772a8c775e71f688`；配置 `config/Verify_Task6_FMTGeometryMoE_1.1.json`，SHA256 `2ad8965a5240f59ef8543f44c53a7d41d5f55e265117c1a49c059a400e76249c`。完整 sbatch 参数保存于 `outputs/Verify_Task6_FMTGeometryMoE_1.1/submissions.jsonl`。
+
+| 作业 ID | 阶段 / 数组 | 提交时间（+03:00） | 预期设备 | 依赖 |
+|---|---|---|---|---|
+| 51758242 | preflight / 单作业 | 2026-09-12T01:40:34.084607+03:00 | CPU | 无 |
+| 51758243 | prepare / 单作业 | 2026-09-12T01:40:34.152060+03:00 | CPU | 51758242 |
+| 51758244 | fit_check / 0-8%9 | 2026-09-12T01:40:34.214833+03:00 | GPU A100/V100 | 51758243 |
+| 51758245 | screen / 0-23%18 | 2026-09-12T01:40:34.282086+03:00 | GPU A100/V100 | 51758244 |
+| 51758246 | promote / 单作业 | 2026-09-12T01:40:34.346847+03:00 | CPU | 51758245 |
+| 51758247 | refine / 0-35%18 | 2026-09-12T01:40:34.407207+03:00 | GPU A100/V100 | 51758246 |
+| 51758248 | select / 单作业 | 2026-09-12T01:40:34.472379+03:00 | CPU | 51758247 |
+| 51758249 | advance / 单作业 | 2026-09-12T01:40:34.535816+03:00 | CPU | 51758248 |
+
+提交时为 PENDING；GPU 阶段最多 18 个作业并行，拟合检查最多 9 个。所有阶段按 afterok 依赖执行，失败不会继续读测试。后续真实节点、GPU、起止时间自动追加远端 `runtime_events.jsonl` 与同名注册文档；最终作业 ID 由 advance 阶段按冻结验证选择提交后登记。
