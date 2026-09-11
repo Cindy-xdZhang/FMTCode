@@ -1,0 +1,337 @@
+{
+  "source_cache": "/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910/outputs/mainExp_Task6_Reconstruction_3.1",
+  "source_config_sha256": "eaf8c0cf6e902589cd5c68b8811601b593fe040e51d660c354e320b705cca6cb",
+  "subset_cache": "/ibex/user/zhanx0o/FMT_Task6Scarce_20260910/outputs/Verify_Task6_ScarceGeneralization_4.1",
+  "subset_config_sha256": "2b6006ac4f01441dfd44b7f70655f115b82061fdac5b891bb9fdd33eb6b069c8",
+  "datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "deltaWing_resampled",
+    "deltaWing_LBM",
+    "f22raptor",
+    "boeing747",
+    "smokeBuoyancy"
+  ],
+  "train_sizes": [
+    3072
+  ],
+  "primary_train_size": 3072,
+  "search_seed": 94110,
+  "seeds": [
+    94111,
+    94112,
+    94113
+  ],
+  "upstream_commit": "a85bfc365258a2c65a5f6ac289537b4d7a7cec0f",
+  "experiment": "Verify_Task6_PNNTrans_1.3",
+  "output_root": "outputs/Verify_Task6_PNNTrans_1.3",
+  "arms": [
+    "pnn_trans",
+    "raw_trans",
+    "raw_frozen"
+  ],
+  "screen_datasets": [
+    "cylinder3d",
+    "f22raptor",
+    "smokeBuoyancy"
+  ],
+  "promote_count": 4,
+  "validation_gate_rmse_r": 3.0,
+  "training": {
+    "batch_size": 128,
+    "updates": 72000,
+    "warmup_updates": 3000,
+    "probe_every": 3000,
+    "gradient_clip": 1.0
+  },
+  "screening": {
+    "batch_size": 128,
+    "updates": 12000,
+    "warmup_updates": 1200,
+    "probe_every": 2000,
+    "gradient_clip": 1.0
+  },
+  "baseline_training": {
+    "architecture": {
+      "width": 128,
+      "heads": 4,
+      "layers": 3,
+      "latent_dim": 192,
+      "decoder_width": 512,
+      "decoder_blocks": 3,
+      "frequencies": 8,
+      "alpha": 1000.0,
+      "beta": 1.0
+    },
+    "batch_size": 128,
+    "updates": 12000,
+    "warmup_updates": 200,
+    "probe_every": 1000,
+    "gradient_clip": 1.0
+  },
+  "baseline_candidate": {
+    "id": "c1",
+    "learning_rate": 0.0003,
+    "dropout": 0.1,
+    "weight_decay": 0.001
+  },
+  "selection": "Use the same 3072 training primitives for PNN, matched Raw and freshly retrained frozen Raw. Screen nine learning-rate/scheduler combinations on the three preregistered flows. Promote the three best and the old-rate/cosine reference; if reference is already in the top three, add the next candidate. Retrain both arms on all nine flows. Select one configuration by nine-flow mean PNN validation error. Final testing requires all selected PNN/matched Raw and frozen Raw errors below 3 and PNN mean better than both Raw controls.",
+  "evaluation": "Search n=3072 seed94110; final n=3072 seeds94111/94112/94113. Frozen validation/test unchanged. Training set is an exact threefold nested expansion of n=1024. Updates rise from 24000 to 72000 to preserve average sample exposure, so cross-version differences are not a data-only ablation.",
+  "checkpoints": "No checkpoint files; best state in RAM only.",
+  "candidates": [
+    {
+      "id": "l00",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0001,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.01,
+      "geometry_mix_fraction": 0.5,
+      "scheduler": {
+        "name": "cosine_legacy"
+      }
+    },
+    {
+      "id": "l01",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.01,
+      "geometry_mix_fraction": 0.5,
+      "scheduler": {
+        "name": "cosine_legacy"
+      }
+    },
+    {
+      "id": "l02",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.001,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.01,
+      "geometry_mix_fraction": 0.5,
+      "scheduler": {
+        "name": "cosine_legacy"
+      }
+    },
+    {
+      "id": "l03",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0001,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.01,
+      "geometry_mix_fraction": 0.5,
+      "scheduler": {
+        "name": "one_cycle",
+        "pct_start": 0.1,
+        "div_factor": 25.0,
+        "final_div_factor": 400.0
+      }
+    },
+    {
+      "id": "l04",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.01,
+      "geometry_mix_fraction": 0.5,
+      "scheduler": {
+        "name": "one_cycle",
+        "pct_start": 0.1,
+        "div_factor": 25.0,
+        "final_div_factor": 400.0
+      }
+    },
+    {
+      "id": "l05",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.001,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.01,
+      "geometry_mix_fraction": 0.5,
+      "scheduler": {
+        "name": "one_cycle",
+        "pct_start": 0.1,
+        "div_factor": 25.0,
+        "final_div_factor": 400.0
+      }
+    },
+    {
+      "id": "l06",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0001,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.01,
+      "geometry_mix_fraction": 0.5,
+      "scheduler": {
+        "name": "plateau",
+        "factor": 0.5,
+        "patience": 2,
+        "threshold": 0.001,
+        "min_lr_ratio": 0.01
+      }
+    },
+    {
+      "id": "l07",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.0003,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.01,
+      "geometry_mix_fraction": 0.5,
+      "scheduler": {
+        "name": "plateau",
+        "factor": 0.5,
+        "patience": 2,
+        "threshold": 0.001,
+        "min_lr_ratio": 0.01
+      }
+    },
+    {
+      "id": "l08",
+      "architecture": {
+        "width": 256,
+        "heads": 8,
+        "layers": 6,
+        "latent_dim": 192,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "frequencies": 8,
+        "alpha": 1000.0,
+        "beta": 1.0
+      },
+      "learning_rate": 0.001,
+      "dropout": 0.2,
+      "weight_decay": 0.01,
+      "input_mlp": true,
+      "feature_conditioning": "floored_standardization",
+      "input_dropout": 0.0,
+      "feature_noise": 0.01,
+      "geometry_mix_fraction": 0.5,
+      "scheduler": {
+        "name": "plateau",
+        "factor": 0.5,
+        "patience": 2,
+        "threshold": 0.001,
+        "min_lr_ratio": 0.01
+      }
+    }
+  ],
+  "previous_train_size": 1024,
+  "reference_candidate": "l01",
+  "previous_cache": "/ibex/user/zhanx0o/FMT_Task6PNNTransTuning_20260911/outputs/Verify_Task6_PNNTrans_1.2",
+  "previous_config_sha256": "ef8ea7cda2498d7bebcfaec42997fb14e4f4f1a0728db0d5f3dbbd089c6e78c1",
+  "previous_selection_sha256": "301b56e8e3b3f0fa635a2185ce834f29058ba23db3d4129443d92bdd4fd57a07",
+  "previous_candidate": "c11"
+}

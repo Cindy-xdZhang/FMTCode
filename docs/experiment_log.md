@@ -1788,3 +1788,17 @@ Ibex预检51740510于14:12:16 +03正常完成，cn604-17，九项测试全部通
 科学commit `4a206bc1d02f74e006643ac20b85425f846e7673`，配置SHA256 `ef8ea7cda2498d7bebcfaec42997fb14e4f4f1a0728db0d5f3dbbd089c6e78c1`，冻结选择SHA256 `301b56e8e3b3f0fa635a2185ce834f29058ba23db3d4129443d92bdd4fd57a07`。Ibex目录`/ibex/user/zhanx0o/FMT_Task6PNNTransTuning_20260911`。`experiments/Report_Task6_PNNTuning_1_2.py`对120个模型的fit/result、最低validation选择步、更新数、样本曝光量、配置/选择哈希和九流场均值完成一致性复核；这是保存记录核对，没有重放权重或重新积分。只同步JSON/CSV/文本日志，没有保存/下载checkpoint。
 
 标量证据：`outputs/Verify_Task6_PNNTrans_1.2/checked_training_results.csv`（完整120模型）、`selected_validation_comparison.csv`、`selection.json`、`status_summary.json`。本版作为未超过基线的结果保留，原1.1及4.1/5.1指标不改写。
+
+### 2026-09-11 — Verify_Task6_PNNTrans_1.3 三倍数据与学习率调度预注册
+
+用户要求训练集扩大约三倍并增加学习率/调度器实验。新协议`docs/Task6_pnn_trans_protocol_1.3.md`：每流场1024→3072个真实primitive，保留旧训练子集前缀及固定validation/test；九流场分别训练。固定1.2最佳c11网络和正则化，搜索学习率0.0001/0.0003/0.001×原余弦、OneCycleLR、ReduceLROnPlateau，共9候选。
+
+| 版本/方法 | 技术及代码 | 对照及当前证据 |
+|---|---|---|
+| Verify_Task6_PNNTrans_1.3 / pnn_trans | 6层256宽Transformer、192维latent不变；新学习率调度`FMT_Utils/Task6PNNSchedule_3D.py`，三倍数据与预算 | 筛选12000更新、完整72000更新；本地14项算子/调度/拟合/流程测试通过，无真实新性能结论 |
+| Verify_Task6_PNNTrans_1.3 / raw_trans | 相同候选、结构、数据及72000更新，仅输入为原始坐标 | 用于表示比较，不替换冻结Raw |
+| Verify_Task6_PNNTrans_1.3 / raw_frozen | 原1.1 c1网络、原代码及12000更新，使用相同3072项重新训练 | 不沿用1024数据上的0.624913充当同数据基线 |
+
+9个冻结Raw重训＋27个三流场筛选＋72个九流场配对模型，共108个开发模型；保留旧学习率/余弦配置l01进入完整比较。按PNN九流场验证均值选统一候选，通过每流场<3且胜过两种Raw后，才提交九流场×三种子×三臂的81个最终模型，训练规模只用3072。原结果不改写。
+
+14项本地测试验证了原余弦逐步学习率及同种子权重/指标与1.2逐值一致、单周期的起点/峰值/终点与不改变Adam动量、平台调度忽略第0步并按停滞降学习率、三种调度实际训练、三倍嵌套索引、重新训练Raw及测试门槛和最终三臂流程。测试中平台调度器内部Infinity哨兵导致严格JSON保存失败，已仅对该内部状态以字符串记录；真实损失仍要求有限。最佳权重仅RAM保存，未下载checkpoint。
