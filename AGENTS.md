@@ -57,3 +57,7 @@ Task4-b 当前阈值以2026-09-06用户最新指定为准：**Channel IVD>5.785�
 2026-09-10 用户要求继续修复Task6高重建误差，当前修复版本为`mainExp_Task6_Reconstruction_3.1`：新signed_fmt10保留复系数方向/相位和七线身份，192维VAE重建完整几何，每流场24万训练primitive。旧161维fmt_all和2.1历史结果保持；两者不可混称。新配置仅由train/validation诊断选择，目标每流场test RMSE/r<1，保持原误差单位与完整轨迹；详见`docs/Task6_reconstruction_protocol_3.1.md`。
 
 2026-09-10 用户要求小训练集与dropout等泛化验证，新增 `Verify_Task6_ScarceGeneralization_4.1`：每流场256/1024/4096个primitive，1024为主比较；初始化也只读取小训练集。8个FMT与4个Raw候选只用validation选择，最后以3个新子集/优化种子评估。保留无正则化Raw、相同正则化Raw及validation选择Raw对照；3.1代码与结果冻结。协议见 `docs/Task6_scarce_generalization_protocol_4.1.md`。
+
+## Task6 直接神经编码核验（2026-09-11，5.1）
+
+当前用户授权版本为`Verify_Task6_DirectNeural_5.1`，协议`docs/Task6_direct_neural_protocol_5.1.md`。冻结3.1/4.1数据与历史结果，删除神经推理中的固定解析逆变换/PCA矩阵。新网络全部输入相关映射由训练学习，192维潜变量；Raw/FMT均651维输入且网络参数完全相同，PCA仅作独立基线。先真实32样本拟合核验，再九流场validation选配置，最后三档样本量、三种子测试。测试集是已用benchmark；不能将完整16频FMT本身描述成压缩token，也不能预设必定胜出。结果仅记入experiment_log。

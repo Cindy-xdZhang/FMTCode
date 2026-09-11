@@ -1,0 +1,27 @@
+{
+  "experiment": "Verify_Task6_DirectNeural_5.1",
+  "output_root": "outputs/Verify_Task6_DirectNeural_5.1",
+  "source_cache": "/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910/outputs/mainExp_Task6_Reconstruction_3.1",
+  "source_config_sha256": "eaf8c0cf6e902589cd5c68b8811601b593fe040e51d660c354e320b705cca6cb",
+  "subset_cache": "/ibex/user/zhanx0o/FMT_Task6Scarce_20260910/outputs/Verify_Task6_ScarceGeneralization_4.1",
+  "subset_config_sha256": "2b6006ac4f01441dfd44b7f70655f115b82061fdac5b891bb9fdd33eb6b069c8",
+  "datasets": ["cylinder3d", "halfcylinderRe640", "halfcylinderRe6400", "tangaroa", "deltaWing_resampled", "deltaWing_LBM", "f22raptor", "boeing747", "smokeBuoyancy"],
+  "train_sizes": [256, 1024, 4096],
+  "primary_train_size": 1024,
+  "search_seed": 94110,
+  "seeds": [94111, 94112, 94113],
+  "arms": ["signed_fmt16_neural", "raw_neural"],
+  "training": {"width": 512, "blocks": 3, "latent_dim": 192, "batch_size": 256, "updates": 20000, "probe_every": 1000, "beta": 0.00001, "gradient_clip": 1.0},
+  "fit_check": {"samples": 32, "updates": 4000, "batch_size": 32, "probe_every": 500, "learning_rate": 0.001, "maximum_error_ratio": 0.1, "minimum_zero_latent_error_ratio": 1.1},
+  "candidates": [
+    {"id": "c0", "learning_rate": 0.0003, "dropout": 0.0, "weight_decay": 0.0},
+    {"id": "c1", "learning_rate": 0.0003, "dropout": 0.1, "weight_decay": 0.0001},
+    {"id": "c2", "learning_rate": 0.0001, "dropout": 0.25, "weight_decay": 0.01},
+    {"id": "c3", "learning_rate": 0.001, "dropout": 0.1, "weight_decay": 0.0001}
+  ],
+  "validation_gate_rmse_r": 3.0,
+  "selection": "Minimum equal-flow validation error at 1024 samples. One FMT candidate across all flows/sizes; paired Raw uses same candidate; independently selected Raw is retained as additional control.",
+  "evaluation": "Same previously used benchmark and physical RMSE/r; whole unseen seven-line primitives. No target-assisted transforms, test selection, analytic inverse or PCA inside neural models.",
+  "pca": "Independent train-only 192-dimensional geometry baseline; no neural initialization or inference dependency.",
+  "checkpoints": "Never written; best state only in RAM. Scalar records and predictions retained."
+}
