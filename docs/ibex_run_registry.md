@@ -3569,3 +3569,8 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 - 2026-09-11T14:12:16.470349+03:00 | 51740510 | Verify_Task6_PNNTrans_1.2 Task6 preflight | ENDED node=cn604-17 device=CPU exit=0
 - 2026-09-11T14:14:03.113283+03:00 | 51740511 | Verify_Task6_PNNTrans_1.2 Task6 prepare | STARTED node=cn113-35-l device=CPU exit=None
 - 2026-09-11T14:14:08.324542+03:00 | 51740511 | Verify_Task6_PNNTrans_1.2 Task6 prepare | ENDED node=cn113-35-l device=CPU exit=0
+
+### 2026-09-11 — Verify_Task6_PNNTrans_1.2 最大网络GPU检查通过
+
+- 51740512_0 | Verify_Task6_PNNTrans_1.2 Task6 capacity_check pnn_trans | START 2026-09-11T14:16:05+03:00 END 14:16:21 | gpu609-02 | Tesla V100-SXM2-32GB | COMPLETED exit 0; peak 2761677312 bytes; 数值有限/反向通过，非性能结论。
+- 51740512_1 | Verify_Task6_PNNTrans_1.2 Task6 capacity_check raw_trans | START 2026-09-11T14:16:05+03:00 END 14:16:18 | gpu214-18 | Tesla V100-SXM2-32GB | COMPLETED exit 0; peak 2700282368 bytes; 数值有限/反向通过，非性能结论。
