@@ -4333,3 +4333,87 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 | 51809307_1 | 2026-09-12T12:52:16.126037+03:00 | cn605-19-l / CPU | 2026-09-12T12:52:56.809564+03:00 / 0 |
 
 证据：`outputs/Verify_Task36_MultiGate_1.1/status_snapshot.json`；持续起止记录由远端 `runtime_events.jsonl` 与同名 registry 自动追加。
+
+### 2026-09-12 — Verify_Task36_MultiGate_1.1 开发完成、数值检查未通过
+
+核查时间 2026-09-12T17:43:27.237292+03:00，科学 commit `c3f95c9b9d5d89750fd7ff38f7ff9467c7aa1885`，配置 `config/Verify_Task36_MultiGate_1.1.json`，SHA256 `efa42423912b2dfbfbf29acf13aa6ddd7034a675c512b637931fe72a0310323a`。75 个已提交进程：74 正常结束，后续提交阶段 1 个因验证数值检查不通过退出 1；全部 63 GPU 模型正常结束。最多 18 GPU 同时运行，实际设备见下表。没有提交最终 189 模型。九流场主方法验证 AP=0.683724，重建 RMSE=0.670255 r；结论及五个超限对照详见 `docs/experiment_log.md` 同名段落。
+
+| 进程 ID | 阶段 / 数据与方法 | 实际开始（+03:00） | 实际结束（+03:00） | 实际节点 / 设备 | 退出码 |
+|---|---|---|---|---|---|
+| 51809306 | preflight | 2026-09-12T12:51:01.048015+03:00 | 2026-09-12T12:51:57.670687+03:00 | cn605-27-l / CPU | 0 |
+| 51809307_0 | prepare / cylinder3d | 2026-09-12T12:52:05.359150+03:00 | 2026-09-12T12:52:44.611890+03:00 | cn605-27-l / CPU | 0 |
+| 51809307_8 | prepare / smokeBuoyancy | 2026-09-12T12:52:10.750952+03:00 | 2026-09-12T12:52:53.293740+03:00 | cn603-12-l / CPU | 0 |
+| 51809307_3 | prepare / tangaroa | 2026-09-12T12:52:13.308081+03:00 | 2026-09-12T12:58:02.844546+03:00 | cn605-10-l / CPU | 0 |
+| 51809307_4 | prepare / deltaWing_resampled | 2026-09-12T12:52:13.308103+03:00 | 2026-09-12T12:53:51.155206+03:00 | cn605-10-l / CPU | 0 |
+| 51809307_6 | prepare / f22raptor | 2026-09-12T12:52:13.623886+03:00 | 2026-09-12T14:04:15.685319+03:00 | cn603-13-l / CPU | 0 |
+| 51809307_7 | prepare / boeing747 | 2026-09-12T12:52:13.623904+03:00 | 2026-09-12T13:56:49.130890+03:00 | cn603-13-l / CPU | 0 |
+| 51809307_5 | prepare / deltaWing_LBM | 2026-09-12T12:52:15.112103+03:00 | 2026-09-12T13:01:06.521571+03:00 | cn603-24-r / CPU | 0 |
+| 51809307_2 | prepare / halfcylinderRe6400 | 2026-09-12T12:52:15.343719+03:00 | 2026-09-12T12:55:53.850854+03:00 | cn605-18-r / CPU | 0 |
+| 51809307_1 | prepare / halfcylinderRe640 | 2026-09-12T12:52:16.126037+03:00 | 2026-09-12T12:52:56.809564+03:00 | cn605-19-l / CPU | 0 |
+| 51809310_6 | search / cylinder3d / single_task6 | 2026-09-12T14:06:19.276849+03:00 | 2026-09-12T14:18:50.704142+03:00 | gpu211-18 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_4 | search / cylinder3d / joint_geometry_only | 2026-09-12T14:06:19.276870+03:00 | 2026-09-12T14:17:36.067954+03:00 | gpu211-18 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_5 | search / cylinder3d / single_task3 | 2026-09-12T14:06:19.276883+03:00 | 2026-09-12T14:19:34.876758+03:00 | gpu211-18 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_7 | search / halfcylinderRe640 / joint_task_gates | 2026-09-12T14:06:19.902704+03:00 | 2026-09-12T14:20:23.781467+03:00 | gpu210-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_10 | search / halfcylinderRe640 / joint_fixed_routes | 2026-09-12T14:06:19.902704+03:00 | 2026-09-12T14:19:31.894755+03:00 | gpu210-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_8 | search / halfcylinderRe640 / joint_shared_gate | 2026-09-12T14:06:19.902705+03:00 | 2026-09-12T14:20:18.435892+03:00 | gpu210-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_9 | search / halfcylinderRe640 / joint_raw_task_gates | 2026-09-12T14:06:19.902727+03:00 | 2026-09-12T14:19:51.947637+03:00 | gpu210-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_1 | search / cylinder3d / joint_shared_gate | 2026-09-12T14:06:19.975964+03:00 | 2026-09-12T14:21:17.021726+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_2 | search / cylinder3d / joint_raw_task_gates | 2026-09-12T14:06:19.976199+03:00 | 2026-09-12T14:21:31.130890+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_11 | search / halfcylinderRe640 / joint_geometry_only | 2026-09-12T14:06:19.976529+03:00 | 2026-09-12T14:16:57.210426+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_3 | search / cylinder3d / joint_fixed_routes | 2026-09-12T14:06:19.976922+03:00 | 2026-09-12T14:21:44.672614+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_0 | search / cylinder3d / joint_task_gates | 2026-09-12T14:06:23.206975+03:00 | 2026-09-12T14:21:05.784763+03:00 | gpu202-16-r / NVIDIA A100-SXM4-80GB | 0 |
+| 51809310_17 | search / halfcylinderRe6400 / joint_fixed_routes | 2026-09-12T14:10:28.389383+03:00 | 2026-09-12T14:23:25.320379+03:00 | gpu211-14 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_16 | search / halfcylinderRe6400 / joint_raw_task_gates | 2026-09-12T14:10:29.100210+03:00 | 2026-09-12T14:24:12.274555+03:00 | gpu212-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_14 | search / halfcylinderRe6400 / joint_task_gates | 2026-09-12T14:10:29.100213+03:00 | 2026-09-12T14:24:07.656413+03:00 | gpu212-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_15 | search / halfcylinderRe6400 / joint_shared_gate | 2026-09-12T14:10:29.100228+03:00 | 2026-09-12T14:24:13.473292+03:00 | gpu212-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_12 | search / halfcylinderRe640 / single_task3 | 2026-09-12T14:10:35.750273+03:00 | 2026-09-12T14:21:19.531858+03:00 | gpu212-06 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_13 | search / halfcylinderRe640 / single_task6 | 2026-09-12T14:10:35.750289+03:00 | 2026-09-12T14:23:10.393970+03:00 | gpu212-06 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_19 | search / halfcylinderRe6400 / single_task3 | 2026-09-12T14:19:05.589773+03:00 | 2026-09-12T14:29:57.911802+03:00 | gpu214-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_18 | search / halfcylinderRe6400 / joint_geometry_only | 2026-09-12T14:19:05.589793+03:00 | 2026-09-12T14:28:57.454599+03:00 | gpu214-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_20 | search / halfcylinderRe6400 / single_task6 | 2026-09-12T14:19:05.900785+03:00 | 2026-09-12T14:32:21.254048+03:00 | gpu213-06 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_21 | search / tangaroa / joint_task_gates | 2026-09-12T14:21:20.317083+03:00 | 2026-09-12T14:35:47.630299+03:00 | gpu202-16-r / NVIDIA A100-SXM4-80GB | 0 |
+| 51809310_23 | search / tangaroa / joint_raw_task_gates | 2026-09-12T14:21:21.841637+03:00 | 2026-09-12T14:35:54.281568+03:00 | gpu212-14 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_26 | search / tangaroa / single_task3 | 2026-09-12T14:21:22.072364+03:00 | 2026-09-12T14:32:07.787479+03:00 | gpu211-18 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_25 | search / tangaroa / joint_geometry_only | 2026-09-12T14:21:22.074873+03:00 | 2026-09-12T14:33:15.856881+03:00 | gpu211-18 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_24 | search / tangaroa / joint_fixed_routes | 2026-09-12T14:21:22.077564+03:00 | 2026-09-12T14:37:58.144647+03:00 | gpu211-18 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_22 | search / tangaroa / joint_shared_gate | 2026-09-12T14:21:25.650021+03:00 | 2026-09-12T14:35:20.206476+03:00 | gpu202-09-r / NVIDIA A100-SXM4-80GB | 0 |
+| 51809310_27 | search / tangaroa / single_task6 | 2026-09-12T14:23:33.737887+03:00 | 2026-09-12T14:37:05.210949+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_28 | search / deltaWing_resampled / joint_task_gates | 2026-09-12T14:23:33.738103+03:00 | 2026-09-12T14:38:02.872647+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_30 | search / deltaWing_resampled / joint_raw_task_gates | 2026-09-12T14:23:34.605453+03:00 | 2026-09-12T14:37:40.811805+03:00 | gpu210-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_32 | search / deltaWing_resampled / joint_geometry_only | 2026-09-12T14:23:34.605492+03:00 | 2026-09-12T14:33:25.439993+03:00 | gpu210-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_29 | search / deltaWing_resampled / joint_shared_gate | 2026-09-12T14:23:34.605539+03:00 | 2026-09-12T14:37:44.570994+03:00 | gpu210-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_31 | search / deltaWing_resampled / joint_fixed_routes | 2026-09-12T14:23:34.605555+03:00 | 2026-09-12T14:36:23.624113+03:00 | gpu210-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_33 | search / deltaWing_resampled / single_task3 | 2026-09-12T14:25:44.192053+03:00 | 2026-09-12T14:37:13.797925+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_34 | search / deltaWing_resampled / single_task6 | 2026-09-12T14:25:44.192091+03:00 | 2026-09-12T14:38:55.317694+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_35 | search / deltaWing_LBM / joint_task_gates | 2026-09-12T14:25:44.192148+03:00 | 2026-09-12T14:40:26.322207+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_37 | search / deltaWing_LBM / joint_raw_task_gates | 2026-09-12T14:30:08.027730+03:00 | 2026-09-12T14:43:56.975843+03:00 | gpu212-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_36 | search / deltaWing_LBM / joint_shared_gate | 2026-09-12T14:30:08.293346+03:00 | 2026-09-12T14:43:43.113054+03:00 | gpu212-06 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_38 | search / deltaWing_LBM / joint_fixed_routes | 2026-09-12T14:32:20.798292+03:00 | 2026-09-12T14:45:29.887013+03:00 | gpu214-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_39 | search / deltaWing_LBM / joint_geometry_only | 2026-09-12T14:34:32.326520+03:00 | 2026-09-12T14:44:12.402198+03:00 | gpu214-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_40 | search / deltaWing_LBM / single_task3 | 2026-09-12T14:34:32.538441+03:00 | 2026-09-12T14:45:41.905370+03:00 | gpu213-06 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_41 | search / deltaWing_LBM / single_task6 | 2026-09-12T14:34:32.682598+03:00 | 2026-09-12T14:50:18.381428+03:00 | gpu211-18 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_42 | search / f22raptor / joint_task_gates | 2026-09-12T14:36:43.258347+03:00 | 2026-09-12T14:51:09.412658+03:00 | gpu202-16-r / NVIDIA A100-SXM4-80GB | 0 |
+| 51809310_45 | search / f22raptor / joint_fixed_routes | 2026-09-12T14:36:44.084759+03:00 | 2026-09-12T14:49:33.896290+03:00 | gpu211-18 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_44 | search / f22raptor / joint_raw_task_gates | 2026-09-12T14:36:44.105163+03:00 | 2026-09-12T14:50:38.665215+03:00 | gpu214-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_43 | search / f22raptor / joint_shared_gate | 2026-09-12T14:36:45.080214+03:00 | 2026-09-12T14:51:00.276381+03:00 | gpu202-09-r / NVIDIA A100-SXM4-80GB | 0 |
+| 51809310_50 | search / boeing747 / joint_shared_gate | 2026-09-12T14:38:54.294253+03:00 | 2026-09-12T14:52:46.616736+03:00 | gpu210-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_51 | search / boeing747 / joint_raw_task_gates | 2026-09-12T14:38:54.294278+03:00 | 2026-09-12T14:52:46.891414+03:00 | gpu210-02 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_49 | search / boeing747 / joint_task_gates | 2026-09-12T14:38:54.377505+03:00 | 2026-09-12T14:56:24.023274+03:00 | gpu211-18 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_47 | search / f22raptor / single_task3 | 2026-09-12T14:38:54.570431+03:00 | 2026-09-12T14:50:19.984038+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_48 | search / f22raptor / single_task6 | 2026-09-12T14:38:54.570618+03:00 | 2026-09-12T14:52:05.882658+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_46 | search / f22raptor / joint_geometry_only | 2026-09-12T14:38:54.570645+03:00 | 2026-09-12T14:48:52.393498+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_53 | search / boeing747 / joint_geometry_only | 2026-09-12T14:41:05.317440+03:00 | 2026-09-12T14:51:14.119143+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_52 | search / boeing747 / joint_fixed_routes | 2026-09-12T14:41:05.317476+03:00 | 2026-09-12T14:54:53.592712+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_56 | search / smokeBuoyancy / joint_task_gates | 2026-09-12T14:45:29.882700+03:00 | 2026-09-12T14:59:31.780262+03:00 | gpu214-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_55 | search / boeing747 / single_task6 | 2026-09-12T14:45:29.882716+03:00 | 2026-09-12T14:58:02.193645+03:00 | gpu214-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_54 | search / boeing747 / single_task3 | 2026-09-12T14:45:30.345686+03:00 | 2026-09-12T14:57:09.667697+03:00 | gpu609-08 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_58 | search / smokeBuoyancy / joint_raw_task_gates | 2026-09-12T14:47:44.971281+03:00 | 2026-09-12T15:02:23.037245+03:00 | gpu214-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_57 | search / smokeBuoyancy / joint_shared_gate | 2026-09-12T14:47:45.854597+03:00 | 2026-09-12T15:02:30.090588+03:00 | gpu609-06 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_60 | search / smokeBuoyancy / joint_geometry_only | 2026-09-12T14:50:01.469740+03:00 | 2026-09-12T14:59:53.979701+03:00 | gpu212-10 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_59 | search / smokeBuoyancy / joint_fixed_routes | 2026-09-12T14:50:01.490812+03:00 | 2026-09-12T15:03:24.728534+03:00 | gpu213-06 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_62 | search / smokeBuoyancy / single_task6 | 2026-09-12T14:52:25.537194+03:00 | 2026-09-12T15:05:14.040336+03:00 | gpu213-06 / Tesla V100-SXM2-32GB | 0 |
+| 51809310_61 | search / smokeBuoyancy / single_task3 | 2026-09-12T14:52:27.073193+03:00 | 2026-09-12T15:05:12.222746+03:00 | gpu213-14 / Tesla V100-SXM2-32GB | 0 |
+| 51809311 | select | 2026-09-12T15:05:24.963714+03:00 | 2026-09-12T15:05:35.618000+03:00 | cn113-35-l / CPU | 0 |
+| 51809312 | advance | 2026-09-12T15:05:44.089798+03:00 | 2026-09-12T15:05:51.313296+03:00 | cn113-35-l / CPU | 1 |
+
+完整调度终态及 GPU 型号由 `outputs/Verify_Task36_MultiGate_1.1/evidence_development/scheduler_development.psv` 和 `runtime_events.jsonl` 交叉保留；失败进程 51809312 未重写或删除。
