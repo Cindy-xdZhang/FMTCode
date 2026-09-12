@@ -1937,3 +1937,24 @@ Ibex 独立 checkout（科学 commit `4859c0caec1ac519f5932ed8772a8c775e71f688`�
 复核：Ibex 已从实际预测数组独立复算位置误差；本地再从逐次 CSV 检查七种方法每种 27 个 dataset/seed 组合与尺度完整性，复算所有宏平均值，与 final_audit.json 一致；冻结配置/选择哈希一致，全部开发与最终拟合使用 3072 项（训练集小样本拟合检查为 32 项），189 次最终拟合齐全，无失败，未保存或下载 checkpoint。结果仅支持本版本数据、结构与训练预算下的结论。
 
 证据位置：`outputs/Verify_Task6_FMTGeometryMoE_1.1/{metrics.csv,final_audit.json,selection.json,status_summary.json,analysis_verified.json}`；复算代码 `experiments/Summarize_Task6_FMTGeometryMoE_1_1.py`，原训练代码 `FMT_Utils/Task6FMTGeometryMoE_3D.py`，协议 `docs/Task6_fmt_geometry_moe_protocol_1.1.md`。完整标量指标和日志已下载；轨迹数组保留 Ibex 审计，模型无落盘。
+
+### 2026-09-12 — Verify_Task36_MultiGate_1.1 联合分类与重建的任务专用门控
+
+用户提出 Task3＋Task6 联合训练，以分类目标和重建目标训练不同任务的分支选择。本次已实现 `Verify_Task36_MultiGate_1.1`，协议 `docs/Task36_multigate_protocol_1.1.md`。共享原 FMT 专家 A 与全连接几何专家 B，分类和重建各有独立门控/输出头，端到端同时训练。原 FMT 161 维、每专家 192 维；两个任务各用自己的 192 维混合 token，同时服务两任务所需专家对合计 384 维，不能误称为统一 192 维存储。
+
+| 方法版本 | 具体技术、代码与对照 | 当前性能证据 |
+|---|---|---|
+| Verify_Task36_MultiGate_1.1 / joint_task_gates | `FMT_Utils/Task36MultiGate_3D.py`；共享双专家、分类/重建独立门控，两个归一化损失相加 | 六项本地测试通过；未取得真实新性能 |
+| 同版 / joint_shared_gate | 两个任务共用同一门控，专家/输出头相同 | 判断任务专用路由是否必要 |
+| 同版 / joint_raw_task_gates | A 改为原几何输入；与主方法参数量及初始化相同 | 判断是否为 FMT 收益 |
+| 同版 / joint_fixed_routes | 分类固定用 FMT A，重建固定用几何 B | 与预设分工比较 |
+| 同版 / joint_geometry_only | 只有几何 B，共同训练两任务 | 与纯几何多任务表示比较 |
+| 同版 / single_task3、single_task6 | 共享结构分别只优化分类或重建，均重新训练 | 判断联合学习的收益和负迁移 |
+
+九流场各使用相同冻结 3072 训练 primitive；根据原中心种子、原时刻，从原加载空间整场 IVD p95 补算分类标签，保持原划分。`FMT_Utils/Task36Labels_3D.py` 复用旧 IVD 标量与插值算子；比较使用 float64 的 p95 阈值，缓存的值/阈值可直接逐项核验。标签、IVD、物理位置和时间均不作为网络输入。分类包含可变尺度，因此未见尺度分类是 Task5 式扩展；不直接覆盖旧固定尺度 Task3 主表。整个联合编码器获得分类监督，不再称为纯自监督 Task6。
+
+训练固定原验证选择的全连接结构、学习率 0.0003、dropout 0.1、weight decay 0.001、72000 更新。分类采用按训练类别比例加权的交叉熵/log(2)，重建采用三维平方误差/训练集平均几何方差，相加；去除上一版每个专家都承担重建的辅助项，允许自然任务分工。门控都从 0.5/0.5 开始，不在主方法中强制分工。联合 checkpoint 按同一个验证损失和选取，分类阈值在该 checkpoint 的 validation 上选 F1；两个测试指标分别报告。
+
+六项测试检查独立门控、容量匹配/固定路由、损失归一化、整场 IVD 阈值、真实联合拟合和完整七方法标签/训练/评估流程，包括破坏预测后审计拒绝。首轮单元测试的解析场端点恰与整场 p95 相同，导致用“查询点 p95 必不相同”检验标签域的断言不成立；改为查询仅中心点来检验整场阈值不依赖查询集合，生产算法未因此改变。后续六项测试全部通过。
+
+开发 63 模型、最终 189 模型，全部方法保留；先开发，再冻结 selection 并生成 test 标签，之后最终训练/独立审计。任务相关门控是可检验机制：需要在 AP–重建误差两维对照单任务、共享门控、双几何和固定分工，不能只凭门控权重不同就宣布有效。历史 MoE 1.1 结果不改写。无 checkpoint 落盘。
