@@ -1,0 +1,111 @@
+{
+  "source_cache": "/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910/outputs/mainExp_Task6_Reconstruction_3.1",
+  "source_config_sha256": "eaf8c0cf6e902589cd5c68b8811601b593fe040e51d660c354e320b705cca6cb",
+  "subset_cache": "/ibex/user/zhanx0o/FMT_Task6Scarce_20260910/outputs/Verify_Task6_ScarceGeneralization_4.1",
+  "subset_config_sha256": "2b6006ac4f01441dfd44b7f70655f115b82061fdac5b891bb9fdd33eb6b069c8",
+  "datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "deltaWing_resampled",
+    "deltaWing_LBM",
+    "f22raptor",
+    "boeing747",
+    "smokeBuoyancy"
+  ],
+  "primary_train_size": 9216,
+  "search_seed": 94110,
+  "seeds": [
+    94111,
+    94112,
+    94113
+  ],
+  "training": {
+    "batch_size": 128,
+    "updates": 72000,
+    "warmup_updates": 3000,
+    "probe_every": 3000,
+    "gradient_clip": 1.0
+  },
+  "validation_gate_rmse_r": 3.0,
+  "experiment": "Verify_Task36_BalancedScale_1.2",
+  "output_root": "outputs/Verify_Task36_BalancedScale_1.2",
+  "label_max_spatial_dim": 96,
+  "variants": [
+    "joint_task_gates",
+    "joint_shared_gate",
+    "joint_raw_task_gates",
+    "joint_raw_shared_gate",
+    "joint_fixed_routes",
+    "joint_geometry_only",
+    "single_task3",
+    "single_task6"
+  ],
+  "objective": "classification_weight * class-balanced BCE/log(2) + reconstruction MSE in neighbor-radius units",
+  "labels": "IVD at original center seed and t0, threshold is p95 of the whole loaded spatial field at t0; never given as network input.",
+  "selection": "Checkpoint: (1-validation AP)+validation RMSE/r, active tasks only. Per-size/per-variant hyperparameter uses nine-flow validation mean. All sizes and variants get final tests.",
+  "checkpoint_policy": "No model files. Best weights in RAM only.",
+  "benchmark": "Same already-used 3072-sample Task6 subsets and held-out geometries; newly attached Task3-style labels. Joint training is supervised plus self-supervised, not pure Task6 self-supervision.",
+  "train_sizes": [
+    3072,
+    9216
+  ],
+  "previous_cache": "/ibex/user/zhanx0o/FMT_Task36MultiGate_20260912/outputs/Verify_Task36_MultiGate_1.1",
+  "previous_config_sha256": "efa42423912b2dfbfbf29acf13aa6ddd7034a675c512b637931fe72a0310323a",
+  "evaluation_policy": "User requested final evaluation on 2026-09-12. Finite RMSE >=3 is flagged as an engineering failure but is evaluated and retained; never silently omitted.",
+  "primary_method": "joint_shared_gate",
+  "data_growth_reason": "Already authorized because frozen 1.1 validation showed shared-gate underperformance; not chosen from any test result.",
+  "candidates": [
+    {
+      "id": "balance1",
+      "geometry_branch": "raw_mlp",
+      "architecture": {
+        "latent_dim": 192,
+        "expert_width": 512,
+        "expert_blocks": 3,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "temporal_width": 256,
+        "temporal_heads": 8,
+        "temporal_layers": 6,
+        "gate_width": 128
+      },
+      "gate": "scalar",
+      "learning_rate": 0.0003,
+      "scheduler": {
+        "name": "cosine_legacy"
+      },
+      "dropout": 0.1,
+      "weight_decay": 0.001,
+      "auxiliary_weight": 0.0,
+      "classification_width": 256,
+      "classification_weight": 1.0
+    },
+    {
+      "id": "balance4",
+      "geometry_branch": "raw_mlp",
+      "architecture": {
+        "latent_dim": 192,
+        "expert_width": 512,
+        "expert_blocks": 3,
+        "decoder_width": 768,
+        "decoder_blocks": 4,
+        "temporal_width": 256,
+        "temporal_heads": 8,
+        "temporal_layers": 6,
+        "gate_width": 128
+      },
+      "gate": "scalar",
+      "learning_rate": 0.0003,
+      "scheduler": {
+        "name": "cosine_legacy"
+      },
+      "dropout": 0.1,
+      "weight_decay": 0.001,
+      "auxiliary_weight": 0.0,
+      "classification_width": 256,
+      "classification_weight": 4.0
+    }
+  ]
+}
