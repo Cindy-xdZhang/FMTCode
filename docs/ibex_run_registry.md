@@ -5759,3 +5759,57 @@ Science commit `6bfc357bc8d9ac321f91cfb512eb39d2facf0332`; config `config/Ablati
 - Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T21:58:31.874352+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865626", "array_index": "1", "host": "gpu510-07"}
 
 - Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T21:58:41.899855+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865628", "array_index": "3", "host": "gpu510-07"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T22:01:38.422593+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51864113", "array_index": "6", "host": "gpu609-09"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T22:02:38.687804+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51864114", "array_index": "7", "host": "gpu609-09"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T22:02:45.488255+00:00", "phase": "select", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51863929", "array_index": null, "host": "cn604-02"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T22:02:50.015992+00:00", "phase": "select", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51863929", "array_index": null, "host": "cn604-02"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:01:23.101883+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865620", "array_index": "5", "host": "gpu510-07"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:01:34.804252+00:00", "phase": "rank", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51865621", "array_index": null, "host": "cn604-02"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:01:41.300525+00:00", "phase": "rank", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51865621", "array_index": null, "host": "cn604-02"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:01:46.214302+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51865916", "array_index": "0", "host": "gpu208-18"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:01:46.597585+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51865917", "array_index": "1", "host": "gpu208-14"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:02:13.782312+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865934", "array_index": "3", "host": "gpu510-07"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:02:15.132234+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "job": "51865933", "array_index": "2", "host": "dgpu502-37"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:02:47.080334+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51865916", "array_index": "0", "host": "gpu208-18"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:02:54.011523+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51865961", "array_index": "4", "host": "gpu208-18"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:03:32.540121+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865934", "array_index": "3", "host": "gpu510-07"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:03:37.725781+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51865993", "array_index": "5", "host": "gpu210-10"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:04:00.989817+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51865933", "array_index": "2", "host": "dgpu502-37"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:04:11.343649+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA A100-SXM4-80GB", "job": "51866029", "array_index": "6", "host": "gpu101-09-r"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:05:41.647620+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51865917", "array_index": "1", "host": "gpu208-14"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:05:49.081606+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51865622", "array_index": "7", "host": "gpu208-14"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:06:40.736757+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA A100-SXM4-80GB", "job": "51866029", "array_index": "6", "host": "gpu101-09-r"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:08:27.437073+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51865961", "array_index": "4", "host": "gpu208-18"}
+
+- Task4-c 4.7 completed: 16/16 trainings and 20/20 scheduler tasks COMPLETED exit0; independent validation metrics, original metadata, ranking and selection checks passed with max error 1.67e-16. Report remains on Ibex: outputs/Ablation_Task4C_RepresentationResolution_4.7/independent_development_audit.json. No test access.
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:08:57.402660+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51865993", "array_index": "5", "host": "gpu210-10"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:11:07.653516+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51865622", "array_index": "7", "host": "gpu208-14"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:11:11.937175+00:00", "phase": "select", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51865623", "array_index": null, "host": "cn604-18"}
+
+- Ablation_Task4C_SupervisedContrastive_4.10 runtime status: {"time": "2026-09-13T22:11:15.037413+00:00", "phase": "select", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51865623", "array_index": null, "host": "cn604-18"}
+
+- Task4-c 4.10 completed: 14/14 trainings, 17/17 scheduler tasks COMPLETED exit0, independent all-scope validation metrics/ranking/selection passed, max error 1.67e-16, no test or weights. Report remains on Ibex: outputs/Ablation_Task4C_SupervisedContrastive_4.10/independent_development_audit.json. Selector SHA256 fdd2d61a84d6490269760ae40fc8cccbf787e5ae9a118403d3dadc140dbc7320.

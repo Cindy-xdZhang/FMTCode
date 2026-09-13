@@ -28,4 +28,6 @@
 
 工程核验覆盖：两个实际网络零权重与原分类器连续三步更新/随机数逐值相同；独立NumPy公式及有限差分梯度；排列不变性、无正样本/相同表示和非法温度；正权重全部参数有限梯度；拒绝test；真实缓存pilot全部14次训练、对照保留和三种子选择。核验记录集中到`outputs/Verify_Task4C_SupervisedContrastiveCode_4.10/checks.json`，一次性代码以内联命令执行，不保留新增test/verify脚本。正式科学成绩另记实验日志和实验表。
 
-上述检查已全部通过，独立有限差分梯度最大误差7.32e−10；pilot分数不计科学性能。科学commit `6bfc357bc8d9ac321f91cfb512eb39d2facf0332`，config SHA256 `d2a1d8df0b2f71416be8dd125107c9770cc1a92ef846167184ddb6f5f15f1882`。UTC2026-09-13 21:53:23提交到个人Ibex的`FMT_Task4C_SupervisedContrastive_20260914`，仅部署上述三份代码/配置；encode51865619、search51865620[0–5]、rank51865621、confirm51865622[0–7]、select51865623。完整27,000训练及3,000验证编码复制通过，test_encoded=false；已开始GPU训练，尚无完整效果结论。
+上述检查已全部通过，独立有限差分梯度最大误差7.32e−10；pilot分数不计科学性能。科学commit `6bfc357bc8d9ac321f91cfb512eb39d2facf0332`，config SHA256 `d2a1d8df0b2f71416be8dd125107c9770cc1a92ef846167184ddb6f5f15f1882`。UTC2026-09-13 21:53:23提交到个人Ibex的`FMT_Task4C_SupervisedContrastive_20260914`，仅部署上述三份代码/配置；encode51865619、search51865620[0–5]、rank51865621、confirm51865622[0–7]、select51865623。完整27,000训练及3,000验证编码复制通过，test_encoded=false。
+
+UTC22:11:13全部选择完成，14次训练及17个Slurm任务COMPLETED、exit0。所有分组预测指标、阈值/epoch、原验证metadata身份、源码/配置/预测哈希、首轮正权重选择、三种子汇总及最终选择的独立复算通过，最大误差1.67e−16。无测试读取或权重文件。结果见主实验表；方法判断只记实验日志。完整审计在原Ibex`outputs/Ablation_Task4C_SupervisedContrastive_4.10/independent_development_audit.json`。
