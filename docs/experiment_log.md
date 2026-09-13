@@ -2978,3 +2978,5 @@ FMT三次合并测试F1为0.326291、0.324145、0.356141；Conv3D为0.325432、0
 NumPy独立复算六次合并/分流场/每头区/分尺度F1、平均精确率、平衡准确率、混淆矩阵及类别计数，检查只由验证选阈值/epoch、相同样本身份、原训练验证缓存逐文件哈希、配置/源码/预测身份和三种子均值/标准差，全部通过，最大误差1.67e−16。两个模型均为27,000拟合、3,000验证、10,000测试；逐epoch实际27,000训练视图。全链无权重文件。
 
 证据`outputs/mainExp_Task4C_FinalAssessment_4.6/results.json`、`metrics.csv`、`independent_final_audit.json`、`scheduler_completed.txt`及各run的`predictions.npz`；完整远端结果包SHA256 `3df989aafd84791d23cb4ab6fc630f6efb2b91e2aa3ede4764a550ed39c49ace`。最终测试不用于回改本版模型选择和阈值；4.1–4.5开发系列与4.6最终评估均冻结。公开GitHub push仍受先前自动审批拒绝限制，未绕过公开发布；个人Ibex私有部署、所有本地证据及历史结果保留。
+
+4.6结果记录补充：结果文档本地commit `a9d99046`。独立复核完成后，尝试将本地`metrics.csv`与`independent_final_audit.json`回传同一Ibex实验目录，被自动审批拒绝，理由为未明确授权这两份具体科研结果发送到远端。已询问用户，尚无批准；没有重试或绕过。两份文件完整保存在本地，Ibex原始`results.json`、各run结果/预测/日志不受影响。此传输限制不构成0.6指标失败的原因。
