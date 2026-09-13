@@ -1,0 +1,394 @@
+{
+  "version": "Verify_Task4C_TrainingInstanceBalance_4.7",
+  "scope": "Frozen full training metadata only, no validation/test; current head-uniform then view-uniform sampling",
+  "source_sha256": {
+    "outputs\\Verify_Task4C_LabelScope_4.1\\channel_train.npz": "fb013b4dd136633aa9c23859d1583cbdd3373e94d92a152c414d82ecaa983941",
+    "outputs\\Verify_Task4C_LabelScope_4.1\\tbl_train.npz": "c6a69dcfd1c4a50606d3be0553f11135949385f9e4b9e17584ca3f959efc76b0"
+  },
+  "flows": [
+    {
+      "flow": "channel",
+      "positive_instances": 42,
+      "positive_heads": 105,
+      "effective_positive_instances_under_current_sampler": 32.715133531157264,
+      "largest_instance_positive_sampling_share": 0.05714285714285715,
+      "top_five_share": 0.2380952380952382,
+      "heads_per_positive_instance_quantiles": [
+        1.0,
+        1.0,
+        2.0,
+        3.0,
+        6.0
+      ],
+      "positive_probability_before_loss_weights": 0.19774011299435026,
+      "instances": [
+        {
+          "id": 6,
+          "heads": 6,
+          "positive_sampling_share": 0.05714285714285715
+        },
+        {
+          "id": 42,
+          "heads": 5,
+          "positive_sampling_share": 0.04761904761904764
+        },
+        {
+          "id": 40,
+          "heads": 5,
+          "positive_sampling_share": 0.04761904761904764
+        },
+        {
+          "id": 59,
+          "heads": 5,
+          "positive_sampling_share": 0.04761904761904764
+        },
+        {
+          "id": 64,
+          "heads": 4,
+          "positive_sampling_share": 0.038095238095238106
+        },
+        {
+          "id": 13,
+          "heads": 4,
+          "positive_sampling_share": 0.038095238095238106
+        },
+        {
+          "id": 26,
+          "heads": 4,
+          "positive_sampling_share": 0.0380952380952381
+        },
+        {
+          "id": 52,
+          "heads": 4,
+          "positive_sampling_share": 0.0380952380952381
+        },
+        {
+          "id": 30,
+          "heads": 4,
+          "positive_sampling_share": 0.0380952380952381
+        },
+        {
+          "id": 66,
+          "heads": 3,
+          "positive_sampling_share": 0.02857142857142858
+        },
+        {
+          "id": 37,
+          "heads": 3,
+          "positive_sampling_share": 0.02857142857142858
+        },
+        {
+          "id": 2,
+          "heads": 3,
+          "positive_sampling_share": 0.028571428571428577
+        },
+        {
+          "id": 70,
+          "heads": 3,
+          "positive_sampling_share": 0.028571428571428577
+        },
+        {
+          "id": 5,
+          "heads": 3,
+          "positive_sampling_share": 0.028571428571428577
+        },
+        {
+          "id": 36,
+          "heads": 3,
+          "positive_sampling_share": 0.028571428571428577
+        },
+        {
+          "id": 48,
+          "heads": 3,
+          "positive_sampling_share": 0.028571428571428577
+        },
+        {
+          "id": 23,
+          "heads": 3,
+          "positive_sampling_share": 0.02857142857142857
+        },
+        {
+          "id": 4,
+          "heads": 3,
+          "positive_sampling_share": 0.02857142857142857
+        },
+        {
+          "id": 12,
+          "heads": 3,
+          "positive_sampling_share": 0.02857142857142857
+        },
+        {
+          "id": 75,
+          "heads": 2,
+          "positive_sampling_share": 0.01904761904761906
+        },
+        {
+          "id": 60,
+          "heads": 2,
+          "positive_sampling_share": 0.019047619047619053
+        },
+        {
+          "id": 17,
+          "heads": 2,
+          "positive_sampling_share": 0.019047619047619053
+        },
+        {
+          "id": 0,
+          "heads": 2,
+          "positive_sampling_share": 0.01904761904761905
+        },
+        {
+          "id": 28,
+          "heads": 2,
+          "positive_sampling_share": 0.01904761904761905
+        },
+        {
+          "id": 43,
+          "heads": 2,
+          "positive_sampling_share": 0.01904761904761905
+        },
+        {
+          "id": 18,
+          "heads": 2,
+          "positive_sampling_share": 0.01904761904761905
+        },
+        {
+          "id": 34,
+          "heads": 2,
+          "positive_sampling_share": 0.01904761904761905
+        },
+        {
+          "id": 71,
+          "heads": 2,
+          "positive_sampling_share": 0.019047619047619046
+        },
+        {
+          "id": 16,
+          "heads": 2,
+          "positive_sampling_share": 0.019047619047619046
+        },
+        {
+          "id": 14,
+          "heads": 2,
+          "positive_sampling_share": 0.019047619047619046
+        },
+        {
+          "id": 49,
+          "heads": 1,
+          "positive_sampling_share": 0.009523809523809528
+        },
+        {
+          "id": 35,
+          "heads": 1,
+          "positive_sampling_share": 0.009523809523809528
+        },
+        {
+          "id": 77,
+          "heads": 1,
+          "positive_sampling_share": 0.009523809523809526
+        },
+        {
+          "id": 41,
+          "heads": 1,
+          "positive_sampling_share": 0.009523809523809526
+        },
+        {
+          "id": 57,
+          "heads": 1,
+          "positive_sampling_share": 0.009523809523809526
+        },
+        {
+          "id": 44,
+          "heads": 1,
+          "positive_sampling_share": 0.009523809523809526
+        },
+        {
+          "id": 33,
+          "heads": 1,
+          "positive_sampling_share": 0.009523809523809526
+        },
+        {
+          "id": 61,
+          "heads": 1,
+          "positive_sampling_share": 0.009523809523809526
+        },
+        {
+          "id": 29,
+          "heads": 1,
+          "positive_sampling_share": 0.009523809523809526
+        },
+        {
+          "id": 80,
+          "heads": 1,
+          "positive_sampling_share": 0.009523809523809525
+        },
+        {
+          "id": 58,
+          "heads": 1,
+          "positive_sampling_share": 0.009523809523809523
+        },
+        {
+          "id": 50,
+          "heads": 1,
+          "positive_sampling_share": 0.009523809523809523
+        }
+      ]
+    },
+    {
+      "flow": "tbl",
+      "positive_instances": 26,
+      "positive_heads": 58,
+      "effective_positive_instances_under_current_sampler": 23.361111111111118,
+      "largest_instance_positive_sampling_share": 0.0689655172413793,
+      "top_five_share": 0.2758620689655172,
+      "heads_per_positive_instance_quantiles": [
+        1.0,
+        2.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "positive_probability_before_loss_weights": 0.09385113268608415,
+      "instances": [
+        {
+          "id": 29,
+          "heads": 4,
+          "positive_sampling_share": 0.0689655172413793
+        },
+        {
+          "id": 33,
+          "heads": 3,
+          "positive_sampling_share": 0.05172413793103449
+        },
+        {
+          "id": 69,
+          "heads": 3,
+          "positive_sampling_share": 0.05172413793103448
+        },
+        {
+          "id": 51,
+          "heads": 3,
+          "positive_sampling_share": 0.05172413793103448
+        },
+        {
+          "id": 53,
+          "heads": 3,
+          "positive_sampling_share": 0.051724137931034475
+        },
+        {
+          "id": 59,
+          "heads": 3,
+          "positive_sampling_share": 0.051724137931034475
+        },
+        {
+          "id": 37,
+          "heads": 3,
+          "positive_sampling_share": 0.051724137931034475
+        },
+        {
+          "id": 25,
+          "heads": 3,
+          "positive_sampling_share": 0.05172413793103446
+        },
+        {
+          "id": 36,
+          "heads": 3,
+          "positive_sampling_share": 0.05172413793103446
+        },
+        {
+          "id": 26,
+          "heads": 2,
+          "positive_sampling_share": 0.034482758620689655
+        },
+        {
+          "id": 21,
+          "heads": 2,
+          "positive_sampling_share": 0.034482758620689655
+        },
+        {
+          "id": 24,
+          "heads": 2,
+          "positive_sampling_share": 0.034482758620689655
+        },
+        {
+          "id": 32,
+          "heads": 2,
+          "positive_sampling_share": 0.034482758620689655
+        },
+        {
+          "id": 1,
+          "heads": 2,
+          "positive_sampling_share": 0.034482758620689655
+        },
+        {
+          "id": 11,
+          "heads": 2,
+          "positive_sampling_share": 0.034482758620689655
+        },
+        {
+          "id": 6,
+          "heads": 2,
+          "positive_sampling_share": 0.034482758620689655
+        },
+        {
+          "id": 67,
+          "heads": 2,
+          "positive_sampling_share": 0.034482758620689655
+        },
+        {
+          "id": 60,
+          "heads": 2,
+          "positive_sampling_share": 0.034482758620689655
+        },
+        {
+          "id": 30,
+          "heads": 2,
+          "positive_sampling_share": 0.034482758620689655
+        },
+        {
+          "id": 43,
+          "heads": 2,
+          "positive_sampling_share": 0.034482758620689655
+        },
+        {
+          "id": 61,
+          "heads": 2,
+          "positive_sampling_share": 0.03448275862068965
+        },
+        {
+          "id": 46,
+          "heads": 2,
+          "positive_sampling_share": 0.03448275862068965
+        },
+        {
+          "id": 65,
+          "heads": 1,
+          "positive_sampling_share": 0.017241379310344827
+        },
+        {
+          "id": 48,
+          "heads": 1,
+          "positive_sampling_share": 0.017241379310344827
+        },
+        {
+          "id": 3,
+          "heads": 1,
+          "positive_sampling_share": 0.017241379310344824
+        },
+        {
+          "id": 42,
+          "heads": 1,
+          "positive_sampling_share": 0.01724137931034482
+        }
+      ]
+    }
+  ],
+  "pooled": {
+    "positive_instances": 68,
+    "effective_instances": 55.23700623700621,
+    "largest_share": 0.036809815950920255,
+    "top_five_share": 0.1533742331288344,
+    "positive_probability": 0.14186248912097477
+  },
+  "limitation": "Sampler concentration is not evidence that reweighting improves classification."
+}

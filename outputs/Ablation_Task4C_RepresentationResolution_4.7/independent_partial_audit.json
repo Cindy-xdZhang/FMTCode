@@ -1,0 +1,21 @@
+{
+  "scope": "partial development results only",
+  "audited_runs": 2,
+  "rows": [
+    {
+      "method": "conv3d_mlp",
+      "candidate": "candidate_00",
+      "f1": 0.4111245465538089,
+      "ap": 0.35567029953838486
+    },
+    {
+      "method": "fmt_mlp",
+      "candidate": "candidate_00",
+      "f1": 0.3438914027149321,
+      "ap": 0.2540740624236079
+    }
+  ],
+  "max_error": 1.1102230246251565e-16,
+  "test_loaded": false,
+  "archive_sha256": "ac6a8289b853e0d4d5380638c1df8e7781413f3ab78057eb47ca4a71768fca99"
+}

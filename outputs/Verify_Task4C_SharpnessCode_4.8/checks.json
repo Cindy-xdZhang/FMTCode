@@ -1,0 +1,29 @@
+{
+  "version": "Verify_Task4C_SharpnessCode_4.8",
+  "scope": "engineering, no scientific performance",
+  "checks": {
+    "fmt_mlp_zero_radius_matches_single_pass": {
+      "max_parameter_error": 0.0,
+      "identical_rng": true
+    },
+    "fmt_mlp_positive_radius_finite": true,
+    "conv3d_mlp_zero_radius_matches_single_pass": {
+      "max_parameter_error": 0.0,
+      "identical_rng": true
+    },
+    "conv3d_mlp_positive_radius_finite": true,
+    "independent_quadratic_perturbation_and_update": true,
+    "failed_second_pass_restores_weights": true,
+    "invalid_radius_and_test_rejected": true,
+    "real_pilot_14_trainers_and_selection": true,
+    "cache_byte_copy": true,
+    "control_retained": true,
+    "test_loaded": false,
+    "weights_written": 0
+  },
+  "source_sha256": {
+    "experiments/Task4C_Sharpness_4_8.py": "2c0a347d9d81d6ebd3bf1944f4b18a1a60559479dd21477ec0c5aee0c2d5e2dd",
+    "config/Ablation_Task4C_Sharpness_4.8.json": "f32d089d6e76d33c0323c750da7caa4d1bbf3d850f6d60762b92457172031d15",
+    "ibex_bash/task4c_sharpness_4p8.sh": "0b61899e039df5d7a12b49d399118c855c254b43020814bf01d2f9a42c3873b0"
+  }
+}
