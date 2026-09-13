@@ -2768,3 +2768,20 @@ SHA256 `9beeaef2b38f6c9cf7fdca77d40e7a950e186ed610304372185daef295dc89a2`。
 当前只批准按预注册训练/验证流程筛选；两个方法三种子验证F1均值均≥0.6后，才提交三个新种子最终测试。未满足验证门槛时测试保持封存。方法性能尚待Ibex结果。
 科学commit `e039aab63f87d2886085840db79ed7b7ef144485` 已push并在独立Ibex目录部署；本地/远端源码和配置哈希一致。UTC16:02:00提交prepare51860303[0-1]、encode51860304、search51860305[0-19]、rank51860306、confirm51860307[0-7]、select51860308。全部提交已登记；最终测试作业尚未创建。
 训练器独立工程核验：实际试构造的train/validation编码复制至没有test目录的fixture，两种正则化模型均完成两个epoch及保存预测复算，未访问test或保存权重。报告`trainer_checks.json`。该小规模核验F1不作科学性能结论。
+
+4.1两流场采集完成（Channel UTC16:05:06，TBL UTC16:06:00），空间/头区/GT实例/源节点隔离通过。实际配额如下；仅为数据检查，不是测试性能评价。
+
+| flow | split | samples | negative / positive | head regions | positive GT instances |
+|---|---|---:|---|---:|---:|
+| channel | train | 13500 | 10671 / 2829 | 531 | 42 |
+| channel | validation | 1500 | 1331 / 169 | 107 | 5 |
+| channel | test | 5000 | 4295 / 705 | 87 | 7 |
+| tbl | train | 13500 | 11998 / 1502 | 618 | 26 |
+| tbl | validation | 1500 | 1233 / 267 | 264 | 14 |
+| tbl | test | 5000 | 4146 / 854 | 160 | 6 |
+
+所有样本10–27条有效线；5000测试primitive对应Channel87个头区/7个正GT实例、TBL160个头区/6个正GT实例。该数量关系必须随多尺度结果一起报告。
+
+4.1首轮原FMT十候选已完成：seed94411最佳为candidate05，验证F1=0.305569；原结构candidate00为0.285006。对应train诊断F1=0.366261/0.469751。学习率/dropout扫描未把原FMT验证F1提高到0.6；不能据此推断一切正则化或FMT都无效。Conv3D尚在运行，测试未加载。
+
+新增 `Verify_Task4C_DirectionalSpectrum_4.1`，只用固定4.1拟合/验证数据检查保留空间方向/复相位的信息。依据是冻结FMT整体旋转不变的源码与用户给定壁面参考方向；是否有效仍待验证。协议及gram6/signed6/signed17技术表见 `Task4C_directional_spectrum_protocol_4.1.md`。不把新坐标频谱聚合器混称原322维FMT，不使用test选择，不改变4.1模型/数据/结果。

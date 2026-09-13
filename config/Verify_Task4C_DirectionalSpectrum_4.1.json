@@ -1,0 +1,139 @@
+{
+  "version": "Verify_Task4C_DirectionalSpectrum_4.1",
+  "parent_output": "/ibex/user/zhanx0o/FMT_Task4C_Multiscale_20260913/outputs/mainExp_Task4C_Multiscale_4.1",
+  "parent_config_sha256": "0c06c0530dcda7da82573a562e26c4932fb3331476347f7d3ba7aa6d8cc5cb99",
+  "output": "outputs/Verify_Task4C_DirectionalSpectrum_4.1",
+  "flows": [
+    {
+      "name": "channel"
+    },
+    {
+      "name": "tbl"
+    }
+  ],
+  "seed": 94611,
+  "representations": [
+    {
+      "name": "gram6",
+      "kind": "gram",
+      "frequencies": 6
+    },
+    {
+      "name": "signed6",
+      "kind": "signed",
+      "frequencies": 6
+    },
+    {
+      "name": "signed17",
+      "kind": "signed",
+      "frequencies": 17
+    }
+  ],
+  "candidates": [
+    {
+      "name": "gram6_lr0.0001_p0.3",
+      "representation": "gram6",
+      "learning_rate": 0.0001,
+      "dropout": 0.3,
+      "weight_decay": 0.001,
+      "label_smoothing": 0.02
+    },
+    {
+      "name": "gram6_lr0.0001_p0.5",
+      "representation": "gram6",
+      "learning_rate": 0.0001,
+      "dropout": 0.5,
+      "weight_decay": 0.01,
+      "label_smoothing": 0.02
+    },
+    {
+      "name": "gram6_lr0.0003_p0.3",
+      "representation": "gram6",
+      "learning_rate": 0.0003,
+      "dropout": 0.3,
+      "weight_decay": 0.001,
+      "label_smoothing": 0.02
+    },
+    {
+      "name": "gram6_lr0.0003_p0.5",
+      "representation": "gram6",
+      "learning_rate": 0.0003,
+      "dropout": 0.5,
+      "weight_decay": 0.01,
+      "label_smoothing": 0.02
+    },
+    {
+      "name": "signed6_lr0.0001_p0.3",
+      "representation": "signed6",
+      "learning_rate": 0.0001,
+      "dropout": 0.3,
+      "weight_decay": 0.001,
+      "label_smoothing": 0.02
+    },
+    {
+      "name": "signed6_lr0.0001_p0.5",
+      "representation": "signed6",
+      "learning_rate": 0.0001,
+      "dropout": 0.5,
+      "weight_decay": 0.01,
+      "label_smoothing": 0.02
+    },
+    {
+      "name": "signed6_lr0.0003_p0.3",
+      "representation": "signed6",
+      "learning_rate": 0.0003,
+      "dropout": 0.3,
+      "weight_decay": 0.001,
+      "label_smoothing": 0.02
+    },
+    {
+      "name": "signed6_lr0.0003_p0.5",
+      "representation": "signed6",
+      "learning_rate": 0.0003,
+      "dropout": 0.5,
+      "weight_decay": 0.01,
+      "label_smoothing": 0.02
+    },
+    {
+      "name": "signed17_lr0.0001_p0.3",
+      "representation": "signed17",
+      "learning_rate": 0.0001,
+      "dropout": 0.3,
+      "weight_decay": 0.001,
+      "label_smoothing": 0.02
+    },
+    {
+      "name": "signed17_lr0.0001_p0.5",
+      "representation": "signed17",
+      "learning_rate": 0.0001,
+      "dropout": 0.5,
+      "weight_decay": 0.01,
+      "label_smoothing": 0.02
+    },
+    {
+      "name": "signed17_lr0.0003_p0.3",
+      "representation": "signed17",
+      "learning_rate": 0.0003,
+      "dropout": 0.3,
+      "weight_decay": 0.001,
+      "label_smoothing": 0.02
+    },
+    {
+      "name": "signed17_lr0.0003_p0.5",
+      "representation": "signed17",
+      "learning_rate": 0.0003,
+      "dropout": 0.5,
+      "weight_decay": 0.01,
+      "label_smoothing": 0.02
+    }
+  ],
+  "scope": "development_only_no_test_access_no_weights",
+  "selection": "validation_f1_then_average_precision",
+  "training": {
+    "epochs": 200,
+    "patience": 35,
+    "batch_size": 128,
+    "warmup_epochs": 5,
+    "sampling": "uniform_head_then_uniform_view"
+  }
+}
