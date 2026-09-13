@@ -5318,3 +5318,76 @@ Local/remote source and config hashes verified. Scientific commit `6b67d2efe2a7a
 - 4.5 runtime job 51862999[4] search ENDED；UTC 2026-09-13T18:54:36.095403+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
 
 - 4.5 runtime job 51862995[0] search ENDED；UTC 2026-09-13T18:54:43.247833+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+
+- 4.5 runtime job 51862997[2] search ENDED；UTC 2026-09-13T18:54:59.850942+00:00；dgpu501-26 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.5 runtime job 51863026[7] search STARTED；UTC 2026-09-13T18:55:29.918767+00:00；dgpu501-26 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.5 runtime job 51863027[8] search STARTED；UTC 2026-09-13T18:55:29.933626+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.5 runtime job 51863025[6] search STARTED；UTC 2026-09-13T18:55:30.372095+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.5 runtime job 51863025[6] search ENDED；UTC 2026-09-13T18:56:52.409993+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.5 runtime job 51863027[8] search ENDED；UTC 2026-09-13T18:57:24.145950+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.5 runtime job 51863049[10] search STARTED；UTC 2026-09-13T18:57:40.361384+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.5 runtime job 51863048[9] search STARTED；UTC 2026-09-13T18:57:41.117284+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.5 runtime job 51862998[3] search ENDED；UTC 2026-09-13T18:58:17.669385+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.5 runtime job 51863000[5] search ENDED；UTC 2026-09-13T18:58:36.230113+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.5 runtime job 51863049[10] search ENDED；UTC 2026-09-13T18:58:55.775391+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.5 runtime job 51862996[1] search ENDED；UTC 2026-09-13T18:59:31.094218+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.5 runtime job 51862979[11] search STARTED；UTC 2026-09-13T18:59:52.647559+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.5 runtime job 51863026[7] search ENDED；UTC 2026-09-13T19:02:15.961729+00:00；dgpu501-26 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.5 runtime job 51863048[9] search ENDED；UTC 2026-09-13T19:04:02.900025+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.5 runtime job 51862979[11] search ENDED；UTC 2026-09-13T19:07:04.400756+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.5 runtime job 51862980[None] rank STARTED；UTC 2026-09-13T19:07:10.132204+00:00；cn604-13 / CPU；exit None。
+
+- 4.5 runtime job 51862980[None] rank ENDED；UTC 2026-09-13T19:07:14.347331+00:00；cn604-13 / CPU；exit 0。
+
+- 4.5 runtime job 51863277[5] confirm STARTED；UTC 2026-09-13T19:08:35.654246+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.5 runtime job 51863276[4] confirm STARTED；UTC 2026-09-13T19:08:35.734899+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.5 runtime job 51863275[3] confirm STARTED；UTC 2026-09-13T19:08:35.821393+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.5 runtime job 51863274[2] confirm STARTED；UTC 2026-09-13T19:08:35.829345+00:00；dgpu501-26 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.5 runtime job 51863272[0] confirm STARTED；UTC 2026-09-13T19:08:36.028041+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.5 runtime job 51863273[1] confirm STARTED；UTC 2026-09-13T19:08:36.035277+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.5 runtime job 51863275[3] confirm ENDED；UTC 2026-09-13T19:09:39.778589+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.5 runtime job 51863273[1] confirm ENDED；UTC 2026-09-13T19:09:53.310472+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.5 runtime job 51863274[2] confirm ENDED；UTC 2026-09-13T19:09:58.929413+00:00；dgpu501-26 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.5 runtime job 51863272[0] confirm ENDED；UTC 2026-09-13T19:10:24.136888+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.5 runtime job 51863324[6] confirm STARTED；UTC 2026-09-13T19:10:45.540019+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.5 runtime job 51862981[7] confirm STARTED；UTC 2026-09-13T19:10:45.547169+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.5 runtime job 51863276[4] confirm ENDED；UTC 2026-09-13T19:13:18.624849+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.5 runtime job 51863277[5] confirm ENDED；UTC 2026-09-13T19:13:49.640879+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.5 runtime job 51862981[7] confirm ENDED；UTC 2026-09-13T19:16:48.296662+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.5 runtime job 51863324[6] confirm ENDED；UTC 2026-09-13T19:19:04.257225+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.5 runtime job 51862982[None] select STARTED；UTC 2026-09-13T19:19:10.125072+00:00；cn604-17 / CPU；exit None。
+
+- 4.5 runtime job 51862982[None] select ENDED；UTC 2026-09-13T19:19:11.872375+00:00；cn604-17 / CPU；exit 0。

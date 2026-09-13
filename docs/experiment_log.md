@@ -2935,3 +2935,25 @@ NumPy独立复算全部24次保存预测的合并/分流场/每头区/分尺度F
 配置字节哈希说明：前述`50d5e371…`是提交前Windows CRLF工作文件；Git存储及实际Ibex部署文件为LF，SHA256 `08c217373214ad9d5faefd8e1d44b32cbdd32ea4d71ebccc90a203e09e4be5b3`。已取回远端文件并核对，三者解析JSON完全相同，且原文件仅CRLF→LF转换后即逐字节等于Git blob/远端；所有数值与路径未变。本地文件也统一为该Git字节形式。证据`outputs/mainExp_Task4C_ScaleConsistency_4.5/config_byte_equivalence.json`，保留旧核验SHA记录，不静默改写；正式结果以部署哈希为准。
 
 4.5缓存复制已完成；本地复核全部四个train/validation分区的FMT、体素、metadata哈希与4.4逐一相同，实际27,000拟合+3,000验证，test_encoded=false。搜索数组51862979已在P100与RTX2080Ti启动，实际设备/时间已从runtime_events同步登记。尚无完整三种子结果或目标达成结论。
+
+
+### mainExp_Task4C_ScaleConsistency_4.5：完整开发结果
+
+科学commit `03582732bfa382415ee13c84fe81c031ac3a33ae`，实际部署config SHA256 `08c217373214ad9d5faefd8e1d44b32cbdd32ea4d71ebccc90a203e09e4be5b3`。12次搜索+8次复核及23个Slurm任务全部COMPLETED、exit0；UTC19:19:11完成汇总。以下全部是固定3000束验证集的95611/95612/95613开发结果。
+
+| 方法 | 所选候选 | 验证F1均值±样本标准差 | 验证平均精确率 | 三种子F1 |
+|---|---|---:|---:|---|
+| FMT | candidate05，lr0.001，一致性权重10 | 0.399091 ± 0.020457 | 0.308316 | 0.402332, 0.377207, 0.417734 |
+| Conv3D | candidate04，lr0.001，一致性权重1 | 0.436234 ± 0.017533 | 0.363070 | 0.433048, 0.420513, 0.455142 |
+
+两模型都为dropout0.15、weight decay0.001、label smoothing0.02。均值略高于既有版本，但差异小于这里的种子波动，不能宣称稳定提升或达到0.6。首轮诊断中，lr0.0003的权重0→10使899个多尺度验证中心的分类分歧率由FMT29.9%降至23.5%、Conv27.3%降至20.1%；这里只支持该首轮模型的尺度敏感性降低，不代表最终三种子泛化收益。诊断见`scale_diagnostics_firstseed_partial.json`。
+
+独立NumPy复算全部20次保存概率的合并/分流场/每头区/分尺度F1、平均精确率、平衡准确率、混淆矩阵，核查阈值/epoch选择、样本身份、预测哈希与每epoch实际27000视图，最大误差1.67e−16。证据`outputs/mainExp_Task4C_ScaleConsistency_4.5/independent_development_audit_completed.json`；完整包SHA256 `5a2a1163bebf48e47e73aa21fe718dbc8d967b24e629b349a146e4440a937171`。旧验证门槛false，4.5没有打开测试或产生最终测试作业。
+
+### mainExp_Task4C_FinalAssessment_4.6：收束开发并冻结一次最终测试
+
+明确修正此前助手自加的执行门槛：之前要求“验证F1也达到0.6才允许测试”，现在关闭4.1–4.5开发搜索，按完整三种子验证结果一次固定配置，再由用户要求的固定测试集实际判断0.6目标。原因是验证成绩并不等于用户的测试目标；此前额外门槛不足以判断最终目标。旧版本源码、门槛和结果JSON保留，不把其false改为true，也不降低真实测试目标。
+
+已从4.1–4.5共30份入选开发预测复算三种子统计，确认全部逐值相同的3000个验证样本身份；两方法均选中4.5上述配置。新版本直接复用冻结4.5训练函数，仅适配独立输出/版本、最终种子95811/95812/95813与选择锁。学习率、正则化、损失、网络和数据均不再搜索。27,000拟合+3,000验证选择各种子的epoch/阈值，随后各自在相同10,000束测试一次。测试仍是已用空间benchmark，不宣称新流场确认。
+
+本地240训练/80验证pilot完成两模型各三种子评估入口与6结果汇总；模拟最终样本只是验证pilot副本，未读真实测试、不计科学成绩。检查配置/选择篡改及越界拒绝、原缓存字节拷贝、无权重文件。证据集中`outputs/Verify_Task4C_FinalAssessmentCode_4.6/checks.json`与`source_selection_recomputed.json`，未新增一次性测试源码。协议`docs/Task4C_final_assessment_protocol_4.6.md`。此时尚未提交4.6、尚无测试结果，目标未达成。

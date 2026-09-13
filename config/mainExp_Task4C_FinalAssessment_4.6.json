@@ -1,0 +1,80 @@
+{
+  "version": "mainExp_Task4C_FinalAssessment_4.6",
+  "output": "outputs/mainExp_Task4C_FinalAssessment_4.6",
+  "sources": [
+    {
+      "version": "mainExp_Task4C_Multiscale_4.1",
+      "output": "/ibex/user/zhanx0o/FMT_Task4C_Multiscale_20260913/outputs/mainExp_Task4C_Multiscale_4.1",
+      "config": "/ibex/user/zhanx0o/FMT_Task4C_Multiscale_20260913/config/mainExp_Task4C_Multiscale_4.1.json",
+      "module": "experiments.Task4C_Multiscale_4_1",
+      "commit": "e039aab63f87d2886085840db79ed7b7ef144485",
+      "config_sha256": "0c06c0530dcda7da82573a562e26c4932fb3331476347f7d3ba7aa6d8cc5cb99"
+    },
+    {
+      "version": "mainExp_Task4C_Regularized_4.2",
+      "output": "/ibex/user/zhanx0o/FMT_Task4C_Regularized_20260913/outputs/mainExp_Task4C_Regularized_4.2",
+      "config": "/ibex/user/zhanx0o/FMT_Task4C_Regularized_20260913/config/mainExp_Task4C_Regularized_4.2.json",
+      "module": "experiments.Task4C_Regularized_4_2",
+      "commit": "6b67d2efe2a7a5c80c90bec8dfa0c093e623d61d",
+      "config_sha256": "5ce777f6fd3392f8e93ebf466c26047d28d3f52f2f865b74d621606aded8c664"
+    },
+    {
+      "version": "mainExp_Task4C_LinePooling_4.3",
+      "output": "/ibex/user/zhanx0o/FMT_Task4C_LinePooling_20260913/outputs/mainExp_Task4C_LinePooling_4.3",
+      "config": "/ibex/user/zhanx0o/FMT_Task4C_LinePooling_20260913/config/mainExp_Task4C_LinePooling_4.3.json",
+      "module": "experiments.Task4C_LinePooling_4_3",
+      "commit": "46d7ee4ef68ff99de13e1ea869cdbcfa91790ae8",
+      "config_sha256": "2e5a2e7e40199b9ba93e3e5a8adb1cc69c09d8793637a409736d1ee5a809a86a"
+    },
+    {
+      "version": "mainExp_Task4C_ManifoldMixup_4.4",
+      "output": "/ibex/user/zhanx0o/FMT_Task4C_ManifoldMixup_20260913/outputs/mainExp_Task4C_ManifoldMixup_4.4",
+      "config": "/ibex/user/zhanx0o/FMT_Task4C_ManifoldMixup_20260913/config/mainExp_Task4C_ManifoldMixup_4.4.json",
+      "module": "experiments.Task4C_ManifoldMixup_4_4",
+      "commit": "d14e81322c2080d9f6428db5b73c1a657806a1ce",
+      "config_sha256": "f53b439a1a0219981c38844a01fffc52d6ccb4432d528a4cf233a30f9574fc8a"
+    },
+    {
+      "version": "mainExp_Task4C_ScaleConsistency_4.5",
+      "output": "/ibex/user/zhanx0o/FMT_Task4C_ScaleConsistency_20260913/outputs/mainExp_Task4C_ScaleConsistency_4.5",
+      "config": "/ibex/user/zhanx0o/FMT_Task4C_ScaleConsistency_20260913/config/mainExp_Task4C_ScaleConsistency_4.5.json",
+      "module": "experiments.Task4C_ScaleConsistency_4_5",
+      "commit": "03582732bfa382415ee13c84fe81c031ac3a33ae",
+      "config_sha256": "08c217373214ad9d5faefd8e1d44b32cbdd32ea4d71ebccc90a203e09e4be5b3"
+    }
+  ],
+  "supported_training_modules": [
+    "experiments.Task4C_LinePooling_4_3",
+    "experiments.Task4C_ManifoldMixup_4_4",
+    "experiments.Task4C_ScaleConsistency_4_5"
+  ],
+  "final_seeds": [
+    95811,
+    95812,
+    95813
+  ],
+  "target_f1": 0.6,
+  "validation_samples": 3000,
+  "test_samples": 10000,
+  "parent_output": "/ibex/user/zhanx0o/FMT_Task4C_Multiscale_20260913/outputs/mainExp_Task4C_Multiscale_4.1",
+  "parent_config_sha256": "0c06c0530dcda7da82573a562e26c4932fb3331476347f7d3ba7aa6d8cc5cb99",
+  "flows": [
+    {
+      "name": "channel",
+      "flow": "channel_flow/channel.vtk",
+      "gt": "channel_flow/channel_GTs.vtk",
+      "lambda2_threshold": -13.395,
+      "flow_sha256": "c1e3c18d0e67b6eb33ea41cd49c3a4c55216838a0f4a42f778ef00aaba3d4564",
+      "gt_sha256": "b9fdd93a1d2861781f824f28c80e46e06ebd3e5dcb58f0529010d7514e8fac09"
+    },
+    {
+      "name": "tbl",
+      "flow": "tbl_flow/tbl.vtk",
+      "gt": "tbl_flow/tbl_GTs.vtk",
+      "lambda2_threshold": -0.0272,
+      "flow_sha256": "cc82db1d3ca4e1964ec19dcd30df5a82c3c5635c16b8e0182f01fa57bf0d65bb",
+      "gt_sha256": "4fcd5efcfe13e10765095afec377b104d72c7092a646d39531f9bfbfc05c419e"
+    }
+  ],
+  "checkpoint_policy": "memory_only_no_weight_files"
+}
