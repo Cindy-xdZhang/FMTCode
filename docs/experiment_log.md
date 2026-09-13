@@ -881,7 +881,7 @@ F1 是精确率和召回率的调和平均；上表是各数据条目等权平�
 
 这支持“目前测试的客观替代方案在冻结任务上的性能较差”，尤其 Task1/2；**尚不支持“客观表示必然较差”或“原 FMT 的全部优势都由中心差分造成”**。替代版本还改变了描述符构造、维度和信息保留方式，不能把这个比较等同于只删除一个输入块。
 
-Task5 的边界同样保留：`Verify_FMTAllV2_1.1` 中独立 v2 的 F1 从原方案 0.675298050 降到 0.615071320；保留旧邻居辅助块的 `Verify_FMTAllV2_1.2` 则是 0.678020588 → 0.676800723，平均精确率从 0.719512817 升到 0.723950925。后者没有证明完整网络客观，因为 Raw 分支和保留的运动学块不在客观核心的认证范围内。两轮含旧时间划分，不能与晚期 Cylinder 实验直接归因比较。证据与容量控制见本文件对应完成记录及 [1.2 控制定义](Verify_FMTAllV2_1.2.md)。
+Task5 的边界同样保留：`Verify_FMTAllV2_1.1` 中独立 v2 的 F1 从原方案 0.675298050 降到 0.615071320；保留旧邻居辅助块的 `Verify_FMTAllV2_1.2` 则是 0.678020588 → 0.676800723，平均精确率从 0.719512817 升到 0.723950925。后者没有证明完整网络客观，因为 Raw 分支和保留的运动学块不在客观核心的认证范围内。两轮含旧时间划分，不能与晚期 Cylinder 实验直接归因比较。证据与容量控制见本文件对应完成记录及 [1.2 控制定义](Verify_experiments.md#archived-verify-fmtallv2-1-2)。
 
 ### 短窗口 IVD 估计的定位
 
@@ -2497,3 +2497,152 @@ A 在主模型及 FMT 对照中为 FMT 专家；双几何对照的 A 是几何�
 | 单独 Task6 | — / — / 0.22304 | — / — / 0.23601 | 主方法的重建略好 |
 
 所以，扩大数据集确实修复了 1.1 中共享门控的高重建误差；但证据不支持“FMT＋几何共享门控在所有目标上最好”。它的优势是联合设置下的 F1 和相对单独 Task6 的重建，而分类 AP 仍落后单独 Task3，重建仍落后固定路由和 Raw 共享门控。结果文件 `outputs/Verify_Task36_BalancedScale_1.2/final_audit.json`；远端原始标量 `metrics.csv`、`selection.json` 与 `runtime_events.jsonl` 保留用于复算；无 checkpoint 下载或归档。
+
+<a id="progress-2026-09-13"></a>
+
+## 2026-09-13 — 项目进展整理与两条探索路线暂停
+
+**用户决定**：项目以 ICLR 为目标。保留无可训练参数的轨线几何编码这一核心思想和 Task1/2/3/5 已冻结结果；
+停止现有客观化路线，暂停几何 tokenizer、Point-NN 和混合专家的继续调参，寻找更有说服力的任务。
+新任务尚未选定，本轮没有启动训练、重新选模型或重算科研指标。下表整理已有证据；任务定义和版本编号保持不变。
+
+FMT 指本项目无可训练参数的几何特征编码器；离散傅里叶变换（Discrete Fourier Transform，DFT）将采样序列表示为复频率系数。
+变分自编码器（Variational Autoencoder，VAE）学习潜变量并重建输入或指定几何；主成分分析（Principal Component Analysis，PCA）是线性降维对照。
+瞬时涡量偏差（Instantaneous Vorticity Deviation，IVD）用于定义区域标签；F1 综合精确率与召回率，平均精确率（Average Precision，AP）评价预测分数的排序。
+重建误差 `RMSE/r` 是三维位置均方根误差除以初始邻居半径；混合专家（Mixture of Experts，MoE）用可训练门控组合不同网络分支。
+
+### 分类主线：保留有效结果，也保留强对照与反例
+
+| 任务 | 冻结版本、代码与指标 | 现有证据支持到哪里 |
+|---|---|---|
+| Task1：涡区域聚类 | `mainExp_Task1_3D_4.1`；`experiments/Run_Task1_3D_Uniform.py`；Raw/FMT F1 .4510/.6014 | 统一配方在9/10条目提高；相对普通DFT仅约+.017，不能宣称大幅胜过所有几何表示 |
+| Task2：同一VAE的输入表示 | `mainExp_Task2_3D_6.2_uniform_confirmation`；`experiments/Run_UniformFMT_Confirmation_3D.py`；Raw/FMT F1 .4884/.5840 | 8/10条目提高；维度匹配的Raw-PCA同VAE接近FMT，主比较不能扩张为超过所有强表示 |
+| Task3：有监督涡区域二分类 | `mainExp_Task3_3D_9.2_uniform_confirmation`；同一确认入口；Raw-PCA/FMT F1 .6398/.8583，AP .6891/.9236 | 10/10条目提高；`Ablation_Task123_FMTComponents_1.1/1.2`不支持把主要收益归因于时间傅里叶；主表使用的是一维`aivd1w3_dft`辅助表示 |
+| Task4：三维涡类型分类 | `mainExp_Task4B_PatchSegmentation_5.1`与`Other_Task4B_GeometrySearch_5.2`；对应`experiments/Task4B_*.py` | 5.2的Channel/TBL宏平均F1为56.8642%/55.8791%，但使用代理标签、复用测试集并同时改动几何输入与网络；不能单独证明FMT收益，hairpin仍有大量误检 |
+| Task5：多尺度涡区域二分类 | `mainExp_Task5_3D_1.1`；`experiments/Evaluate_Task5_Multiscale.py`；Raw-PCA/FMT F1 .5835/.6727，AP增益+.1116 | 未见尺度组合上有效；Re640 AP为反例。尺度变化不允许顺带逐流场更换FMT配方 |
+
+这些数值的总体、种子和完整表以 `paper_tables_tasks_3d.md` 及各版本原记录为准，不与后续重新采样实验合并平均。
+Task1/3/5输出涡核区域，Task4输出类型；均不能当作涡核中心曲线识别证据。
+
+### 方向A：现有客观化方案停止推进
+
+同一时刻对应物质点的相对位置始终是客观向量，点间距离与同时间内积是客观标量。
+问题在后续运算：普通跨时间分量差分/傅里叶不能自动继承输入向量在时变刚体参考系下的变换规律。
+对数值不变的距离序列施加同一确定性运算，输出仍不变；这与分类效果是否好是两个问题。
+
+| 实验组 | 核心技术和代码 | 已有证据与边界 |
+|---|---|---|
+| 原FMT、参考系与直接数值核验 | `FMT_Utils/DFT_FMT_3D.py`；`Verify_FMTObservedPathline_2.1`、`Verify_FMTObjectivityMechanism_1.1–1.3`、`Verify_RelativeFourierObjectivity_1.1` | 区分同时间输入、跨时间运算、连续公式与有限差分；原编码不能整体宣称对任意时变参考系客观 |
+| 同时间内积、扩大邻居范围 | `Verify_FMTAllV2_1.1/1.2`、`Verify_LargeNeighbor_1.1`；`FMT_Utils/FMTAllV2_3D.py`、`LargeNeighbor_3D.py` | 已有分类结果没有形成跨任务稳定优势；原始与替换部分模块的版本分开保留，不根据方法名称认定客观性 |
+| 不做时间方向差分的两版编码 | `Verify_Task1235_ObjectiveFMTnTDO_1.1/2.1`；`FMT_Utils/objective_fmt_nTDO.py`、`objective_fmt_nTDO_v2.py` | 第一版仍有向量傅里叶分支；第二版只用距离。2.1同批复跑中，原FMT与距离v2的Task1/2/3/5 F1分别为 .595775/.305793、.559912/.238937、.763586/.668700、.733821/.661876；v2四项都低于原FMT |
+
+距离v2结果来自 commit `55928e99130d5209f2ee027be3a1a94b55d0be56`、120个完成分片和本节前的完整2.1结果记录。
+用户停止此方向是基于这些尝试的研究取舍；现有实验不构成“所有客观特征都无效”的证明。
+
+### 方向B：几何tokenizer与混合专家暂停
+
+| 版本 | 技术与主要代码 | 结果及限制 |
+|---|---|---|
+| Task6/7/8 1.1系列 | 流映射查询、补全与组合；`experiments/Run_Task678_*.py` | 包含原FMT、密集查询、方向保留编码等历史实验；不能与后来整簇七线重建的Task6混表，Task7/8没有自动接入新VAE |
+| Task6 2.1 → 3.1 | 原161维`fmt_all`改为399维`signed_fmt10`、192维潜变量和训练集线性初始化；`Task6_PrimitiveVAE_2_1.py`、`Task6_Reconstruction_3_1.py` | 3.1几何重建显著改善，但test平均RMSE/r为FMT .012517、Raw .009186，Raw在9/9流场更好；编码、数据量和初始化同时改变 |
+| 小样本4.1 | 完整16频、正则化和小训练集；`experiments/Task6_Scarce_4_1.py` | 1024样本test为FMT .021911、同正则Raw .021978，额外改善仅0.306%；线性初始化本身通常更好，不能把相对无正则Raw的14.53%全归于FMT |
+| 直接神经5.1及独立审计 | 删除固定解析恢复/PCA通路；Raw/FMT均651维、同参数网络；`experiments/Task6_DirectNeural_5_1.py` | 81个FMT模型中37个验证失败；实际有test的44个均差于配对Raw。完整系数可解析恢复，因此本轮失败不能归因于“傅里叶必然丢失几何” |
+| Point-NN＋Transformer 1.1–1.3 | 无训练参数空间前端与可训练序列网络，后续扩大网络、三倍样本和调度搜索；`experiments/Task6_PNN*.py` | 1.3验证误差 .706686，同结构Raw .566087、冻结Raw重训 .460250，0/9胜场；未通过预注册门槛，最终测试未启动 |
+| FMT＋几何MoE 1.1 | 原161维FMT与几何双分支；`experiments/Task6_FMTGeometryMoE_1_1.py` | test RMSE/r：FMT＋全连接 .220306、纯全连接 .211436、等容量双几何 .214204；未证明FMT净收益 |
+| Task36 1.1 → 1.2 | 联合分类与重建，修正损失缩放并扩大数据；`experiments/Task36_BalancedScale_1_2.py` | 9216样本FMT共享门控test AP/F1/RMSE/r为 .69106/.70679/.21918；等容量Raw共享门控 .69827/.68475/.18489。FMT的F1更高，但AP和重建并非最好 |
+
+这些版本的逐次CSV/JSON、配置、源commit与作业记录仍保留，具体总体与训练预算见各自原记录。
+原截断且汇总后的`fmt_all`与保留全部有符号复系数的编码不同；解析正逆变换回环只是信息保留检查，不能当作神经网络学习成功。
+因此当前结论是“已测试的重建路线尚未提供足够的FMT额外收益”，而非所有频域方法都无法回归。
+
+### 本轮发现的文档错误与修订
+
+| 原表述 | 现在的表述 | 依据与原错误 |
+|---|---|---|
+| README标题为“Objective Flowmap Tokenizer” | 使用中性标题，明确客观性和重建能力须分版本判断 | 原标题将两项未普遍成立的性质作为项目整体属性 |
+| 09-13合作者简介把`pathline_dft_features_3d`描述为“先同时间Gram，再傅里叶，所以客观” | 原入口先对中心/相对位置作时间差分与傅里叶，再取复系数几何量；同时间Gram在另一个函数中 | 当前源码`DFT_FMT_3D.py::pathline_dft_features_3d`、`dft_rotation_invariants_3d`与`time_local_gram_dft_features_3d`；原简介混淆函数及运算顺序 |
+| 同一简介把nTDO两版都描述为“只用距离” | 第一版包含相对向量和距离，v2才仅用距离 | 两个独立模块的`build_fourier_inputs`和模块说明；原文混淆版本 |
+
+以上仅修正文档解释，未修改冻结算法与历史数字。清理与恢复记录集中在 `repository_maintenance.md`，不另建实验版本或伪造新实验结果。
+
+<a id="task4c-2026-09-13"></a>
+
+## 2026-09-13 — Task4-c：Channel整束涡线四分类的论文实现与数据准备
+
+**授权与状态变更**：当天较早的状态是“新任务尚未选定，仅整理”；用户随后提供《A Deep Learning Framework for Hairpin Vortex Identification in Wall-Bounded Turbulent Flows》，明确要求定义Task4-c并比较FMT。
+因此现在推进Task4-c；原因是用户新增研究任务，不是撤回对客观化及Task6/7/8/36的暂停决定。Task4-a/b原部位分类、代码、标签与历史成绩不修改。
+
+**论文核对**：读取用户本地11页匿名稿（Submission ID 1017），SHA256 `3662a1fa9d4e2fd0b7692720bfe21ef568a436469bb554732b11d020fffccdc9`。
+3.1.1沿涡量`ω=curl(u)`双向积分vortex lines，非速度streamlines；3.1.2使用线级、束级两个双向长短期记忆网络（Bidirectional Long Short-Term Memory，BiLSTM）；
+3.1.3以人工标注区分Hairpin、Quasi-hairpin、Fragment、Non-hairpin的整束形态。部分单侧hairpin也可属于Hairpin，不能用理想对称结构规则自动划四类。
+公式11是加性余弦间隔，不按图注ArcFace误写为角度变换。论文最终检测F1使用曲面空间交并比（Intersection over Union，IoU）0.5，与本版束分类宏平均F1不同。
+
+| 版本 | 技术与主要代码 | 当前可支持的结论 |
+|---|---|---|
+| `mainExp_Task4C_BundleQuality_1.1` | `FMT_Utils/Task4C_PaperBaseline_1_1.py`实现论文尺寸和公式；`Task4C_Bundles_1_1.py`适配归一化涡线束及161维FMT；`experiments/Task4C_BundleQuality_1_1.py`统一检查、准备、查看与训练；同名JSON配置 | 已实现论文架构、Raw-PCA辅助分支、FMT辅助分支三臂；**没有真实四类性能** |
+| `Verify_Task4C_Pipeline_1.1` | 同一`tests/test_task4c_1_1.py`合并模型、积分、数据隔离、同容量对照与合成端到端训练检查 | 10项通过，仅证明实现流程可运行，不证明真实数据可学习或FMT更好 |
+
+论文网络基线SHA256 `500ee0d4409fa1897c6fa1fa21b33b5411356ac9acc2160778817ac96514c4c7`，后续FMT试验不得静默修改。
+原`DFT_FMT_3D.py`未修改。新适配对每条涡线取同束六个最近头部seed的邻居，在弧长重采样的七线几何上运行冻结六频FMT，得到161维辅助输入；
+它不具有原pathline primitive的同时间物质点解释，也不新增客观性主张。Raw-PCA和FMT辅助臂使用相同161→128可训练层、零初值、训练预算及分类器初值；PCA和标准化仅拟合train。
+
+**本地数据证据**：实际读取用户指定`channel.vtk`与`channel_GTs.vtk`。原场是`256×192×256`的局部快照，坐标为x主流、y展向、z竖向，壁面z=-1。
+GT只有`RegionIds`、`VortexIds`等数组，`VortexIds`共74个不同编号且含0，没有论文四类人工标签。不能把编号0自动当背景，也不追溯改写旧实验使用73个正编号的协议。
+源文件哈希、数组检查见`outputs/mainExp_Task4C_BundleQuality_1.1/source_inspection.json`。
+
+首批准备冻结使用论文表1Channel small的`lambda2<-13.395`及文件已有`oyf>0`，采用本地6连通头部区域和非周期裁剪域。
+6506个头部连通域中1842个满足至少10头点，固定种子94013均匀抽64个；沿涡量积分后，9束满足至少10条非退化涡线，共220条，形成9个互不连接的空间组。
+其余55个因不足10条有效线被拒收，全部保存在`bundle_manifest.json`，未依据GT或模型成绩挑选。
+这只是首批流程样例，9束甚至不足以组成均含四类的train/validation/test三个集合；不能作为已准备好的完整训练集。
+该连通域流程并非论文引用的完整Zafar候选提取，也尚未实现论文运行阶段的有符号旋转强度头分割、局部曲面生成及检测评测。区别与全部本地默认值已写入`Task4C_bundle_quality_protocol_1.1.md`。
+
+生成`bundles.npz`、空白`annotations.csv`及原始物理坐标的`bundle_review.vtp`。后者经VTK回读核对为9束、220条线、7040点，含可对应标注表的束编号。
+Bundle数据SHA256 `d7be1cdafc46d3cdcd4f1fb3b1da62f57f6d9bd059d66b06044aea4298fc2b1e`；训练入口检查数据哈希、人工标签、完整空间组隔离与每集合四类覆盖。
+尚待用户确认四类标签来源；未用现有GT推断类别，未报告任何Task4-c F1或FMT增益。
+
+**检查与运行记录**：本地`tmp/jhtdb-venv`、PyTorch 2.14.0+cpu；最终10项检查耗时10.859秒，2026-09-13 13:10:30 UTC完成记录。
+检查包括正式256线槽网络反向传播、坐标平移/等比例缩放归一化、vorticity与velocity方向区别、涡量乘100后的曲线一致性、FMT补零隔离、加性间隔、同容量初始化及梯度、空间组传递连接、缺标签与跨集合重叠拒绝。
+端到端检查另用合成数据、单种子、三方法各预训练1epoch与微调1epoch，验证选模和测试输出流程；测试代码临时文件随检查清理，合成F1不进入科研表。
+无模型checkpoint写盘，无Ibex作业，无Git提交；源commit `67139f808cbbf01c0a862d42975b7688f2aaf8de`加新增工作区源码哈希构成本次实现身份。
+机器可读报告与完整测试日志在`outputs/Verify_Task4C_Pipeline_1.1/report.json`；仓库布局与Markdown链接检查通过。
+
+<a id="task4c-binary-2026-09-13"></a>
+
+## 2026-09-13 — Task4-c改为Hairpin / Non-hairpin：2.1实现与验证
+
+**用户修订**：研究对象是带局部信息的线簇几何，不限定pathline、streamline或vortex line。由于没有论文四类人工标签，
+Task4-c改为Hairpin / Non-hairpin二分类；直接比较FMT与一般Conv3D＋MLP，不要求运行BiLSTM。用户明确授权验证后删除验证代码、commit、push及Ibex部署运行。
+
+| 上轮表述/执行 | 现在的定义 | 修订原因 |
+|---|---|---|
+| 仿造论文被理解为实现并准备运行两级BiLSTM四分类 | BiLSTM保留但不运行；使用FMT＋多层感知机与Conv3D＋多层感知机两方法 | 上轮扩大了用户要求的网络复现范围；用户明确不需要BiLSTM实验 |
+| Task4-c需四类人工标注才能评估 | 新2.1直接使用现有GT区域作Hairpin / Non-hairpin标签 | 用户改变了任务定义；1.1四类缺标签的判断仍有效，不把旧缺失标签宣称为已获得 |
+| 强调论文用vortex lines、不是streamlines | 具体积分场按实验记录；项目研究范围是有局部信息的线簇几何 | 用户明确曲线类型不限制核心研究问题，2.1仍选择沿涡量生成七线簇 |
+
+新版本`mainExp_Task4C_HairpinBinary_2.1`，协议`docs/Task4C_hairpin_binary_protocol_2.1.md`。
+代码集中在`FMT_Utils/Task4C_HairpinBinary_2_1.py`和`experiments/Task4C_HairpinBinary_2_1.py`；配置为同名JSON。
+两方法使用相同的七线33点相对几何；FMT使用冻结161维特征接MLP（74,497参数），Conv3D将曲线投射成24³占据率和有符号切向量体素，接三层空间卷积和MLP（84,361参数）。
+两臂不等参数，基线参数略多；没有新增混合专家或搜索网络。原`DFT_FMT_3D.py`未改动。
+
+候选为原始网格单元中心处`lambda2<-13.395`，正标签来自GT精确单元包含查询（含编号0），GT外涡候选为本benchmark的负类。
+这衡量当前标注区域识别，不是整束人工形态判断，也不是论文曲面IoU检测F1；GT外未标注结构不因此获得绝对物理负类真值。
+几何来自完整原场，不按GT裁剪；无绝对坐标、源涡量值或GT实例编号输入网络。
+固定x方向60%/20%/20%分区，完整GT实例若跨界则排除；原生插值节点也隔离。三种子、两方法，共六模型；仅验证AP选epoch与验证F1选阈值，最后读取测试。
+
+**代码核验 `Verify_Task4C_BinaryPipeline_2.1`**：本地PyTorch 2.14.0+cpu，7项检查全部通过（7.124秒）。
+检查包括：GT编号0为正；原生场读取、沿正确向量场积分及100倍幅值缩放；支撑半径与零向量失败处理；FMT与含方向体素有限；两网络真实小样本损失下降且所有参数梯度有效；验证阈值独立F1扫描；合成VTK准备→两个方法训练→验证选择→最终测试→汇总全流程，并拒绝被改动的缓存。
+没有将合成F1计入科学结果，没有保存checkpoint。报告`outputs/Verify_Task4C_BinaryPipeline_2.1/validation_report.json`；临时验证源码SHA256 `ebfde9a8a86a4faef59e46c3318337187b58e66925132ca2de6a97d63061ba84`。
+
+**真实数据核验 `Verify_Task4C_BinaryData_2.1`**：相同原场、积分、标签和划分规则，样本上限仅缩至2048/1024/1024，不训练任何模型。
+4096/4096条primitive有效；train/validation/test的Non-hairpin、Hairpin计数为`1650/398`、`893/131`、`906/118`。
+实际原生x查询节点范围分别`[1,152]`、`[154,203]`、`[205,254]`，集合间无节点共享；样本中的实例数量分别42/6/6，实例不交叉。
+完整GT中8个跨界实例（1、7、15、46、53、56、72、73）按预定规则排除，没有依据模型性能修改划分。
+记录与完整配置见`outputs/Verify_Task4C_BinaryData_2.1/preparation.json`。这只是数据和积分验证，正式实验样本上限仍是30000/7500/7500。
+
+**验证代码清理**：按用户要求删除本轮临时验证脚本和旧`tests/test_task4c_1_1.py`，仅保留验证报告、源码哈希与本日志。
+旧1.1测试源码SHA256 `4480cf0898ede0f4006048a96ae6dc8207af0db9de5d27bdcf6af3b592e21fe5`；1.1报告仍在原输出目录，旧BiLSTM实现不删。
+正式入口内的数据完整性、有限值和空间隔离检查不是一次性验证脚本，继续执行。
+
+**部署准备**：已通过SSH连接用户Ibex账户；原场与GT的远端字节SHA256均与本地完全相同，可复用已有数据。
+远端依赖为PyTorch 2.6.0+cu118、VTK 9.5.0、SciPy 1.15.1。正式链为CPU数据准备→六GPU训练（最多3并行）→CPU汇总。
+此条记录写入时尚无真实2.1模型性能；后续作业ID、源码commit和结果追加记录，不以管线通过预设FMT更优。

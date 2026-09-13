@@ -1,5 +1,19 @@
 # FMT 项目研究协议
 
+## 当前工作状态（2026-09-13 用户更新，优先于下文历史“当前”状态）
+
+目标会议为 ICLR。停止继续推进现有客观化方向；暂停 Task6/7/8 几何 tokenizer、Point-NN 与混合专家调参，
+包括 Task36 联合分类/重建。Task1/2/3/5 主表与 Task4-a/b 历史结果保持。
+09-13 最新用户把 Task4-c 改为 Channel 的 Hairpin / Non-hairpin 二分类，直接比较FMT＋MLP与Conv3D＋MLP；
+版本 `mainExp_Task4C_HairpinBinary_2.1`，协议 `docs/Task4C_hairpin_binary_protocol_2.1.md`。
+研究对象是具有局部信息的线簇几何，不限定pathline/streamline/vortex line；2.1固定沿涡量生成七线簇。
+GT单元支持区域为Hairpin（包括实例0），GT外涡候选为该benchmark的负类；不使用旧四类部位/质量标签。
+完整实例和实际原生插值节点均不得跨train/validation/test。1.1的BiLSTM实现保留但不运行。
+用户已授权完成验证后删除临时验证代码、commit、push并在Ibex部署运行；验证记录保留，正式运行的数据检查保留。
+现有证据不能概括为“所有客观特征都无效”或“傅里叶编码必然无法回归”。方法进展和证据边界见
+`docs/experiment_log.md` 的 `progress-2026-09-13`；归档路径与恢复方式见 `docs/repository_maintenance.md`。
+下文的任务定义与历史版本继续有效，其中推进授权不覆盖本次暂停决定。
+
 ## 客观性基础定义（2026-09-10 用户明确固定）
 
 在同一时刻全部点共享的时变刚体变换 `x* = Q(t)x + c(t)` 下，`Q(t)^T Q(t)=I`、`det Q(t)=1`，时间不变：
@@ -26,6 +40,7 @@
 - **Task2（2D/3D）**：无监督表示学习。核心比较固定为 `Raw pathline -> VAE -> latent -> KMeans` 与 `FMT(pathline) -> VAE -> latent -> KMeans`；同一 physical-family 内两臂必须使用为 FMT 开发并冻结的同一个 VAE（架构、latent dimension、KL 权重、学习率、训练步数相同），不得为 Raw 单独搜索更强 VAE 后替换主 baseline。主结论只回答 FMT 是否改善该同一 VAE 的输入表示；独立优化的 strongest-Raw 只能作附录压力测试。
 - **Task3（2D/3D）**：有监督 IVD 涡识别。核心比较固定为不使用 FMT 与加入 FMT 的神经网络在涡/非涡二分类上的性能。
 - **Task4（仅 3D）**：有监督涡类型多分类，例如 streamwise、spanwise、hairpin。Task4 与 Task3 严格分开。
+- **Task4-c（当前仅 Channel，2.1）**：由局部七线簇几何判断其中心是否位于已标注hairpin区域；FMT＋MLP与同几何体素化的Conv3D＋MLP二分类比较。1.1整束人工四类定义被用户改为二类，历史实现不删除、不运行；不报告论文曲面检测F1。
 - **Task5（2D/3D）**：Task3 的不同尺度扩展。primitive 的邻居距离、积分步长和积分步数可变，但输出保持固定线数和每线采样点数；使用同一 IVD 二分类监督。核心比较为 fixed-scale Task3 transfer、variable-scale Raw、同结构 Raw-PCA residual 与 variable-scale Raw+FMT，并在训练未见尺度组合上确认。
 - **Task6（当前3D，2026-09-10重新定义）**：单流场、多尺度primitive的VAE几何重建。每个网络只在一个流场训练；大量不同起始时间、位置、积分时长与邻居距离的七线primitive，经冻结FMT变成token，再由VAE重建同一簇七条完整路径线。测试整个未见primitive，不是查询额外粒子；VAE解码器输出geometry而非token。原基线`mainExp_Task6_PrimitiveVAE_2.1`保持冻结；当前修复版为`mainExp_Task6_Reconstruction_3.1`，详见`docs/Task6_reconstruction_protocol_3.1.md`，原协议见`docs/Task6_primitive_vae_protocol_2.1.md`。
 - **Task7（当前3D）**：遮挡区域补全。仅由隐藏区域外的可见 primitive tokens 恢复内部材料轨迹；必须防止重叠邻居泄漏。
