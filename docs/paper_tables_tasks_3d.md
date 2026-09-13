@@ -460,3 +460,7 @@ UTC15:04:43全部结束；逐样本预测、分流场/每头区指标、验证�
 | tbl | 0.272778 ± 0.004271 | 0.196395 ± 0.026951 | 0.237488 ± 0.014082 | 0.202749 ± 0.018774 |
 
 证据`outputs/mainExp_Task4C_FinalAssessment_4.6/results.json`、`metrics.csv`、`independent_final_audit.json`。真实目标达成状态为false；方法结论与限制仍只写入[实验日志](experiment_log.md)。
+
+## Task4-c 4.7：编码分辨率消融进行中
+
+科学commit `8d483808`，固定4.1物理样本；FMT低/全频率与Conv24³/48³，分别做相同的两档学习率选择和三种子验证复核。模型参数分别105,410/219,602，同方法内部一致。仅训练/验证，尚无完整结果，原4.6测试结果不变。见[4.7协议](Task4C_representation_resolution_protocol_4.7.md)。

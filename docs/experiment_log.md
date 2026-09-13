@@ -2980,3 +2980,17 @@ NumPy独立复算六次合并/分流场/每头区/分尺度F1、平均精确率�
 证据`outputs/mainExp_Task4C_FinalAssessment_4.6/results.json`、`metrics.csv`、`independent_final_audit.json`、`scheduler_completed.txt`及各run的`predictions.npz`；完整远端结果包SHA256 `3df989aafd84791d23cb4ab6fc630f6efb2b91e2aa3ede4764a550ed39c49ace`。最终测试不用于回改本版模型选择和阈值；4.1–4.5开发系列与4.6最终评估均冻结。公开GitHub push仍受先前自动审批拒绝限制，未绕过公开发布；个人Ibex私有部署、所有本地证据及历史结果保留。
 
 4.6结果记录补充：结果文档本地commit `a9d99046`。独立复核完成后，尝试将本地`metrics.csv`与`independent_final_audit.json`回传同一Ibex实验目录，被自动审批拒绝，理由为未明确授权这两份具体科研结果发送到远端。已询问用户，尚无批准；没有重试或绕过。两份文件完整保存在本地，Ibex原始`results.json`、各run结果/预测/日志不受影响。此传输限制不构成0.6指标失败的原因。
+
+### Verify_Task4C_RepresentationLoss_4.7 与 Ablation_Task4C_RepresentationResolution_4.7
+
+4.6正式结果证明当前选定方法未达到0.6；上一目标轮完成了正式评估和独立复核，属于有新证据的进展，不是等待或仅复述状态。主目标与原固定测试保持。新工作仅根据训练输入的信息保留诊断建立编码分辨率消融，不依据测试错误分组搜索新参数。
+
+240个训练pilot上，现有6频率有符号位置/切向子块的位置平均重建误差0.084–0.088 Rmax，端点平均0.517–0.554 Rmax，完整17频率最大逐分量误差约4.2e−7。该结果只针对有符号子块，不推断完整161+72维FMT丢失同样信息；逆变换仅作核验，不在新分类神经推理中使用。证据`outputs/Verify_Task4C_RepresentationLoss_4.7/diagnostics.json`。既有240训练束体素诊断同时表明提高分辨率可减少最近体素格碰撞，但不证明分类改善。
+
+新消融固定原27,000拟合+3,000验证以及全部几何/标签/空间隔离规则。FMT为原161局部块加17频率204维有符号位置/切向；6频率对照在相同365维模型输入的高频部分置零。两者参数均105,410。Conv比较同一个219,602参数网络的24³与48³体素。所有候选dropout0.15、weight decay0.001、label smoothing0.02；每个分辨率在lr0.0003/0.001中选择，batch统一64，其他训练规则沿用冻结4.3。batch相对4.3变化，所以只能以本版对照归因；两个分辨率各自选择lr后的差值也不自动视为单因素。方法和证据边界见`docs/Task4C_representation_resolution_protocol_4.7.md`。
+
+本地64训练/32验证pilot完成8次2epoch训练，验证全频率恢复、原系数逐值一致、低频补零、两臂参数量、内存映射索引等价及拒绝test。新选择函数以显式合成统计核验，不能把fixture分数计入科研性能。原训练函数及全部历史源码未改；一次性核验以内联命令执行。证据`outputs/Verify_Task4C_RepresentationResolutionCode_4.7/checks.json`。尚无完整数据性能结果，目标没有完成。
+
+为遵守已有传输限制，个人Ibex部署提交以已在远端的8b755d23为父提交，只增加runner/config/bash三个文件，不包含4.6 metrics.csv、independent_final_audit.json、新实验结果或文档。本地工作分支保留全部完整记录；该独立科学提交仍是本地可解析的Git对象，并由`codex/task4c-resolution-4p7`引用保留，不是公共分支推送。待授权文件没有被传输。
+
+科学commit `8d4838084d2f30f88cf80ca525b7deaf33cfda78`，config SHA256 `cfca9f35fe11c5e4c1806f54cdf79b33926e3f7bc4878765a2ace98906327651`，代码传输包SHA256 `49a6f944f678dde25bfd669eb01e9ccf60bff6488a6140de2243edead2d82a89`。远端逐项确认变更恰好上述三个文件，路径`/ibex/user/zhanx0o/FMT_Task4C_RepresentationResolution_20260913`。UTC19:52:40–41提交encode51863924、smoke51863925、search51863926[0-7]、rank51863927、confirm51863928[0-7]、select51863929，全部已登记。只训练/验证，无test阶段或自动重测。
