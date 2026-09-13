@@ -5,7 +5,10 @@
 目标会议为 ICLR。停止继续推进现有客观化方向；暂停 Task6/7/8 几何 tokenizer、Point-NN 与混合专家调参，
 包括 Task36 联合分类/重建。Task1/2/3/5 主表与 Task4-a/b 历史结果保持。
 09-13 最新用户要求 Task4-c 加入论文预处理，扩展到Channel+TBL两个快照的Hairpin / Non-hairpin二分类；
-当前版本 `mainExp_Task4C_PaperBundles_3.1`，协议 `docs/Task4C_paper_bundles_protocol_3.1.md`。
+当前版本 `mainExp_Task4C_Multiscale_4.1`，协议 `docs/Task4C_multiscale_protocol_4.1.md`：用户要求多尺度、dropout/正则化及学习率调整，目标两模型F1≥0.6。
+每流场13,500拟合+1,500验证+5,000测试；邻居距离与RK45参数/长度实际改变，同中心跨尺度仅在同一集合。候选头区播种后沿分区完整原始涡量追踪，至少10条有效线、最多27线。
+十候选和三种子选择只用训练/验证，两模型三种子验证F1均值达标才用三个新优化种子评估封存测试；默认目标为三种子合并测试F1均值，并报告分流场。
+以下3.1历史设置保持冻结，协议 `docs/Task4C_paper_bundles_protocol_3.1.md`。
 每流场15,000训练开发primitive（内部13,500拟合+1,500验证）和500测试primitive，共30,000+1,000。
 lambda2与正oyf筛选头区，RK45双向涡线，短线/退化线及不足10线整束剔除；每线32点、最多256线，整束质心/Rmax归一化。
 FMT＋MLP与Conv3D＋MLP使用同一束几何；完整头区、GT实例和源数据节点支撑均隔离。多种子子集不是独立物理涡实例。

@@ -2757,3 +2757,12 @@ FMT参数115,713、Conv3D参数84,361，不是等参数比较；多个primitive�
 SHA256 `9beeaef2b38f6c9cf7fdca77d40e7a950e186ed610304372185daef295dc89a2`。
 不导入正式指标函数或sklearn，以NumPy独立复算六次合并/分流场/每头区F1/AP/平衡准确率及混淆矩阵，最大误差1.11e-16；均值/标准差、验证阈值最优性和epoch选择均通过，六次测试样本身份一致。
 报告`outputs/mainExp_Task4C_PaperBundles_3.1/independent_prediction_audit.json`，UTC15:31:50完成；临时核验以内联命令运行，没有新增验证源码文件。
+
+<a id="task4c-multiscale-2026-09-13"></a>
+### 2026-09-13：mainExp_Task4C_Multiscale_4.1，多尺度与正则化
+
+用户授权扩大测试、改变实际中心/邻居距离与RK45积分长度/参数，增加dropout、正则化和学习率搜索，目标FMT及Conv3D的Hairpin F1均达到0.6。不是已经达到0.6的结论。
+协议、十个候选技术表、代码路径及固定选择标准见`docs/Task4C_multiscale_protocol_4.1.md`，配置`config/mainExp_Task4C_Multiscale_4.1.json`。
+3.1冻结；新增27线多尺度簇，播种仍用lambda2/正oyf，积分使用隔离分区内完整涡量场。每流场13,500拟合+1,500验证+5,000测试，训练12、验证4、测试6个不相交尺度元组；不新增物理快照，不把扩大测试视作独立新场。
+同中心倍增距离、27线掩码编码、两种原/新架构反向传播及两帧真实每尺度10束构造和编码核验通过。证据`outputs/Verify_Task4C_Multiscale_4.1/`；未据试构造测试指标选参数。
+当前只批准按预注册训练/验证流程筛选；两个方法三种子验证F1均值均≥0.6后，才提交三个新种子最终测试。未满足验证门槛时测试保持封存。方法性能尚待Ibex结果。
