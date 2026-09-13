@@ -2723,3 +2723,9 @@ Channel追踪385,536个种子，剔除120,361条短/缺失线，265,175条通过
 两份preparation.json、preparation_summary.json和独立清单复核preparation_audit.json在`outputs/mainExp_Task4C_PaperBundles_3.1/`。
 复核确认30,000训练开发+1,000测试，头区/完整GT实例不跨集合，原始节点支撑（含TBL旋度差分）不重叠，采样子集数、标签总数、清洗计数及源码/config哈希一致。
 当前GPU编码51859014在Priority队列，六次训练51859015[0-5]和汇总51859016等待依赖；尚无3.1模型性能。
+
+
+3.1编码阶段51859014已成功完成，六份分流场/分集合缓存共31,000个样本的FMT和Conv3D表示均生成；编码哈希见`outputs/mainExp_Task4C_PaperBundles_3.1/encoding.json`。
+- STARTED：UTC 2026-09-13T14:50:35.436809+00:00，gpu203-09-r / NVIDIA A100-SXM4-80GB，exit=None。
+- ENDED：UTC 2026-09-13T14:51:12.891856+00:00，gpu203-09-r / NVIDIA A100-SXM4-80GB，exit=0。
+此前“编码等待Priority”的记录为当时状态；当前六次训练51859015[0-5]已解除编码依赖、等待Priority，汇总51859016仍等待训练。尚无正式模型结果。
