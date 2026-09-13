@@ -419,11 +419,11 @@ Re160 未超过 strongest Raw，Re160/Smoke 未超过 fixed-scale FMT transfer�
 结论与限制只记入[实验日志](experiment_log.md#task4c-binary-2026-09-13)，完整定义见[协议2.1](Task4C_hairpin_binary_protocol_2.1.md)。
 
 
-## Task4-c 3.1：论文预处理线簇二分类（准备部署）
+## Task4-c 3.1：论文预处理线簇二分类（已部署，数据完成）
 
 版本`mainExp_Task4C_PaperBundles_3.1`，Channel+TBL各一帧；合计30,000训练开发primitive（27,000拟合+3,000验证）和1,000测试primitive。
 lambda2/正oyf头区、RK45双向涡线、短线/退化线及不足10线整束剔除、32点弧长重采样、质心/最大半径归一化。
 同头区的不同线子集不跨集合，完整GT实例与原生源节点支撑隔离；样本数不是独立物理涡数。
 FMT＋MLP为115,713参数，Conv3D＋MLP为84,361参数，同一束输入；三个种子94311/94312/94313。
-当前没有正式性能数字，不沿用2.1指标。结果按primitive、分流场、每候选头区一票分别记录；不混入Task1/2/3/5主表。
+完整采集已通过：测试Channel负/正429/71、TBL424/76，共263个候选头区；两个流场分别7/6个正类GT实例。GPU作业已提交；当前没有正式性能数字，不沿用2.1指标。结果按primitive、分流场、每候选头区一票分别记录；不混入Task1/2/3/5主表。
 协议见[3.1](Task4C_paper_bundles_protocol_3.1.md)，方法结论只记入[实验日志](experiment_log.md#task4c-paper-bundles-2026-09-13)。

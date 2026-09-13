@@ -4704,3 +4704,31 @@ Ibex 十项预检全部通过（46.433 秒），已观察到 5/9 个流场准备
 
 主要结果见experiment_log的同版本终态；完整结果已下载并独立复算六次指标、验证选择及7500个中心的原始GT标签，PASS。
 归档SHA256 `063c9547af535904c5311635ee2be1afb3e69654f798b1231f1043d273bc92cf`，无模型checkpoint；独立报告已同步至远端同一输出目录。本次不存在尚在排队或运行的依赖作业。
+
+
+### 2026-09-13 — mainExp_Task4C_PaperBundles_3.1 提交
+
+用户授权按论文预处理、Channel+TBL合计30,000训练开发+1,000测试线簇，比较FMT＋MLP与Conv3D＋MLP。
+科学commit `f1865b160a2c4784f66fddd07cd27fbef3d2b2df`；配置`config/mainExp_Task4C_PaperBundles_3.1.json`，SHA256 `4d87e3f16939c6f19d195ad0b0d44918b18b740a04c7d865f09c93e9e03cefae`。
+独立checkout `/ibex/user/zhanx0o/FMT_Task4C_PaperBundles_20260913`；四份输入、本地/远端源码哈希一致，Linux入口语法核查通过。
+
+| 作业ID | 阶段 | 提交时间UTC | 设备及依赖 |
+|---|---|---|---|
+| 51859013 | prepare | 2026-09-13T14:47:31.571508+00:00 | CPU；afterok None |
+| 51859014 | encode | 2026-09-13T14:47:31.644688+00:00 | A100/V100；afterok 51859013 |
+| 51859015 | train | 2026-09-13T14:47:31.712216+00:00 | A100/V100；afterok 51859014 |
+| 51859016 | merge | 2026-09-13T14:47:31.778545+00:00 | CPU；afterok 51859015 |
+
+准备数组51859013[0-1]分别为Channel和TBL，各8CPU/48GB/3h；编码1GPU/32GB/2h；训练数组51859015[0-5]为三种子×两方法，每项1GPU/32GB/2h、最多3并行；汇总CPU/8GB/10min。
+完整sbatch命令及源码哈希保留在`outputs/mainExp_Task4C_PaperBundles_3.1/submissions.jsonl`；远端同一登记表和runtime_events.jsonl自动补开始/结束、设备和退出码。尚未读取模型测试成绩。
+
+首次实际启动：
+- 51859013 / array 1：prepare STARTED，UTC 2026-09-13T14:47:33.781765+00:00，cn511-15 / CPU，exit=None。
+- 51859017 / array 0：prepare STARTED，UTC 2026-09-13T14:47:33.781795+00:00，cn511-15 / CPU，exit=None。
+- 51859017 / array 0：prepare ENDED，UTC 2026-09-13T14:48:33.439741+00:00，cn511-15 / CPU，exit=0。
+- 51859013 / array 1：prepare ENDED，UTC 2026-09-13T14:48:36.827074+00:00，cn511-15 / CPU，exit=0。
+
+
+3.1准备终态：51859013_0与51859013_1均在cn511-15/CPU运行，2026-09-13T14:47:32Z开始，分别于14:48:33Z/14:48:36Z完成，exit0。
+完整数据已达到30,000训练开发+1,000测试，独立清单核查通过；详细计数见experiment_log和preparation_summary.json。
+当前编码51859014等待Priority；训练51859015[0-5]、汇总51859016等待依赖，未读取模型测试成绩。
