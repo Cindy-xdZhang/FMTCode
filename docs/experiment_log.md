@@ -3018,3 +3018,5 @@ NumPy独立复算六次合并/分流场/每头区/分尺度F1、平均精确率�
 保持4.5已选配置与4.1物理数据，比较rho=0/0.05/0.1的Euclidean SAM＋AdamW。参数、dropout、学习率、尺度一致性固定；两次前向共享样本和dropout随机状态，rho=0为计算次数匹配的普通AdamW对照。源码和选择规则见`docs/Task4C_sharpness_protocol_4.8.md`，只用训练/验证，不重开4.6测试。
 
 工程核验`outputs/Verify_Task4C_SharpnessCode_4.8/checks.json`通过：两实际模型零半径与单步AdamW参数逐位相同及RNG相同、独立二次函数公式、异常恢复、正半径有限梯度、拒绝test、14次真实pilot训练及选择，无权重文件。pilot指标不作科学结论。科学commit `81533108b50273b81417c6ce917dab369c22a9bb`，config SHA256 `f32d089d6e76d33c0323c750da7caa4d1bbf3d850f6d60762b92457172031d15`，代码包SHA256 `05f0a20a16822f5af746f8f3b8ba52d52e7c6144a8ecbf9905fca24f839aa617`。仅部署三份新代码/配置文件到个人Ibex，不包含待授权实验归档，不公开push。当前已提交但科学结果尚未产生，不能据此声称提高泛化或达到0.6。
+
+4.8真实远端进度：编码51864382成功，四分区27,000训练+3,000验证、test_encoded=false。首批在V100-SXM2-32GB启动；当前已完成1次训练，冻结read_run的预测哈希、验证阈值和指标一致性检查在Ibex内部通过。没有导出预测或指标明细，完整三种子结论尚待作业结束。
