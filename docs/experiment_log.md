@@ -2828,3 +2828,19 @@ UTC16:57:24选择完成，所选两模型均为candidate05（lr3e−4、dropout0
 
 4.2首轮完整12候选的最优验证F1为FMT0.387226（candidate04）和Conv3D0.425891（candidate01），三种子复核仍在运行。FMT增加增强有部分改善，Conv增强未超过未增强最优；这是单种子选择结果，不能概括为稳定收益。
 4.3只修改下游聚合/网络与学习率正则化，物理数据、标签、测试均固定；无合成增强，共16搜索+8复核。233维逐线固定编码可恢复4.2全部610维统计，先共享MLP再mean/max；Conv使用16/32/64通道与原8/16/32对照。完整技术、参数量、首次未复现数值异常及强制核验说明见`Task4C_line_pooling_protocol_4.3.md`。目标仍未达到，未查看新测试预测。
+
+4.3科学commit `46d7ee4e`已本地提交及个人Ibex部署，UTC17:25:26提交encode51861659、search51861660[0-15]、rank51861661、confirm51861662[0-7]、select51861663；测试作业尚未创建。私有传输bundle SHA256 `86c2a66e53ecdb8c27790a4cf219a67997ba0eeb545d04605c63fd4ffb53cd5e`，未向公开GitHub上传。
+
+4.3完整训练/验证编码已完成，四分区首批与原4.2统计恢复核验通过；本地复核配置/源码哈希一致、逐分区metadata与冻结4.1字节哈希相同，实际27,000拟合+3,000验证；`test_encoded=false`。证据`outputs/mainExp_Task4C_LinePooling_4.3/encoding.json`。
+
+### mainExp_Task4C_Regularized_4.2：完成，未通过验证门槛
+
+科学commit `6b67d2ef`，config SHA256 `5ce777f6fd3392f8e93ebf466c26047d28d3f52f2f865b74d621606aded8c664`，UTC17:28:30选择完成。12次搜索+8次复核均结束；下表全部是固定3000束验证集的开发种子94811/94812/94813结果，不是测试分数。
+
+| 方法 | 所选候选 | 验证F1均值±样本标准差 | 验证AP均值 | 三种子F1 |
+|---|---|---:|---:|---|
+| fmt_mlp | candidate_04 | 0.382105 ± 0.005105 | 0.291098 | 0.387226, 0.377016, 0.382072 |
+| conv3d_mlp | candidate_01 | 0.430561 ± 0.011771 | 0.320936 | 0.425891, 0.443951, 0.421842 |
+
+FMT为610维扩展版，所选候选有正类训练几何增强/线性头/dropout0.5/weight decay0.01；Conv3D所选候选无增强/余弦间隔/dropout0.3/weight decay0.001，两者lr3e−4。不能将各自最优之差视为只改变FMT的匹配消融。相对4.1原322维FMT的验证均值0.301773，4.2整套设置升至0.382105；Conv均值由0.420529变为0.430561，但没有足够证据说该小幅差异稳定。两方法均未到0.6；门槛false，未编码/读取test，未创建最终测试作业。
+全部20次保存概率的F1、平均精确率、阈值最优性及三种子均值/标准差经独立NumPy复算通过，最大误差1.11e−16。完整包SHA256 `9db2dd42f3df810287732ae802b297c78a19c53723a2bcf235a4e23ec7c5e0b7`；证据`outputs/mainExp_Task4C_Regularized_4.2/selection.json`、`independent_development_audit_completed.json`与`scheduler_completed.txt`。无模型权重文件。

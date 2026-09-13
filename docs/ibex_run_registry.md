@@ -4929,3 +4929,143 @@ Local/remote source and config hashes verified. Scientific commit `6b67d2efe2a7a
 - mainExp_Task4C_Regularized_4.2 runtime: {"time": "2026-09-13T17:06:48.590184+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "commit": "6b67d2efe2a7a5c80c90bec8dfa0c093e623d61d", "source_sha256": {"experiments/Task4C_PaperBundles_3_1.py": "b1c2a497c620d2f2b5ced9e53179e7f011fa06dd50f9d81908d4ad5b486283ca", "FMT_Utils/Task4C_PaperBundles_3_1.py": "934c1fb3219d2e5bcd3fa62741b929c2365c7dbd6f13c4191ef88ee06b1ffe4a", "experiments/Task4C_HairpinBinary_2_1.py": "e56a596fb255df6c264df1840d9b09fc2c04908514e717abdb23d7d9676131a5", "FMT_Utils/Task4C_HairpinBinary_2_1.py": "218f396f3192c753301d3e53ea5d4ec0098901c089f05324440663d5abb6d2ca", "FMT_Utils/Task4C_Bundles_1_1.py": "b034a031d491cda2ed5ee30af01d4a59020d0493a0c5dff40a76ef5b1d9fdd2b", "FMT_Utils/Task4B_CrossFlow_3D.py": "d35c649e1cf0f9e79262e5501fe892147e730ee2d6970dd00be3380910a751b0", "FMT_Utils/DFT_FMT_3D.py": "efff993f10a8db7b481784198beecce1c3c74b2f81cd2eddf5a523ba0a19222d", "experiments/Task4C_Multiscale_4_1.py": "920b48a80f9f09efbbcc893db70c14f7beb8303ddd1b9ba885b1667c7cdf8120", "FMT_Utils/Task4C_Multiscale_4_1.py": "3ecceb9d725fe82521a8e074ea6e4ac3280a18324552d9b062e30ab93c33881a", "experiments/Task4C_Regularized_4_2.py": "a58f1b840cae44a9f635144885fb7a332fb0fdb1427dd979146e51f238925574", "FMT_Utils/Task4C_Regularized_4_2.py": "5cab8bd7bf4aef0ebff9d187e010c736080e58229b8d4ebe4377e13efc284a99"}, "config_sha256": "5ce777f6fd3392f8e93ebf466c26047d28d3f52f2f865b74d621606aded8c664", "host": "gpu510-07", "job": "51861379", "array_index": "10"}
 - mainExp_Task4C_Regularized_4.2 runtime: {"time": "2026-09-13T17:07:12.179658+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "commit": "6b67d2efe2a7a5c80c90bec8dfa0c093e623d61d", "source_sha256": {"experiments/Task4C_PaperBundles_3_1.py": "b1c2a497c620d2f2b5ced9e53179e7f011fa06dd50f9d81908d4ad5b486283ca", "FMT_Utils/Task4C_PaperBundles_3_1.py": "934c1fb3219d2e5bcd3fa62741b929c2365c7dbd6f13c4191ef88ee06b1ffe4a", "experiments/Task4C_HairpinBinary_2_1.py": "e56a596fb255df6c264df1840d9b09fc2c04908514e717abdb23d7d9676131a5", "FMT_Utils/Task4C_HairpinBinary_2_1.py": "218f396f3192c753301d3e53ea5d4ec0098901c089f05324440663d5abb6d2ca", "FMT_Utils/Task4C_Bundles_1_1.py": "b034a031d491cda2ed5ee30af01d4a59020d0493a0c5dff40a76ef5b1d9fdd2b", "FMT_Utils/Task4B_CrossFlow_3D.py": "d35c649e1cf0f9e79262e5501fe892147e730ee2d6970dd00be3380910a751b0", "FMT_Utils/DFT_FMT_3D.py": "efff993f10a8db7b481784198beecce1c3c74b2f81cd2eddf5a523ba0a19222d", "experiments/Task4C_Multiscale_4_1.py": "920b48a80f9f09efbbcc893db70c14f7beb8303ddd1b9ba885b1667c7cdf8120", "FMT_Utils/Task4C_Multiscale_4_1.py": "3ecceb9d725fe82521a8e074ea6e4ac3280a18324552d9b062e30ab93c33881a", "experiments/Task4C_Regularized_4_2.py": "a58f1b840cae44a9f635144885fb7a332fb0fdb1427dd979146e51f238925574", "FMT_Utils/Task4C_Regularized_4_2.py": "5cab8bd7bf4aef0ebff9d187e010c736080e58229b8d4ebe4377e13efc284a99"}, "config_sha256": "5ce777f6fd3392f8e93ebf466c26047d28d3f52f2f865b74d621606aded8c664", "host": "dgpu501-26", "job": "51861362", "array_index": "1"}
 - mainExp_Task4C_Regularized_4.2 runtime: {"time": "2026-09-13T17:07:53.298350+00:00", "phase": "search", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "commit": "6b67d2efe2a7a5c80c90bec8dfa0c093e623d61d", "source_sha256": {"experiments/Task4C_PaperBundles_3_1.py": "b1c2a497c620d2f2b5ced9e53179e7f011fa06dd50f9d81908d4ad5b486283ca", "FMT_Utils/Task4C_PaperBundles_3_1.py": "934c1fb3219d2e5bcd3fa62741b929c2365c7dbd6f13c4191ef88ee06b1ffe4a", "experiments/Task4C_HairpinBinary_2_1.py": "e56a596fb255df6c264df1840d9b09fc2c04908514e717abdb23d7d9676131a5", "FMT_Utils/Task4C_HairpinBinary_2_1.py": "218f396f3192c753301d3e53ea5d4ec0098901c089f05324440663d5abb6d2ca", "FMT_Utils/Task4C_Bundles_1_1.py": "b034a031d491cda2ed5ee30af01d4a59020d0493a0c5dff40a76ef5b1d9fdd2b", "FMT_Utils/Task4B_CrossFlow_3D.py": "d35c649e1cf0f9e79262e5501fe892147e730ee2d6970dd00be3380910a751b0", "FMT_Utils/DFT_FMT_3D.py": "efff993f10a8db7b481784198beecce1c3c74b2f81cd2eddf5a523ba0a19222d", "experiments/Task4C_Multiscale_4_1.py": "920b48a80f9f09efbbcc893db70c14f7beb8303ddd1b9ba885b1667c7cdf8120", "FMT_Utils/Task4C_Multiscale_4_1.py": "3ecceb9d725fe82521a8e074ea6e4ac3280a18324552d9b062e30ab93c33881a", "experiments/Task4C_Regularized_4_2.py": "a58f1b840cae44a9f635144885fb7a332fb0fdb1427dd979146e51f238925574", "FMT_Utils/Task4C_Regularized_4_2.py": "5cab8bd7bf4aef0ebff9d187e010c736080e58229b8d4ebe4377e13efc284a99"}, "config_sha256": "5ce777f6fd3392f8e93ebf466c26047d28d3f52f2f865b74d621606aded8c664", "host": "dgpu502-37", "job": "51861333", "array_index": "11"}
+
+## mainExp_Task4C_LinePooling_4.3 — 2026-09-13
+
+科学commit `46d7ee4ef68ff99de13e1ea869cdbcfa91790ae8`；config `config/mainExp_Task4C_LinePooling_4.3.json` SHA256 `2e5a2e7e40199b9ba93e3e5a8adb1cc69c09d8793637a409736d1ee5a809a86a`；个人Ibex目录 `/ibex/user/zhanx0o/FMT_Task4C_LinePooling_20260913`。公开推送仍待明确授权。
+
+- SUBMITTED 51861659 encode；UTC 2026-09-13T17:25:26.018054+00:00；device A100/V100/P100/RTX2080Ti；dependency None；完整命令与源哈希见 `outputs/mainExp_Task4C_LinePooling_4.3/submissions.jsonl`。
+
+- SUBMITTED 51861660 search；UTC 2026-09-13T17:25:26.118352+00:00；device A100/V100/P100/RTX2080Ti；dependency 51861659；完整命令与源哈希见 `outputs/mainExp_Task4C_LinePooling_4.3/submissions.jsonl`。
+
+- SUBMITTED 51861661 rank；UTC 2026-09-13T17:25:26.198193+00:00；device CPU；dependency 51861660；完整命令与源哈希见 `outputs/mainExp_Task4C_LinePooling_4.3/submissions.jsonl`。
+
+- SUBMITTED 51861662 confirm；UTC 2026-09-13T17:25:26.272763+00:00；device A100/V100/P100/RTX2080Ti；dependency 51861661；完整命令与源哈希见 `outputs/mainExp_Task4C_LinePooling_4.3/submissions.jsonl`。
+
+- SUBMITTED 51861663 select；UTC 2026-09-13T17:25:26.356177+00:00；device CPU；dependency 51861662；完整命令与源哈希见 `outputs/mainExp_Task4C_LinePooling_4.3/submissions.jsonl`。
+
+- 4.3 runtime job 51861659[None] encode STARTED；UTC 2026-09-13T17:27:09.428338+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.3 runtime job 51861659[None] encode ENDED；UTC 2026-09-13T17:27:45.024207+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+### 4.2最终状态：全部完成，UTC17:28:30
+
+51861332 encode、51861333[0-11] search、51861334 rank、51861335[0-7] confirm、51861336 select均完成。源码/config/设备逐次记录与前述提交对应；完整调度记录`outputs/mainExp_Task4C_Regularized_4.2/scheduler_completed.txt`（Slurm显示Asia/Riyadh，JSON时间为UTC）。三种子验证F1为FMT0.382105、Conv3D0.430561；目标未达成，没有最终测试作业。
+
+- 4.2 final record: job 51861332[None] encode STARTED；UTC 2026-09-13T16:59:22.093347+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.2 final record: job 51861332[None] encode ENDED；UTC 2026-09-13T17:00:41.557497+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.2 final record: job 51861364[3] search STARTED；UTC 2026-09-13T17:01:24.242846+00:00；gpu202-16-r / NVIDIA A100-SXM4-80GB；exit None。
+
+- 4.2 final record: job 51861361[0] search STARTED；UTC 2026-09-13T17:01:24.897900+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.2 final record: job 51861362[1] search STARTED；UTC 2026-09-13T17:01:25.021122+00:00；dgpu501-26 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.2 final record: job 51861363[2] search STARTED；UTC 2026-09-13T17:01:25.038946+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.2 final record: job 51861363[2] search ENDED；UTC 2026-09-13T17:02:03.658422+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.2 final record: job 51861361[0] search ENDED；UTC 2026-09-13T17:02:08.011196+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.2 final record: job 51861372[5] search STARTED；UTC 2026-09-13T17:03:34.013702+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.2 final record: job 51861374[7] search STARTED；UTC 2026-09-13T17:03:34.101419+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.2 final record: job 51861373[6] search STARTED；UTC 2026-09-13T17:03:34.186520+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.2 final record: job 51861371[4] search STARTED；UTC 2026-09-13T17:03:34.540355+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.2 final record: job 51861364[3] search ENDED；UTC 2026-09-13T17:03:47.773529+00:00；gpu202-16-r / NVIDIA A100-SXM4-80GB；exit 0。
+
+- 4.2 final record: job 51861373[6] search ENDED；UTC 2026-09-13T17:04:17.343494+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.2 final record: job 51861371[4] search ENDED；UTC 2026-09-13T17:04:30.104726+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.2 final record: job 51861379[10] search STARTED；UTC 2026-09-13T17:05:42.968664+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.2 final record: job 51861378[9] search STARTED；UTC 2026-09-13T17:05:43.024254+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.2 final record: job 51861377[8] search STARTED；UTC 2026-09-13T17:05:43.297545+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.2 final record: job 51861377[8] search ENDED；UTC 2026-09-13T17:06:43.851029+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.2 final record: job 51861379[10] search ENDED；UTC 2026-09-13T17:06:48.590184+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.2 final record: job 51861362[1] search ENDED；UTC 2026-09-13T17:07:12.179658+00:00；dgpu501-26 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.2 final record: job 51861333[11] search STARTED；UTC 2026-09-13T17:07:53.298350+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.2 final record: job 51861372[5] search ENDED；UTC 2026-09-13T17:08:29.726987+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.2 final record: job 51861374[7] search ENDED；UTC 2026-09-13T17:09:05.431209+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.2 final record: job 51861378[9] search ENDED；UTC 2026-09-13T17:11:05.332035+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.2 final record: job 51861333[11] search ENDED；UTC 2026-09-13T17:15:27.410231+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.2 final record: job 51861334[None] rank STARTED；UTC 2026-09-13T17:15:30.559430+00:00；cn604-18 / CPU；exit None。
+
+- 4.2 final record: job 51861334[None] rank ENDED；UTC 2026-09-13T17:15:33.184841+00:00；cn604-18 / CPU；exit 0。
+
+- 4.2 final record: job 51861524[5] confirm STARTED；UTC 2026-09-13T17:16:25.772093+00:00；gpu214-14 / Tesla V100-SXM2-32GB；exit None。
+
+- 4.2 final record: job 51861523[4] confirm STARTED；UTC 2026-09-13T17:16:25.799370+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.2 final record: job 51861522[3] confirm STARTED；UTC 2026-09-13T17:16:25.869336+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.2 final record: job 51861521[2] confirm STARTED；UTC 2026-09-13T17:16:25.941259+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.2 final record: job 51861520[1] confirm STARTED；UTC 2026-09-13T17:16:26.095978+00:00；dgpu501-26 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.2 final record: job 51861519[0] confirm STARTED；UTC 2026-09-13T17:16:26.260617+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.2 final record: job 51861522[3] confirm ENDED；UTC 2026-09-13T17:17:04.792284+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.2 final record: job 51861521[2] confirm ENDED；UTC 2026-09-13T17:17:10.291134+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.2 final record: job 51861520[1] confirm ENDED；UTC 2026-09-13T17:17:19.133514+00:00；dgpu501-26 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.2 final record: job 51861519[0] confirm ENDED；UTC 2026-09-13T17:17:29.828735+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.2 final record: job 51861335[7] confirm STARTED；UTC 2026-09-13T17:18:35.193923+00:00；dgpu501-26 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.2 final record: job 51861566[6] confirm STARTED；UTC 2026-09-13T17:18:35.219011+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.2 final record: job 51861523[4] confirm ENDED；UTC 2026-09-13T17:21:31.661056+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.2 final record: job 51861524[5] confirm ENDED；UTC 2026-09-13T17:25:31.980956+00:00；gpu214-14 / Tesla V100-SXM2-32GB；exit 0。
+
+- 4.2 final record: job 51861566[6] confirm ENDED；UTC 2026-09-13T17:27:12.712067+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.2 final record: job 51861335[7] confirm ENDED；UTC 2026-09-13T17:28:23.222232+00:00；dgpu501-26 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.2 final record: job 51861336[None] select STARTED；UTC 2026-09-13T17:28:28.366509+00:00；cn604-18 / CPU；exit None。
+
+- 4.2 final record: job 51861336[None] select ENDED；UTC 2026-09-13T17:28:30.945487+00:00；cn604-18 / CPU；exit 0。
+
+- 4.3 runtime job 51861767[5] search STARTED；UTC 2026-09-13T17:29:18.464864+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.3 runtime job 51861763[1] search STARTED；UTC 2026-09-13T17:29:18.509587+00:00；dgpu501-26 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.3 runtime job 51861764[2] search STARTED；UTC 2026-09-13T17:29:22.327536+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.3 runtime job 51861766[4] search STARTED；UTC 2026-09-13T17:29:22.441087+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.3 runtime job 51861765[3] search STARTED；UTC 2026-09-13T17:29:22.487386+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.3 runtime job 51861762[0] search STARTED；UTC 2026-09-13T17:29:30.747610+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.3 runtime job 51861766[4] search ENDED；UTC 2026-09-13T17:29:55.627380+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.3 runtime job 51861764[2] search ENDED；UTC 2026-09-13T17:29:57.912732+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.3 runtime job 51861762[0] search ENDED；UTC 2026-09-13T17:30:18.680610+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
+
+- 4.3 runtime job 51861809[8] search STARTED；UTC 2026-09-13T17:31:27.771880+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.3 runtime job 51861808[7] search STARTED；UTC 2026-09-13T17:31:27.850333+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.3 runtime job 51861807[6] search STARTED；UTC 2026-09-13T17:31:28.733205+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.3 runtime job 51861807[6] search ENDED；UTC 2026-09-13T17:32:17.699489+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。
