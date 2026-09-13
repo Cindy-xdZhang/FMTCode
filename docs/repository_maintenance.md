@@ -52,3 +52,26 @@ README 和摘要快照不自动恢复，避免覆盖整理后的文档；需要�
 
 发布前仍需单独核查数据获取说明、依赖环境、许可证和机器专用路径。本次文件整理不等于已完成
 完整的开源发布检查。
+
+## 2026-09-13 整理：删除已完结实验的审计/汇总/校验脚本与对应测试
+
+按用户要求，从工作目录删除 `experiments/` 下 38 个 `Audit_`、`Summarize_`、`Verify_` 脚本和 `tests/` 下 32 个测试，共 70 个文件。
+删除条件：文件已提交到 Git 且本地无改动；对应实验的结论与证据已写入 `experiment_log.md`、`ibex_run_registry.md`
+或对应协议文档；删除后 `experiments/`、`tests/`、`FMT_Utils/`、`FLowUtils/`、`DeepUtils/`、`pnn/`、`tools/`、`config/`
+中没有任何 Python 或配置文件再引用它们；docs 中没有 Markdown 链接指向它们。
+恢复方式：`git checkout ee576e26 -- <path>`（删除前最后一次提交）。未提交 Git，未改动算法库、实验输出、数据或 Ibex 文件。
+
+保留且未按名称删除的例外：
+- 仍被其他代码导入的旧实现：`Verify_HighReVAE.py`、`Verify_HighReSampling3D.py`、`Verify_3DFMTHyperparam.py`、
+  `Verify_Task3_FMTClassifier.py`、`Verify_Task3_FMTResidual.py`、`Verify_Task4B_FullVolumeMemorization_1_1.py`、
+  `Verify_Task4B_PooledMemorization_3_1.py`。
+- 实验尚未完结或结论尚无记录：`Audit_GeometryParameterStress.py`（`Verify_Task123_GeometryParameterStress_1.1` 登记表仍为 RUNNING/QUEUED，日志写“暂无性能结论”）、
+  `Audit_Task678_PerDataset_1_1.py` 及其依赖 `Audit_Task678_HanFast_1_1.py`、`Audit_Task678_VectorFast_1_1.py`（文档无任何记录）。
+- 算法库单元测试、Task6/Task36 当前部署链在 Ibex 上作为预检运行的测试、绘图脚本契约测试、数据准备（标签/缓存/分片）测试，不属于实验结论测试。
+- 从未提交到 Git 的 47 个候选文件（25 个脚本、22 个测试，`git status` 中为 `??`）未删除：删除后无法从历史恢复，需先提交或另行决定。
+
+副作用：32 个历史 Slurm 启动脚本（`ibex_bash/`）仍以 `python -m experiments.<module>` 调用已删除模块，它们对应的作业均已完结登记；
+如需重跑须先恢复模块。校验：`python tools/research_archive.py check` 通过（836 个保留文件无对已移除文件的引用，语法有效）；
+`experiments/`、`tests/`、`tools/` 全部 `py_compile` 通过。`tools/Validate_Repository_Layout.py` 报告的失败项
+（`docs/Verify_*.md` 拆分文档、`ibex_bash` 直接脚本调用、`third_party/point_nn/README.md`）在本次整理前已存在，与删除无关。
+本机 Python 未安装 pytest 与研究依赖，未运行测试。
