@@ -1,0 +1,31 @@
+{
+  "version": "Ablation_Task4C_CenterDiversity_4.9",
+  "base_config": "config/Ablation_Task4C_Sharpness_4.8.json",
+  "base_config_sha256": "f32d089d6e76d33c0323c750da7caa4d1bbf3d850f6d60762b92457172031d15",
+  "output": "outputs/Ablation_Task4C_CenterDiversity_4.9",
+  "diversity": {
+    "keep_views_per_original_center": 2,
+    "maximum_views_per_new_center": 2,
+    "new_center_start": 100000,
+    "maximum_attempts_per_head": 2000,
+    "selection_seed": 96101,
+    "sampling_rule": "keep_two_original_views_then_replace_exact_head_scale_quota_with_new_paired_centers"
+  },
+  "training_overrides": {
+    "development_seed": 96111,
+    "confirmation_seeds": [
+      96112,
+      96113
+    ]
+  },
+  "arms": [
+    "original",
+    "more_centers"
+  ],
+  "target": {
+    "f1": 0.6,
+    "scope": "unchanged_three_seed_mean_pooled_fixed_test_for_both_models",
+    "this_ablation": "train_validation_only",
+    "test_sample_count": 10000
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "version": "Verify_Task4C_GeometryCorrespondence_4.8",
+  "scope": "full training metadata only",
+  "rows": [
+    {
+      "flow": "channel",
+      "views": 13500,
+      "heads": 531,
+      "centers": 2261,
+      "effective_centers_under_actual_sampling": 1622.929049061403,
+      "views_per_center_quantiles": [
+        1.0,
+        4.0,
+        4.0,
+        8.0,
+        12.0
+      ],
+      "unique_centers_per_head_quantiles": [
+        1.0,
+        3.0,
+        4.0,
+        5.0,
+        7.0
+      ],
+      "positive_centers_per_head_quantiles": [
+        2.0,
+        3.0,
+        4.0,
+        6.0,
+        7.0
+      ],
+      "negative_centers_per_head_quantiles": [
+        1.0,
+        3.0,
+        4.0,
+        5.0,
+        7.0
+      ],
+      "heads_with_at_most_two_centers_fraction": 0.07344632768361582
+    },
+    {
+      "flow": "tbl",
+      "views": 13500,
+      "heads": 618,
+      "centers": 2199,
+      "effective_centers_under_actual_sampling": 1566.5262709346118,
+      "views_per_center_quantiles": [
+        1.0,
+        4.0,
+        5.0,
+        8.0,
+        12.0
+      ],
+      "unique_centers_per_head_quantiles": [
+        1.0,
+        3.0,
+        3.0,
+        5.0,
+        6.0
+      ],
+      "positive_centers_per_head_quantiles": [
+        1.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0
+      ],
+      "negative_centers_per_head_quantiles": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        6.0
+      ],
+      "heads_with_at_most_two_centers_fraction": 0.24919093851132687
+    }
+  ],
+  "source_sha256": {
+    "outputs\\Verify_Task4C_LabelScope_4.1\\channel_train.npz": "fb013b4dd136633aa9c23859d1583cbdd3373e94d92a152c414d82ecaa983941",
+    "outputs\\Verify_Task4C_LabelScope_4.1\\tbl_train.npz": "c6a69dcfd1c4a50606d3be0553f11135949385f9e4b9e17584ca3f959efc76b0"
+  }
+}

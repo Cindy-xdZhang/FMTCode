@@ -14,7 +14,8 @@
 4.3三种子验证FMT0.390572、Conv3D0.429361；4.4隐藏层插值版本已完成，验证0.372803/0.430801；4.5同中心物理尺度配对已完成，验证0.399091/0.436234。见[4.4协议](Task4C_manifold_mixup_protocol_4.4.md)与[4.5协议](Task4C_scale_consistency_protocol_4.5.md)，全部未通过各自原验证门槛。
 最新完成的 **`mainExp_Task4C_FinalAssessment_4.6`** 已完成最终评估：关闭4.1–4.5开发，按完整三种子验证结果选择，两方法均选中4.5。明确修订此前助手自加的验证0.6门槛，改为冻结选择后一次测试；旧源码与结果保持。三个全新训练种子95811/95812/95813，仍要求两方法各自合并测试Hairpin F1均值≥0.6；测试不参与配置/阈值/epoch选择。见[4.6协议](Task4C_final_assessment_protocol_4.6.md)。实际合并测试F1均值±样本标准差为FMT0.335526±0.017885、Conv3D0.304615±0.031948，目标未达成；完整证据已登记。
 当前推进 **`Ablation_Task4C_RepresentationResolution_4.7`**，仅用原训练/验证数据比较FMT有符号频率6/17与Conv体素24³/48³，同方法参数数一致；两种分辨率分别选择学习率后均做三种子复核。见[4.7协议](Task4C_representation_resolution_protocol_4.7.md)。原10,000束测试及4.6结果不变，0.6目标仍未达到。
-同时推进 **`Ablation_Task4C_Sharpness_4.8`**，固定4.5已选数据、网络、dropout、学习率和尺度一致性，只比较SAM扰动半径0/0.05/0.1；保留普通AdamW对照，同种子三次验证，入口不读取test。见[4.8协议](Task4C_sharpness_protocol_4.8.md)。科学commit81533108，已在Ibex提交，不能据此声称达到目标。
+已完成 **`Ablation_Task4C_Sharpness_4.8`**，固定4.5已选数据、网络、dropout、学习率和尺度一致性，只比较SAM扰动半径0/0.05/0.1；保留普通AdamW对照，同种子三次验证，入口不读取test。见[4.8协议](Task4C_sharpness_protocol_4.8.md)。科学commit81533108，14次训练及独立复算已完成；选定验证F1为FMT0.395441、Conv3D0.429179，未达到目标，原测试不变。
+2026-09-14新增 **`Ablation_Task4C_CenterDiversity_4.9`**：保持每流场13,500训练、1,500验证、5,000测试及原head/scale/标签/实例数量，训练中心从4,460增至13,875。真实小规模预处理、完整生成和独立落盘审计均已通过，随后进行新旧两组、两方法、三个相同种子的固定网络比较。科学commit4ac7e6ab，见[4.9协议](Task4C_center_diversity_protocol_4.9.md)。尚无完整分类结论，原4.6测试不变。
 多个尺度可来自同一中心，但头区与完整GT实例及源数据支撑不得跨集合；样本数不代表独立物理涡数。
 2.1已完成的Channel局部七线中心点实验及结果保持冻结。
 现有GT提供hairpin单元支持；1.1四类方案因缺标签被用户改为二类，BiLSTM保留但不运行。用户已授权验证、删除临时验证代码、commit、push和Ibex部署运行。

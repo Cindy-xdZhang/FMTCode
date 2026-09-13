@@ -1,0 +1,29 @@
+{
+  "version": "Verify_Task4C_CenterDiversityCode_4.9",
+  "scope": "engineering, source preflight still required on Ibex",
+  "checks": {
+    "channel_full_retention": {
+      "keep": 4368,
+      "replace": 9132,
+      "label_independent": true
+    },
+    "tbl_full_retention": {
+      "keep": 4203,
+      "replace": 9297,
+      "label_independent": true
+    },
+    "atomic_pair_acceptance": true,
+    "distinct_available_scale_selection": true,
+    "no_final_phase": true,
+    "routing_trainer_unchanged_since_12_real_checks": true,
+    "local_archival_pilot_guard_rejected_stale_runner": true,
+    "full_ibex_parent_source_hashes_match": true,
+    "remote_real_source_preflight_before_full_prepare_required": true,
+    "quota_label_instance_center_tamper_rejected": true
+  },
+  "source_sha256": {
+    "config/Ablation_Task4C_CenterDiversity_4.9.json": "b05dbc41028da799de8403efe28419c989c1c9c38a86fe53fead43981af21ae5",
+    "experiments/Task4C_CenterDiversity_4_9.py": "b49818358e7842364479b15501722583c4f2517ca93fdf865ba82594488910b8",
+    "ibex_bash/task4c_center_diversity_4p9.sh": "25947cecd345985358cc7d3b8d337e75fa2e4fa3e6cc78a72dcffc4e4a79032b"
+  }
+}

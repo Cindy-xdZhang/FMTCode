@@ -1,0 +1,9 @@
+{
+  "version": "Verify_Task4C_CenterDiversityCode_4.9",
+  "scope": "two identical real cached pilot arms test routing and deterministic pairing, not diversity performance",
+  "real_trainers": 12,
+  "same_seed_identical_data_results_equal": true,
+  "test_loaded": false,
+  "weights_written": 0,
+  "preparation_local_stale_pilot_guard_rejected": true
+}

@@ -1,0 +1,52 @@
+{
+  "version": "Verify_Task4C_GeometryCorrespondence_4.8",
+  "scope": "training only, no performance or test access",
+  "rows": [
+    {
+      "flow": "channel",
+      "training_pilot_bundles": 120,
+      "seed_fraction_range_q05_q50_q95": [
+        1.505882894352606e-05,
+        0.009177425518985233,
+        0.10351618955984937
+      ],
+      "seed_fraction_std_q05_q50_q95": [
+        4.074530539360167e-06,
+        0.0023780598127338083,
+        0.035036140067091257
+      ],
+      "bundle_fraction_seed_spread_over_two_sample_intervals": 0.1,
+      "seed_nearest_polyline_distance_over_Rmax_q50_q95": [
+        0.0009359105014082864,
+        0.0042118090782939785
+      ]
+    },
+    {
+      "flow": "tbl",
+      "training_pilot_bundles": 120,
+      "seed_fraction_range_q05_q50_q95": [
+        0.0008916090667107412,
+        0.012721266065873149,
+        0.04276028300821459
+      ],
+      "seed_fraction_std_q05_q50_q95": [
+        0.0001992636419649858,
+        0.0032360393124527356,
+        0.011363723881573766
+      ],
+      "bundle_fraction_seed_spread_over_two_sample_intervals": 0.041666666666666664,
+      "seed_nearest_polyline_distance_over_Rmax_q50_q95": [
+        0.0016864867707207124,
+        0.008692810354371173
+      ]
+    }
+  ],
+  "source_sha256": {
+    "outputs\\Verify_Task4C_Multiscale_4.1\\data\\channel\\train\\geometry.npy": "f2653a0ed9d80d435ee28bc7657b5b75763accf35fd9488f6f890c3a572ae8e6",
+    "outputs\\Verify_Task4C_Multiscale_4.1\\data\\channel\\train\\seeds.npy": "b1b3a3d0284cb8a5b4184d4156764b52ec72a7a4d1d3069de14e267ed95ba12e",
+    "outputs\\Verify_Task4C_Multiscale_4.1\\data\\channel\\train\\metadata.npz": "c5c082d47478c8a69ed95d093539961d499fc8093436d61d3357b4e2ea8afbcb",
+    "outputs\\Verify_Task4C_Multiscale_4.1\\data\\tbl\\train\\geometry.npy": "e2f55444cc124415f87290270cd32d02fdd010bc3fd8ed51cee87320e8debc69",
+    "outputs\\Verify_Task4C_Multiscale_4.1\\data\\tbl\\train\\seeds.npy": "c03cae7b5b69f5ce9b2a5852016108d41e2aa4c32112bde2b4dd4d83fb07d33c",
+    "outputs\\Verify_Task4C_Multiscale_4.1\\data\\tbl\\train\\metadata.npz": "e444875d4cd4e6b4a1d8d23f0813a50c7fcc40db93babc3fb0597956d945a7d5"
+  }
+}
