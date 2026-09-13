@@ -434,4 +434,16 @@ Channel+TBL各一帧，合计27,000拟合+3,000验证+1,000测试primitive；候
 | tbl | 0.3837 ± 0.0227 | 0.1574 ± 0.0939 | 0.3554 ± 0.0633 | 0.1843 ± 0.0415 |
 
 UTC15:04:43全部结束；逐样本预测、分流场/每头区指标、验证选择及汇总均通过独立复算。证据`outputs/mainExp_Task4C_PaperBundles_3.1/`。
+
+## Task4-c 4.1/4.2：开发状态，不是论文测试结果
+
+`mainExp_Task4C_Multiscale_4.1`（科学commit `e039aab6`）已完成20次候选训练与8次复核，固定验证集3000束、两个流场。下表只记录各方法所选候选的三个开发种子均值，不能混入上方测试主表。
+
+| 版本 | 方法 | 验证F1均值±样本标准差 | 验证AP均值 | 测试 |
+|---|---|---:|---:|---|
+| 4.1 | 原322维FMT＋MLP | 0.301773 ± 0.004672 | 0.194824 | 未解封 |
+| 4.1 | Conv3D＋MLP | 0.420529 ± 0.021411 | 0.322929 | 未解封 |
+
+两方法未通过预注册验证门槛0.6，因此没有最终测试F1。完整证据`outputs/mainExp_Task4C_Multiscale_4.1/selection.json`及`independent_development_audit_completed.json`。
+4.2（科学commit `6b67d2ef`）继续使用同一物理训练/验证/10,000测试样本，比较有方向的FMT扩展、训练几何增强及余弦间隔分类，尚待结果。所有方法结论以`experiment_log.md`为准。
 协议见[3.1](Task4C_paper_bundles_protocol_3.1.md)，方法结论与适用边界见[实验日志](experiment_log.md#task4c-paper-bundles-2026-09-13)。
