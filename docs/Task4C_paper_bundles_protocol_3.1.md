@@ -112,3 +112,5 @@ AdamW lr1e-3、weight decay1e-4、batch128、dropout0.1，最多100epoch，梯�
 Ibex：两个CPU准备作业 → 一个GPU编码作业 → 三种子×两方法GPU训练 → CPU完整汇总。
 提交时立即写入`docs/ibex_run_registry.md`、submissions.jsonl；开始/结束自动记录节点、实际设备、退出码和源码身份。
 部分准备失败不得覆盖原目录；先保存失败证据，科学设置变化必须使用新版本。
+
+2026-09-13执行状态：科学commit `f1865b16`的完整采集、编码、六次训练与汇总均完成，UTC15:04:43结束；独立预测复算通过。结果与方法结论见experiment_log。
