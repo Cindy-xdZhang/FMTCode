@@ -2994,3 +2994,7 @@ NumPy独立复算六次合并/分流场/每头区/分尺度F1、平均精确率�
 为遵守已有传输限制，个人Ibex部署提交以已在远端的8b755d23为父提交，只增加runner/config/bash三个文件，不包含4.6 metrics.csv、independent_final_audit.json、新实验结果或文档。本地工作分支保留全部完整记录；该独立科学提交仍是本地可解析的Git对象，并由`codex/task4c-resolution-4p7`引用保留，不是公共分支推送。待授权文件没有被传输。
 
 科学commit `8d4838084d2f30f88cf80ca525b7deaf33cfda78`，config SHA256 `cfca9f35fe11c5e4c1806f54cdf79b33926e3f7bc4878765a2ace98906327651`，代码传输包SHA256 `49a6f944f678dde25bfd669eb01e9ccf60bff6488a6140de2243edead2d82a89`。远端逐项确认变更恰好上述三个文件，路径`/ibex/user/zhanx0o/FMT_Task4C_RepresentationResolution_20260913`。UTC19:52:40–41提交encode51863924、smoke51863925、search51863926[0-7]、rank51863927、confirm51863928[0-7]、select51863929，全部已登记。只训练/验证，无test阶段或自动重测。
+
+4.7补充历史核对：本轮开始主要读取4.1–4.6主版本后，在继续核对涡量一致性记录时重新定位到`Verify_Task4C_DirectionalSpectrum_4.1`。此前它已显示固定跨线统计聚合的signed17四组全部不如signed6，最佳验证0.364865对0.389904；不能把4.7说成第一次全频率测试，或用新的端点重建误差推翻该负结果。4.7新增的是局部161维＋坐标/切向、逐线学习聚合及等参数频率对照，仍保留有限检验；当前没有收益结论。完整并列说明已加入4.7协议。原20,000训练点速度旋度与存储涡量一致性核验也已存在（相关系数均>0.99998），没有证据支持轴交换/符号错误，不重复该检查或修改物理输入。
+
+4.7编码和GPU核验已完成：四个train/validation分区metadata哈希与冻结4.3/4.1相同，27,000拟合+3,000验证，test_encoded=false。P100、batch64实际峰值分配显存为24³ 315,199,488 bytes、48³ 2,156,278,784 bytes；真实前向/反向有限值检查通过。它只证明该设备上的内存与数值可运行，不计作性能收益。证据`outputs/Ablation_Task4C_RepresentationResolution_4.7/{encoding,device_smoke}.json`。
