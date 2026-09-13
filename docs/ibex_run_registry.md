@@ -5181,3 +5181,5 @@ Local/remote source and config hashes verified. Scientific commit `6b67d2efe2a7a
 - 4.4 runtime job 51862209[3] search STARTED；UTC 2026-09-13T17:59:34.565147+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
 
 - 4.4 runtime job 51862208[2] search STARTED；UTC 2026-09-13T17:59:34.620630+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.4非训练缓存诊断：通过SSH在个人Ibex目录只读比较4.3/4.4各train/validation前64束，写出`encoding_numeric_comparison.json`，无Slurm作业、未读取test、未训练模型。编码设备RTX2080Ti/P100，抽查FMT差异≤7.63e−6，体素差异≤4.8828e−4。

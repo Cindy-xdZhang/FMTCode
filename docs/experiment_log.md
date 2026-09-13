@@ -2874,3 +2874,5 @@ FMT选择逐线学习聚合、lr3e−4；Conv选择16/32/64通道、lr1e−3；�
 4.3完成及未通过门槛已由4.4提交函数检查。4.4科学commit `d14e8132`，UTC17:56:29提交encode51862164、search51862165[0-15]、rank51862166、confirm51862167[0-7]、select51862168；均已登记。当前仅训练/验证开发，不宣称插值正则化有效，固定测试未使用。
 
 4.4训练/验证编码已完成，配置/源码哈希本地复核通过，metadata与4.3完全相同，仍为27,000拟合+3,000验证，test_encoded=false。4.3/4.4编码缓存逐文件哈希一致性：`{"channel/train": {"fmt.npy": false, "voxels.npy": false, "metadata.npz": true}, "tbl/train": {"fmt.npy": false, "voxels.npy": false, "metadata.npz": true}, "channel/validation": {"fmt.npy": false, "voxels.npy": false, "metadata.npz": true}, "tbl/validation": {"fmt.npy": false, "voxels.npy": false, "metadata.npz": true}}`。全部分区的原4.2统计恢复检查通过，证据`outputs/mainExp_Task4C_ManifoldMixup_4.4/encoding.json`；神经训练结果尚待返回。
+
+针对4.3/4.4缓存哈希不同的数值核验：编码设备分别为RTX2080Ti/P100；每个train/validation分区前64束、共256束中，161维块最大差7.63e−6、有符号72维块最大差7.16e−7，均无primitive超过1e−4；半精度体素最大差4.8828e−4，差异元素比例≤3.11e−6。抽查符合跨GPU浮点舍入级差异，没有支持大幅几何或近邻改变的证据；范围限于抽查，不声称全缓存逐值相同。不修改已冻结编码器，4.4各插值/不插值候选共用同一个缓存。证据`outputs/mainExp_Task4C_ManifoldMixup_4.4/encoding_numeric_comparison.json`。
