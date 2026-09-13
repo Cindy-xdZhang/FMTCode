@@ -4,16 +4,18 @@
 
 **2026-09-13 当前推进状态（取代下面的历史推进状态）**：目标会议为 ICLR；按用户决定，停止现有客观化路线，
 暂停 Task6/7/8 几何 tokenizer、Point-NN 与混合专家探索（包括 Task36）。Task1/2/3/5 保留冻结主结果。
-用户在当天后续指定并重新定义 **Task4-c 2.1**：只研究 Channel 的Hairpin / Non-hairpin二分类，比较FMT＋多层感知机与Conv3D＋多层感知机。
+用户在当天后续指定 **Task4-c 3.1**：Channel+TBL各一帧，加入论文lambda2/正oyf头区、RK45双向涡线、清洗、弧长重采样及整束归一化，比较FMT＋多层感知机与Conv3D＋多层感知机。
 这取代当天较早“仅整理、不启动训练、新任务未选定”的状态；Task4-a/b 算法与历史结果冻结。
-当前版本 `mainExp_Task4C_HairpinBinary_2.1` 的[输入、GT二分类与对照协议](Task4C_hairpin_binary_protocol_2.1.md)已建立。
+当前版本 `mainExp_Task4C_PaperBundles_3.1` 的[论文预处理与二分类协议](Task4C_paper_bundles_protocol_3.1.md)已建立。
+每流场15,000训练开发（内部13,500拟合+1,500验证）、500测试primitive。多个种子子集可以来自同一头区，但头区与完整GT实例及源数据支撑不得跨集合；样本数不代表独立物理涡数。
+2.1已完成的Channel局部七线中心点实验及结果保持冻结。
 现有GT提供hairpin单元支持；1.1四类方案因缺标签被用户改为二类，BiLSTM保留但不运行。用户已授权验证、删除临时验证代码、commit、push和Ibex部署运行。
 各版本结论与方法限制见[进展记录](experiment_log.md#progress-2026-09-13)。
 
 术语边界：vortex identification 输出涡核**区域**；vortex classification 区分三维涡**类型**；
 vortex coreline identification 输出涡核**曲线**。当前 Task1/3/5 的区域结果不是 coreline 检测结果。
 Channel/TBL 的 Task4-a/b 输入是三维定常快照，其 primitive 由速度场 streamline 构成。
-Task4-c 2.1固定沿涡量场积分局部七线簇，以中心是否在GT区域内作二分类；vortex lines也不是vortex corelines。
+Task4-c 3.1沿涡量积分每束10..256条有效线、每线32点，以完整候选头区GT重叠作二分类；历史2.1为局部七线中心分类。vortex lines不是vortex corelines。
 项目对象是具有局部信息的线簇几何，不限定pathline、streamline或vortex line；曲线类型由各版本明确选择。
 用户说明 half-cylinder Re160/320/640/6400 属于同一仿真家族，原始网格为 `640×240×80×151`，
 时空范围为 `[-0.5,7.5]×[-1.5,1.5]×[-0.5,0.5]×[0,15]`；后续采样避开原始前50%时间。
@@ -71,7 +73,7 @@ d_{ij}^\ast(t)=Q(t)d_{ij}(t),\qquad
 ## 1. 总体研究命题
 
 Task1/2/3/5 的研究对象是 pathline cross primitive。2D primitive 通常为中心线和 `x±、y±` 共 5 条线；3D primitive 为中心线和 `x±、y±、z±` 共 7 条线。
-Task4-c 2.1使用中心加六邻居的七线簇，每线33个等弧长积分点；1.1最多256条线的论文形态四分类仅保留历史实现。
+Task4-c 3.1使用清洗后的10..256条涡线、每线32点、整束质心/最大半径归一化；2.1七线中心分类与1.1论文形态四分类保持历史实现。
 
 FMT 是由 Fourier 变换、`sin/cos`、几何不变量和 aggregation 构成的 **training-free encoder**。这里“training-free”只描述 encoder 本身没有通过标签或重构损失更新的参数；KMeans、VAE 和监督分类器仍然需要训练拟合。
 当前研究包含 **3D Task1、Task2、Task3、Task5**，以及仅限 3D 的 **Task4-b proxy-label 实验**。Task4-b 1.1 因跨 split primitive 空间重叠被审计否决；channel 内标签与空间拆分协议冻结为 1.2。`mainExp_Task4B_ChannelToTBL_2.3` 只研究一个 channel source volume 到一个 TBL target volume 的跨 volume 迁移，不把 Task4-b 扩展解释为一般跨流场结论。`mainExp_Task4B_PooledInstanceSplit_3.1` 把 channel 与 TBL 合并、按完整 hairpin 实例留出测试，回答同分布未见实例问题，同样不构成一般跨流场结论。Task1–Task3 和 Task5 在 2D、3D 都有定义，但 2D 扩展暂不进入当前实验计划；Task4 只在 3D 中成立。
@@ -85,6 +87,7 @@ FMT 是由 Fourier 变换、`sin/cos`、几何不变量和 aggregation 构成的
 | **Task3：有监督 IVD 涡识别** | 2D、3D | IVD 标签监督的涡/非涡二分类网络 | Raw、参数量控制 Raw、Raw+FMT | F1、Average Precision、AUROC、precision、recall；多训练 seed | 加入 FMT 是否提高有监督涡区域识别 |
 | **Task4：有监督涡类型分类** | **仅 3D** | 对已定义的 3D 涡型标签做多分类 | 不使用 FMT vs 加入 FMT | macro-F1、每类 F1、balanced accuracy、confusion matrix | 加入 FMT 是否提高 streamwise、spanwise、hairpin 等涡型分类 |
 | **Task4-c：Hairpin区域二分类（2.1）** | **仅 Channel 3D 快照** | 局部七线簇几何→Hairpin / Non-hairpin，标签为中心是否在GT区域 | FMT＋MLP与同几何体素化的Conv3D＋MLP | 正类F1、AP、平衡准确率、混淆矩阵、积分有效率 | FMT是否改善隔离空间区间的hairpin区域识别；不作为论文曲面检测F1 |
+| **Task4-c：论文预处理线簇二分类（当前3.1）** | **Channel+TBL各一帧** | lambda2/正oyf头区→RK45→清洗及32点重采样→10..256线整束归一化；完整头区GT重叠二类标签 | 同束FMT＋MLP与Conv3D＋MLP | 合并、分流场及每头区一票的F1/AP等；独立头区和GT实例数、清洗统计 | 两帧空间留出上的表示比较；多线子集不等于独立涡实例，不是论文人工四类/曲面检测 |
 | **Task5：不同尺度几何学习** | 2D、3D | 每个 primitive 的邻居距离、积分步长和积分步数可变；积分后统一重采样为固定 `K×L×C`，再做 IVD 监督二分类 | 固定尺度 Task3 迁移、variable-scale Raw、结构匹配 Raw-PCA residual、variable-scale Raw+FMT | unseen-scale confirmation 的 F1、Average Precision；逐尺度、逐流场及 family macro | 模型能否学习跨尺度 primitive；FMT 是否提高 variable-scale IVD 涡识别 |
 | **Task6：单流场primitive几何重建（2.1冻结；当前修复3.1）** | 当前 3D | 多时间、多位置、多尺度七线geometry→冻结FMT token→VAE→同一簇完整七线geometry；每流场单独训练，测试完整未见primitive | 2.1原FMT与3.1新signed-FMT分别与各自同数据、同VAE结构及同潜变量维数的Raw geometry→VAE→geometry配对；原实验不覆盖 | 七条对应路径线全时段几何重建误差、同时间粒子间距误差、逐尺度/时长及训练/测试分项 | FMT是否帮助VAE学习和重建该流场的primitive几何分布 |
 | **Task7：遮挡区域补全** | 当前 3D | 外部可见 primitive tokens → 隐藏区域材料轨迹；原流场积分自监督 | 同上下文网络与相同可见材料点下的各特征方案 | 隐藏区域位置及相对几何误差、存储/计算开销 | tokens 是否能支持区域间上下文推断 |
@@ -174,7 +177,7 @@ Task4 的背景类处理必须在首个实验前冻结。Task4-b 1.2 冻结为�
 
 ### Task4
 
-- Task4-c 已由用户改为 Channel Hairpin / Non-hairpin二分类，完整定义见 `Task4C_hairpin_binary_protocol_2.1.md`。下列 Task4-b 的部位标签、IVD阈值和拆分协议不应用于Task4-c；`channel_GTs.vtk`的74个实例编号含0，2.1以所有GT单元作为正区域，GT外涡候选作为本benchmark负类。完整实例与原生插值节点必须隔离。
+- Task4-c 当前为Channel+TBL论文预处理线簇二分类，见 `Task4C_paper_bundles_protocol_3.1.md`；2.1局部七线定义和结果冻结。下列Task4-b部位标签和IVD阈值不应用于Task4-c。GT实例0有效；3.1完整头区被单一实例覆盖至少50%为正、完全无GT重叠为负，其他部分重叠排除。完整头区、GT实例和原生源节点支撑隔离。
 - 只允许 3D 数据；必须报告每类样本数和 class-balanced 指标。
 - 涡区域定位误差与涡型分类误差应分开统计。
 - Task4 开始前必须单独建立标签来源、类别定义和跨数据集名称映射文档。

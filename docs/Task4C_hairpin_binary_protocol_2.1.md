@@ -1,5 +1,7 @@
 # Task4-c 2.1：Channel局部线簇的Hairpin / Non-hairpin分类
 
+**历史冻结版本**：2026-09-13用户后续要求加入论文预处理并扩展到Channel+TBL，当前协议为[3.1](Task4C_paper_bundles_protocol_3.1.md)。下文2.1定义和已完成结果不改写。
+
 2026-09-13用户重新定义并授权版本`mainExp_Task4C_HairpinBinary_2.1`：完成代码核验后删除临时验证代码，commit、push并在Ibex运行。
 研究对象是**带有局部流动信息的线簇几何**，不限定必须使用pathline、streamline或vortex line。
 本版本选择沿涡量积分的局部七线簇；曲线类型是本次实验设置，不是FMT的适用范围限制。
