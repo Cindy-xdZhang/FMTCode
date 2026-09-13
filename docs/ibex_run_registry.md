@@ -5599,3 +5599,113 @@ Local/remote source and config hashes verified. Scientific commit `6b67d2efe2a7a
 - Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:19:53.751876+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51865212", "array_index": "0", "host": "dgpu502-37"}
 
 - Task4-c 4.8 independent NumPy audit passed:14/14,maximum error1.11e-16,validation3000,test_loaded=false; selection51864386 COMPLETED exit0.
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T19:54:06.978750+00:00", "phase": "encode", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "job": "51863924", "array_index": null, "host": "dgpu502-37"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T19:57:55.530751+00:00", "phase": "encode", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51863924", "array_index": null, "host": "dgpu502-37"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T19:58:25.466336+00:00", "phase": "smoke", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "job": "51863925", "array_index": null, "host": "dgpu502-37"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T19:59:44.100951+00:00", "phase": "smoke", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51863925", "array_index": null, "host": "dgpu502-37"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:00:34.771309+00:00", "phase": "search", "state": "STARTED", "exit_code": null, "device": "NVIDIA A100-SXM4-80GB", "job": "51864015", "array_index": "1", "host": "gpu203-09-r"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:00:35.333114+00:00", "phase": "search", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "job": "51864014", "array_index": "0", "host": "dgpu501-26"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:02:36.018705+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51864014", "array_index": "0", "host": "dgpu501-26"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:02:44.686802+00:00", "phase": "search", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "job": "51864022", "array_index": "2", "host": "dgpu501-26"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:02:52.903420+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "NVIDIA A100-SXM4-80GB", "job": "51864015", "array_index": "1", "host": "gpu203-09-r"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:04:54.926437+00:00", "phase": "search", "state": "STARTED", "exit_code": null, "device": "NVIDIA A100-SXM4-80GB", "job": "51864035", "array_index": "3", "host": "gpu203-09-r"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:05:25.590773+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51864022", "array_index": "2", "host": "dgpu501-26"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:07:04.873169+00:00", "phase": "search", "state": "STARTED", "exit_code": null, "device": "NVIDIA A100-SXM4-80GB", "job": "51864049", "array_index": "5", "host": "gpu202-16-r"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:07:05.912732+00:00", "phase": "search", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "job": "51864048", "array_index": "4", "host": "dgpu501-26"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:07:08.743548+00:00", "phase": "search", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51864050", "array_index": "6", "host": "gpu213-10"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:07:13.062816+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "NVIDIA A100-SXM4-80GB", "job": "51864035", "array_index": "3", "host": "gpu203-09-r"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:08:44.890754+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51864050", "array_index": "6", "host": "gpu213-10"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:09:01.473732+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51864048", "array_index": "4", "host": "dgpu501-26"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:09:14.495289+00:00", "phase": "search", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "job": "51863926", "array_index": "7", "host": "dgpu501-26"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T20:21:57.443567+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "NVIDIA A100-SXM4-80GB", "job": "51864049", "array_index": "5", "host": "gpu202-16-r"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:06:03.814386+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51863926", "array_index": "7", "host": "dgpu501-26"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:06:10.180822+00:00", "phase": "rank", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51863927", "array_index": null, "host": "cn604-18"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:06:13.524344+00:00", "phase": "rank", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51863927", "array_index": null, "host": "cn604-18"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:07:08.688908+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51864113", "array_index": "6", "host": "gpu609-09"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:07:08.722825+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51864114", "array_index": "7", "host": "gpu609-09"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:07:09.073337+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865016", "array_index": "3", "host": "gpu510-07"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:07:09.163675+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865014", "array_index": "1", "host": "gpu510-07"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:07:09.232857+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865015", "array_index": "2", "host": "gpu510-07"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:07:09.398360+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "job": "51865013", "array_index": "0", "host": "dgpu501-26"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:08:34.825151+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865014", "array_index": "1", "host": "gpu510-07"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:08:36.475321+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865016", "array_index": "3", "host": "gpu510-07"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:08:38.366222+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865015", "array_index": "2", "host": "gpu510-07"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:09:13.062204+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51865013", "array_index": "0", "host": "dgpu501-26"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:09:14.490056+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51863928", "array_index": "5", "host": "gpu510-07"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:09:15.907028+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "job": "51865026", "array_index": "4", "host": "dgpu502-37"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:14:12.171057+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51863928", "array_index": "5", "host": "gpu510-07"}
+
+- Ablation_Task4C_RepresentationResolution_4.7 runtime status: {"time": "2026-09-13T21:15:57.541197+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51865026", "array_index": "4", "host": "dgpu502-37"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:25:28.700011+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865064", "array_index": "3", "host": "gpu510-07"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:25:29.311652+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865213", "array_index": "1", "host": "gpu510-07"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:25:35.870493+00:00", "phase": "rank", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51865065", "array_index": null, "host": "cn604-15"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:25:40.876369+00:00", "phase": "rank", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51865065", "array_index": null, "host": "cn604-15"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:26:21.759754+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865357", "array_index": "3", "host": "gpu510-07"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:26:21.759636+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865355", "array_index": "1", "host": "gpu510-07"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:26:21.759519+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865356", "array_index": "2", "host": "gpu510-07"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:26:23.184517+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "job": "51865354", "array_index": "0", "host": "dgpu502-37"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:27:53.834362+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865356", "array_index": "2", "host": "gpu510-07"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:27:57.064291+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865355", "array_index": "1", "host": "gpu510-07"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:28:28.339665+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865357", "array_index": "3", "host": "gpu510-07"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:28:30.422444+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865382", "array_index": "5", "host": "gpu510-07"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:28:30.422404+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865381", "array_index": "4", "host": "gpu510-07"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:28:39.615943+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51865354", "array_index": "0", "host": "dgpu502-37"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:30:39.586883+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865066", "array_index": "7", "host": "gpu510-07"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:30:40.302193+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "job": "51865397", "array_index": "6", "host": "dgpu502-37"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:35:41.938111+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865382", "array_index": "5", "host": "gpu510-07"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:36:31.188910+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865381", "array_index": "4", "host": "gpu510-07"}
+
+- Ablation_Task4C_CenterDiversity_4.9 runtime status: {"time": "2026-09-13T21:37:53.428676+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51865066", "array_index": "7", "host": "gpu510-07"}
