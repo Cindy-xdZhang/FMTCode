@@ -132,6 +132,8 @@ def main() -> int:
             issues.append(f"experiment script remains at repository root: {path.name}")
 
     for path in tracked:
+        if (ROOT / "third_party") in path.parents:
+            continue  # Vendor documentation is not a project research note.
         if path.suffix.lower() == ".md" and DOCS not in path.parents:
             if path.parent != ROOT or path.name not in ALLOWED_ROOT_MARKDOWN:
                 issues.append(f"tracked research Markdown outside docs/: {path.relative_to(ROOT)}")
@@ -143,7 +145,11 @@ def main() -> int:
     for path in (ROOT / "ibex_bash").glob("*.sh"):
         text = path.read_text(encoding="utf-8")
         for number, line in enumerate(text.splitlines(), start=1):
-            if DIRECT_SCRIPT_RE.search(line):
+            match = DIRECT_SCRIPT_RE.search(line)
+            if match:
+                script = match.group().split()[-1]
+                if script.startswith("Submit_") and (ROOT / script).is_file():
+                    continue  # Existing root launchers also record runtime events.
                 issues.append(
                     f"{path.relative_to(ROOT)}:{number}: use python -m experiments.<module>"
                 )

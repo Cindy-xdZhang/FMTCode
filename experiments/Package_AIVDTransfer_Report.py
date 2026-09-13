@@ -19,7 +19,7 @@ def main():
     audit = json.loads((root/'local_aggregate_audit.json').read_text())
     assert audit['status'] == 'PASS' and audit['underlying_metric_rows'] == 350
     shutil.copy2('docs/aivd1w3_dft_explained_zh.md', root/'aivd1w3_dft_explained_zh.md')
-    shutil.copy2('docs/Verify_AIVDTransfer_1.1.md', root/'protocol.md')
+    shutil.copy2('docs/Verify_experiments.md', root/'protocol.md')
     shutil.copy2('config/Verify_AIVDTransfer_1.1.json', root/'config.json')
     code = root/'code'
     code.mkdir(exist_ok=True)

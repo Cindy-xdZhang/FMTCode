@@ -1,5 +1,24 @@
 # 绘图方法、代码与成图索引
 
+<a id="triptychs-20260913"></a>
+
+## 2026-09-13：Task1/3/5 三联图代码核对
+
+用户本次强调的布局为：流场背景（轨线、方向符号、等值面、几何体）→分类区域→识别误差。
+真阳性（True Positive，TP）是正确识别的涡点；假阳性（False Positive，FP）是误检；假阴性（False Negative，FN）是漏检。
+该布局与下列既有成图并不完全相同；本轮保留全部绘图实现和数据接口，没有重画或更换图中预测。
+
+| 任务 | 主要入口及共享代码 | 当前实现与复用限制 |
+|---|---|---|
+| Task1 | [Visualize_Task1_3D_Horizontal.py](../experiments/Visualize_Task1_3D_Horizontal.py)、[PaperCandidates](../experiments/Visualize_Task1_3D_PaperCandidates.py)；新版[PaperTriptychs_1_2](../experiments/Visualize_Task123_PaperTriptychs_1_2.py) | 原流程为背景/两簇/误差；新版接入统一配方。旧Horizontal的显示p97与评估p95不同，不能误写为全程同阈值 |
+| Task3 | [Visualize_Task23_3D_Horizontal.py](../experiments/Visualize_Task23_3D_Horizontal.py)、[Multiflow_Diagnostic](../experiments/Visualize_Task3_Multiflow_Diagnostic.py)及新版PaperTriptychs_1_2 | 现有模式b是参考/无FMT/FMT，误差着色包含在预测面板；用户本次描述的独立第三栏误差图不等于现有全部输出 |
+| Task5 | [Visualize_Task5_3D_Horizontal.py](../experiments/Visualize_Task5_3D_Horizontal.py) | 现有顺序是IVD p95参考/可变尺度Raw-PCA残差/Raw+FMT残差；三个面板共享相机与物理范围。不能当作已经输出背景/分类/误差模式 |
+
+Cylinder后续图像继续按原始[0,15]时段限制起始时刻t≥7.5，不能对窗口文件再次截半。
+Re160/640/6400属于同一家族；用户提及的Re320未出现在当前十条目主表，不能补写不存在的结果。
+Task4的Channel/TBL是定常三维快照，显示和primitive积分应称streamline。
+本轮归档的历史图形检查脚本可按[维护说明](repository_maintenance.md#cleanup-20260913)恢复；渲染、导出和背景资产构建代码均保留。
+
 核查日期：2026-09-06。用途：Task1/2/3 论文效果图与组会 PPT，后续每次出图继续更新。
 本页记录绘图实现与数据接口，不新增方法级实验结论；实验结论仍以
 [实验记录](experiment_log.md) 为准。主表身份以 [论文结果表](paper_tables_tasks_3d.md)
@@ -206,13 +225,13 @@ Task1首个确认ordinal0/seed7080，Task2 ordinal8/seed100，Task3 ordinal8/see
 
 | 绘图方法 | 代码 | 特点 |
 |---|---|---|
-| 无bounding box的observed轨线 | [七联图](../experiments/Verify_FMT_Observed_Pathline_2_1.py)、[相机及场变换](../FMT_Utils/ObservedFieldWorldline_3D.py)、[说明](Verify_FMTObservedPathline_2.1.md) | 三步显式分开；数值积分相机速度、逆位置查询原场，再积分observed field；七档共同物质种子/尺度；不画原域盒或取景盒；精确变换和错误relative-field对照；分别诊断中心和邻居特征变化。 |
+| 无bounding box的observed轨线 | `experiments/Verify_FMT_Observed_Pathline_2_1.py`（已归档，见[恢复说明](repository_maintenance.md#cleanup-20260913)）、[相机及场变换](../FMT_Utils/ObservedFieldWorldline_3D.py)、[说明](Verify_experiments.md#archived-verify-fmtobservedpathline-2-1) | 三步显式分开；数值积分相机速度、逆位置查询原场，再积分observed field；七档共同物质种子/尺度；不画原域盒或取景盒；精确变换和错误relative-field对照；分别诊断中心和邻居特征变化。 |
 
 ## P20 旧/新 FMT 的逐流场成对性能图
 
 | 绘图方法 | 代码 | 特点 |
 |---|---|---|
-| 三任务成对 F1 对比 | [绘图](../experiments/Plot_FMTAllV2_Comparison.py)、[独立审计](../experiments/Audit_FMTAllV2_3D.py)、[汇总](../experiments/Summarize_FMTAllV2_3D.py) | 三栏分别表示 Task1、Task2、Task5；全部10条目、每条目5个成对种子；旧/新版均值连接，显示样本标准差及每次运行，不过滤下降条目。先要求完整审计 PASS 再绘制；固定0–1横轴，统一尺寸；导出可编辑PDF/SVG及600dpi PNG、源CSV和图注。 |
+| 三任务成对 F1 对比 | [绘图](../experiments/Plot_FMTAllV2_Comparison.py)、`experiments/Audit_FMTAllV2_3D.py`（已归档，见[恢复说明](repository_maintenance.md#cleanup-20260913)）、`experiments/Summarize_FMTAllV2_3D.py`（已归档，见[恢复说明](repository_maintenance.md#cleanup-20260913)） | 三栏分别表示 Task1、Task2、Task5；全部10条目、每条目5个成对种子；旧/新版均值连接，显示样本标准差及每次运行，不过滤下降条目。先要求完整审计 PASS 再绘制；固定0–1横轴，统一尺寸；导出可编辑PDF/SVG及600dpi PNG、源CSV和图注。 |
 
 
 ## P21 Task3标量移植到Task1/Task2的配对性能变化图
@@ -225,7 +244,7 @@ Task1首个确认ordinal0/seed7080，Task2 ordinal8/seed100，Task3 ordinal8/see
 
 | 绘图方法 | 代码 | 特点 |
 |---|---|---|
-| 固定标量分类器的七联图 | [计算与校验](../experiments/Verify_AIVDTranslationObservers_3D.py)、[绘图](../experiments/Plot_AIVDTranslationObservers_3D.py)、[协议](Verify_AIVDTranslationObservers_1.1.md) | 原样一维 aivd1w3_dft，晚期 Task1/seed7080 的固定 StandardScaler+KMeans；复用2.1七组独立 observed-field 积分轨迹，保留7220个共同物质 primitive；每档独立特征与预测，标出 changed labels，附特征误差和float64/精确变换诊断。七档速度、统一取景、无bounding box、96步显示/48步分类；仅验证平移，不以零changed labels证明一般旋转客观性。 |
+| 固定标量分类器的七联图 | `experiments/Verify_AIVDTranslationObservers_3D.py`（已归档，见[恢复说明](repository_maintenance.md#cleanup-20260913)）、[绘图](../experiments/Plot_AIVDTranslationObservers_3D.py)、[协议](Verify_experiments.md#archived-verify-aivdtranslationobservers-1-1) | 原样一维 aivd1w3_dft，晚期 Task1/seed7080 的固定 StandardScaler+KMeans；复用2.1七组独立 observed-field 积分轨迹，保留7220个共同物质 primitive；每档独立特征与预测，标出 changed labels，附特征误差和float64/精确变换诊断。七档速度、统一取景、无bounding box、96步显示/48步分类；仅验证平移，不以零changed labels证明一般旋转客观性。 |
 
 ## P23 七联图的极简相机与平移速度标注
 
@@ -238,7 +257,7 @@ Task1首个确认ordinal0/seed7080，Task2 ordinal8/seed100，Task3 ordinal8/see
 
 | 绘图方法 | 代码 | 特点 |
 |---|---|---|
-| 相机、矢量公式、同比例速度箭头 | [绘图](../experiments/Plot_AIVDTranslationObservers_VelocityArrows_3D.py)、[原数据复用](../experiments/Render_AIVDTranslationVelocityArrows_3D.py)、[像素与箭头审计](../experiments/Audit_AIVDVelocityArrows_3D.py)、[配置](../config/Verify_AIVDTranslationObservers_1.3.json) | P23的注释修订：FancyArrowPatch绘制6个黑箭头、Ellipse绘制零速圆点；公式用vec矢量符号。初始时刻的真实observer速度经相同3D正交投影矩阵确定方向；最大60/90pt，其余按alpha缩放。图注明确箭头时刻与共享比例尺。无原始数据重算，两版注释区外像素变化0；PDF/SVG可编辑，完整QA通过。 |
+| 相机、矢量公式、同比例速度箭头 | [绘图](../experiments/Plot_AIVDTranslationObservers_VelocityArrows_3D.py)、[原数据复用](../experiments/Render_AIVDTranslationVelocityArrows_3D.py)、`experiments/Audit_AIVDVelocityArrows_3D.py`（已归档，见[恢复说明](repository_maintenance.md#cleanup-20260913)）、[配置](../config/Verify_AIVDTranslationObservers_1.3.json) | P23的注释修订：FancyArrowPatch绘制6个黑箭头、Ellipse绘制零速圆点；公式用vec矢量符号。初始时刻的真实observer速度经相同3D正交投影矩阵确定方向；最大60/90pt，其余按alpha缩放。图注明确箭头时刻与共享比例尺。无原始数据重算，两版注释区外像素变化0；PDF/SVG可编辑，完整QA通过。 |
 
 
 ## 2026-09-10 — 完整FMT直连网络训练曲线

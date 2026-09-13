@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE = ROOT / ".research_archive" / "retired-validation-20260905.zip"
 MANIFEST = ROOT / "docs" / "research_archive_manifest.json"
 DIRECTORIES = ("experiments", "config", "ibex_bash", "tests")
-SUFFIXES = {".py", ".yaml", ".yml", ".sh"}
+SUFFIXES = {".py", ".yaml", ".yml", ".sh", ".json", ".ps1"}
 SNAPSHOTS = ("README.md", "docs/Verify_experiments.md")
 SIDECAR_RE = re.compile(r"(?:outputs?|config)/[\w./-]+\.(?:json|yaml|yml)\b")
 
@@ -64,7 +64,7 @@ def reference_index(names: tuple[str, ...]) -> tuple:
     for name in names:
         path = Path(name)
         tokens = [path.name]
-        if path.parent.name == "experiments":
+        if path.parent.name in {"experiments", "tests"}:
             tokens.append(path.stem)
         for token in tokens:
             lookup.setdefault(token, set()).add(name)
@@ -147,8 +147,10 @@ def make_plan() -> dict:
 def checked_path(name: str) -> Path:
     path = ROOT / name
     if (Path(name).is_absolute() or ".." in Path(name).parts or
-            Path(name).parts[0] not in DIRECTORIES or
-            path.suffix not in SUFFIXES or path.is_symlink() or
+            Path(name).parts[0] not in (*DIRECTORIES, "docs") or
+            not (path.suffix in SUFFIXES or
+                 (Path(name).parts[0] == "docs" and path.suffix == ".md")) or
+            path.is_symlink() or
             not path.resolve().is_relative_to(ROOT)):
         raise ValueError(f"unsafe archive member: {name}")
     return path
@@ -223,6 +225,8 @@ def check_retained_references() -> None:
     files = inventory()
     universe = dict.fromkeys(archived, "") | files
     sources = dict(files)
+    for path in ROOT.glob("*.py"):
+        sources[path.name] = path.read_text(encoding="utf-8-sig")
     for directory in ("FMT_Utils", "FLowUtils", "DeepUtils", "pnn", "tools"):
         for path in (ROOT / directory).rglob("*.py"):
             if path.resolve() != Path(__file__).resolve():
@@ -240,10 +244,24 @@ def check_retained_references() -> None:
 
 
 def main() -> None:
+    global MANIFEST, ARCHIVE
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=("plan", "apply", "verify", "restore", "check"))
     parser.add_argument("--list", action="store_true", help="print the full per-file inventory")
+    parser.add_argument("--manifest", type=Path,
+                        help="existing batch manifest under docs (verify/restore/check only)")
     args = parser.parse_args()
+    if args.manifest:
+        if args.action not in {"verify", "restore", "check"}:
+            parser.error("--manifest supports verify, restore, and check only")
+        manifest = (ROOT / args.manifest).resolve()
+        if not manifest.is_relative_to(ROOT / "docs") or manifest.suffix != ".json":
+            parser.error("manifest must be a JSON file under docs")
+        plan = json.loads(manifest.read_text(encoding="utf-8"))
+        archive = (ROOT / plan["archive"]).resolve()
+        if not archive.is_relative_to(ROOT / ".research_archive") or archive.suffix != ".zip":
+            parser.error("archive must be a ZIP file under .research_archive")
+        MANIFEST, ARCHIVE = manifest, archive
     if args.action == "check":
         check_retained_references()
         return

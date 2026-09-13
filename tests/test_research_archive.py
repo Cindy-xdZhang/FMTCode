@@ -85,6 +85,26 @@ class ResearchArchiveTests(unittest.TestCase):
             with self.subTest(name=name), self.assertRaises(ValueError):
                 archive.checked_path(name)
 
+    def test_test_module_references_and_root_launchers_are_checked(self):
+        path = "tests/test_paused_pipeline.py"
+        self.source(path, "import unittest\n")
+        files = {path: ""}
+        self.assertEqual(archive.references("python -m unittest tests.test_paused_pipeline", files), {path})
+        archive.apply_plan({"files": [{"path": path, "sha256": archive.digest((self.root / path).read_bytes())}],
+                            "snapshots": []})
+        self.source("Submit_Paused.py", "TEST = 'tests.test_paused_pipeline'\n")
+        with self.assertRaises(ValueError):
+            archive.check_retained_references()
+
+    def test_merged_document_can_be_restored_exactly(self):
+        path = "docs/Verify_Completed.md"
+        self.source(path, "# Frozen protocol\n\nOriginal result.\n")
+        original = (self.root / path).read_bytes()
+        archive.apply_plan({"files": [{"path": path, "sha256": archive.digest(original)}],
+                            "snapshots": []})
+        archive.verify_or_restore(True)
+        self.assertEqual((self.root / path).read_bytes(), original)
+
 
 if __name__ == "__main__":
     unittest.main()

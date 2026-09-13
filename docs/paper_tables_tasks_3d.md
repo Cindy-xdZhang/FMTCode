@@ -1,5 +1,9 @@
 # 3D Tasks 论文性能表
 
+**2026-09-13 状态**：本页冻结的Task1/2/3/5数字不变。现有客观化路线停止推进，几何tokenizer与混合专家路线暂停。
+Task4 5.1/5.2、Task6及Task36的探索结果与局限集中在[进展记录](experiment_log.md#progress-2026-09-13)，
+不追加进本页独立确认主表，也不与旧总体合并平均。
+
 本页只合并已冻结 confirmation 结果，不重新选择任何 feature、VAE、checkpoint、
 cluster 映射或阈值。Task1、Task2、Task3 的论文主表分别使用一套跨全部10个数据
 条目不变的任务级配置；Task5 固定一套 FMT encoder，仅按其预注册研究问题改变

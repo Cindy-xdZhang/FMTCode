@@ -1,0 +1,1475 @@
+{
+  "schema": 2,
+  "archive": ".research_archive/retired-diagnostics-20260913.zip",
+  "scope": "Completed diagnostics, obsolete launchers and merged verification documents; source only",
+  "source_commit": "67139f808cbbf01c0a862d42975b7688f2aaf8de",
+  "files": [
+    {
+      "path": "docs/Verify_AIVDTransfer_1.1.md",
+      "bytes": 5601,
+      "sha256": "1de02c0bb20287396e673535290078a916f6a007ed58cbdf632a8a26c9370904",
+      "reason": "Merged verbatim into Verify_experiments.md; original bytes recoverable",
+      "recorded_ids": [
+        "Verify_AIVDTransfer_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "docs/Verify_AIVDTranslationObservers_1.1.md",
+      "bytes": 2574,
+      "sha256": "b856e649080dcf8ffc4e13fa7b42565f52efe817ab001b64c9f457934941f208",
+      "reason": "Merged verbatim into Verify_experiments.md; original bytes recoverable",
+      "recorded_ids": [
+        "Verify_AIVDTransfer_1.1",
+        "Verify_AIVDTranslationObservers_1.1",
+        "Verify_AIVDTranslationObservers_3D",
+        "Verify_FMTObservedPathline_2.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "docs/Verify_DistanceInputIdentity_1.1.md",
+      "bytes": 1917,
+      "sha256": "a2889f26a13e8e0a08f3d7afd654e49880c90dd9dfaacdae2858acf73056ea19",
+      "reason": "Merged verbatim into Verify_experiments.md; original bytes recoverable",
+      "recorded_ids": [
+        "Other_FeatureSilhouette_1.1",
+        "Verify_DistanceInputIdentity_1.1",
+        "Verify_DistanceInputIdentity_1_1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "docs/Verify_FMTAllV2_1.1.md",
+      "bytes": 5774,
+      "sha256": "5aa7295a3f599ba26ca491fa85ced0ebd7f3b33476f3090b45b6db01b7f0cac4",
+      "reason": "Merged verbatim into Verify_experiments.md; original bytes recoverable",
+      "recorded_ids": [
+        "Verify_FMTAllV2_1.1",
+        "Verify_FMTAllV2_3D"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "docs/Verify_FMTAllV2_1.2.md",
+      "bytes": 2699,
+      "sha256": "26328a8e3bc92d6759ded71e395817dc11eabd3044251a15f8ef5120a5a5245e",
+      "reason": "Merged verbatim into Verify_experiments.md; original bytes recoverable",
+      "recorded_ids": [
+        "Verify_FMTAllV2_1.2"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "docs/Verify_FMTNoCenterObjectivity_1.1.md",
+      "bytes": 2217,
+      "sha256": "f68b6d35ade29ca1dba10ce8888cc6b572c63479449c86c230f7e8fe7f8a5b56",
+      "reason": "Merged verbatim into Verify_experiments.md; original bytes recoverable",
+      "recorded_ids": [
+        "Verify_FMTNoCenterObjectivity_1.1",
+        "Verify_FMTNoCenterObjectivity_1_1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "docs/Verify_FMTObjectivityMechanism_1.1.md",
+      "bytes": 5087,
+      "sha256": "d36e8b1860eba767dfcb9e753347a9ba36e3ac5614ce184dbf6b36cbbb8c5ce0",
+      "reason": "Merged verbatim into Verify_experiments.md; original bytes recoverable",
+      "recorded_ids": [
+        "Verify_AIVDTransfer_1.1",
+        "Verify_FMTObjectivityMechanism_1.1",
+        "Verify_FMTObjectivityMechanism_1_1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "docs/Verify_FMTObjectivityMechanism_1.2.md",
+      "bytes": 1460,
+      "sha256": "4ecaec4f20541c719e012c02cbf6856add57a0e9ff9a40fe3f23d53de190c141",
+      "reason": "Merged verbatim into Verify_experiments.md; original bytes recoverable",
+      "recorded_ids": [
+        "Verify_FMTObjectivityMechanism_1.2"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "docs/Verify_FMTObjectivityMechanism_1.3.md",
+      "bytes": 2217,
+      "sha256": "47b95458aa780434302c3df52be175ba40a4f1d6c46768acd2401eb312db1cd0",
+      "reason": "Merged verbatim into Verify_experiments.md; original bytes recoverable",
+      "recorded_ids": [
+        "Verify_FMTObjectivityMechanism_1.3"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "docs/Verify_FMTObservedPathline_2.1.md",
+      "bytes": 2636,
+      "sha256": "7a50e1467f08a798fdcb01fa45388e2b471e4db43f2796657dcf6e4f830f9902",
+      "reason": "Merged verbatim into Verify_experiments.md; original bytes recoverable",
+      "recorded_ids": [
+        "Verify_FMTObservedPathline_2.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "docs/Verify_Task1235_ObjectiveFMTnTDO_2.1_protocol_zh.md",
+      "bytes": 4355,
+      "sha256": "c81358fdd325345dedbaacfbc724d7f5f382ef57b4a8fc42e4ac2b20efab487f",
+      "reason": "Merged verbatim into Verify_experiments.md; original bytes recoverable",
+      "recorded_ids": [
+        "Verify_Task1235_ObjectiveFMTnTDO_2.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "docs/Verify_Task6_DirectAudit_1.1.md",
+      "bytes": 1447,
+      "sha256": "3ce58ad2b2bb88ef560d89963cc0be2aba6007f0a364dba9ba66273d543a1caa",
+      "reason": "Merged verbatim into Verify_experiments.md; original bytes recoverable",
+      "recorded_ids": [
+        "Verify_Task6_DirectAudit_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Audit_AIVDTranslationObserverFigure.py",
+      "bytes": 2176,
+      "sha256": "ea452e6217bd535e6c4782d96d61233dad789b882a8779505be1ac32e7d54023",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Audit_AIVDVelocityArrows_3D.py",
+      "bytes": 3341,
+      "sha256": "61042e3642585a25591e26d7e0a374578f41c9ef48d583ea03d1d0714dccc5c6",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_AIVDTranslationObservers_1.2",
+        "Verify_AIVDTranslationObservers_1.3"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Audit_FMTAllV2_3D.py",
+      "bytes": 5461,
+      "sha256": "2d8ca7a6ccac8c9ed270e8e913f41e2c53c7585e5fcbf6dfaa76c5d5f212e5d6",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_FMTAllV2_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Audit_FMTObjectivityMechanism_Local_1_3.py",
+      "bytes": 4916,
+      "sha256": "98f5c8ebc0d386d28823d7b242a5286719f06530049b805056ad76c2bd01d70a",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_FMTObjectivityMechanism_1.3"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Audit_Task1235_AIVDLongtime_1_1.py",
+      "bytes": 12812,
+      "sha256": "eb3eacd3cf46d4812f6cebf46c87021f948da4c4f16f0c019b200f588c84ea0d",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_AIVDLongtime_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Record_Task6_DirectNeural_5_1.py",
+      "bytes": 6189,
+      "sha256": "97b97ec84a4e3cc49434b2823982e7e214e8641852959155adeaa9fde26bf172",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task6_DirectNeural_5.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Registry_Task6_Scarce_4_1.py",
+      "bytes": 3214,
+      "sha256": "8a9a1f4187063b5a2d5d83718dd0a0551db13bf78d48d88b1c60b03b528b8a97",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task6_ScarceGeneralization_4.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Report_FMTAllV2_Comparison.py",
+      "bytes": 6984,
+      "sha256": "f63e4f90e7cfa9de2f2596a63555bdd642eb7d1c72dc5868395170b917f529dd",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_FMTAllV2_",
+        "Verify_FMTAllV2_1.1",
+        "Verify_FMTAllV2_1.2",
+        "Verify_FMTAllV2_report"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Report_Task6_DirectAudit_1_1.py",
+      "bytes": 8628,
+      "sha256": "c9c2b44f2a29d1b3a7fb76a76b771073fde436c4e007a76f3ae1cfe2194d1be4",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task6_DirectAudit_1.1",
+        "Verify_Task6_DirectNeural_5.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Report_Task6_PNNTrans_1_1.py",
+      "bytes": 5129,
+      "sha256": "127df0dda7f396485c5d84b553d72bfa36fe1152f5f516392485ae179c22cd58",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task6_PNNTrans_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Report_Task6_PNNTuning_1_2.py",
+      "bytes": 5153,
+      "sha256": "5ea5c702f971051b8b67eb6aadcbc8d88d92a8ce11b48bdce910f2f471de9582",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task6_PNNTrans_1.2"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Report_Task6_PrimitiveVAE_2_1.py",
+      "bytes": 5341,
+      "sha256": "1aaab1f83a0ff05e4e8b5b0902f1ea61a2231bf8b62a36999fe18095cd53dcc5",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "mainExp_Task6_PrimitiveVAE_2.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Report_Task6_Reconstruction_3_1.py",
+      "bytes": 10609,
+      "sha256": "6c64d80bbd10f01a4649459aa7a7c26944960a6aa28d0baf73fea26138e433b6",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task6_ReconstructionAudit_2.2",
+        "mainExp_Task6_PrimitiveVAE_2.1",
+        "mainExp_Task6_Reconstruction_3.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Report_Task6_Scarce_4_1.py",
+      "bytes": 10203,
+      "sha256": "3448c3708057d33a0eec7294671d3b3fc27a5a7a2f231ac0a0cd2be3d328cd69",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task6_ScarceGeneralization_4.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Report_Task6_Scarce_Search_4_1.py",
+      "bytes": 3457,
+      "sha256": "8a5842a01badef882b11add66bc9929ea1d7542216b1471404dfc2848020a8f3",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task6_ScarceGeneralization_4.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Summarize_FMTAllV2_3D.py",
+      "bytes": 7793,
+      "sha256": "3181f04cbee90f0bf990ec77eef9c7f5fe231c3407e78228e31f331de2ebc594",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_FMTAllV2_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Verify_AIVDTranslationObservers_3D.py",
+      "bytes": 10925,
+      "sha256": "f160119db94da4239201df9300f38067958a0b50ff24b2799b13c58eb94a016c",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_AIVDTransfer_3D"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Verify_DistanceInputIdentity_1_1.py",
+      "bytes": 6332,
+      "sha256": "6ed4d4b4c7521de465dd3a47f7aebc62271c2b411371522f3bcda7187d9df0c2",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Other_FeatureSilhouette_1.1",
+        "Verify_DistanceInputIdentity_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Verify_FMTNoCenterObjectivity_1_1.py",
+      "bytes": 8220,
+      "sha256": "c653addb4bff087d13984471a8c4a231341a31ce72f9c76046fdccf17b0a76a0",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Other_FeatureSilhouette_1.1",
+        "Verify_FMTNoCenterObjectivity_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Verify_FMT_Observed_Pathline_2_1.py",
+      "bytes": 19604,
+      "sha256": "2e26976b832feffd97129d5ee30d679091a1806b30d603ded4234318bb377061",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Other_FMTObjectivityTranslation_1.4",
+        "Other_FMTObjectivityTranslation_1.5",
+        "Verify_FMTObservedPathline_2.1",
+        "mainExp_Task1_3D_4.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Verify_ObjectiveFMTnTDO_1_1.py",
+      "bytes": 4102,
+      "sha256": "3e4793bb361f96bc4f25fd7a946a5a64a7a38e14d1aafc7bb113358df33d3703",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_ObjectiveFMTnTDO_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "experiments/Verify_RelativeFourierObjectivity_1_1.py",
+      "bytes": 4974,
+      "sha256": "4487d2078f1bfa9f968a8de62d872885267dd28d2547bae388096b5034fa526b",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_RelativeFourierObjectivity_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/ablation_task23_ivd_percentile_1p2_summary.sh",
+      "bytes": 481,
+      "sha256": "6916d4387d32e1e78c6c9a17d34bcb9af0b112f83d736cba80cb7e8778de3ebc",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Ablation_Task23IVDPercentile_1.2"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/ablation_task23_ivd_percentile_1p2_task3_baselines.sh",
+      "bytes": 1027,
+      "sha256": "2af6f71e53ce5a3bbaa169fdd6f75bedcc15772877773f1cc0e79a8c23bc980d",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Ablation_Task23IVDPercentile_1.2",
+        "Verify_Task3_FMTClassifier"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/ablation_task23_ivd_percentile_summary.sh",
+      "bytes": 470,
+      "sha256": "7e0b26b25e72395383418f4906ce78817767d907ee725e0d948218a3124424e6",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Ablation_Task23IVDPercentile_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/ablation_task23_ivd_percentile_task3_baselines.sh",
+      "bytes": 997,
+      "sha256": "960650bf0a0401ec79a9dcb6b31a6403c8f13c6535a09f50fbf83ed35e76ed72",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Ablation_Task23IVDPercentile_1.1",
+        "Verify_Task3_FMTClassifier"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/ablation_task23_ivd_percentile_task3_residuals.sh",
+      "bytes": 1581,
+      "sha256": "c0f44ad08cc33e7ecd5128fbbef08a1208ab4113f88a52a61a9eb29189a743a1",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Ablation_Task23IVDPercentile_1.1",
+        "Verify_Task3_FMTResidual"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/audit_uniform_fmt_3d.sh",
+      "bytes": 506,
+      "sha256": "a9851787212d172cc010bfe9dd34e576c41a2e6dcaafc9a834e28d9529ba81f1",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/mainexp_newflows_task3_baselines_a100.sh",
+      "bytes": 712,
+      "sha256": "f1d3a60f08d06a657cf4717b67b9d72af76e89caac972c254dedfa98491c1335",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task3_FMTClassifier",
+        "mainExp_Task3NewFlows_2.3"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/mainexp_newflows_task3_residual_a100.sh",
+      "bytes": 709,
+      "sha256": "e6ae60b30cf833a64ea4ffa47fe48de6c6a827b19ae7519ccd18bebb116f4359",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task3_FMTResidual",
+        "mainExp_Task3NewFlows_2.3"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/mainexp_task1_3d_4.1_uniform_audit.sh",
+      "bytes": 501,
+      "sha256": "bacf7864c377f861d8e7ccbbd0a06ebb57fcd943254f8080e1188f2a8aaf2c7c",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "mainExp_Task1_3D_4.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/mainexp_task2_3d_3.3_hierarchy.sh",
+      "bytes": 622,
+      "sha256": "af0160bca481334bbeda1c94fc71c8f8e78ef531f5cce4dc77eef2ab1dbc9a43",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "mainExp_Task1_3D_3.3",
+        "mainExp_Task2_3D_3.3"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/mainexp_task3_3d_3.1_baselines_a100.sh",
+      "bytes": 834,
+      "sha256": "f2b622c93bc418630e242f19542c9f20c00b0bf2422904c4153df9bec7893f34",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task3_FMTClassifier",
+        "mainExp_Task3_3D_3.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/mainexp_task3_3d_3.1_baselines_v100.sh",
+      "bytes": 852,
+      "sha256": "dbdaee6fedc5355b8883fb7758c0f46c94976fa240a7a898cde03cd80a4ee013",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task3_FMTClassifier",
+        "mainExp_Task3_3D_3.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/mainexp_task3_3d_3.1_residuals_a100.sh",
+      "bytes": 916,
+      "sha256": "4843c4e449b7a3563ee9f1dd01f8e4c9881bd5d18c3bab83f9ebb543bb10a039",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task3_FMTResidual",
+        "mainExp_Task3_3D_3.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/mainexp_task3_3d_3.1_residuals_v100.sh",
+      "bytes": 934,
+      "sha256": "6dd196b3c1a7a8c873c7eef5070150cf9d67d6b51eb5796820137b5912adcb83",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task3_FMTResidual",
+        "mainExp_Task3_3D_3.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/mainexp_task3_3d_3.2_global_ivd_baselines_v100.sh",
+      "bytes": 1075,
+      "sha256": "089be8f02902e202691a8ee374b4468955c331b00d4d4cc199f628667e7041de",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task3_FMTClassifier",
+        "mainExp_Task3_3D_3.2"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/mainexp_task3_3d_3.2_global_ivd_residual_shards_v100.sh",
+      "bytes": 1643,
+      "sha256": "009b00c48215b2a67af0f4e007932c7b028b655004a5381516235735f6395423",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task3_FMTResidual",
+        "mainExp_Task3_3D_3.2"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/mainexp_task4b_pooled_3p1_train_gpu.sh",
+      "bytes": 2091,
+      "sha256": "1129cac229cfe0fc188c7a0cf616d96dd391ea750d2041c17f8855c7c963a845",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "mainExp_Task4B_PooledInstanceSplit_3.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/mainexp_task5_3d_1.1_baselines_v100.sh",
+      "bytes": 818,
+      "sha256": "30fb4fc87147a9c279bca421f7118e1f2b7ae50fa8636eeb54bea10e59c3e7e4",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task3_FMTClassifier",
+        "mainExp_Task5_3D_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/mainexp_task5_3d_1.1_residual_shards_v100.sh",
+      "bytes": 1518,
+      "sha256": "7fd36f8d33eec9fc643ed600dc7d572a2c007ac5359f16a547f2106e802de8c7",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task3_FMTResidual",
+        "mainExp_Task5_3D_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/repro_task4b_memorization_1p1_gpu.sh",
+      "bytes": 2619,
+      "sha256": "5066537a69d93e58e9e1dd4a82236b6ce5d320092db1b1cdeee6340fb6512b62",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Other_Task4B_FMTFourClassClustering_1.2",
+        "Verify_Task4B_FullVolumeMemorization_1.1",
+        "Verify_Task4B_FullVolumeMemorization_1_1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/summarize_aivd_transfer_1p1.sh",
+      "bytes": 615,
+      "sha256": "6efb76792a62bb1347862330469e919e374af7ba64dd07616d218c909ce9d508",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/summarize_fmt_all_v2_1p1.sh",
+      "bytes": 459,
+      "sha256": "a9696ac89f836ba149c059daf6cf73ca3cb99b5de9cbd52fb0d87c7e4d471e73",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/summarize_fmt_all_v2_1p2.sh",
+      "bytes": 551,
+      "sha256": "d421dfb128f4689e90f16c403a1a64d90d959d11bd933e3564351375279502f5",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_FMTAllV2_1.2"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/task135_geometric_controls.sh",
+      "bytes": 1015,
+      "sha256": "cf60716f617efeff4ec6580e242a9cf17896cea815871af21ae4ee82b168227b",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/uniform_fmt_confirmation_control.sh",
+      "bytes": 842,
+      "sha256": "9f7b5eaf5e18f03a3bae5e0544a48d57323da13973af4eb764a3e696d114c6f5",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_aivd_longtime_1p1.sh",
+      "bytes": 1256,
+      "sha256": "ce94aa48ab7685c41651de44a91039b3f41cdb92a822ba7dc169ff0104aeceac",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_AIVDLongtime_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_aivd_transfer_1p1.sh",
+      "bytes": 743,
+      "sha256": "7ca87a64f7d3c734442105159e5bf4aece9b97747a7836ef5b9ae0bd5d6ca9e1",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_AIVDTransfer_3D"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_aivd_translation_observers_1p1.sh",
+      "bytes": 775,
+      "sha256": "a40a75ca3d799698660863252633ae038487de64f55f53711746b2cbde22489b",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_AIVDTranslationObservers_1.1",
+        "Verify_AIVDTranslationObservers_3D"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_fmt_all_v2_1p1.sh",
+      "bytes": 664,
+      "sha256": "38b5e3ee4744a2fc10f753083b28d5e665c9a721409a0a02e288609001a0a29c",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_FMTAllV2_1.1",
+        "Verify_FMTAllV2_3D"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_fmt_all_v2_1p2.sh",
+      "bytes": 682,
+      "sha256": "9931c229f38519804d59746697239b3182f28aac5cfbea7e0ff11423f6d4c701",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_FMTAllV2_1.2",
+        "Verify_FMTAllV2_3D"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_observed_worldline_2p1.sh",
+      "bytes": 814,
+      "sha256": "2b41b7460ee69f507c69c4b328fb3444aa4945b50e563b0c1de9012e799c715a",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_FMTObservedPathline_2.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task123_fixed_pathline_1.1_audit.sh",
+      "bytes": 630,
+      "sha256": "1dd02d2d5e3d29e4cac6836403993f89fe936c9dcf7ba3cd8e9dcc51dc00cba4",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task123_FixedPathline_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task123_fixed_pathline_1.1_cleanup.sh",
+      "bytes": 644,
+      "sha256": "52ebbc24d8460f9f1bb9cbdbd29a67e9cf5e2ecd750cf0d5bae7124ba2483939",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task123_FixedPathline_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task123_fixed_pathline_1.1_confirm_audit.sh",
+      "bytes": 640,
+      "sha256": "ff2b38abd7ccf0c96a5d4ba606a96f9b5d01cc524661c0aa9919664333a19825",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task123_FixedPathline_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task123_fixed_pathline_1.1_confirm_cleanup.sh",
+      "bytes": 654,
+      "sha256": "9debfec6f6e848798acdce768d0eeb5aba099b89f8cca98b371e39bb3d1e2c89",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task123_FixedPathline_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task4b_pooled_memorization_3p1_array_gpu.sh",
+      "bytes": 2023,
+      "sha256": "679a4672f48de7eed4bb0cac115fc9f291aadeb16d7939931592370b8ab9fac1",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task4B_PooledMemorization_3.1",
+        "mainExp_Task4B_PooledInstanceSplit_3.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task4b_pooled_memorization_3p1_gpu.sh",
+      "bytes": 2244,
+      "sha256": "4884d4bb3255130dea54a93f621b5fa45bde4c82807353837b74b8e2facbb690",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task4B_PooledMemorization_3.1",
+        "mainExp_Task4B_PooledInstanceSplit_3.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task4b_pooled_memorization_3p1_merge_cpu.sh",
+      "bytes": 1606,
+      "sha256": "cfc413b379ba764cdf601a8121462390b3337c09536a9a09db0f9fe930f1f6cb",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task4B_PooledMemorization_3.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task4b_velocity_curl_4p1_build.sh",
+      "bytes": 772,
+      "sha256": "ce87de5639b3f3cae2329924ef48fbb8a1a8aeb732bd3d1fba4673e38693b825",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task4B_VelocityCurlMemorization",
+        "Verify_Task4B_VelocityCurlMemorization_4.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task4b_velocity_curl_4p1_gpu.sh",
+      "bytes": 835,
+      "sha256": "2851c58f2ec16ee0b6ba83673156c3a4236696d1b798c145ed5559735b2eba7c",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task4B_VelocityCurlMemorization",
+        "Verify_Task4B_VelocityCurlMemorization_4.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task5_cylinder_hyperparams_1.1_baselines_a100.sh",
+      "bytes": 834,
+      "sha256": "8283971e4eb70c2c90576b2f466bd55587ffbe0b1004c84c4cdd8e6dedfa698e",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task3_FMTClassifier",
+        "Verify_Task5_CylinderHyperparams_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task5_re160_fresh_1.1_adaptive_v100.sh",
+      "bytes": 706,
+      "sha256": "75bf0905c257dbf0d598e5e9127cf7a433a2fa2b5e4acb918a38f86cfd59aa58",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task5_Re160FreshTimes",
+        "Verify_Task5_Re160FreshTimes_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task5_re160_fresh_1.1_baseline_v100.sh",
+      "bytes": 687,
+      "sha256": "c50e575a600c23a7a0a20e4fa4dfaee2d393120962dab0f842242ef3e20cfa62",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task3_FMTClassifier",
+        "Verify_Task5_Re160FreshTimes_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task5_re160_fresh_1.1_candidate_v100.sh",
+      "bytes": 798,
+      "sha256": "714fcb56b234940c798d76b1c58a801e1e77c200ce03f5603da7071afe799143",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task5_Re160FreshTimes",
+        "Verify_Task5_Re160FreshTimes_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/verify_task5_re160_fresh_1.1_evaluate_v100.sh",
+      "bytes": 706,
+      "sha256": "2cb8ec91eec0f0dfa7597391b2dbe5812235701de324eb12ee885274bebf74db",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task5_Re160FreshTimes",
+        "Verify_Task5_Re160FreshTimes_1.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "ibex_bash/visualize_task4b_velocity_curl_4p1.sh",
+      "bytes": 540,
+      "sha256": "a5942bfdeba1743de1a934e5c08424b6efac7ebd2fe64d721cb7329ae27b175d",
+      "reason": "Retired diagnostic/report or obsolete launcher; retained code/configuration closure checked",
+      "recorded_ids": [
+        "Verify_Task4B_VelocityCurlMemorization_4.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_aivd_longtime_3d.py",
+      "bytes": 2040,
+      "sha256": "9ab25cf2e216e9fc442296e53ad2d2e039cad5642d9e4ddf879997263fefb42c",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_aivd_transfer_3d.py",
+      "bytes": 4325,
+      "sha256": "7c2b7942c7d1fbf40e3ac2109ff255476f9729e27583f940259a2144d35c4a72",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_dense_observer_paths_3d.py",
+      "bytes": 936,
+      "sha256": "9031eba59c9f36ed0c3cc7771282edac2f83ad72c6ce3d07cc299f1c65652fb2",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_global_mean_observer_3d.py",
+      "bytes": 917,
+      "sha256": "e9ae89c83f751a57d4e99c53bb099671e3733fb4ed02c9d39f5c355079595f6c",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_highre_raw_representation.py",
+      "bytes": 2100,
+      "sha256": "75c7c260f49eeb7a544d1eac3cc47734e043aa7a2a847e93d4d37448fadfa3c1",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_highre_sampling_3d.py",
+      "bytes": 761,
+      "sha256": "a2b4fd08fbad34d1c97cc80b6ddea8e374f7fe330d22a75e77bec2b3164239d0",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [
+        "Verify_HighReSampling3D"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_killing_observer_3d.py",
+      "bytes": 1650,
+      "sha256": "0d4596177f2d5f618580718e999face9f4f060a43ce590eff57eb90924b8e93a",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_objective_fmt_ntdo.py",
+      "bytes": 5136,
+      "sha256": "020c33cf140cfe3bb97855319eb31f0d7876de94694e9278e1e9cb4555439b0f",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_objective_fmt_ntdo_v2.py",
+      "bytes": 2638,
+      "sha256": "43503f994dc6a4d74a377373459764e8c8d893553ec65a830e1d7a09ac0b99ff",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_observed_worldline_3d.py",
+      "bytes": 2469,
+      "sha256": "18bb2b1d2093f777642f2c10fab3ca7d1ad9b8e6071d1ba860a2f79a084d696d",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_observer_transform.py",
+      "bytes": 5198,
+      "sha256": "111878af41a4c1746e8d0695d07a66e678b0ddf102ca040c0b4a489e1ac5627d",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_task4a_per_vortex_clustering_3d.py",
+      "bytes": 4723,
+      "sha256": "dd57eababc3a35ededdc1375c4356a61cf4b47bf801e695ece9cb57e226b0b68",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_task4a_streamline_clustering_3d.py",
+      "bytes": 4202,
+      "sha256": "6647897f188475a25319b257f96656f62e0afe9cf1d1ab3a3797a1c372278add",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_task4a_traditional_baseline_3d.py",
+      "bytes": 4535,
+      "sha256": "fdb0125c535bd18d14c46b9c7ad7c1c22243ae8878119e665d739d02b8e6a92f",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_task4b_classifier_3d.py",
+      "bytes": 1849,
+      "sha256": "7fd244ec09926134aefdabdadc24f2e7a31f6579d19fc20f9d4655eadc259124",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_task4b_crossflow_3d.py",
+      "bytes": 5230,
+      "sha256": "806024702e2c23601ae99468bfe748daa0257ae9414817bb784789747a963301",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_task4b_velocity_curl_pipeline_3d.py",
+      "bytes": 3228,
+      "sha256": "c58403a7166382b0f2fccd5cf88441eb1e4a58eadca8354b43e85922f1aee122",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [
+        "Verify_Task4B_VelocityCurlMemorization",
+        "Verify_Task4B_VelocityCurlMemorization_4.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_task6_direct_record_5_1.py",
+      "bytes": 3436,
+      "sha256": "d77f6b04bdba026c7c34592ded188722280d1b087b05b7d2cd52c1fee344bfbe",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [
+        "Verify_Task6_DirectNeural_5.1"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_translation_observer_3d.py",
+      "bytes": 3224,
+      "sha256": "d234e3a03274bb14f599d7a6f9abdc4317d5088a124d795ac3c8119aec5c0f7e",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    },
+    {
+      "path": "tests/test_verify_3d_fmt_hyperparam.py",
+      "bytes": 592,
+      "sha256": "b4acf303d8827678f537790ca5a968879d7ad7529d906ec3b1a014202d8050e4",
+      "reason": "Completed or paused experiment checks; not referenced by retained execution chains",
+      "recorded_ids": [
+        "Verify_3DFMTHyperparam"
+      ],
+      "evidence": [
+        "docs/experiment_log.md",
+        "docs/ibex_run_registry.md",
+        "docs/Verify_experiments.md"
+      ]
+    }
+  ],
+  "snapshots": [
+    {
+      "path": "README.md",
+      "bytes": 4435,
+      "sha256": "e4b87d3260f9314cd73c1b3119206084af74a5751495dcaec578f2dbc2ef7f16"
+    },
+    {
+      "path": "docs/Verify_experiments.md",
+      "bytes": 20037,
+      "sha256": "88a78f5f53dd37135d6da84a74f216ced9645526d62ebb55a95d119199807fb8"
+    }
+  ],
+  "archived_counts": {
+    "docs": 12,
+    "experiments": 22,
+    "ibex_bash": 46,
+    "tests": 20
+  },
+  "restored_dependencies": [
+    {
+      "path": "experiments/Audit_Task123_AdditionalEvidence_1_1.py",
+      "source_commit": "f13a774942ac43ed8fad3b99216831a2021019ae"
+    },
+    {
+      "path": "experiments/Audit_Task4B_ChannelToTBL_2_1.py",
+      "source_commit": "f13a774942ac43ed8fad3b99216831a2021019ae"
+    },
+    {
+      "path": "experiments/Audit_Task678_DirectFMTFit_1_1.py",
+      "source_commit": "f13a774942ac43ed8fad3b99216831a2021019ae"
+    },
+    {
+      "path": "experiments/Audit_Task678_FlowMap_1_1.py",
+      "source_commit": "f13a774942ac43ed8fad3b99216831a2021019ae"
+    },
+    {
+      "path": "experiments/Audit_Task678_HanSampling_1_1.py",
+      "source_commit": "f13a774942ac43ed8fad3b99216831a2021019ae"
+    },
+    {
+      "path": "experiments/Audit_Task678_VectorFMT_1_1.py",
+      "source_commit": "f13a774942ac43ed8fad3b99216831a2021019ae"
+    },
+    {
+      "path": "experiments/Verify_Task6_ReconstructionAudit_2_2.py",
+      "source_commit": "f13a774942ac43ed8fad3b99216831a2021019ae"
+    },
+    {
+      "path": "tests/test_mainexp_task2_3d_5_2.py",
+      "source_commit": "f13a774942ac43ed8fad3b99216831a2021019ae"
+    },
+    {
+      "path": "tests/test_task678_hansampling_3d.py",
+      "source_commit": "f13a774942ac43ed8fad3b99216831a2021019ae"
+    },
+    {
+      "path": "tests/test_task678_vectorfmt_3d.py",
+      "source_commit": "f13a774942ac43ed8fad3b99216831a2021019ae"
+    }
+  ],
+  "archive_sha256": "ff7f7661ea0ee049cef895fe865ef51ff5ed5980b5cbb36d2b221df7dc91920e"
+}

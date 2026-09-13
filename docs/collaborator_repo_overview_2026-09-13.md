@@ -4,6 +4,9 @@
 任务定义、评测边界和禁止事项以 [AGENTS.md](../AGENTS.md) 与 [研究协议](research_tasks_and_protocol.md) 为准，
 本文不重复也不覆盖它们。
 
+2026-09-13 更新：已停止现有客观化方向，暂停几何 tokenizer 与混合专家探索；方法进展见
+[统一记录](experiment_log.md#progress-2026-09-13)。下文保留代码导航，不表示所有入口都在继续运行。
+
 ## 1. 仓库是什么
 
 FMT（Flowmap Tokenizer）是一个**无可训练参数**的编码器：把一条中心轨线加六条邻居轨线组成的“七线 primitive”
@@ -21,12 +24,15 @@ FMT（Flowmap Tokenizer）是一个**无可训练参数**的编码器：把一�
 - **主实现**：[FMT_Utils/DFT_FMT_3D.py](../FMT_Utils/DFT_FMT_3D.py)，入口函数 `pathline_dft_features_3d`。
   输入张量形状 `[N, 7, L, C]`：N 个 primitive，7 条线按 `center, x+, x-, y+, y-, z+, z-` 排列，L 个时间采样点，
   C 为 `(x,y,z)` 或 `(x,y,z,t)`。输出每个 primitive 一个特征向量。
-- **做法**：每个时刻取六个邻居相对中心的偏移矩阵 `D(t)`（6×3），用 Gram 矩阵 `G(t)=D(t)D(t)^T` 消掉刚体观察者的
-  旋转和平移，再对这些标量时间序列做实数离散傅里叶变换（默认 6 个频率），另加手性项。因此特征对时变刚体变换客观。
+- **做法**：`pathline_dft_features_3d` 对中心位置和同时间邻居相对位置分别作时间差分，再作离散傅里叶变换，
+  从复系数的实部/虚部提取范数、夹角余弦和手性项，最后汇总邻居特征。原 `mode="gram"` 在傅里叶之后处理复系数，
+  并非先计算同时间 Gram 矩阵（向量两两内积矩阵）。输入相对位置是客观向量，但后续跨时间分量运算不保证任意时变旋转下客观。
+  先计算同时间内积再作傅里叶的是另一个函数 `time_local_gram_dft_features_3d`，不能与原 `fmt_all` 混称。
 - **特征块选择**：`fmt_feature_indices_3d(name)` 按名字取子块，配置里的 `fmt_all`、`fmt_real_neighbor`、
   `gram2`、`kin4` 等候选名就来自这里；缓存到特征矩阵的组装在 [FMT_Utils/Task12Data_3D.py](../FMT_Utils/Task12Data_3D.py)。
 - **变体**（各有独立实验版本，不能与主实现混称）：`FMT_Utils/FMTAllV2_3D.py`（客观邻居几何再做时间傅里叶）、
-  `FMT_Utils/objective_fmt_nTDO.py` 与 `objective_fmt_nTDO_v2.py`（只用点间距离标量的客观版本）、
+  `FMT_Utils/objective_fmt_nTDO.py`（同时间相对向量和距离两条分支；向量傅里叶分支不保证时变旋转客观）、
+  `FMT_Utils/objective_fmt_nTDO_v2.py`（仅使用同时间点间距离标量）、
   `FMT_Utils/Task6Recovery_3D.py::signed_fmt`（Task6 保留复系数方向的 token）、
   `FMT_Utils/Task5FeatureRecipes_3D.py`（Task5 可变尺度配方）。
 - `FMT_Utils/FMT_encoder.py`、`DCT_FMT_encoder.py` 是 PyflowVis 时期的二维可学习编码器，只被 `experiments/FMT_Clustering.py`
