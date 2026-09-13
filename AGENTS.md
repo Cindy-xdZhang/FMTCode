@@ -5,7 +5,8 @@
 目标会议为 ICLR。停止继续推进现有客观化方向；暂停 Task6/7/8 几何 tokenizer、Point-NN 与混合专家调参，
 包括 Task36 联合分类/重建。Task1/2/3/5 主表与 Task4-a/b 历史结果保持。
 09-13 最新用户要求 Task4-c 加入论文预处理，扩展到Channel+TBL两个快照的Hairpin / Non-hairpin二分类；
-当前版本 `mainExp_Task4C_Multiscale_4.1`，协议 `docs/Task4C_multiscale_protocol_4.1.md`：用户要求多尺度、dropout/正则化及学习率调整，目标两模型F1≥0.6。
+当前继续目标两模型F1≥0.6，新增 `mainExp_Task4C_Regularized_4.2`，协议 `docs/Task4C_regularized_protocol_4.2.md`：完全复用4.1物理样本与固定测试，原322维FMT拼接288维坐标/单位切向有方向频谱，设几何增强及余弦间隔分类对照；仅以train/validation选择，三种子验证门槛通过后才编码和评估test。
+此前 `mainExp_Task4C_Multiscale_4.1` 保持冻结，协议 `docs/Task4C_multiscale_protocol_4.1.md`：用户要求多尺度、dropout/正则化及学习率调整，目标两模型F1≥0.6。
 每流场13,500拟合+1,500验证+5,000测试；邻居距离与RK45参数/长度实际改变，同中心跨尺度仅在同一集合。候选头区播种后沿分区完整原始涡量追踪，至少10条有效线、最多27线。
 十候选和三种子选择只用训练/验证，两模型三种子验证F1均值达标才用三个新优化种子评估封存测试；默认目标为三种子合并测试F1均值，并报告分流场。
 以下3.1历史设置保持冻结，协议 `docs/Task4C_paper_bundles_protocol_3.1.md`。
@@ -15,6 +16,7 @@ FMT＋MLP与Conv3D＋MLP使用同一束几何；完整头区、GT实例和源数
 整束标签由完整头区GT单实例过半/零重叠得到，部分混合归属排除；不是论文人工四类标签。
 2.1局部七线中心点实验与1.1历史实现冻结；BiLSTM保留但不运行。
 用户已授权完成验证后删除临时验证代码、commit、push并在Ibex部署运行；验证记录保留，正式运行的数据检查保留。
+公开推送注意：GitHub已核实为用户本人所有的公开`Cindy-xdZhang/FMTCode`。自动审批针对公开发布具体实验记录拒绝推送，本地提交`e1749eac`尚未push，明确公开授权问题正在等待用户回复。不得换路径公开发布这些记录；本地提交、读取及已授权个人Ibex实验继续。
 3.1三种子×两方法及汇总均已完成，独立预测复算通过；科学commit `f1865b16`，结论见experiment_log的`task4c-paper-bundles-2026-09-13`。
 2.1首轮三种子×两方法及汇总已全部完成，独立预测/GT复算通过；科学运行固定commit `63b44d8c`。
 结论见`docs/experiment_log.md`的`task4c-binary-2026-09-13`，不得把已用test当作新确认集继续挑参数。
