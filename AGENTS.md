@@ -2,6 +2,9 @@
 
 ## 当前工作状态（2026-09-13 用户更新，优先于下文历史“当前”状态）
 
+2026-09-14用户最新要求优先证明完整训练集拟合能力，当前执行`Verify_Task4C_TrainingMemorization_4.12`，目标原27,000训练束固定阈值0.5的Hairpin F1≥0.99。FMT/Conv3D各原结构及增容结构，关闭所有正则化，每轮全部训练样本无放回一次，不读取validation/test；不把此前测试目标作为本次完成条件。科学commit26f52805，协议`docs/Task4C_training_memorization_protocol_4.12.md`，已提交Ibex。4.11既有作业与历史测试结果保留，不新增测试调参。
+
+
 2026-09-14最新部署`Ablation_Task4C_GeneralizedCrossEntropy_4.11`，协议`docs/Task4C_generalized_cross_entropy_protocol_4.11.md`。固定原4.1数据、4.3网络、4.5训练，仅比较广义交叉熵q=0/0.3/0.7，保留零对照及三种子复核，不重标/删除样本、不读取test。工程核验通过，科学commit97e3f7ea，首批四项已运行；尚无完整科学结果。
 
 

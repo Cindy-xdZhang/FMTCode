@@ -3101,3 +3101,14 @@ Conv3D零权重/0.5权重三种子验证F1为0.422313±0.013825 / 0.421731±0.00
 工程核验已完成：独立NumPy加权平滑公式与有限差分梯度（最大误差6.84e-11）、q极限与非法/极端输入、两实际模型零q连续三步参数和dropout随机数逐值一致、正q有限梯度及原尺度项不变、回调异常/成功恢复、拒绝test、240训练束缓存14次pilot训练和完整选择。证据`outputs/Verify_Task4C_GeneralizedCrossEntropyCode_4.11/checks.json`，pilot分数不计科学结果；没有新增一次性test/verify源码。
 
 科学commit `97e3f7eaf6aef41f976c7575b43bf01f1e7282ec`，config SHA256 `d8cb0631a38f868d089e081af8201c7dda89f836f0d196f77d607e5e8d2a93e9`，代码包SHA256 `3ed7be64c80c2fce14e7794aa948f55df88a9ca1d47f0c5771687e6103063baf`。仅三份新runner/config/bash传到个人Ibex `FMT_Task4C_GeneralizedCrossEntropy_20260914`，无预测/报告传输或公开push。UTC22:32:59提交encode51867216、search51867217[0-5]、rank51867218、confirm51867219[0-7]、select51867220，全部已登记。编码复制校验完成，27,000训练+3,000验证、test_encoded=false；UTC22:33:58调度器确认四项search在RTX2080Ti/P100运行。尚无完整科学结果，目标未达成。
+
+
+### Verify_Task4C_TrainingMemorization_4.12：用户指定完整训练集过拟合
+
+用户最新要求暂不关注测试，直接在训练集合拟合到F1接近1。新版本使用原全部27,000训练束，固定阈值0.5，以Hairpin F1≥0.99连续三轮为通过条件。原4.3模型关闭dropout，并各增加独立较大结构作为容量/结构对照；原FMT/Conv参数88,514/219,602，增容为1,957,890/1,856,034。增容还改变归一化/分类激活，不把差异仅归因于参数数。完整说明见`docs/Task4C_training_memorization_protocol_4.12.md`。
+
+每epoch无放回覆盖所有样本，Adam0.001、普通未加权交叉熵，关闭weight decay、dropout、标签平滑、尺度一致性及增强；仅依据完整训练损失调整学习率，最多1500epoch。每轮完整训练集评估、错误数与排列哈希落盘，完全不加载validation/test。旧Task4-b曾达训练F1=1，但不替代当前Task4-c证据；240样本工程pilot同样不计全量拟合成功。
+
+工程检查四个真实模型各两epoch及merge通过，覆盖排列与固定阈值F1/错误数独立复算通过，最佳内存状态恢复逐值一致，拒绝验证/测试读取，无权重文件。首次检查发现新配置键名称和Windows不支持原Linux文件锁，已在新入口修复后重跑；没有修改冻结源文件或留下临时test/verify源码。证据`outputs/Verify_Task4C_MemorizationCode_4.12/checks.json`。
+
+科学commit `26f52805a0eefcbd3adc3c2f6a8c7c6e6a73433d`，config SHA256 `3a31ff2e7018e5ce94e25f5c2223ac610484dbaba8a0c812ccb2186366f181bc`，代码包SHA256 `27be5c909d616743b43e24aeb50706da0cb4841eebc63c2271c0d293d0295368`。三份代码/配置部署个人Ibex `FMT_Task4C_TrainingMemorization_20260914`，UTC22:44:42提交encode51867307、train51867308[0-3]、merge51867309，全部登记；训练申请A100/V100，各最多6小时。尚无全量训练最终F1，不声称框架已被证明能完全拟合。

@@ -1,0 +1,33 @@
+{
+  "version": "Verify_Task4C_TrainingMemorization_4.12",
+  "base_config": "config/Ablation_Task4C_Sharpness_4.8.json",
+  "base_config_sha256": "f32d089d6e76d33c0323c750da7caa4d1bbf3d850f6d60762b92457172031d15",
+  "output": "outputs/Verify_Task4C_TrainingMemorization_4.12",
+  "expected_training_samples": 27000,
+  "methods": ["fmt_mlp", "conv3d_mlp"],
+  "capacities": ["original", "wide"],
+  "training": {
+    "seed": 96411,
+    "batch_size": 128,
+    "epochs": 1500,
+    "learning_rate": 0.001,
+    "minimum_learning_rate": 0.000001,
+    "lr_patience": 30,
+    "gradient_clip": 5.0,
+    "optimizer": "Adam",
+    "sampling": "all_training_rows_once_per_epoch_without_replacement",
+    "dropout": 0.0,
+    "weight_decay": 0.0,
+    "label_smoothing": 0.0,
+    "consistency_weight": 0.0,
+    "augmentation": false,
+    "loss": "unweighted_cross_entropy"
+  },
+  "target": {
+    "f1": 0.99,
+    "threshold": 0.5,
+    "consecutive_epochs": 3,
+    "scope": "full_original_training_set_only"
+  },
+  "checkpoint_policy": "memory_only_no_weight_files"
+}
