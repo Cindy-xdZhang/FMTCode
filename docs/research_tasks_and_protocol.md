@@ -11,8 +11,8 @@
 此前 **`mainExp_Task4C_Regularized_4.2`** 完全复用4.1物理样本，原FMT拼接坐标/单位切向的有方向频谱，并对训练几何增强及余弦间隔分类作对照，见[4.2协议](Task4C_regularized_protocol_4.2.md)。每流场15,000训练开发（内部13,500拟合+1,500验证）、5,000固定测试primitive；额外训练增强不计作独立物理样本，原3.1测试每流场500不变。
 4.2已完成20次开发训练，三种子验证FMT扩展版0.382105、Conv3D0.430561，未通过验证门槛；最终测试未执行。
 此前 **`mainExp_Task4C_LinePooling_4.3`** 已完成：相同物理数据和固定测试，逐线233维固定FMT后共享MLP学习聚合，并比较Conv3D通道数扩大；保留4.2原结构对照、不作合成增强，详见[4.3协议](Task4C_line_pooling_protocol_4.3.md)。
-4.3三种子验证FMT0.390572、Conv3D0.429361，未通过门槛。当前 **`mainExp_Task4C_ManifoldMixup_4.4`** 已部署：冻结4.3网络及全部物理数据，只在训练时做隐藏表示/标签插值，包含不插值对照，见[4.4协议](Task4C_manifold_mixup_protocol_4.4.md)。
-FMT和Conv3D均以三个新训练种子的合并测试Hairpin F1均值≥0.6为当前目标；只用训练/验证选候选，两个模型三种子验证F1均值达标后才评估test。
+4.3三种子验证FMT0.390572、Conv3D0.429361；4.4隐藏层插值版本已完成，验证0.372803/0.430801；4.5同中心物理尺度配对已完成，验证0.399091/0.436234。见[4.4协议](Task4C_manifold_mixup_protocol_4.4.md)与[4.5协议](Task4C_scale_consistency_protocol_4.5.md)，全部未通过各自原验证门槛。
+当前 **`mainExp_Task4C_FinalAssessment_4.6`** 已完成最终评估：关闭4.1–4.5开发，按完整三种子验证结果选择，两方法均选中4.5。明确修订此前助手自加的验证0.6门槛，改为冻结选择后一次测试；旧源码与结果保持。三个全新训练种子95811/95812/95813，仍要求两方法各自合并测试Hairpin F1均值≥0.6；测试不参与配置/阈值/epoch选择。见[4.6协议](Task4C_final_assessment_protocol_4.6.md)。实际合并测试F1均值±样本标准差为FMT0.335526±0.017885、Conv3D0.304615±0.031948，目标未达成；完整证据已登记。
 多个尺度可来自同一中心，但头区与完整GT实例及源数据支撑不得跨集合；样本数不代表独立物理涡数。
 2.1已完成的Channel局部七线中心点实验及结果保持冻结。
 现有GT提供hairpin单元支持；1.1四类方案因缺标签被用户改为二类，BiLSTM保留但不运行。用户已授权验证、删除临时验证代码、commit、push和Ibex部署运行。
@@ -94,7 +94,7 @@ FMT 是由 Fourier 变换、`sin/cos`、几何不变量和 aggregation 构成的
 | **Task4：有监督涡类型分类** | **仅 3D** | 对已定义的 3D 涡型标签做多分类 | 不使用 FMT vs 加入 FMT | macro-F1、每类 F1、balanced accuracy、confusion matrix | 加入 FMT 是否提高 streamwise、spanwise、hairpin 等涡型分类 |
 | **Task4-c：Hairpin区域二分类（2.1）** | **仅 Channel 3D 快照** | 局部七线簇几何→Hairpin / Non-hairpin，标签为中心是否在GT区域 | FMT＋MLP与同几何体素化的Conv3D＋MLP | 正类F1、AP、平衡准确率、混淆矩阵、积分有效率 | FMT是否改善隔离空间区间的hairpin区域识别；不作为论文曲面检测F1 |
 | **Task4-c：论文预处理线簇二分类（冻结3.1）** | **Channel+TBL各一帧** | lambda2/正oyf头区→RK45→清洗及32点重采样→10..256线整束归一化；完整头区GT重叠二类标签 | 同束FMT＋MLP与Conv3D＋MLP | 合并、分流场及每头区一票的F1/AP等；独立头区和GT实例数、清洗统计 | 两帧空间留出上的表示比较；多线子集不等于独立涡实例，不是论文人工四类/曲面检测 |
-| **Task4-c：多尺度线簇二分类（当前4.1）** | **Channel+TBL各一帧** | 相同头区/GT二类标签；中心周围27种子、10..27条清洗后涡线，实际改变距离和积分尺度 | 原表示＋有版本的正则化网络，两方法使用同一束几何 | 合并/分流场/分尺度/每头区F1等，三个新优化种子；扩大测试10,000束 | 仅以训练/验证选择，验证达标才解封测试；不是新增独立快照 |
+| **Task4-c：多尺度线簇二分类（4.1数据、4.6最终评估）** | **Channel+TBL各一帧** | 相同头区/GT二类标签；中心周围27种子、10..27条清洗后涡线，实际改变距离和积分尺度 | 原表示＋有版本的正则化网络，两方法使用同一束几何 | 合并/分流场/分尺度/每头区F1等，三个新优化种子；扩大测试10,000束 | 仅以训练/验证冻结选择后一次测试；4.1–4.5旧验证门槛记录保留；不是新增独立快照 |
 | **Task5：不同尺度几何学习** | 2D、3D | 每个 primitive 的邻居距离、积分步长和积分步数可变；积分后统一重采样为固定 `K×L×C`，再做 IVD 监督二分类 | 固定尺度 Task3 迁移、variable-scale Raw、结构匹配 Raw-PCA residual、variable-scale Raw+FMT | unseen-scale confirmation 的 F1、Average Precision；逐尺度、逐流场及 family macro | 模型能否学习跨尺度 primitive；FMT 是否提高 variable-scale IVD 涡识别 |
 | **Task6：单流场primitive几何重建（2.1冻结；当前修复3.1）** | 当前 3D | 多时间、多位置、多尺度七线geometry→冻结FMT token→VAE→同一簇完整七线geometry；每流场单独训练，测试完整未见primitive | 2.1原FMT与3.1新signed-FMT分别与各自同数据、同VAE结构及同潜变量维数的Raw geometry→VAE→geometry配对；原实验不覆盖 | 七条对应路径线全时段几何重建误差、同时间粒子间距误差、逐尺度/时长及训练/测试分项 | FMT是否帮助VAE学习和重建该流场的primitive几何分布 |
 | **Task7：遮挡区域补全** | 当前 3D | 外部可见 primitive tokens → 隐藏区域材料轨迹；原流场积分自监督 | 同上下文网络与相同可见材料点下的各特征方案 | 隐藏区域位置及相对几何误差、存储/计算开销 | tokens 是否能支持区域间上下文推断 |

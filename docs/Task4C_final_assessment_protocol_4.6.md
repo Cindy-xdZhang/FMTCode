@@ -31,3 +31,5 @@
 入口`experiments/Task4C_FinalAssessment_4_6.py`，配置`config/mainExp_Task4C_FinalAssessment_4.6.json`，脚本`ibex_bash/task4c_final_assessment_4p6.sh`。核验覆盖验证选择复算、选择锁篡改拒绝、被选源训练器调用及汇总；本地模拟最终阶段只使用训练/验证pilot副本，不读取真实测试。工程检查记录集中为JSON，不新增一次性测试源码。所有Ibex提交继续登记。
 
 本地核验已完成：30份真实开发预测复算后，两方法均选择4.5；所选4.5训练函数经两个方法各三个pilot种子完整运行，6份结果汇总与选择/配置篡改拒绝通过。未声称未入选适配器经过同等训练检查。所有模拟最终数据均来自验证pilot副本。
+
+正式运行已完成，科学commit `8b755d23`，9个Slurm任务全部exit0。结果及方法判断见`experiment_log.md`的“mainExp_Task4C_FinalAssessment_4.6：最终测试完成”记录；证据集中`outputs/mainExp_Task4C_FinalAssessment_4.6/`。协议、选择锁、候选和测试均冻结，真实目标未达成。
