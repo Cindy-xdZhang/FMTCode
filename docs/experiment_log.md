@@ -2876,3 +2876,36 @@ FMT选择逐线学习聚合、lr3e−4；Conv选择16/32/64通道、lr1e−3；�
 4.4训练/验证编码已完成，配置/源码哈希本地复核通过，metadata与4.3完全相同，仍为27,000拟合+3,000验证，test_encoded=false。4.3/4.4编码缓存逐文件哈希一致性：`{"channel/train": {"fmt.npy": false, "voxels.npy": false, "metadata.npz": true}, "tbl/train": {"fmt.npy": false, "voxels.npy": false, "metadata.npz": true}, "channel/validation": {"fmt.npy": false, "voxels.npy": false, "metadata.npz": true}, "tbl/validation": {"fmt.npy": false, "voxels.npy": false, "metadata.npz": true}}`。全部分区的原4.2统计恢复检查通过，证据`outputs/mainExp_Task4C_ManifoldMixup_4.4/encoding.json`；神经训练结果尚待返回。
 
 针对4.3/4.4缓存哈希不同的数值核验：编码设备分别为RTX2080Ti/P100；每个train/validation分区前64束、共256束中，161维块最大差7.63e−6、有符号72维块最大差7.16e−7，均无primitive超过1e−4；半精度体素最大差4.8828e−4，差异元素比例≤3.11e−6。抽查符合跨GPU浮点舍入级差异，没有支持大幅几何或近邻改变的证据；范围限于抽查，不声称全缓存逐值相同。不修改已冻结编码器，4.4各插值/不插值候选共用同一个缓存。证据`outputs/mainExp_Task4C_ManifoldMixup_4.4/encoding_numeric_comparison.json`。
+
+### mainExp_Task4C_ManifoldMixup_4.4：完成，未通过验证门槛
+
+科学commit `d14e81322c2080d9f6428db5b73c1a657806a1ce`，config SHA256 `f53b439a1a0219981c38844a01fffc52d6ccb4432d528a4cf233a30f9574fc8a`，UTC18:22:30完成选择。16次搜索+8次复核全部结束；下表仍是固定3000束验证集的开发种子95411/95412/95413，不能称为测试结果。
+
+| 方法 | 所选候选与alpha | 验证F1均值±样本标准差 | 验证AP均值 | 三种子F1 |
+|---|---|---:|---:|---|
+| fmt_mlp | candidate_00，0 | 0.372803 ± 0.010713 | 0.284483 | 0.376699, 0.360687, 0.381023 |
+| conv3d_mlp | candidate_07，2 | 0.430801 ± 0.017149 | 0.355789 | 0.449223, 0.415301, 0.427880 |
+
+FMT选择未启用混合的对照（lr3e−4），其与复核的alpha1/lr1e−3候选均值0.372631几乎相同；没有支持隐藏层混合带来明显收益的证据。Conv选择alpha2/lr1e−3，但三种子均值仍约0.43。此前4.3均值0.390572/0.429361→本版0.372803/0.430801，版本差包含开发种子变化，不能把全部差异因果归于混合正则化，更不能以单种子0.449223宣称稳定突破。两个方法均未达到0.6；门槛false，测试10,000束未编码、未读取，没有最终测试作业。
+
+NumPy独立复算全部24次保存预测的合并/分流场/每头区/分尺度F1、AP、平衡准确率和混淆矩阵，并核查最优验证阈值、epoch选择、三种子均值/标准差及预测文件身份；全部通过，最大误差1.67e−16。27个Slurm调度任务均COMPLETED、exit0。证据目录`outputs/mainExp_Task4C_ManifoldMixup_4.4/`中的`selection.json`、`independent_development_audit_completed.json`、`scheduler_completed.txt`；完整包SHA256 `0c3f8ddf3abb785203acdb6cb733734d69dd6a7b22f75ae739dcb0faf3ce52b0`。无模型权重。
+
+### Verify_Task4C_FitCapacity_4.4：32样本拟合核验
+
+仅使用真实训练pilot中的32束（16正/16负，选择seed95321、模型seed95322），原4.3逐线FMT与宽Conv架构不变。去掉dropout、weight decay、label smoothing与混合正则化，以AdamW分别用lr3e−4和1e−3整批拟合；四次运行最终训练F1和accuracy均为1，分别在40/20和30/20步结束。CPU Torch2.14.0，参数量88,514/219,602，完整样本身份和源文件哈希见`outputs/Verify_Task4C_FitCapacity_4.4/report.json`。
+
+这排除了基本反向传播/小样本拟合无法工作的假设，不证明大样本拟合充分，也不证明验证或测试可以达到0.6。没有把训练得分计入目标，未使用验证/测试、未保存权重；核验以内联命令执行，没有新增临时test/verify源码。
+
+### Verify_Task4C_ScaleConsistency_4.3：同中心跨尺度稳定性诊断
+
+固定4.1训练metadata含27,000视图、4,460个不同(flow,head,center-number)，其中4,111个中心具有多尺度视图；验证3,000视图对应1,191个中心，其中899个具有多尺度视图。同中心坐标逐值一致、标签一致已核查。该结果证实当前数据确实包含同一个空间位置的实际多尺度簇；视图数量不能当作独立物理实例数。
+
+4.3所选模型三种子在899个多尺度验证中心中，FMT有22.5%–36.9%的中心在不同尺度上给出不同类别，Conv有14.9%–23.6%。这是表示/预测的尺度敏感性证据，但部分尺度可能包含不同程度的局部形态，不能据此直接要求所有隐藏特征完全相同。诊断性同中心平均概率在原阈值下没有把任何单次F1提高到0.6；平均结果使用多个primitive，不能替代单primitive主任务，也没有用于最终测试选择。完整逐种子数值见`outputs/Verify_Task4C_ScaleConsistency_4.3/report.json`。尚未建立或提交跨尺度一致性损失的新版本。
+
+### Verify_Task4C_ErrorReview_4.3：验证集错误几何与GT语义待核对
+
+从4.3 Conv3D candidate06/seed95011的冻结验证预测中，按每流场×误报/漏检/正确检出/正确排除选出置信分数最极端的各1例，共8例；另显示FMT candidate04同种子的分数。选择是为了检查错误，不是代表性抽样，不能估计漏标率或总体误差。证据`outputs/Verify_Task4C_ErrorReview_4.3/selection.json`、`cases.json`、`geometry.npz`与`visual_data.json`；原几何包SHA256 `c1a84ea9ecfce85d98bc3a77a9350dcba576faa12900e00c2cf297471ee9a63a`。
+
+显示冻结32点重采样涡线、中心种子以及由已校验GT文件提取的局部曲面；曲面仅为显示作裁剪/简化，不改变标签。背景x范围限制于验证轨迹范围，没有展示测试几何。Channel验证index260/head2745被标为Non-hairpin，Conv/FMT分数0.893039/0.773525，中心在GT外且局部裁剪范围无GT曲面；其线簇可见拱形及两侧下伸结构。这是值得人工复核的个例，不足以证明它是发夹涡或GT漏标。正类漏检示例也呈现局部曲折形态，不能据个例断言积分或标注错误。
+
+当前负标签规则是“整个候选头区无GT重叠”，它是否能代表Non-hairpin，取决于两帧GT是否穷尽发夹涡标注。已向用户询问GT完整性，回复前不重标、不删除难例、不更换测试目标。4.4已完成，暂不追加同类参数扫描，先核对这项数据语义；0.6目标仍未达到。交互检查包含全部8例、320/736宽度和明暗主题，无运行错误；渲染核验见同目录`render_checks.json`。

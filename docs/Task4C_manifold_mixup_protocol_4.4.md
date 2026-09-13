@@ -24,3 +24,7 @@
 入口`experiments/Task4C_ManifoldMixup_4_4.py`，模型包装器`FMT_Utils/Task4C_ManifoldMixup_4_4.py`，配置`config/mainExp_Task4C_ManifoldMixup_4.4.json`，作业脚本`ibex_bash/task4c_manifold_mixup_4p4.sh`。
 内联核验确认：两模型推断逐值等于原4.3、参数数量相同、lambda=0/1的端点一致、alpha=0原损失不变、混合标签加权损失与直接软标签公式误差≤1.20e−7、梯度有限、真实两流场四个两epoch训练/预测复算通过、不编码test、不保存权重。4.3完成且门槛false的提交前提也有正反例检查。证据`outputs/Verify_Task4C_MixupCode_4.4/checks.json`；无临时验证源码文件。
 当前不公开发布GitHub实验记录，等待此前明确公开授权问题的回复；本地提交及个人Ibex实验继续按已授权范围执行。所有作业均登记，包含任何失败和取消。
+
+## 完成状态（2026-09-13 UTC18:22:30）
+
+科学commit `d14e81322c2080d9f6428db5b73c1a657806a1ce`，配置SHA256 `f53b439a1a0219981c38844a01fffc52d6ccb4432d528a4cf233a30f9574fc8a`。16次搜索与8次复核完成，两方法均未通过验证门槛；最终测试未编码、未读取。完整方法结论和三种子指标只记入`docs/experiment_log.md`。已完成全部逐样本预测的独立复算，记录于输出目录`independent_development_audit_completed.json`；所有27个调度任务正常结束。没有提交下一轮参数扫描。
