@@ -5854,3 +5854,73 @@ Science commit `6bfc357bc8d9ac321f91cfb512eb39d2facf0332`; config `config/Ablati
 - Task4-c 4.12 runtime status: {"kind": "runtime", "time": "2026-09-13T22:44:55.327828+00:00", "phase": "encode", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51867307", "array_index": null, "host": "cn604-18"}
 
 - Task4-c 4.12 runtime status: {"kind": "runtime", "time": "2026-09-13T22:45:48.328727+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51867317", "array_index": "0", "host": "gpu214-02"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:34:38.665182+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867225", "array_index": "0", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:34:45.151451+00:00", "phase": "search", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51867234", "array_index": "4", "host": "gpu208-18"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:34:51.321864+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51867227", "array_index": "2", "host": "dgpu502-37"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:34:57.120091+00:00", "phase": "search", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51867217", "array_index": "5", "host": "gpu208-14"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:35:46.832226+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51867234", "array_index": "4", "host": "gpu208-18"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:38:07.870082+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867226", "array_index": "1", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:38:28.707005+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867228", "array_index": "3", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:40:48.504097+00:00", "phase": "search", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51867217", "array_index": "5", "host": "gpu208-14"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:40:52.931672+00:00", "phase": "rank", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51867218", "array_index": null, "host": "cn604-18"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:40:56.024310+00:00", "phase": "rank", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51867218", "array_index": null, "host": "cn604-18"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:41:40.854250+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867279", "array_index": "0", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:41:40.957546+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867282", "array_index": "3", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:41:41.046641+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867280", "array_index": "1", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:41:41.153943+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "job": "51867281", "array_index": "2", "host": "dgpu502-37"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:42:58.857401+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867279", "array_index": "0", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:43:04.201838+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867282", "array_index": "3", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:43:04.310343+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867280", "array_index": "1", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:43:09.852163+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51867281", "array_index": "2", "host": "dgpu502-37"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:43:44.299932+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867296", "array_index": "5", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:43:44.393169+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867219", "array_index": "7", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:43:44.475039+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867295", "array_index": "4", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:43:44.623936+00:00", "phase": "confirm", "state": "STARTED", "exit_code": null, "device": "Tesla P100-PCIE-16GB", "job": "51867297", "array_index": "6", "host": "dgpu502-37"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:48:37.239596+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867295", "array_index": "4", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:49:18.867172+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867296", "array_index": "5", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:49:19.965042+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "NVIDIA GeForce RTX 2080 Ti", "job": "51867219", "array_index": "7", "host": "gpu510-07"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:50:54.654849+00:00", "phase": "confirm", "state": "ENDED", "exit_code": 0, "device": "Tesla P100-PCIE-16GB", "job": "51867297", "array_index": "6", "host": "dgpu502-37"}
+
+- Task4-c 4.11 runtime status: {"kind": "runtime", "time": "2026-09-13T22:51:02.126047+00:00", "phase": "select", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51867220", "array_index": null, "host": "cn604-18"}
+
+- Task4-c 4.12 runtime status: {"kind": "runtime", "time": "2026-09-13T22:47:33.196060+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51867317", "array_index": "0", "host": "gpu214-02"}
+
+- Task4-c 4.12 runtime status: {"kind": "runtime", "time": "2026-09-13T22:47:50.573528+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51867331", "array_index": "1", "host": "gpu214-02"}
+
+- Task4-c 4.12 runtime status: {"kind": "runtime", "time": "2026-09-13T22:53:27.159427+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51867331", "array_index": "1", "host": "gpu214-02"}
+
+- Task4-c 4.12 runtime status: {"kind": "runtime", "time": "2026-09-13T22:54:02.563024+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51867381", "array_index": "2", "host": "gpu214-02"}
+
+- Task4-c 4.12 runtime status: {"kind": "runtime", "time": "2026-09-13T22:54:51.357923+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51867381", "array_index": "2", "host": "gpu214-02"}
+
+- Task4-c 4.12 runtime status: {"kind": "runtime", "time": "2026-09-13T22:56:06.871096+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51867308", "array_index": "3", "host": "gpu214-02"}
+
+- Task4-c 4.12 final status: {"51867307": ["COMPLETED", "0:0"], "51867309": ["CANCELLED by 178058", "0:0"], "51867308_0": ["COMPLETED", "0:0"], "51867308_1": ["COMPLETED", "0:0"], "51867308_2": ["COMPLETED", "0:0"], "51867308_3": ["CANCELLED by 178058", "0:0"]}
+
+- Task4-c 4.12 original models PASS: full 27000 training rows, FMT F1 0.997007 (26 errors), Conv3D F1 0.995148 (42 errors); three consecutive epochs >=0.99 at threshold 0.5. Three completed fits independently audited, max error 2.22e-16. Optional wide FMT completed while cancellation checks ran; wide Conv and four-candidate merge cancelled after original-model success, not reported as completed comparison. Confirmation SHA256 0ee71f0f462c5c37e5492451cffe7b152356a1f8fc6bc0ff6dde2458b72bc419.
