@@ -2854,3 +2854,23 @@ FMT为610维扩展版，所选候选有正类训练几何增强/线性头/dropou
 
 4.3科学commit `46d7ee4e`，seed95011全部16次搜索完成：逐线FMT最佳0.408056（candidate04），Conv3D最佳0.427928（candidate06）；四组配对学习率/正则化下，新聚合均高于原统计聚合，宽Conv均高于对应窄Conv。FMT参数反而减少，且标准化位置改变，因此只能支持整个4.3版本的开发集改善，不能当作单因素或已验证测试收益。前两名复核仍在运行。
 已准备`mainExp_Task4C_ManifoldMixup_4.4`，只在原4.3网络64维隐藏表示和标签间作相同插值、以alpha=0保留对应原损失，8候选×2方法；编码、数据和网络参数数不变，完整技术/来源/核验见`Task4C_manifold_mixup_protocol_4.4.md`。它直接检验更强训练正则化能否改善已有训练验证差距，尚无科学性能结果。提交函数要求4.3选择已结束且未通过验证门槛；当前尚未提交。
+
+补充`Verify_Task4C_EncodingStability_4.1`：240个训练pilot样本分别以batch1/6/16/32重算冻结322维bundle_fmt，全部与batch32参考逐值相同（CPU Torch2.14.0，最大误差0）。本核验没有支持批大小导致编码不稳定的假设，不据此修改冻结近邻选择或FMT。证据`outputs/Verify_Task4C_EncodingStability_4.1/report.json`；先前单次未复现异常仍按原记录保留。
+
+4.4代码已准备到个人Ibex独立目录`/ibex/user/zhanx0o/FMT_Task4C_ManifoldMixup_20260913`，尚无Slurm提交。科学commit `d14e81322c2080d9f6428db5b73c1a657806a1ce`，config SHA256 `f53b439a1a0219981c38844a01fffc52d6ccb4432d528a4cf233a30f9574fc8a`；私有传输bundle SHA256 `4236fe71bb97c38c640749d730cfcbfaa2baba284435374c16f5620938645fa0`；远端编译通过。等待4.3汇总和提交前提检查，不向公开GitHub发布。
+
+### mainExp_Task4C_LinePooling_4.3：完成，未通过验证门槛
+
+科学commit `46d7ee4e`，config SHA256 `2e5a2e7e40199b9ba93e3e5a8adb1cc69c09d8793637a409736d1ee5a809a86a`，UTC17:54:13选择完成；16搜索+8复核及全部27个调度任务均COMPLETED。仍为同一3000束验证集，以下不是测试成绩。
+
+| 方法 | 所选候选 | 验证F1均值±样本标准差 | 验证AP均值 | 三种子F1 |
+|---|---|---:|---:|---|
+| fmt_mlp | candidate_04 | 0.390572 ± 0.015530 | 0.309755 | 0.408056, 0.378378, 0.385281 |
+| conv3d_mlp | candidate_06 | 0.429361 ± 0.001251 | 0.361637 | 0.427928, 0.429923, 0.430233 |
+
+FMT选择逐线学习聚合、lr3e−4；Conv选择16/32/64通道、lr1e−3；均dropout0.15、weight decay1e−3。此前首轮FMT0.408056→完整三种子均值0.390572，是补齐随机种子后对稳定性的评价，不改写单种子结果。相对4.2的0.382105/0.430561，4.3没有显示跨种子明显稳定的大幅提升；仍不能达到0.6。
+所有24次预测F1/AP/验证阈值最优性及四个候选的三种子均值/标准差独立复算通过，最大误差5.55e−17。完整包SHA256 `0a068fcfc747c9e277fc49b07da7b0d95ee54f53bba30245b79de962bfa4bb21`；证据`outputs/mainExp_Task4C_LinePooling_4.3/selection.json`、`independent_development_audit_completed.json`、`scheduler_completed.txt`。验证门槛false、test_encoded=false，没有最终测试作业或模型权重文件。
+
+4.3完成及未通过门槛已由4.4提交函数检查。4.4科学commit `d14e8132`，UTC17:56:29提交encode51862164、search51862165[0-15]、rank51862166、confirm51862167[0-7]、select51862168；均已登记。当前仅训练/验证开发，不宣称插值正则化有效，固定测试未使用。
+
+4.4训练/验证编码已完成，配置/源码哈希本地复核通过，metadata与4.3完全相同，仍为27,000拟合+3,000验证，test_encoded=false。4.3/4.4编码缓存逐文件哈希一致性：`{"channel/train": {"fmt.npy": false, "voxels.npy": false, "metadata.npz": true}, "tbl/train": {"fmt.npy": false, "voxels.npy": false, "metadata.npz": true}, "channel/validation": {"fmt.npy": false, "voxels.npy": false, "metadata.npz": true}, "tbl/validation": {"fmt.npy": false, "voxels.npy": false, "metadata.npz": true}}`。全部分区的原4.2统计恢复检查通过，证据`outputs/mainExp_Task4C_ManifoldMixup_4.4/encoding.json`；神经训练结果尚待返回。

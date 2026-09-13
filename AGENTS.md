@@ -5,8 +5,9 @@
 目标会议为 ICLR。停止继续推进现有客观化方向；暂停 Task6/7/8 几何 tokenizer、Point-NN 与混合专家调参，
 包括 Task36 联合分类/重建。Task1/2/3/5 主表与 Task4-a/b 历史结果保持。
 09-13 最新用户要求 Task4-c 加入论文预处理，扩展到Channel+TBL两个快照的Hairpin / Non-hairpin二分类；
-当前继续目标两模型F1≥0.6，新增 `mainExp_Task4C_LinePooling_4.3`，协议 `docs/Task4C_line_pooling_protocol_4.3.md`：保持4.1物理数据和测试，比较逐线固定FMT后学习聚合及Conv3D通道数扩大，保留4.2结构对照；无合成增强，训练/验证选择。
-已准备 `mainExp_Task4C_ManifoldMixup_4.4`（`docs/Task4C_manifold_mixup_protocol_4.4.md`），只有4.3三种子选择完成且门槛未通过才允许提交；保持4.3网络/物理数据，训练时在64维隐藏表示作插值正则化，包含alpha=0对照。
+当前继续目标两模型F1≥0.6，已启动 `mainExp_Task4C_ManifoldMixup_4.4`（`docs/Task4C_manifold_mixup_protocol_4.4.md`）：冻结4.3网络和物理数据，在64维隐藏表示与标签间做训练插值，包含alpha=0配对对照。
+此前 `mainExp_Task4C_LinePooling_4.3`，协议 `docs/Task4C_line_pooling_protocol_4.3.md`：保持4.1物理数据和测试，比较逐线固定FMT后学习聚合及Conv3D通道数扩大，保留4.2结构对照；无合成增强，训练/验证选择。
+已提交 `mainExp_Task4C_ManifoldMixup_4.4`（`docs/Task4C_manifold_mixup_protocol_4.4.md`），只有4.3三种子选择完成且门槛未通过才允许提交；保持4.3网络/物理数据，训练时在64维隐藏表示作插值正则化，包含alpha=0对照。
 此前 `mainExp_Task4C_Regularized_4.2`，协议 `docs/Task4C_regularized_protocol_4.2.md`：完全复用4.1物理样本与固定测试，原322维FMT拼接288维坐标/单位切向有方向频谱，设几何增强及余弦间隔分类对照；仅以train/validation选择，三种子验证门槛通过后才编码和评估test。
 此前 `mainExp_Task4C_Multiscale_4.1` 保持冻结，协议 `docs/Task4C_multiscale_protocol_4.1.md`：用户要求多尺度、dropout/正则化及学习率调整，目标两模型F1≥0.6。
 每流场13,500拟合+1,500验证+5,000测试；邻居距离与RK45参数/长度实际改变，同中心跨尺度仅在同一集合。候选头区播种后沿分区完整原始涡量追踪，至少10条有效线、最多27线。
