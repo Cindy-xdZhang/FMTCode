@@ -5282,3 +5282,39 @@ Local/remote source and config hashes verified. Scientific commit `6b67d2efe2a7a
 全部27个Slurm任务COMPLETED、exit0，科学commit `d14e8132`；16次搜索+8次复核完成。三种子验证门槛false，无测试作业或权重文件。完整调度记录见 `outputs/mainExp_Task4C_ManifoldMixup_4.4/scheduler_completed.txt`，科学结果与证据包哈希见 `docs/experiment_log.md`。
 
 非训练诊断：通过SSH只读抽取冻结4.1验证几何8例，写至个人Ibex目录 `outputs/mainExp_Task4C_ManifoldMixup_4.4/error_review/`；不读取test、不运行训练、无Slurm作业。对应本地 `Verify_Task4C_ErrorReview_4.3`，其他拟合/尺度诊断在本地CPU执行。
+
+
+## mainExp_Task4C_ScaleConsistency_4.5 — 2026-09-13
+
+科学commit `03582732bfa382415ee13c84fe81c031ac3a33ae`；实际部署config SHA256 `08c217373214ad9d5faefd8e1d44b32cbdd32ea4d71ebccc90a203e09e4be5b3`；个人Ibex目录 `/ibex/user/zhanx0o/FMT_Task4C_ScaleConsistency_20260913`。固定训练/验证开发，4.4已完成且门槛false；尚无最终测试作业。
+
+- SUBMITTED 51862978 encode；UTC 2026-09-13T18:51:53.693736+00:00；device CPU；dependency None；完整命令与源哈希见 `outputs/mainExp_Task4C_ScaleConsistency_4.5/submissions.jsonl`。
+
+- SUBMITTED 51862979 search；UTC 2026-09-13T18:51:53.807232+00:00；device A100/V100/P100/RTX2080Ti；dependency 51862978；完整命令与源哈希见 `outputs/mainExp_Task4C_ScaleConsistency_4.5/submissions.jsonl`。
+
+- SUBMITTED 51862980 rank；UTC 2026-09-13T18:51:53.944554+00:00；device CPU；dependency 51862979；完整命令与源哈希见 `outputs/mainExp_Task4C_ScaleConsistency_4.5/submissions.jsonl`。
+
+- SUBMITTED 51862981 confirm；UTC 2026-09-13T18:51:54.076773+00:00；device A100/V100/P100/RTX2080Ti；dependency 51862980；完整命令与源哈希见 `outputs/mainExp_Task4C_ScaleConsistency_4.5/submissions.jsonl`。
+
+- SUBMITTED 51862982 select；UTC 2026-09-13T18:51:54.227479+00:00；device CPU；dependency 51862981；完整命令与源哈希见 `outputs/mainExp_Task4C_ScaleConsistency_4.5/submissions.jsonl`。
+
+
+- 4.5 runtime job 51862978[None] encode STARTED；UTC 2026-09-13T18:51:57.140195+00:00；cn604-07 / CPU；exit None。
+
+- 4.5 runtime job 51862978[None] encode ENDED；UTC 2026-09-13T18:52:04.586848+00:00；cn604-07 / CPU；exit 0。
+
+- 4.5 runtime job 51863000[5] search STARTED；UTC 2026-09-13T18:53:20.125611+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.5 runtime job 51862995[0] search STARTED；UTC 2026-09-13T18:53:20.146021+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.5 runtime job 51862996[1] search STARTED；UTC 2026-09-13T18:53:20.148449+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.5 runtime job 51862998[3] search STARTED；UTC 2026-09-13T18:53:20.199534+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.5 runtime job 51862997[2] search STARTED；UTC 2026-09-13T18:53:20.192160+00:00；dgpu501-26 / Tesla P100-PCIE-16GB；exit None。
+
+- 4.5 runtime job 51862999[4] search STARTED；UTC 2026-09-13T18:53:20.291156+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit None。
+
+- 4.5 runtime job 51862999[4] search ENDED；UTC 2026-09-13T18:54:36.095403+00:00；gpu510-07 / NVIDIA GeForce RTX 2080 Ti；exit 0。
+
+- 4.5 runtime job 51862995[0] search ENDED；UTC 2026-09-13T18:54:43.247833+00:00；dgpu502-37 / Tesla P100-PCIE-16GB；exit 0。

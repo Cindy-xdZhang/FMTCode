@@ -2929,3 +2929,9 @@ NumPy独立复算全部24次保存预测的合并/分流场/每头区/分尺度F
 原4.3两网络和27,000训练/3,000验证/10,000测试保持；4.4训练/验证编码逐字节复制，全部冻结依赖与复制哈希强制检查。实际训练元数据有4,460个中心，其中4,111个可配对，26,651/27,000视图具有不同尺度伙伴。全部原训练视图均作为基础抽样总体，单尺度中心不计一致性项，没有删除样本。两个方法同种子使用同一物理配对序列；每epoch实际前向27,000束，与原版计算数量一致。
 
 `Verify_Task4C_ScaleConsistencyCode_4.5`已核对全部训练中心配对、拒绝坐标/标签/尺度冲突、概率均方差公式、零权重精确恢复交叉熵、首epoch权重0及双分支梯度。真实两流场pilot完成6次两epoch训练、复制→rank→三种子select复用入口及测试门禁拒绝检查，无test编码或模型权重。证据`outputs/Verify_Task4C_ScaleConsistencyCode_4.5/checks.json`，这些pilot分数不计科学性能。临时核验以命令内联执行，没有新增一次性verify/test源码。配置SHA256 `50d5e371ddc2aae859c1d36c4548388e7ec790a47ee0f941c1dba285e6c5a520`；正式性能待Ibex运行。
+
+4.5科学commit `03582732bfa382415ee13c84fe81c031ac3a33ae`已部署个人Ibex，UTC18:51:53–54提交copy-cache51862978、search51862979[0-11]、rank51862980、confirm51862981[0-7]、select51862982。所有作业已登记；源码哈希与本地核验一致，增量传输包SHA256 `166993d512899c7429f2bbecb3467d82f6d9fbce6180e1a2d791b7a8abb58aed`。
+
+配置字节哈希说明：前述`50d5e371…`是提交前Windows CRLF工作文件；Git存储及实际Ibex部署文件为LF，SHA256 `08c217373214ad9d5faefd8e1d44b32cbdd32ea4d71ebccc90a203e09e4be5b3`。已取回远端文件并核对，三者解析JSON完全相同，且原文件仅CRLF→LF转换后即逐字节等于Git blob/远端；所有数值与路径未变。本地文件也统一为该Git字节形式。证据`outputs/mainExp_Task4C_ScaleConsistency_4.5/config_byte_equivalence.json`，保留旧核验SHA记录，不静默改写；正式结果以部署哈希为准。
+
+4.5缓存复制已完成；本地复核全部四个train/validation分区的FMT、体素、metadata哈希与4.4逐一相同，实际27,000拟合+3,000验证，test_encoded=false。搜索数组51862979已在P100与RTX2080Ti启动，实际设备/时间已从runtime_events同步登记。尚无完整三种子结果或目标达成结论。
