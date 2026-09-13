@@ -2844,3 +2844,13 @@ UTC16:57:24选择完成，所选两模型均为candidate05（lr3e−4、dropout0
 
 FMT为610维扩展版，所选候选有正类训练几何增强/线性头/dropout0.5/weight decay0.01；Conv3D所选候选无增强/余弦间隔/dropout0.3/weight decay0.001，两者lr3e−4。不能将各自最优之差视为只改变FMT的匹配消融。相对4.1原322维FMT的验证均值0.301773，4.2整套设置升至0.382105；Conv均值由0.420529变为0.430561，但没有足够证据说该小幅差异稳定。两方法均未到0.6；门槛false，未编码/读取test，未创建最终测试作业。
 全部20次保存概率的F1、平均精确率、阈值最优性及三种子均值/标准差经独立NumPy复算通过，最大误差1.11e−16。完整包SHA256 `9db2dd42f3df810287732ae802b297c78a19c53723a2bcf235a4e23ec7c5e0b7`；证据`outputs/mainExp_Task4C_Regularized_4.2/selection.json`、`independent_development_audit_completed.json`与`scheduler_completed.txt`。无模型权重文件。
+
+### Verify_Task4C_TraceGeometry_4.1：解析螺旋场核验与体素分辨率诊断
+
+冻结涡线追踪函数（source SHA256 `934c1fb3219d2e5bcd3fa62741b929c2365c7dbd6f13c4191ef88ee06b1ffe4a`）在解析向量场omega=(-y,x,0.2)的四个种子上，经真实RK45双向积分、SeedIds配对及弧长重采样，与解析螺旋的最大点误差2.58e−6，切线与omega最小余弦0.999999908；平面圆轨迹按零轴方差规则全部剔除。证据`outputs/Verify_Task4C_TraceGeometry_4.1/report.json`。这验证积分方向、拼接和重采样实现，不能证明所有真实候选都包含完整发夹形态。
+另外只在240个训练pilot几何上统计每个弧长索引处的不同最近体素数/有效线数：24³时两流场两类约0.40–0.55，48³约0.62–0.80，96³约0.83–0.93。相邻线常落入同一最近体素，但此统计不是三线性splat编码的精确信息损失，也不证明提高分辨率能提高F1；尚未据此修改网络输入。证据同目录`quantization.json`。标注是否穷尽全部发夹涡已向用户询问，回复前继续保留既有GT二类规则，不据猜测重标负类。
+
+### 4.3首轮完成与4.4准备
+
+4.3科学commit `46d7ee4e`，seed95011全部16次搜索完成：逐线FMT最佳0.408056（candidate04），Conv3D最佳0.427928（candidate06）；四组配对学习率/正则化下，新聚合均高于原统计聚合，宽Conv均高于对应窄Conv。FMT参数反而减少，且标准化位置改变，因此只能支持整个4.3版本的开发集改善，不能当作单因素或已验证测试收益。前两名复核仍在运行。
+已准备`mainExp_Task4C_ManifoldMixup_4.4`，只在原4.3网络64维隐藏表示和标签间作相同插值、以alpha=0保留对应原损失，8候选×2方法；编码、数据和网络参数数不变，完整技术/来源/核验见`Task4C_manifold_mixup_protocol_4.4.md`。它直接检验更强训练正则化能否改善已有训练验证差距，尚无科学性能结果。提交函数要求4.3选择已结束且未通过验证门槛；当前尚未提交。
