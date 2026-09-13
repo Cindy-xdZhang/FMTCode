@@ -1,0 +1,68 @@
+{
+  "experiment": "Other_Task123_PaperTriptychs_1.2",
+  "datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "boeing747",
+    "deltaWing_LBM"
+  ],
+  "task1": {
+    "protocol": "mainExp_Task1_3D_4.1",
+    "seed": 7080,
+    "display_ordinal": 0
+  },
+  "task2": {
+    "protocol": "mainExp_Task2_3D_6.2_uniform_confirmation",
+    "seed": 100,
+    "display_ordinal": 8
+  },
+  "task3": {
+    "protocol": "mainExp_Task3_3D_9.2_uniform_confirmation",
+    "seed": 40,
+    "display_ordinal": 8
+  },
+  "selection": "First registered confirmation ordinal and first registered seed, fixed before generating predictions; no selection on image appearance or confirmation metrics.",
+  "purpose": "Qualitative spatial comparisons for the current uniform recipes; replay metrics do not replace frozen main tables.",
+  "layout": {
+    "task1": "Mode a: geometry + IVD p95 + pathlines / FMT two clusters / FMT errors against IVD p95",
+    "task2": "Mode b: IVD reference / Raw / FMT",
+    "task3": "Mode b: IVD reference / Raw-PCA residual / FMT residual"
+  },
+  "checkpoint_policy": "Task2 in memory; Task3 temporary remote checkpoints deleted after prediction export; no checkpoint download",
+  "output_root": "outputs/Other_Task123_PaperTriptychs_1.2",
+  "display_paths": {
+    "count": 240,
+    "steps": 96,
+    "aircraft_multiplier": 2,
+    "vortex_fraction": 0.7,
+    "seed": 7068,
+    "selection": "IVD-only stratified maximin; no prediction-based selection; same as historical Mode a"
+  },
+  "geometry": "Reuse verified simulation geometry where available; never invent an obstacle from velocity zeros.",
+  "formats": {
+    "paper": [
+      "png",
+      "pdf",
+      "svg",
+      "tiff"
+    ],
+    "slides": [
+      "png",
+      "pdf",
+      "svg"
+    ]
+  },
+  "size_inches": {
+    "paper": [
+      7.2,
+      2.9
+    ],
+    "slides": [
+      13.33,
+      5.4
+    ]
+  },
+  "qa": "Same bounds and cameras; label equivalence; equal panel rectangles; final PDF fonts and collisions; visual inspection"
+}

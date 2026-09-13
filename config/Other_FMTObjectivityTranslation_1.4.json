@@ -1,0 +1,60 @@
+{
+  "experiment": "Other_FMTObjectivityTranslation_1.4",
+  "task": "Task1",
+  "observer": "Instantaneous full-source spatial volume mean, integrated in physical time",
+  "levels": [
+    0,
+    0.25,
+    0.5,
+    1
+  ],
+  "seed": 7080,
+  "substeps": 2,
+  "protocol": "mainExp_Task1_3D_4.1",
+  "expected_recipe": "fmt_all+kin4; PCA 8",
+  "selection": "Frozen before confirmation; no selection based on this visualization",
+  "question": "Does the fixed classifier preserve labels after subtracting bulk translation?",
+  "layout": "One column, four panels, whole classified center trajectories, common physical scale",
+  "claim": "No invariance assumed; report label changes on the denser display cohort, without reusing frozen-cohort IVD scores",
+  "source_data": "Original complete long seeds first, then label-independent Sobol additions to the exact doubled count; full original source grid for observer mean",
+  "exports": {
+    "paper": [
+      "png",
+      "pdf",
+      "svg",
+      "tiff"
+    ],
+    "slides": [
+      "png",
+      "pdf",
+      "svg"
+    ]
+  },
+  "datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400"
+  ],
+  "time_policy": "config/cylinder_time_policy.json",
+  "confirmation_ordinals": {
+    "cylinder3d": 2,
+    "halfcylinderRe640": 0,
+    "halfcylinderRe6400": 2
+  },
+  "selected_times": {
+    "cylinder3d": 10.5,
+    "halfcylinderRe640": 9.5,
+    "halfcylinderRe6400": 10.5
+  },
+  "display_steps": 96,
+  "classification_steps": 48,
+  "classification_samples": 32,
+  "display_count_multiplier": 2,
+  "target_counts": {
+    "cylinder3d": 7220,
+    "halfcylinderRe640": 7154,
+    "halfcylinderRe6400": 7242
+  },
+  "added_seeds": "Scrambled Sobol seed7080 within original material-seed spatial bounds; keep complete trajectories before classification",
+  "scope": "Display density and duration change only; no benchmark F1 on changed cohort"
+}

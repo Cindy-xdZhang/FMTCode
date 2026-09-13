@@ -1,0 +1,19 @@
+{
+  "version": "Verify_JHTDB_ChannelDownload_1.1",
+  "dataset_name": "channel",
+  "variable_name": "velocity",
+  "temporal_method": "pchip",
+  "spatial_method": "lag8",
+  "spatial_operator": "field",
+  "x_res": 64,
+  "y_res": 64,
+  "z_res": 64,
+  "x_range": [3.0, 3.3],
+  "y_range": [-0.9, -0.6],
+  "z_range": [0.2, 0.5],
+  "time_start": 1.0,
+  "time_end": 1.2015,
+  "time_res": 32,
+  "max_query_points": 65536,
+  "output_dir": "outputs/Verify_JHTDB_ChannelDownload_1.1"
+}

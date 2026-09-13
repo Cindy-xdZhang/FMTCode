@@ -1,0 +1,605 @@
+{
+  "experiment": "Verify_LargeNeighbor_1.1",
+  "output_root": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1",
+  "base_commit": "aee4bd562d340158118f2e41f40129a9918e06a1",
+  "datasets": [
+    "channel",
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "deltaWing_resampled",
+    "deltaWing_LBM",
+    "f22raptor",
+    "boeing747",
+    "smokeBuoyancy"
+  ],
+  "tasks": [
+    "Task1",
+    "Task2",
+    "Task3"
+  ],
+  "roots": {
+    "fixed": "/home/zhanx0o/FMT_Uniform_3D_20260901",
+    "multiscale": "/home/zhanx0o/FMT_Task12_3D_20260823"
+  },
+  "features": {
+    "raw": "raw",
+    "raw25": "raw25",
+    "old_fmt": "fmt_all+kin4",
+    "short": "aivd1w3_dft",
+    "gram7": "fmt_all_v2",
+    "large": "largeNeighbor"
+  },
+  "feature_dimensions": {
+    "raw": 672,
+    "raw25": 2400,
+    "old_fmt": 189,
+    "short": 1,
+    "gram7": 231,
+    "large": 3300
+  },
+  "cylinder_datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400"
+  ],
+  "minimum_cylinder_time": 7.5,
+  "encoder": {
+    "name": "largeNeighbor",
+    "radii": [
+      1,
+      1.5,
+      2
+    ],
+    "neighbors_per_shell": 8,
+    "directions": "cube vertices (+/-1,+/-1,+/-1)/sqrt(3)",
+    "primitive_lines": 25,
+    "radius_base": "original min-grid-spacing * 0.5",
+    "same_time_input": "24 center-neighbor relative vectors; 300 upper-triangle Gram scalars",
+    "normalize": "initial mean squared neighbor distance; subtract initial Gram",
+    "num_freq": 6,
+    "nonzero_bins": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "sampled_steps": 32,
+    "integration_steps": 48,
+    "dt_scale": 0.25,
+    "center_temporal_differences": false,
+    "dtype": "float64 geometry and Fourier, float32 output",
+    "frequency_unit": "cycles per sampled trajectory window, same convention as fmt_all_v2"
+  },
+  "dataset_splits": {
+    "cylinder3d": {
+      "Task1": {
+        "train": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "validation": [
+          8,
+          9
+        ],
+        "confirmation": [
+          2,
+          3
+        ]
+      },
+      "Task2": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      },
+      "Task3": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      }
+    },
+    "halfcylinderRe640": {
+      "Task1": {
+        "train": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "validation": [
+          8,
+          9
+        ],
+        "confirmation": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "Task2": {
+        "train": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      },
+      "Task3": {
+        "train": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      }
+    },
+    "halfcylinderRe6400": {
+      "Task1": {
+        "train": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "validation": [
+          8,
+          9
+        ],
+        "confirmation": [
+          2,
+          3
+        ]
+      },
+      "Task2": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      },
+      "Task3": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      }
+    }
+  },
+  "protocol": {
+    "comparison": "three-shell 24-neighbor full-window Fourier encoder; no search; existing benchmark replay",
+    "sampling": "original seeds and roles; all methods share old7 and new25 validity intersection; original p95 labels retained",
+    "Task1": "Raw7,Raw25,oldFMT,shortIVD,Gram7,largeNeighbor; StandardScaler/PCA8 except scalar; KMeans20 initializations",
+    "Task2": "same frozen VAE hidden512/256,latent64,KL1e-6,lr3e-4,7000updates; input/output width follows representation; report parameter counts",
+    "Task3": "same retrained Raw25 backbone and 268-wide residual for all feature arms; Raw25-PCA268 control; large features StandardScaler/PCA268 fit on train only; shorter features zero padded",
+    "objectivity": "encoder certificate for time-dependent proper rotations and translations of corresponding material lines; Raw neural branch is not covered",
+    "evaluation": "all models/cluster identities/thresholds frozen before test; validation-only epochs and alpha",
+    "checkpoints": "temporary until predictions and independent metric audit are durable; never download; remove after audit",
+    "time": "all cylinder initial physical times >=7.5",
+    "tokenization": "IVD binary classification only; no geometric tokenization quality claim"
+  },
+  "task1": {
+    "train": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "validation": [
+      8,
+      9
+    ],
+    "confirmation": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "seeds": [
+      7080,
+      7081,
+      7082,
+      7083,
+      7084
+    ],
+    "kmeans_n_init": 20,
+    "pca_dim": 8,
+    "arms": [
+      "raw",
+      "raw25",
+      "old_fmt",
+      "short",
+      "gram7",
+      "large"
+    ]
+  },
+  "task2": {
+    "train": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "validation": [
+      6,
+      7
+    ],
+    "confirmation": [
+      8,
+      9
+    ],
+    "seeds": [
+      100,
+      101,
+      102,
+      103,
+      104
+    ],
+    "kmeans_seed": 7068,
+    "kmeans_n_init": 20,
+    "architecture": {
+      "hidden_dims": [
+        512,
+        256
+      ],
+      "latent_dim": 64,
+      "beta": 1e-06,
+      "learning_rate": 0.0003,
+      "optimizer_steps": 7000,
+      "relational_weight": 0.0,
+      "pair_count": 2048
+    },
+    "batch_size": 256,
+    "weight_decay": 1e-05,
+    "arms": [
+      "raw",
+      "raw25",
+      "old_fmt",
+      "short",
+      "gram7",
+      "large"
+    ]
+  },
+  "task3": {
+    "train": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "validation": [
+      6,
+      7
+    ],
+    "confirmation": [
+      8,
+      9
+    ],
+    "seeds": [
+      40,
+      41,
+      42,
+      43,
+      44
+    ],
+    "arms": [
+      "raw",
+      "raw_wide",
+      "raw_pca",
+      "old_fmt",
+      "short",
+      "gram7",
+      "large"
+    ],
+    "auxiliary_input_width": 268,
+    "fusion": {
+      "alpha_min": 0.0,
+      "alpha_max": 3.0,
+      "alpha_steps": 61,
+      "selection_metric": "minimum_gain",
+      "minimum_f1_gain": 0.0
+    },
+    "raw_primitive_lines": 25,
+    "large_pca_dim": 268
+  },
+  "model": {
+    "embedding_dim": 128,
+    "auxiliary_dim": 64,
+    "residual_input": "geometry_fmt"
+  },
+  "raw_model": {
+    "temporal_width": 64,
+    "embedding_dim": 128,
+    "auxiliary_dim": 64
+  },
+  "training": {
+    "device": "cuda",
+    "batch_size": 512,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "max_epochs": 100,
+    "patience": 20,
+    "min_delta": 0.0001
+  },
+  "sampling": {
+    "max_spatial_dim": 96,
+    "seed_grid_shape": [
+      16,
+      16,
+      16
+    ],
+    "boundary_fraction": 0.08,
+    "chunk_size": 2048
+  },
+  "channel_observer": {
+    "total_frames": 159,
+    "duration": 1.0,
+    "output_crop_fraction": 0.1
+  },
+  "source_fields": {
+    "cylinder3d": "/home/zhanx0o/DeepVortex/FLowDataFolder/halfcylinderRe160Resampled.nc",
+    "halfcylinderRe640": "/home/zhanx0o/DeepVortex/FLowDataFolder/halfcylinderRe640resampled.nc",
+    "halfcylinderRe6400": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_AIVDLongtime_1.1/source/halfcylinderRe6400_late96.nc",
+    "tangaroa": "/home/zhanx0o/DeepVortex/FLowDataFolder/tangaroa.nc",
+    "deltaWing_resampled": "/home/zhanx0o/DeepVortex/FLowDataFolder/deltaWing_mag0_3reesampled.nc",
+    "smokeBuoyancy": "/home/zhanx0o/DeepVortex/FLowDataFolder/SmokeBuoyancy80_239.nc",
+    "channel": "/ibex/user/zhanx0o/FLowDataFolder/channel_flow/channel.vtk",
+    "f22raptor": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1/source/f22raptor_windows96.nc",
+    "deltaWing_LBM": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1/source/deltaWing_LBM_windows96.nc",
+    "boeing747": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_LargeNeighbor_1.1/source/boeing747_windows96.nc"
+  },
+  "source_exports": {
+    "f22raptor": {
+      "local_path": "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/f22raptor_re400000.nc",
+      "windows": [
+        {
+          "index": 32,
+          "frame_count": 14
+        },
+        {
+          "index": 44,
+          "frame_count": 14
+        },
+        {
+          "index": 56,
+          "frame_count": 14
+        },
+        {
+          "index": 69,
+          "frame_count": 14
+        },
+        {
+          "index": 81,
+          "frame_count": 14
+        },
+        {
+          "index": 93,
+          "frame_count": 14
+        },
+        {
+          "index": 105,
+          "frame_count": 14
+        },
+        {
+          "index": 118,
+          "frame_count": 14
+        },
+        {
+          "index": 130,
+          "frame_count": 14
+        },
+        {
+          "index": 142,
+          "frame_count": 14
+        },
+        {
+          "index": 40,
+          "frame_count": 14
+        },
+        {
+          "index": 65,
+          "frame_count": 14
+        },
+        {
+          "index": 102,
+          "frame_count": 14
+        },
+        {
+          "index": 134,
+          "frame_count": 14
+        }
+      ]
+    },
+    "deltaWing_LBM": {
+      "local_path": "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/deltaWing_mag0_3.nc",
+      "windows": [
+        {
+          "index": 47,
+          "frame_count": 14
+        },
+        {
+          "index": 65,
+          "frame_count": 14
+        },
+        {
+          "index": 83,
+          "frame_count": 14
+        },
+        {
+          "index": 101,
+          "frame_count": 14
+        },
+        {
+          "index": 119,
+          "frame_count": 14
+        },
+        {
+          "index": 137,
+          "frame_count": 14
+        },
+        {
+          "index": 155,
+          "frame_count": 14
+        },
+        {
+          "index": 173,
+          "frame_count": 14
+        },
+        {
+          "index": 191,
+          "frame_count": 14
+        },
+        {
+          "index": 209,
+          "frame_count": 14
+        },
+        {
+          "index": 59,
+          "frame_count": 14
+        },
+        {
+          "index": 89,
+          "frame_count": 14
+        },
+        {
+          "index": 149,
+          "frame_count": 14
+        },
+        {
+          "index": 204,
+          "frame_count": 14
+        }
+      ]
+    },
+    "boeing747": {
+      "local_path": "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D/LBM_3D/boeing747_808_2392.nc",
+      "windows": [
+        {
+          "index": 40,
+          "frame_count": 14
+        },
+        {
+          "index": 55,
+          "frame_count": 14
+        },
+        {
+          "index": 71,
+          "frame_count": 14
+        },
+        {
+          "index": 86,
+          "frame_count": 14
+        },
+        {
+          "index": 101,
+          "frame_count": 14
+        },
+        {
+          "index": 117,
+          "frame_count": 14
+        },
+        {
+          "index": 132,
+          "frame_count": 14
+        },
+        {
+          "index": 147,
+          "frame_count": 14
+        },
+        {
+          "index": 163,
+          "frame_count": 14
+        },
+        {
+          "index": 178,
+          "frame_count": 14
+        },
+        {
+          "index": 47,
+          "frame_count": 14
+        },
+        {
+          "index": 78,
+          "frame_count": 14
+        },
+        {
+          "index": 124,
+          "frame_count": 14
+        },
+        {
+          "index": 170,
+          "frame_count": 14
+        }
+      ]
+    }
+  }
+}

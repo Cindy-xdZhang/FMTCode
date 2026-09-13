@@ -1,0 +1,249 @@
+{
+  "experiment": "Verify_FMTObjectivityMechanism_1.1",
+  "output_root": "/home/zhanx0o/FMT_ObjectivityMechanism_20260909/outputs/Verify_FMTObjectivityMechanism_1.1",
+  "base_commit": "aee4bd562d340158118f2e41f40129a9918e06a1",
+  "datasets": [
+    "channel",
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "deltaWing_resampled",
+    "deltaWing_LBM",
+    "f22raptor",
+    "boeing747",
+    "smokeBuoyancy"
+  ],
+  "tasks": [
+    "Task1",
+    "Task2"
+  ],
+  "roots": {
+    "fixed": "/home/zhanx0o/FMT_Uniform_3D_20260901",
+    "multiscale": "/home/zhanx0o/FMT_Task12_3D_20260823"
+  },
+  "cylinder_datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400"
+  ],
+  "minimum_cylinder_time": 7.5,
+  "dataset_splits": {
+    "cylinder3d": {
+      "Task1": {
+        "train": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "validation": [
+          8,
+          9
+        ],
+        "confirmation": [
+          2,
+          3
+        ]
+      },
+      "Task2": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      }
+    },
+    "halfcylinderRe640": {
+      "Task1": {
+        "train": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "validation": [
+          8,
+          9
+        ],
+        "confirmation": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "Task2": {
+        "train": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      }
+    },
+    "halfcylinderRe6400": {
+      "Task1": {
+        "train": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "validation": [
+          8,
+          9
+        ],
+        "confirmation": [
+          2,
+          3
+        ]
+      },
+      "Task2": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      }
+    }
+  },
+  "protocol": {
+    "reused_benchmark": true,
+    "no_model_selection_on_test": true,
+    "task1_pca": [
+      8,
+      null
+    ],
+    "silhouette_sample_count": 768,
+    "label_permutations": 100,
+    "capacity": "lossless zero padding; frozen mean reconstruction loss over700 dimensions",
+    "no_checkpoints": true
+  },
+  "task1": {
+    "train": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "validation": [
+      8,
+      9
+    ],
+    "confirmation": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "seeds": [
+      7380,
+      7381,
+      7382
+    ],
+    "kmeans_n_init": 20,
+    "pca_dim": 8,
+    "arms": [
+      "raw",
+      "old_full",
+      "old_no_center",
+      "old_neighbor_only",
+      "neighbor_undifferenced_kin",
+      "gram6",
+      "gram6_kin",
+      "gram6_unscaled_kin",
+      "gram_delta6_kin",
+      "gram_full_kin",
+      "gram_time_kin",
+      "aivd_kin"
+    ]
+  },
+  "task2": {
+    "train": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "validation": [
+      6,
+      7
+    ],
+    "confirmation": [
+      8,
+      9
+    ],
+    "seeds": [
+      310,
+      311,
+      312
+    ],
+    "kmeans_seed": 7068,
+    "kmeans_n_init": 20,
+    "architecture": {
+      "hidden_dims": [
+        512,
+        256
+      ],
+      "latent_dim": 64,
+      "beta": 1e-06,
+      "learning_rate": 0.0003,
+      "optimizer_steps": 7000,
+      "relational_weight": 0.0,
+      "pair_count": 2048
+    },
+    "batch_size": 256,
+    "weight_decay": 1e-05,
+    "arms": [
+      "raw",
+      "old_full",
+      "old_no_center",
+      "old_neighbor_only",
+      "neighbor_undifferenced_kin",
+      "gram6",
+      "gram6_kin",
+      "gram6_unscaled_kin",
+      "gram_delta6_kin",
+      "gram_full_kin",
+      "gram_time_kin",
+      "aivd_kin"
+    ]
+  },
+  "source_baseline": "/home/zhanx0o/FMT_Uniform_3D_20260901/fmt_all_v2_1p2",
+  "input_width": 700
+}

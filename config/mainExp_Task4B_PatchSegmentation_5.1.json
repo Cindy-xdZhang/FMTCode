@@ -1,0 +1,28 @@
+{
+  "version": "mainExp_Task4B_PatchSegmentation_5.1",
+  "output": "outputs/mainExp_Task4B_PatchSegmentation_5.1",
+  "labels_source": "outputs/Other_Task4B_ProxyGTThreshold_4.4",
+  "field_source_config": "config/Verify_Task4B_VelocityCurlMemorization_4.1.yaml",
+  "thresholds": {"channel": 5.785, "tbl": 0.08},
+  "split": {
+    "seed": 8071, "training_count": 900, "test_count": 100,
+    "test_fraction": 0.1, "padding": 1, "gap": 1, "max_attempts": 1000000,
+    "policy": "connected_instance_boxes_then_disjoint_random_windows"
+  },
+  "sampling": {"seed": 8072, "ordinary_train_cap_per_patch": 256,
+    "hairpin_train": "all", "test": "all_vortex_voxels_in_every_test_patch"},
+  "streamlines": {"steps_per_direction": 16, "offset_over_step": 0.1501458034894056,
+    "base_step_mean_voxel_scale": 0.5, "minimum_speed_relative_rms": 1e-8,
+    "chunk_size": 2048, "step_policy": "per_seed_bounded_by_patch_native_interpolation_domain",
+    "unit_velocity": true, "lines": 7, "samples_per_line": 33},
+  "encoder": {"num_freq": 6, "mode": "gram", "include_chirality": true,
+    "neighbor_pool": "sort", "neighbor_scale": 100.0,
+    "neighbor_weight_after_train_standardization": 0.5, "expected_feature_dim": 161},
+  "model": {"variant": "fmt_only", "embedding_dim": 1024, "auxiliary_dim": 1024,
+    "temporal_width": 128, "dropout": 0.1},
+  "training": {"seed": 8073, "epochs": 200, "batch_size": 1024,
+    "learning_rate": 0.001, "minimum_learning_rate": 1e-6, "weight_decay": 0.0001,
+    "loss": "cross_entropy_inverse_sqrt_training_class_frequency",
+    "epoch_selection": "fixed_final_epoch_no_test_selection", "checkpoint": "none"},
+  "classes": ["ordinary_streamwise", "ordinary_spanwise", "hairpin_head", "hairpin_leg"]
+}

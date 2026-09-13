@@ -1,0 +1,15 @@
+{
+  "experiment": "Verify_FMTAllV2_1.1",
+  "output_root": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_FMTAllV2_1.1",
+  "datasets": ["channel", "cylinder3d", "halfcylinderRe640", "halfcylinderRe6400", "tangaroa", "deltaWing_resampled", "deltaWing_LBM", "f22raptor", "boeing747", "smokeBuoyancy"],
+  "tasks": ["Task1", "Task2", "Task5"],
+  "roots": {"fixed": "/home/zhanx0o/FMT_Uniform_3D_20260901", "multiscale": "/home/zhanx0o/FMT_Task12_3D_20260823"},
+  "encoder": {"name": "fmt_all_v2", "version": "1.0", "num_freq": 6, "dimension": 231, "geometry": "upper_triangle_of_same_time_six_neighbour_Gram", "normalization": "divide_by_mean_initial_squared_offset_then_subtract_initial_Gram", "frequency_units": "cycles_per_sampled_window", "centre_features": false, "old_feature_addons": false},
+  "task1": {"train": [0,1,2,3,4,5,6,7], "validation": [8,9], "confirmation": [0,1,2,3], "seeds": [7080,7081,7082,7083,7084], "kmeans_n_init": 20, "pca_dim": 8, "old_feature": "fmt_all+kin4", "arms": ["old_fmt", "fmt_all_v2"]},
+  "task2": {"train": [0,1,2,3,4,5], "validation": [6,7], "confirmation": [8,9], "seeds": [100,101,102,103,104], "kmeans_seed": 7068, "kmeans_n_init": 20, "old_feature": "fmt_all+kin4", "arms": ["raw", "old_fmt", "fmt_all_v2"], "architecture": {"hidden_dims": [512,256], "latent_dim": 64, "beta": 0.000001, "learning_rate": 0.0003, "optimizer_steps": 7000, "relational_weight": 0.0, "pair_count": 2048}, "batch_size": 256, "weight_decay": 0.00001},
+  "task5": {"train": [0,1,2,3], "validation": [4,5], "confirmation": [0,1,2,3], "seeds": [40,41,42,43,44], "old_feature": "fmt_all+gram2+kin6", "arms": ["old_fmt", "fmt_all_v2"], "auxiliary_input_width": 268},
+  "model": {"embedding_dim": 128, "auxiliary_dim": 64, "residual_input": "geometry_fmt"},
+  "fusion": {"fixed_alpha": 1.0, "selection_metric": "average_precision"},
+  "training": {"device": "cuda", "batch_size": 512, "learning_rate": 0.001, "weight_decay": 0.0001, "max_epochs": 100, "patience": 20, "min_delta": 0.0001},
+  "protocol": {"labels": "frozen_whole_field_IVD_p95", "benchmark": "paired_replay_of_previously_used_frozen_splits_not_fresh_confirmation", "cylinder_time": "retain_frozen_benchmark_times_for_paired_encoder_replay_no_new_sampling; new_sampling_default_t>=7.5", "selection": "no_new_hyperparameter_search; freeze_all_arms_before_test", "task5_capacity": "lossless_zero_pad_v2_to_268_same_residual_network_and_shared_frozen_Raw_backbone", "objectivity_scope": "encoder_invariant_under_time_dependent_rigid_observers_for_corresponding_material_neighbours; Raw_branch_in_Task5_is_not_made_objective", "checkpoint_policy": "no_Task2_checkpoints; remove_this_shards_temporary_Task5_checkpoints_after_metrics; never_delete_shared_backbones"}
+}

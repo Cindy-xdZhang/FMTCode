@@ -1,0 +1,15 @@
+{
+  "experiment": "Other_Task2_VisualAnalysis_1.2",
+  "frozen_config": "config/mainExp_Task2_3D_6.2_uniform_confirmation.yaml",
+  "output_root": "outputs/Other_Task2_VisualAnalysis_1.2",
+  "training_seed": 100,
+  "display_split": "cluster_calibration",
+  "cylinder_time_policy": "config/cylinder_time_policy.json",
+  "recompute": {"max_integration_steps": 4096, "max_window_bytes": 1073741824},
+  "analysis": {
+    "max_samples": 1500, "sampling_seed": 7068,
+    "latent_normalization": "l1", "perplexity": 30.0,
+    "tsne_seed": 7068, "tsne_iterations": 1000,
+    "cluster_space": "tsne", "eps": 2.0, "min_samples": 10
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "version": "Verify_AIVDTranslationObservers_1.2",
+  "base_commit": "aee4bd562d340158118f2e41f40129a9918e06a1",
+  "source_root": "/home/zhanx0o/FMT_Uniform_3D_20260901",
+  "figure_source": "outputs/Verify_AIVDTranslationObservers_1.1/cylinder3d",
+  "trajectory_source": "outputs/Verify_FMTObservedPathline_2.1/cylinder3d/observed_pathlines.npz",
+  "output_root": "outputs/Verify_AIVDTranslationObservers_1.2/cylinder3d",
+  "scope": "Only add small monochrome camera icons and exact translating velocity fractions to the seven-panel figure; no new experiment or classifier fitting.",
+  "camera_velocity": "u_cam(t) = alpha * spatial_mean_flow_velocity(t)",
+  "levels": [0, 0.16666666666666666, 0.3333333333333333, 0.5, 0.6666666666666666, 0.8333333333333334, 1],
+  "figure_contract": {
+    "question": "Do the saved labels remain unchanged across the seven translating observers?",
+    "archetype": "quantitative grid; seven requested ordered observer conditions",
+    "adaptation": "annotation-only structural reuse of the original renderer",
+    "data_integrity": "all 7220 center paths per panel; original classification and colors; same union bounds and viewing camera; no bounding box",
+    "backend": "python",
+    "exports": "original paper and slides dimensions; editable PDF/SVG, PNG and paper600dpiTIFF",
+    "qa": "fresh alignment, PDF fonts and collisions, all seven panels and whole-figure visual inspection"
+  }
+}

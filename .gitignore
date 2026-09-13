@@ -27,6 +27,7 @@ Thumbs.db
 /slurm_logs/
 /.deploy/
 /.codex/
+/..research_archive/
 /.nature-figure-backend.json
 
 # Recoverable, source-only local backup of retired validation workflows.

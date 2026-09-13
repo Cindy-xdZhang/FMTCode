@@ -1,0 +1,49 @@
+{
+  "experiment": "Other_FMTObjectivityTranslation_1.3",
+  "task": "Task1",
+  "observer": "Instantaneous full-source spatial volume mean, integrated in physical time",
+  "levels": [
+    0,
+    0.25,
+    0.5,
+    1
+  ],
+  "seed": 7080,
+  "substeps": 2,
+  "protocol": "mainExp_Task1_3D_4.1",
+  "expected_recipe": "fmt_all+kin4; PCA 8",
+  "selection": "Frozen before confirmation; no selection based on this visualization",
+  "question": "Does the fixed classifier preserve labels after subtracting bulk translation?",
+  "layout": "One column, four panels, whole classified center trajectories, common physical scale",
+  "claim": "No invariance assumed; report changes and fixed IVD p95 reference scores",
+  "source_data": "All common valid cached material seeds; full original source grid for observer mean",
+  "exports": {
+    "paper": [
+      "png",
+      "pdf",
+      "svg",
+      "tiff"
+    ],
+    "slides": [
+      "png",
+      "pdf",
+      "svg"
+    ]
+  },
+  "datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400"
+  ],
+  "time_policy": "config/cylinder_time_policy.json",
+  "confirmation_ordinals": {
+    "cylinder3d": 2,
+    "halfcylinderRe640": 0,
+    "halfcylinderRe6400": 2
+  },
+  "selected_times": {
+    "cylinder3d": 10.5,
+    "halfcylinderRe640": 9.5,
+    "halfcylinderRe6400": 10.5
+  }
+}

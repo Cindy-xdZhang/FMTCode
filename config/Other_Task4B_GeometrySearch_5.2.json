@@ -1,0 +1,28 @@
+{
+  "version": "Other_Task4B_GeometrySearch_5.2",
+  "output": "outputs/Other_Task4B_GeometrySearch_5.2",
+  "baseline": "outputs/mainExp_Task4B_PatchSegmentation_5.1",
+  "labels_source": "outputs/Other_Task4B_ProxyGTThreshold_4.4",
+  "thresholds": {"channel": 5.785, "tbl": 0.08},
+  "inner_split": {"seed": 9051, "validation_patch_count": 90},
+  "geometry": {"steps": 16, "offset": 1.0, "chunk_size": 1024,
+    "precision": "float64_interpolation_and_geometry_then_float32_features",
+    "time_velocity_scale": "patch_native_node_maximum_speed"},
+  "training": {"seed": 9052, "epochs": 300, "evaluation_interval": 10,
+    "batch_size": 1024, "minimum_learning_rate": 0.000001,
+    "class_weights": "inverse_sqrt_fit_class_frequency",
+    "selection": "mean_of_two_flow_unique_voxel_validation_miou",
+    "checkpoint": "none"},
+  "memorization": {"seed": 9053, "per_flow_per_class": 512, "epochs": 500,
+    "batch_size": 512, "required_zero_error_epochs": 3, "dropout": 0, "weight_decay": 0},
+  "candidates": [
+    {"name": "baseline_fmt_mlp", "representation": "baseline", "architecture": "mlp", "width": 1024, "depth": 2, "lr": 0.001, "dropout": 0.1, "weight_decay": 0.0001},
+    {"name": "wide_fmt_mlp", "representation": "baseline", "architecture": "mlp", "width": 2048, "depth": 2, "lr": 0.001, "dropout": 0, "weight_decay": 0},
+    {"name": "residual_fmt_lr1e3", "representation": "baseline", "architecture": "residual", "width": 512, "depth": 4, "lr": 0.001, "dropout": 0, "weight_decay": 0},
+    {"name": "residual_fmt_lr3e4", "representation": "baseline", "architecture": "residual", "width": 512, "depth": 4, "lr": 0.0003, "dropout": 0, "weight_decay": 0},
+    {"name": "unit_geometry_curl", "representation": "unit", "architecture": "residual", "width": 512, "depth": 4, "lr": 0.001, "dropout": 0, "weight_decay": 0},
+    {"name": "time_geometry_curl_lr1e3", "representation": "time", "architecture": "residual", "width": 512, "depth": 4, "lr": 0.001, "dropout": 0, "weight_decay": 0},
+    {"name": "time_geometry_curl_lr3e4", "representation": "time", "architecture": "residual", "width": 512, "depth": 4, "lr": 0.0003, "dropout": 0, "weight_decay": 0},
+    {"name": "factorized_time_geometry", "representation": "time", "architecture": "factorized", "width": 512, "depth": 4, "lr": 0.0003, "dropout": 0, "weight_decay": 0}
+  ]
+}

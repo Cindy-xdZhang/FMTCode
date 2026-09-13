@@ -1,0 +1,78 @@
+experiment: Verify_Task4B_VelocityCurlMemorization_4.1
+output_dir: outputs/Verify_Task4B_VelocityCurlMemorization_4.1
+classes: [ordinary_streamwise, ordinary_spanwise, hairpin_head, hairpin_leg]
+input_root_local: C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D
+flows:
+  channel:
+    flow: channel_flow/channel.vtk
+    gt: channel_flow/channel_GTs.vtk
+    periodic_xy: true
+  tbl:
+    flow: tbl_flow/tbl.vtk
+    gt: tbl_flow/tbl_GTs.vtk
+labels:
+  name: velocity-curl baseline as proxy ground truth
+  ivd: norm(curl_velocity - volume_weighted_global_mean_curl)
+  calibration: all_positive_GT_cell_centers_and_all_positive_voxel_centers
+  a: next_float64_below_minimum_calibration_IVD
+  vortex: IVD_strictly_greater_than_0.9_times_a
+  manual_override: false
+  orientation: abs_cosine_velocity_curl_squared_ge_0.5_is_parallel
+  angle_tie: parallel
+  hairpin_parallel: hairpin_leg
+  hairpin_perpendicular: hairpin_head
+  extra_head_conditions: none
+voxelization:
+  max_voxels: 2000000
+  max_axis_resolution: 1024
+sampling:
+  seed: 7068
+  ordinary_per_class_per_volume: 8192
+  hairpin: all_valid
+  minimum_per_class_per_volume: 32
+streamlines:
+  steps_per_direction: 16
+  spatial_step_mean_voxel_scale: 0.5
+  offset_over_step: 0.1501458034894056
+  minimum_speed_relative_rms: 1.0e-8
+  chunk_size: 4096
+  unit_velocity: true
+representation: (primitive - first_center_line_point) / per_volume_spatial_step
+encoder:
+  num_freq: 6
+  mode: gram
+  include_chirality: true
+  neighbor_pool: sort
+  neighbor_scale: 100.0
+  neighbor_weight_after_train_standardization: 0.5
+  expected_feature_dim: 161
+model:
+  family: PathlineMulticlassClassifier3D
+  variant: fmt_only
+  temporal_width: 128
+  embedding_dim: 1024
+  auxiliary_dim: 1024
+  dropout: 0.0
+training:
+  seed: 7068
+  batch_size: 512
+  evaluation_batch_size: 2048
+  label_smoothing: 0.0
+  learning_rate: 0.001
+  beta1: 0.9
+  beta2: 0.999
+  epsilon: 1.0e-8
+  weight_decay: 0.0
+  minimum_learning_rate: 1.0e-6
+  max_epochs: 1000
+  optimizer: Adam
+  scheduler: cosine_annealing
+  checkpoint_policy: in_memory_only
+pass_gate:
+  required_consecutive_zero_error_epochs: 3
+  require_positive_minimum_true_logit_margin: true
+diagnostic_contract:
+  holdout: false
+  fit_equals_evaluation: true
+  shared_model_for_both_volumes: true
+  allowed_conclusion: finite_sample_memorization_only

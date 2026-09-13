@@ -1,0 +1,4 @@
+# Install in the existing FMT runtime.
+dash>=3
+plotly>=6
+umap-learn==0.5.12

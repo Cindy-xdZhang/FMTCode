@@ -59,7 +59,14 @@ python -m experiments.Run_UniformFMT_Confirmation_3D --help
 
 ## 结果与历史
 
+[Task2 visual analysis](docs/Other_Task2_VisualAnalysis_1.1.md) 提供 FlowNet 风格的
+轨线几何与 t-SNE 联动视图，支持 DBSCAN 多簇探索、Raw/FMT 切换、套索选择及离线导出。
+入口为 `experiments/Task2_Visual_Analysis.py`；使用开发集，不修改主实验二分类结果。
+[1.2版本](docs/Other_Task2_VisualAnalysis_1.2.md) 新增流场/dt/积分步数重算、后台进度和双视图隐藏簇。
+
 [论文结果](docs/paper_tables_tasks_3d.md) 汇总当前主实验。
+[绘图方法与代码索引](docs/plotting_methods_catalog.md) 记录三联图、密集近景和性能图的入口、特点、数据版本与复用限制。
+三联图默认：Task1使用模式a（背景/两簇/误差），Task2与Task3使用模式b（参考/无FMT/FMT）。[六流场最新成图](docs/Other_Task123_PaperTriptychs_1.2.md)。
 [验证实验总表](docs/Verify_experiments.md) 按问题概括以往验证、负结果及未完成项。
 需要精确复现时查看 [完整实验流水](docs/experiment_log.md) 和
 [Ibex 作业登记](docs/ibex_run_registry.md)。
@@ -70,3 +77,5 @@ python -m experiments.Run_UniformFMT_Confirmation_3D --help
 
 初始代码来自 PyflowVis，原始研究背景与代码来源记录保留在 `docs/from_pyflowvis/`。
 目前是开源前整理中的研究仓库，尚未完成许可证、依赖和数据分发检查。
+
+Task2 交互分析新增起始时间、源末尾截断、UMAP和KMeans：[使用说明](docs/Other_Task2_VisualAnalysis_1.3.md)。

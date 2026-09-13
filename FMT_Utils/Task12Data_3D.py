@@ -24,6 +24,9 @@ _ANCHORED_FEATURE = re.compile(
 
 
 def _anchored_recipe(name):
+    if str(name) == "aivd1w3_dft_longtime":
+        # Versioned window-only extension. Keep the original recipe unchanged.
+        return {**_anchored_recipe("aivd1w3_dft"), "window": None}
     match = _ANCHORED_FEATURE.fullmatch(str(name))
     if match is None:
         return None
@@ -72,6 +75,8 @@ def feature_block_dims(name):
         return tuple(result)
     if name == "fmt_all":
         return (23,) * 7
+    if name == "fmt_all_v2":
+        return (6,) * 21 + (5,) * 21
     anchored = _anchored_recipe(name)
     if anchored is not None:
         if len(anchored["channels"]) != 1:
@@ -162,6 +167,10 @@ def feature_matrix(record, name, device="cpu"):
         value = record["raw"]
     elif name == "fmt_all":
         value = record["fmt"]
+    elif name == "fmt_all_v2":
+        from FMT_Utils.FMTAllV2_3D import fmt_all_v2
+        length = record["raw"].shape[1] // (7 * 3)
+        value = fmt_all_v2(record["raw"].reshape(-1, 7, length, 3))
     elif name.startswith("fmt_"):
         indices = fmt_feature_indices_3d(name.removeprefix("fmt_"))
         value = record["fmt"][:, indices]

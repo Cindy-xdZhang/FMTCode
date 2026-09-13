@@ -1,0 +1,21 @@
+{
+  "version": "Other_Task4B_ProxyGTThreshold_4.2",
+  "operation": "ground_truth_rethreshold_and_3d_render_only",
+  "source": "outputs/Verify_Task4B_VelocityCurlMemorization_4.1",
+  "output": "outputs/Other_Task4B_ProxyGTThreshold_4.2",
+  "threshold_multiplier": 0.98,
+  "a_policy": "retain_each_flow_original_a",
+  "vortex_comparison": "strictly_greater",
+  "classes": ["ordinary_streamwise", "ordinary_spanwise", "hairpin_head", "hairpin_leg"],
+  "data_scope": "complete_label_grid_not_training_samples",
+  "training": false,
+  "prediction_input": false,
+  "render": {
+    "method": "perspective_nearest_neighbor_categorical_volume",
+    "ordinary_opacity_per_minimum_voxel_distance": 0.008,
+    "hairpin_opacity_per_minimum_voxel_distance": 0.85,
+    "image_size": [1800, 1150],
+    "physical_aspect": true,
+    "smoothing": false
+  }
+}

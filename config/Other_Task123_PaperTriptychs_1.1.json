@@ -1,0 +1,12 @@
+{
+  "experiment": "Other_Task123_PaperTriptychs_1.1",
+  "datasets": ["cylinder3d", "tangaroa"],
+  "task1": {"protocol": "mainExp_Task1_3D_4.1", "seed": 7080, "display_ordinal": 0},
+  "task2": {"protocol": "mainExp_Task2_3D_6.2_uniform_confirmation", "seed": 100, "display_ordinal": 8},
+  "task3": {"protocol": "mainExp_Task3_3D_9.2_uniform_confirmation", "seed": 40, "display_ordinal": 8},
+  "selection": "First registered confirmation ordinal and first registered seed, fixed before generating predictions; no selection on image appearance or confirmation metrics.",
+  "purpose": "Qualitative spatial comparisons for the current uniform recipes; replay metrics do not replace frozen main tables.",
+  "layout": "IVD-p95 reference / no-FMT comparison / FMT; identical seeds, bounds and orthographic camera",
+  "checkpoint_policy": "Task2 in memory; Task3 temporary remote checkpoints deleted after prediction export; no checkpoint download",
+  "output_root": "outputs/Other_Task123_PaperTriptychs_1.1"
+}

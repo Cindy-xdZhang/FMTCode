@@ -1,0 +1,60 @@
+{
+  "version": "Verify_JHTDB_DualFormatDownload_1.2",
+  "output_dir": "outputs/Verify_JHTDB_DualFormatDownload_1.2",
+  "workers": 8,
+  "max_query_points": 524288,
+  "flows": [
+    {
+      "name": "channel",
+      "dataset_name": "channel",
+      "variable_name": "velocity",
+      "spatial_operator": "field",
+      "spatial_method": "lag8",
+      "temporal_method": "pchip",
+      "x_res": 128,
+      "y_res": 128,
+      "z_res": 128,
+      "x_range": [
+        3.0,
+        3.6
+      ],
+      "y_range": [
+        -0.9,
+        -0.3
+      ],
+      "z_range": [
+        0.2,
+        0.8
+      ],
+      "time_start": 1.0,
+      "time_end": 1.2015,
+      "time_res": 32
+    },
+    {
+      "name": "isotropic",
+      "dataset_name": "isotropic1024coarse",
+      "variable_name": "velocity",
+      "spatial_operator": "field",
+      "spatial_method": "lag8",
+      "temporal_method": "none",
+      "x_res": 128,
+      "y_res": 128,
+      "z_res": 128,
+      "x_range": [
+        0.0,
+        0.8
+      ],
+      "y_range": [
+        0.0,
+        0.8
+      ],
+      "z_range": [
+        0.0,
+        0.8
+      ],
+      "time_start": 1.0,
+      "time_end": 1.062,
+      "time_res": 32
+    }
+  ]
+}

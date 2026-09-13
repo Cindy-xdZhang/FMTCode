@@ -1,0 +1,14 @@
+{
+  "policy_version": "1.0",
+  "requested_on": "2026-09-06",
+  "scope": "Future cylinder visualizations and newly versioned experiments; preserve frozen historical splits/results",
+  "minimum_physical_start": 7.0,
+  "minimum_original_simulation_fraction": 0.5,
+  "simulation_time_ranges": {
+    "cylinder3d": [0.0, 15.0],
+    "halfcylinderRe640": [0.0, 15.0],
+    "halfcylinderRe6400": [0.0, 15.0]
+  },
+  "cropped_sources": "Use original simulation interval, never reapply a 50% cutoff to an already cropped file",
+  "cached_slice_selection": "Earliest eligible physical time, using manifest metadata only"
+}

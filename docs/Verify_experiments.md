@@ -46,3 +46,54 @@ Average Precision 是跨分类阈值的精确率–召回率指标，越高越�
 
 历史脚本的保留和恢复方式见 [仓库维护说明](repository_maintenance.md)。以后新增验证先写入
 完整实验流水，仅在结论变化时更新本表；不再为每轮扫描新增独立摘要文件。
+
+## Verify_AIVDLongtime_1.1 — 2026-09-07 预注册
+
+用户明确授权：保留aivd1w3_dft，新增aivd1w3_dft_longtime，部署Ibex评估Task1/2/3/5。仅把标量汇总窗口从3点改为完整32点；原差分函数、伪逆阈值、涡量、向量均值扣除、单个未归一化零频系数都不改。不是延长积分轨迹，也没有增加非零频率。原配方保持原输出。
+
+| 方法/版本 | 技术细节 | 主要代码 | 指标状态 |
+|---|---|---|---|
+| aivd1w3_dft（冻结） | 前3个估计IVD标量的和，1维 | FMT_Utils/Task12Data_3D.py::_anchored_recipe；DFT_FMT_3D.py原函数 | 既有实验保留；本轮配对重训 |
+| aivd1w3_dft_longtime / Verify_AIVDLongtime_1.1 | 同一函数window=None，全部输入32个估计IVD标量的和，1维 | 同一配方解析函数新增独立名称；experiments/Run_Task1235_AIVDLongtime_1_1.py | 200分片完成，1000总体/3150尺度指标独立审计PASS；完整数值与结论见experiment_log.md对应完成记录及outputs/Verify_AIVDLongtime_1.1/report_zh.md |
+
+10个3D数据条目×5种子×4任务=200分片。Task1为Raw direct、旧fmt_all+kin4、短/长标量；Task2同四臂、相同VAE隐藏层512/256、latent64、KL1e-6、lr3e-4、恰7000更新。Task3为Raw、Raw-wide、结构匹配Raw-PCA residual、Raw+短/长标量；沿用统一Task3原结构及validation alpha0..3/61点/minimum_gain规则，两种Raw本轮重训。Task5同监督对照并加旧268维FMT和fixed-scale本轮Task3 Raw transfer；所有residual输入宽度268，标量无损零填充，训练结构一致。参数数目必须逐次记录。
+
+全部Cylinder角色t>=7.5。Task1/2沿Verify_AIVDTransfer_1.1晚期划分；Task3沿其Task2晚期划分，并重训Raw/Raw-wide，不能加载早期训练的共享模型。Task5三个Cylinder重新生成缓存，train初始时间7.5/8.0/8.5/9.0，validation10.6/11.3，confirmation12.9/13.6；原训练/验证/未见测试尺度tuple保持不变，含插值guard的跨角色source窗口严格分离，固定seed15068。非Cylinder沿既有Task5划分，作为已用benchmark配对研究。Re640按文件起始7.5换算索引，不再次截半。Re6400仅导出原场所需后期75..149帧，空间抽样与既有ceil(size/96)一致，再于Ibex积分。
+
+Task5短/长标量均按同一个源时间片及完全相同的物理采样时间序列分组，等权扣除组内同时间涡量均值；不把不同尺度下的同一采样序号误当同一物理时间。保留原样按序号差分，不同时更改物理导数或搜索时间窗口。Task1/2/3原同时间片上下文不变。标签仍为初始时刻whole-field IVD p95；长窗口可能改变与初始标签的关联，正负结果均报告。
+
+配置config/Verify_AIVDLongtime_1.1.json、config/Verify_AIVDLongtime_1.1_task5_cache.yaml。基底commit aee4bd562d340158118f2e41f40129a9918e06a1；复用上一轮冻结源码快照，加独立入口和窗口别名。测试8项通过，含原配方不变、独立数值和、后期几何只影响长窗口。预检仅对训练片计算特征，不计算test特征/指标。所有模型选择用validation，200分片全部落盘预测后独立审计，再删除本实验所有临时模型；Task3 Raw临时保留到Task5迁移评估完成，绝不下载checkpoint。
+
+## Verify_AIVDTranslationObservers_1.2 — 相机标注修订
+
+用户要求原Re160七联图每格右上加极简黑白相机与平移速度。仅修改注释层：两笔矢量相机轮廓/镜头，速度精确标为0、1/6、1/3、1/2、2/3、5/6、1倍全局平均速度u_mean(t)。均值速度有轻微时变，因此不伪装为恒定标量，也不新增未给出的物理单位。保持原7220条中心路径线、原预测、色彩、透明度、取景、无边界盒及七行布局。输入文件和标签数组哈希必须不变；不重训、不重分类、不重做客观性实验。
+
+代码experiments/Plot_AIVDTranslationObservers_CameraLabels_3D.py与Render_AIVDTranslationCameraLabels_3D.py，配置config/Verify_AIVDTranslationObservers_1.2.json；源码预检21PASS/0WARN/0FAIL。Python原生绘制相机，纸张和幻灯片两版均重新做面板尺寸、PDF字体、碰撞及逐格视觉检查。原1.1图保留；输出到独立1.2目录。
+
+## Verify_AIVDTranslationObservers_1.3 — 相机速度矢量箭头
+
+按用户要求在每个相机旁加入黑色速度箭头，公式也使用矢量箭头符号。所有箭头表示初始时刻t0=10.5的相机平移速度：从原始observer均值速度时间序列插值得到三维向量，经原图正交投影矩阵映射到纸面方向。七档共用长度比例尺，paper最大60pt、slides最大90pt，其余乘以0、1/6、1/3、1/2、2/3、5/6；零速度以圆点表示，不画非零箭头。时间序列严格递增、数值有限性检查后才插值。完整时变速度定义仍保留在公式中，图注声明箭头对应t0。
+
+仅修改注释，原1.1/1.2文件保留；路径线、分类、取景和布局沿用1.2。代码experiments/Plot_AIVDTranslationObservers_VelocityArrows_3D.py与Render_AIVDTranslationVelocityArrows_3D.py，配置config/Verify_AIVDTranslationObservers_1.3.json。输入哈希、原标签逐字节一致性、注释区域外像素不变，以及最终PDF字体/碰撞/面板尺寸和逐格视觉检查为交付条件。
+
+## Verify_LargeNeighbor_1.1 — 三层球面邻居与全轨线 Fourier 特征
+
+2026-09-07 用户授权方案一largeNeighbor，评估3D Task1/2/3。保留原FMT、aivd1w3_dft及被停止采用的longtime历史版本，不覆盖其结果。本轮明确是新方案验证，不改变既有论文统一主表。当前只实施用户具体定义的方案一，不自行编造另外两种方案。
+
+| 方法/版本 | 技术细节 | 主要代码 | 指标状态 |
+|---|---|---|---|
+| largeNeighbor / Verify_LargeNeighbor_1.1 | 球半径r、1.5r、2r；每层8个立方体顶点方向，中心加24邻居；同时间Gram内积序列，全32时刻，零频+5个非零频，共3300维 | FMT_Utils/LargeNeighbor_3D.py；experiments/Build_LargeNeighbor_3D.py；experiments/Run_LargeNeighbor_3D.py；config/Verify_LargeNeighbor_1.1.json | 远程审计通过；[最终结果](experiment_log.md#large-neighbor-1-1-final)已于2026-09-08记入，原始CSV仍保留在Ibex |
+
+r沿原primitive的0.5×最小网格间距。每层8点均在球面，使用(±1,±1,±1)/sqrt(3)八个确定方向，所有时刻保持同一物质邻居身份。只在t0播种，之后各自独立积分；不是每步重新在中心旁生成点。沿原RK4的48步积分、0.25×源时间间隔、32个原有采样索引，使用整条轨线。原32采样沿48步取整，Fourier频率仍按采样序号/轨线窗口解释，不冒充物理Hz。
+
+每时刻d_i=x_i−x_center（24个客观几何向量）；300个上三角内积G_ij=d_i·d_j为坐标不变标量。按初始平均平方邻距归一化、减去初始G后，对每个标量的完整32点序列作实数离散傅里叶变换，保留频率0..5的6个实部、1..5的5个虚部。没有中心点的时间差分，也不跨时刻直接相减向量分量；没有IVD/curl或原kin模块混入largeNeighbor。初始尺度归一化与Gram形式延续fmt_all_v2，新增的是24邻居和三层空间范围。该描述符为训练无参数编码器；Task1的PCA/KMeans及Task3的PCA/网络仍需拟合。初始时刻全体点间几何固定，其初始Gram减法不删除随时间演化信息。
+
+所有10个3D条目、每任务原5个种子；训练/验证/评估时间片和标签沿Verify_AIVDLongtime_1.1的Task1/2/3晚期划分。所有Cylinder初始t≥7.5；Re6400已上传late96文件保留原始时间索引，不能减75或再次截半。原中心种子、原7线轨迹和原whole-field IVD p95标签保持；新增25线完整有效且原7线有效的共同样本作为所有臂唯一数据集。删除仅依据轨线完整性和边界，不依据标签或分数；报告各片新增无效数量。复算旧7线的固定样本并验证新旧中心轨线，以确认源场/时间/空间步幅没有漂移。原标签只按共同索引取子集，不重设分位阈值。短IVD用同一保留集合计算同时间涡量均值，算法不改。
+
+Task1：Raw7、Raw25、旧fmt_all+kin4、短IVD、六邻居fmt_all_v2、largeNeighbor；同训练集StandardScaler/PCA8/KMeans（标量不PCA），validation只确定cluster含义。Task2：同六臂、同冻结VAE隐藏层512/256、latent64、KL1e-6、lr3e-4、batch256、7000次更新及原种子；输入/输出宽度随表示变化，逐次记录参数量，不能宣称参数数目完全匹配。Raw25明确提供同样25条原路径线；不为Raw额外调VAE。
+
+Task3：所有臂共享本轮重训的25线Raw骨干；Raw、Raw-wide、同结构Raw25-PCA残差、旧FMT残差、短IVD残差、六邻居Gram残差、largeNeighbor残差。时间卷积按线共享并聚合，25线不改变Raw参数量。所有残差辅助输入统一268维；largeNeighbor只在train拟合StandardScaler+PCA268，旧189/1/231维表示零填充，Raw-PCA从同25线拟合268维。使用既有结构、训练预算、validation的epoch/alpha/threshold规则，所有残差参数量完全一致。此Task3验证25线primitive下FMT的额外贡献；不能把其历史7线Raw骨干结果直接作为成对成绩，也不能把Raw神经分支称为客观网络。
+
+实现检查包括三层几何、时变旋转/平移、共同中心输运不变、已知非零频率恢复、后半轨线和外层几何敏感性。真实数据客观性检查只用训练片。缓存构建是确定的离线几何处理，允许预先生成各角色缓存；学习、标准化/PCA拟合、模型与阈值选择严格只用train/validation，全部模型冻结后才加载test到评估器。每个分片所有臂数据一致；全150分片预测落盘后独立复算指标并汇总每流场/等权macro及配对差。不得用测试结果决定配置修订。
+
+该实验仅评估初始时刻IVD二分类。用户关于短IVD适合单时刻标签、可能不适合路径几何token化的解释记为待验证假设，不能用本轮二分类成绩证明或否定几何token化能力。所有临时模型只保留到最终独立审计完成，不下载；最终保存代码/config/随机种子/数据与设备证据、逐次指标和预测，删除本实验checkpoint。

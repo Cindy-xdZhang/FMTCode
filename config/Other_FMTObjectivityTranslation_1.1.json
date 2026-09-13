@@ -1,0 +1,20 @@
+{
+  "experiment": "Other_FMTObjectivityTranslation_1.1",
+  "question": "Does the same fixed FMT classifier retain the material pathline labels under a translating Killing observer?",
+  "backend": "python",
+  "layout": "one column, four equal panels",
+  "observer_velocity_fractions": [0.0, 0.25, 0.5, 1.0],
+  "target_observer_velocity": null,
+  "target_input": "Required CLI --target-velocity VX VY VZ or --observer-json; no inferred target",
+  "time_interpolation": "natural cubic spline of target velocity; integrate its exact spline antiderivative",
+  "frame_convention": "u_alpha=alpha*b(t), d_alpha=integral(u_alpha), y=x-d_alpha",
+  "observed_field": "v(y+d_alpha(t),t)-u_alpha(t)",
+  "trajectory_computation": "direct RK4 integration of observed field at every level, cross-check against transformed original pathlines",
+  "classifier": "one fixed Task1 4.1 FMT+KMeans pipeline; features and labels recomputed separately per level",
+  "reference_to_previous_figure_modes": "independent objectivity figure; does not redefine triptych modes a/b",
+  "sampling": "all complete material primitives shared across all four frames; center line colored with primitive prediction",
+  "exports": {"paper": ["PDF", "SVG", "PNG400dpi", "TIFF600dpi"], "slides": ["PDF", "SVG", "PNG220dpi"]},
+  "statistics": "per-frame label-change counts and fractions, feature changes, trajectory correspondence error; no uncertainty band for this deterministic within-sample comparison",
+  "claim_boundary": "pure translations only; neither label invariance nor feature invariance is assumed",
+  "status": "code and analytic numerical/render checks complete; actual target observer not supplied; no new flow experiment run"
+}

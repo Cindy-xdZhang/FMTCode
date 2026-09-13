@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+cd /home/zhanx0o/FMT_ObjectivityMechanism_20260909_1p3
+export PYTHONPATH="$PWD"
+export OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 MKL_NUM_THREADS=4
+sha256sum --quiet -c SOURCE_MANIFEST.sha256
+PY=/home/zhanx0o/anaconda3/envs/deepvortex/bin/python
+if [ "$1" = preflight ]; then
+    "$PY" -m unittest discover -s tests -p test_objectivity_mechanism_3d.py -v
+fi
+"$PY" -u -m experiments.Verify_FMTObjectivityMechanism_1_1 --phase "$1" --index "${SLURM_ARRAY_TASK_ID:-0}"

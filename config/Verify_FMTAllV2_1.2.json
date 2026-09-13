@@ -1,0 +1,189 @@
+{
+  "experiment": "Verify_FMTAllV2_1.2",
+  "output_root": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_FMTAllV2_1.2",
+  "datasets": [
+    "channel",
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "deltaWing_resampled",
+    "deltaWing_LBM",
+    "f22raptor",
+    "boeing747",
+    "smokeBuoyancy"
+  ],
+  "tasks": [
+    "Task1",
+    "Task2",
+    "Task5"
+  ],
+  "roots": {
+    "fixed": "/home/zhanx0o/FMT_Uniform_3D_20260901",
+    "multiscale": "/home/zhanx0o/FMT_Task12_3D_20260823"
+  },
+  "encoder": {
+    "name": "fmt_all_v2",
+    "version": "1.0",
+    "num_freq": 6,
+    "dimension": 231,
+    "geometry": "upper_triangle_of_same_time_six_neighbour_Gram",
+    "normalization": "divide_by_mean_initial_squared_offset_then_subtract_initial_Gram",
+    "frequency_units": "cycles_per_sampled_window",
+    "centre_features": false,
+    "old_feature_addons": true
+  },
+  "task1": {
+    "train": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "validation": [
+      8,
+      9
+    ],
+    "confirmation": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "seeds": [
+      7080,
+      7081,
+      7082,
+      7083,
+      7084
+    ],
+    "kmeans_n_init": 20,
+    "pca_dim": 8,
+    "old_feature": "fmt_all+kin4",
+    "arms": [
+      "fmt_all_v2"
+    ],
+    "new_feature": "fmt_all_v2+kin4"
+  },
+  "task2": {
+    "train": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "validation": [
+      6,
+      7
+    ],
+    "confirmation": [
+      8,
+      9
+    ],
+    "seeds": [
+      100,
+      101,
+      102,
+      103,
+      104
+    ],
+    "kmeans_seed": 7068,
+    "kmeans_n_init": 20,
+    "old_feature": "fmt_all+kin4",
+    "arms": [
+      "fmt_all_v2"
+    ],
+    "architecture": {
+      "hidden_dims": [
+        512,
+        256
+      ],
+      "latent_dim": 64,
+      "beta": 1e-06,
+      "learning_rate": 0.0003,
+      "optimizer_steps": 7000,
+      "relational_weight": 0.0,
+      "pair_count": 2048
+    },
+    "batch_size": 256,
+    "weight_decay": 1e-05,
+    "new_feature": "fmt_all_v2+kin4"
+  },
+  "task5": {
+    "train": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "validation": [
+      4,
+      5
+    ],
+    "confirmation": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "seeds": [
+      40,
+      41,
+      42,
+      43,
+      44
+    ],
+    "old_feature": "fmt_all+gram2+kin6",
+    "arms": [
+      "old_fmt",
+      "fmt_all_v2"
+    ],
+    "auxiliary_input_width": 338,
+    "new_feature": "fmt_all_v2+gram2+kin6"
+  },
+  "model": {
+    "embedding_dim": 128,
+    "auxiliary_dim": 64,
+    "residual_input": "geometry_fmt"
+  },
+  "fusion": {
+    "fixed_alpha": 1.0,
+    "selection_metric": "average_precision"
+  },
+  "training": {
+    "device": "cuda",
+    "batch_size": 512,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "max_epochs": 100,
+    "patience": 20,
+    "min_delta": 0.0001
+  },
+  "protocol": {
+    "labels": "frozen_whole_field_IVD_p95",
+    "benchmark": "paired_replay_of_previously_used_frozen_splits_not_fresh_confirmation",
+    "cylinder_time": "retain_frozen_benchmark_times_for_paired_encoder_replay_no_new_sampling; new_sampling_default_t>=7.5",
+    "selection": "no_new_hyperparameter_search; freeze_all_arms_before_test",
+    "task5_capacity": "old268_zero_padded_to338_new338_same_residual_network_and_shared_frozen_Raw_backbone",
+    "objectivity_scope": "only_fmt_all_v2_core_has_exact_invariance_certificate;retained_kinematic_addons_and_Raw_branch_not_covered",
+    "checkpoint_policy": "no_Task2_checkpoints; remove_this_shards_temporary_Task5_checkpoints_after_metrics; never_delete_shared_backbones",
+    "comparison": "replace_fmt_all_only_retain_original_task_neighbour_addons",
+    "preregistration_boundary": "after_1.1_Task1_and_partial_learning_results_seen;diagnostic_control_not_new_confirmation"
+  },
+  "reuse_from": "/home/zhanx0o/FMT_Uniform_3D_20260901/outputs/Verify_FMTAllV2_1.1",
+  "reuse_arms": {
+    "Task1": [
+      "old_fmt"
+    ],
+    "Task2": [
+      "raw",
+      "old_fmt"
+    ]
+  }
+}

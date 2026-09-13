@@ -2136,6 +2136,142 @@ All use Verify_LargeNeighbor_1.1 and recorded frozen source/config; GPU arrays e
 - **15:44+03 更新**：数据数组`51630118_0–8`全部COMPLETED/exit0；依索引的耗时/节点分别为37秒/cn604-13、58秒/cn604-12、2分06秒/cn604-03、5分42秒/cn504-05、1分06秒/cn604-15、1分53秒/cn604-14、1分54秒/cn604-13、2分36秒/cn604-18、1分08秒/cn604-18。输入共72窗口、8017区域，分角色数量记入experiment_log。缓存审计`51630119`于15:43:41开始、15:44:38结束，cn604-18，CPU，exit0，`cache_audit.json`为PASS。训练数组`51630120`已满足依赖，当前因Priority排队；最终审计等待训练结束。
 
 
+## Verify_FMTObjectivityMechanism_1.1 — 2026-09-09
+
+用户授权的Task1/2客观化性能下降诊断。独立目录 `/home/zhanx0o/FMT_ObjectivityMechanism_20260909`；12表示×10条目×3种子；Task1 PCA8/无PCA并列，Task2同700维输入与7000更新，共1080行预期结果。此前冻结源码base commit `aee4bd562d340158118f2e41f40129a9918e06a1`；复用fmt_all_v2_1p2原快照并新增7文件，完整270文件清单SHA256 `758f4acbb6ee75054b174fcbab5a33871ace146704fcc07c5164daa1cbd8c69a`。上传包SHA256 `39aabdefea84df669c59c3b625f4f214142028205892bec705d5b98f3cb47f47`。配置SHA256 `ffa58937a3a9c1aa41b35d6b5e5a0d0b35921c12454bdd864d9189eb44380411`；本地工作区HEAD `8a678d29775c8a702d1fcd5e4e4e048e46dac7ae`不冒充远端冻结基线commit。此批实际执行来源以base commit+完整文件清单为准。
+
+| Job | 阶段 | 提交时间 | 预期设备 | 初次状态 |
+|---|---|---|---|---|
+| 51632860 | preflight | 2026-09-09T15:57:18.594019+03:00 | CPU；CPU4/32GB | PENDING |
+| 51632861 | smoke | 2026-09-09T15:57:19.069192+03:00 | CPU；CPU4/32GB | PENDING |
+| 51632862 | Task1 | 2026-09-09T15:57:19.470117+03:00 | CPU；CPU4/32GB | PENDING |
+| 51632864 | Task2 | 2026-09-09T15:57:19.611963+03:00 | A100 or V100；CPU4/32GB | PENDING |
+| 51632865 | audit | 2026-09-09T15:57:19.675051+03:00 | CPU；CPU4/32GB | PENDING |
+
+Task1/Task2数组均0–29、最大6并行，分别上限3/4小时；GPU限制A100/V100，排除已知故障节点gpu203-02-r。两个数组依赖preflight51632860和smoke51632861成功；最终审计51632865依赖两个数组成功。每个分片自动将实际开始/结束、节点、设备、退出码写入远端docs/ibex_run_registry.md及outputs下events JSON。本地保存实际submissions.jsonl；未下载checkpoint，代码不产生checkpoint。
+
+
+### 1.1预检失败及1.2替代部署，2026-09-09 16:01+03
+
+1.1预检51632860于15:58:10–15:58:24在cn604-13失败；6单元测试通过，随后旧缓存重算发现错误默认neighbor_scale100/weight.5，而缓存生成参数均为1.0，rtol/atol2e-4检查拒绝。smoke51632861于15:58:10–15:59:28在cn604-10完成，3更新验证仅可执行，不作科学结果。旧数组51632862、51632864及审计51632865未启动，已取消，原日志/代码/输出保留。
+
+1.2显式匹配缓存参数1.0/1.0，容差不变；增加第7项测试。来源仍为冻结fmt_all_v2_1p2源快照+7新增文件，base commit不变；独立新目录`/home/zhanx0o/FMT_ObjectivityMechanism_20260909_1p2`。270文件manifest SHA256 `238841a0a95e39217a3550cb3790dbd2e093c03fd46200b69ed91074767e63f5`；上传包SHA256 `43a17a7e8b54ff05d6ef8ccd7fd43587d3cfab0e094e6f2e80b9297ce5de8c8d`。Config `config/Verify_FMTObjectivityMechanism_1.2.json` SHA256 `d1b440961fa43ef6b1e47cc647c09ab3120fdf28a0c038f3076cca9ef608792a`。
+
+| Job | 阶段 | 提交时间 | 预期设备 | 初次状态 |
+|---|---|---|---|---|
+| 51633095 | preflight | 2026-09-09T16:01:55.061164+03:00 | CPU；CPU4/32GB | PENDING |
+| 51633096 | smoke | 2026-09-09T16:01:55.131142+03:00 | CPU；CPU4/32GB | PENDING |
+| 51633097 | Task1 | 2026-09-09T16:01:55.195079+03:00 | CPU；CPU4/32GB | PENDING |
+| 51633098 | Task2 | 2026-09-09T16:01:55.260738+03:00 | A100 or V100；CPU4/32GB | PENDING |
+| 51633099 | audit | 2026-09-09T16:01:55.324512+03:00 | CPU；CPU4/32GB | PENDING |
+
+数组范围、并发数、时限与1.1相同；依赖51633095/51633096成功，最终审计51633099依赖51633097/51633098成功。任务指标尚未产生，不能以本修订推断科学性能。
+
+
+### 1.2重算等价检查失败；1.3保留两种来源作独立对照
+
+1.2预检51633095于16:03:03–16:03:29在cn604-18失败：Channel重算通过，Re160仍有0.378%分量超过原容差，最大绝对差.00777543。不是再次错误使用缩放参数；缓存来自原坐标提取，Raw另经float32中心化，具体数值差来源尚未完全分解。未启动的Task1/Task2数组51633097/51633098及审计51633099已取消。1.2代码/日志/输出保留，smoke51633096实际结束信息后补。
+
+1.3新增旧算法同坐标重算full/no_center两臂，明确不与旧缓存混合，共14臂/60分片/1260指标行；所有训练和数据设置不变。严格断言每一臂使用对应来源，并将旧容差外比例保留为诊断，未宣称原等价检查通过。8项本地测试PASS。独立目录`/home/zhanx0o/FMT_ObjectivityMechanism_20260909_1p3`；base commit仍`aee4bd562d340158118f2e41f40129a9918e06a1`，270文件manifest SHA256 `50cf8be867a2eff19a91fd62dd9e095ed3db29d0616db8c7c279c480576f1bfe`；上传包SHA256 `923eb9142ed865778dbe8b8728f3c094ab1f905d82498a73b9940d2764fe5e16`。配置`config/Verify_FMTObjectivityMechanism_1.3.json` SHA256 `2b75192701eff0fa1dd2fe31c69e7764edce244c3c1fcf26ac8a5671985c472e`。
+
+| Job | 阶段 | 提交时间 | 预期设备 | 初次状态 |
+|---|---|---|---|---|
+| 51633248 | preflight | 2026-09-09T16:05:56.954645+03:00 | CPU；CPU4/32GB | PENDING |
+| 51633249 | smoke | 2026-09-09T16:05:57.075174+03:00 | CPU；CPU4/32GB | PENDING |
+| 51633250 | Task1 | 2026-09-09T16:05:57.196632+03:00 | CPU；CPU4/32GB | PENDING |
+| 51633251 | Task2 | 2026-09-09T16:05:57.304280+03:00 | A100 or V100；CPU4/32GB | PENDING |
+| 51633252 | audit | 2026-09-09T16:05:57.407445+03:00 | CPU；CPU4/32GB | PENDING |
+
+两个数组均0–29%6，依赖预检51633248和smoke51633249成功，最终审计51633252依赖51633250/51633251成功。Task1/2分别3/4小时上限，GPU为A100/V100。旧批处理取消并非科学退化结果。
+
+- 1.2 smoke51633096于2026-09-09 16:03:03–16:03:34在cn604-17 COMPLETED/exit0，CPU，31秒；仅3更新代码验证，不用于科学方法比较。
+
+
+### 1.3最终预检与部署确认，2026-09-09 16:09+03
+
+预检51633248已于16:07:57–16:09:00在cn604-18 COMPLETED/exit0（63秒）：集群8项单元测试、20个任务×数据条目的训练/校准/测试文件隔离、Cylinder时间规则、每臂输入来源与宽度、解析反例和10流场变换诊断均通过；旧缓存/重算差值作为独立诊断保存，不宣称两者等价。smoke51633249于16:07:57–16:08:24在cn604-15 COMPLETED/exit0（27秒），两任务共42个短训练/聚类模型分支完成，仅3个VAE更新，不作真实性能证据。
+
+Task1数组51633250、Task2数组51633251均已满足依赖，最新核对排队等待调度；最终审计51633252等待两数组完成。当前正式版本Verify_FMTObjectivityMechanism_1.3；新真实数据分类结果尚未产生。preflight.json、analytic_checks.json及SOURCE_MANIFEST.sha256已取回对应本地outputs目录并核查status/20组合/未计算测试性能标记。源代码、指标与作业登记完整保留，未产生checkpoint。
+
+### 1.3最终完成与本地独立复算，2026-09-09
+
+| Job ID | 最终状态 | 实际首开始—末结束（UTC+03） | 实际设备/节点 |
+|---|---|---|---|
+| 51633250_0–29 | 全部COMPLETED/exit0 | 16:10:19—16:31:31 | CPU；cn113-35-l、cn604-07/08/11/12/13/14/15/17/18 |
+| 51633251_0–29 | 全部COMPLETED/exit0 | 16:10:19—17:01:02 | 26分片Tesla V100-SXM2-32GB、4分片A100-SXM4-80GB；gpu109-23-l、gpu203-23-r、gpu210-18、gpu211-02/06/10/14、gpu212-02、gpu213-14 |
+| 51633252 | COMPLETED/exit0 | 17:03:24—17:03:40 | CPU，cn604-14 |
+
+逐分片时间/节点保存于 `outputs/Verify_FMTObjectivityMechanism_1.3/scheduler_final.txt`，运行设备、种子及结束事件保存于同目录 `execution_events.json`。配置、base commit、完整源码manifest沿用本节1.3提交记录。远端独立审计PASS1260行；取回不含checkpoint的逐点预测归档后，新增本地独立审计从混淆计数再次复算1260行分类指标与42行宏平均，PASS60分片，420个VAE均7000更新/1,030,460参数。没有下载或保存checkpoint。
+
+主要结果：Task1原完整/仅去中心/Gram6+辅助块F1为.595775/.595101/.141523；Task2为.559109/.548489/.167965。支持“表示替换需与单纯删除中心区分”，反对“单纯删中心足以导致该幅度下降”。完整结果和解释边界记入 `docs/experiment_log.md`，不改变冻结主表。预测归档SHA256 `434bf2dca3ac0e00b86f7ff6fac9a33869b32d6494b540b698129bfb4e85d4c3`；独立本地复算证据 `local_independent_audit.json`、`independent_confusion_counts.csv`。
+
+同日 `Verify_DistanceInputIdentity_1.1` 仅在本地读取8份几何文件验证距离与固定计算恒等性，无新Ibex提交，不占用上述分类作业编号。
+
+
+### Task678 1.1 最终完成，2026-09-09 17:21+03
+
+提交组51630120_0–53全部COMPLETED/exit0；调度器首开始15:48:39、末结束17:13:16。最终审计51630121于17:15:54–17:21:07在cn604-18执行，CPU，COMPLETED/exit0；审计PASS2106项评估、4212行窗口指标，checkpoint=0。实际GPU为45分片Tesla V100-SXM2-32GB及9分片NVIDIA A100-SXM4-80GB。下表来自保存的job_events.jsonl，时间为脚本内记录的开始/结束，略晚于调度器启动；事件的job_id字段记录数组作业组51630120，与数组索引共同标识分片。所有行沿用本节提交时的冻结commit和配置SHA256。
+
+| 数组索引 | 数组作业组 | 脚本开始 UTC+03 | 脚本结束 UTC+03 | 节点 | GPU | 退出码 |
+|---:|---|---|---|---|---|---:|
+| 0 | 51630120 | 2026-09-09T15:48:43.862348+03:00 | 2026-09-09T15:51:38.720277+03:00 | gpu213-18 | Tesla V100-SXM2-32GB | 0 |
+| 1 | 51630120 | 2026-09-09T15:55:51.088299+03:00 | 2026-09-09T15:58:42.466278+03:00 | gpu213-18 | Tesla V100-SXM2-32GB | 0 |
+| 2 | 51630120 | 2026-09-09T16:00:42.000013+03:00 | 2026-09-09T16:03:28.329337+03:00 | gpu213-18 | Tesla V100-SXM2-32GB | 0 |
+| 3 | 51630120 | 2026-09-09T16:03:08.945540+03:00 | 2026-09-09T16:05:35.286090+03:00 | gpu109-02-l | NVIDIA A100-SXM4-80GB | 0 |
+| 4 | 51630120 | 2026-09-09T16:05:34.869984+03:00 | 2026-09-09T16:08:37.655943+03:00 | gpu214-02 | Tesla V100-SXM2-32GB | 0 |
+| 5 | 51630120 | 2026-09-09T16:05:34.760382+03:00 | 2026-09-09T16:08:23.231876+03:00 | gpu213-18 | Tesla V100-SXM2-32GB | 0 |
+| 6 | 51630120 | 2026-09-09T16:05:35.606441+03:00 | 2026-09-09T17:06:58.409558+03:00 | gpu213-10 | Tesla V100-SXM2-32GB | 0 |
+| 7 | 51630120 | 2026-09-09T16:08:04.833446+03:00 | 2026-09-09T16:10:59.637707+03:00 | gpu214-14 | Tesla V100-SXM2-32GB | 0 |
+| 8 | 51630120 | 2026-09-09T16:08:02.958139+03:00 | 2026-09-09T16:10:48.163955+03:00 | gpu213-02 | Tesla V100-SXM2-32GB | 0 |
+| 9 | 51630120 | 2026-09-09T16:10:32.113923+03:00 | 2026-09-09T16:15:18.790728+03:00 | gpu609-07 | Tesla V100-SXM2-32GB | 0 |
+| 10 | 51630120 | 2026-09-09T16:10:24.656834+03:00 | 2026-09-09T16:13:28.518411+03:00 | gpu214-02 | Tesla V100-SXM2-32GB | 0 |
+| 11 | 51630120 | 2026-09-09T16:10:24.266285+03:00 | 2026-09-09T16:13:26.970084+03:00 | gpu213-18 | Tesla V100-SXM2-32GB | 0 |
+| 12 | 51630120 | 2026-09-09T16:10:25.876006+03:00 | 2026-09-09T16:13:21.549353+03:00 | gpu213-14 | Tesla V100-SXM2-32GB | 0 |
+| 13 | 51630120 | 2026-09-09T16:12:45.717759+03:00 | 2026-09-09T16:15:40.073407+03:00 | gpu214-14 | Tesla V100-SXM2-32GB | 0 |
+| 14 | 51630120 | 2026-09-09T16:12:45.119128+03:00 | 2026-09-09T16:15:31.721444+03:00 | gpu213-02 | Tesla V100-SXM2-32GB | 0 |
+| 15 | 51630120 | 2026-09-09T16:15:07.705346+03:00 | 2026-09-09T16:18:13.777996+03:00 | gpu214-02 | Tesla V100-SXM2-32GB | 0 |
+| 16 | 51630120 | 2026-09-09T16:15:07.748460+03:00 | 2026-09-09T16:18:05.993242+03:00 | gpu213-18 | Tesla V100-SXM2-32GB | 0 |
+| 17 | 51630120 | 2026-09-09T16:15:08.663451+03:00 | 2026-09-09T16:17:58.723883+03:00 | gpu213-14 | Tesla V100-SXM2-32GB | 0 |
+| 18 | 51630120 | 2026-09-09T16:15:08.630719+03:00 | 2026-09-09T16:18:02.704042+03:00 | gpu213-14 | Tesla V100-SXM2-32GB | 0 |
+| 19 | 51630120 | 2026-09-09T16:15:08.585003+03:00 | 2026-09-09T16:18:04.463921+03:00 | gpu213-14 | Tesla V100-SXM2-32GB | 0 |
+| 20 | 51630120 | 2026-09-09T16:15:08.058164+03:00 | 2026-09-09T16:18:12.746310+03:00 | gpu213-02 | Tesla V100-SXM2-32GB | 0 |
+| 21 | 51630120 | 2026-09-09T16:17:30.956570+03:00 | 2026-09-09T16:22:28.050333+03:00 | gpu609-07 | Tesla V100-SXM2-32GB | 0 |
+| 22 | 51630120 | 2026-09-09T16:17:31.749415+03:00 | 2026-09-09T16:20:23.267787+03:00 | gpu214-14 | Tesla V100-SXM2-32GB | 0 |
+| 23 | 51630120 | 2026-09-09T16:17:31.155856+03:00 | 2026-09-09T16:20:13.820731+03:00 | gpu213-02 | Tesla V100-SXM2-32GB | 0 |
+| 24 | 51630120 | 2026-09-09T16:19:50.383168+03:00 | 2026-09-09T16:22:39.963736+03:00 | gpu214-02 | Tesla V100-SXM2-32GB | 0 |
+| 25 | 51630120 | 2026-09-09T16:19:50.347013+03:00 | 2026-09-09T16:22:49.740311+03:00 | gpu214-02 | Tesla V100-SXM2-32GB | 0 |
+| 26 | 51630120 | 2026-09-09T16:19:50.093257+03:00 | 2026-09-09T16:22:42.563900+03:00 | gpu213-18 | Tesla V100-SXM2-32GB | 0 |
+| 27 | 51630120 | 2026-09-09T16:19:50.223092+03:00 | 2026-09-09T16:24:40.371774+03:00 | gpu213-02 | Tesla V100-SXM2-32GB | 0 |
+| 28 | 51630120 | 2026-09-09T16:22:13.143027+03:00 | 2026-09-09T16:25:02.188920+03:00 | gpu214-14 | Tesla V100-SXM2-32GB | 0 |
+| 29 | 51630120 | 2026-09-09T16:22:13.160494+03:00 | 2026-09-09T16:25:16.930085+03:00 | gpu213-02 | Tesla V100-SXM2-32GB | 0 |
+| 30 | 51630120 | 2026-09-09T16:24:32.494307+03:00 | 2026-09-09T16:28:55.018767+03:00 | gpu609-07 | Tesla V100-SXM2-32GB | 0 |
+| 31 | 51630120 | 2026-09-09T16:24:32.760904+03:00 | 2026-09-09T16:27:21.997687+03:00 | gpu214-02 | Tesla V100-SXM2-32GB | 0 |
+| 32 | 51630120 | 2026-09-09T16:24:32.736228+03:00 | 2026-09-09T16:27:25.860243+03:00 | gpu214-02 | Tesla V100-SXM2-32GB | 0 |
+| 33 | 51630120 | 2026-09-09T16:24:32.649672+03:00 | 2026-09-09T16:27:21.853168+03:00 | gpu213-18 | Tesla V100-SXM2-32GB | 0 |
+| 34 | 51630120 | 2026-09-09T16:26:56.228939+03:00 | 2026-09-09T16:29:19.693001+03:00 | gpu109-02-l | NVIDIA A100-SXM4-80GB | 0 |
+| 35 | 51630120 | 2026-09-09T16:31:52.101366+03:00 | 2026-09-09T16:34:10.209493+03:00 | gpu109-02-l | NVIDIA A100-SXM4-80GB | 0 |
+| 36 | 51630120 | 2026-09-09T16:36:37.415664+03:00 | 2026-09-09T16:38:58.289798+03:00 | gpu109-02-l | NVIDIA A100-SXM4-80GB | 0 |
+| 37 | 51630120 | 2026-09-09T16:41:26.346152+03:00 | 2026-09-09T16:43:45.998710+03:00 | gpu109-02-l | NVIDIA A100-SXM4-80GB | 0 |
+| 38 | 51630120 | 2026-09-09T16:46:17.005448+03:00 | 2026-09-09T16:48:34.237972+03:00 | gpu109-02-l | NVIDIA A100-SXM4-80GB | 0 |
+| 39 | 51630120 | 2026-09-09T16:48:41.071386+03:00 | 2026-09-09T16:51:24.722782+03:00 | gpu214-02 | Tesla V100-SXM2-32GB | 0 |
+| 40 | 51630120 | 2026-09-09T16:48:40.878553+03:00 | 2026-09-09T16:51:25.329426+03:00 | gpu213-18 | Tesla V100-SXM2-32GB | 0 |
+| 41 | 51630120 | 2026-09-09T16:48:40.732691+03:00 | 2026-09-09T16:51:23.134655+03:00 | gpu213-14 | Tesla V100-SXM2-32GB | 0 |
+| 42 | 51630120 | 2026-09-09T16:51:07.138903+03:00 | 2026-09-09T16:53:28.537557+03:00 | gpu109-02-l | NVIDIA A100-SXM4-80GB | 0 |
+| 43 | 51630120 | 2026-09-09T16:53:34.517517+03:00 | 2026-09-09T16:56:31.480635+03:00 | gpu213-18 | Tesla V100-SXM2-32GB | 0 |
+| 44 | 51630120 | 2026-09-09T16:53:35.143604+03:00 | 2026-09-09T16:56:32.628794+03:00 | gpu210-02 | Tesla V100-SXM2-32GB | 0 |
+| 45 | 51630120 | 2026-09-09T16:56:00.443263+03:00 | 2026-09-09T16:58:58.709453+03:00 | gpu213-02 | Tesla V100-SXM2-32GB | 0 |
+| 46 | 51630120 | 2026-09-09T16:58:28.125749+03:00 | 2026-09-09T17:01:10.784709+03:00 | gpu213-18 | Tesla V100-SXM2-32GB | 0 |
+| 47 | 51630120 | 2026-09-09T16:58:28.287430+03:00 | 2026-09-09T17:01:25.527847+03:00 | gpu210-02 | Tesla V100-SXM2-32GB | 0 |
+| 48 | 51630120 | 2026-09-09T17:00:56.395873+03:00 | 2026-09-09T17:03:21.157718+03:00 | gpu109-02-l | NVIDIA A100-SXM4-80GB | 0 |
+| 49 | 51630120 | 2026-09-09T17:03:28.416783+03:00 | 2026-09-09T17:06:17.739643+03:00 | gpu213-14 | Tesla V100-SXM2-32GB | 0 |
+| 50 | 51630120 | 2026-09-09T17:05:59.084290+03:00 | 2026-09-09T17:09:03.026797+03:00 | gpu213-02 | Tesla V100-SXM2-32GB | 0 |
+| 51 | 51630120 | 2026-09-09T17:05:59.128764+03:00 | 2026-09-09T17:09:29.458426+03:00 | gpu213-02 | Tesla V100-SXM2-32GB | 0 |
+| 52 | 51630120 | 2026-09-09T17:08:24.994064+03:00 | 2026-09-09T17:11:05.587605+03:00 | gpu213-14 | Tesla V100-SXM2-32GB | 0 |
+| 53 | 51630120 | 2026-09-09T17:10:52.942920+03:00 | 2026-09-09T17:13:16.188529+03:00 | gpu109-02-l | NVIDIA A100-SXM4-80GB | 0 |
+
+完整运行事件、汇总、逐窗口CSV及独立审计原件已保存到本地 `outputs/mainExp_Task678_FlowMap_1.1/`，两个指标文件的原始SHA256验证通过，`local_summary_check.json`记录本地宏平均复算范围。未下载模型文件。方法结论和全部宏平均见 [experiment_log.md对应结果](experiment_log.md#task678-final-2026-09-09)：本批原fmt_all的完整位置重建误差高于Raw-PCA，结果不支持预期的token性能优势；同时记录了绝对输运目标与几何不变量输入的适配限制，不改写此前IVD分类结果。
+
+
 ### 2026-09-10 — Verify_Task1235_ObjectiveFMTnTDO_1.1 首次提交
 
 - {"experiment": "Verify_Task1235_ObjectiveFMTnTDO_1.1", "phase": "build", "job": "51696322", "submitted": "2026-09-10T12:17:48.590188+03:00", "config": "config/Verify_Task1235_ObjectiveFMTnTDO_1.1.json", "config_sha256": "1d860db6125b7efec2e74a294a9d93a709da2412fc6fe541ddc153644a55f205", "git_commit": "8a0d118e92ad4830171acd276025efe60529439a", "source_manifest_sha256": "1582d6a677b13e187d2210ecd6302dd3327d13922f9a51cf3d19574e9b9dc6bd", "expected_device": "CPU", "command": ["sbatch", "--parsable", "--nodes=1", "--ntasks=1", "--cpus-per-task=4", "--mem=32G", "--job-name=FMTnTDO_build", "--output=/home/zhanx0o/FMT_nTDO_20260910/outputs/Verify_Task1235_ObjectiveFMTnTDO_1.1/logs/build.%A_%a.out", "--error=/home/zhanx0o/FMT_nTDO_20260910/outputs/Verify_Task1235_ObjectiveFMTnTDO_1.1/logs/build.%A_%a.err", "--array=0-1", "--time=02:00:00", "ibex_bash/verify_task1235_ntdo_1p1.sh", "build"]}
@@ -2200,6 +2336,27 @@ All use Verify_LargeNeighbor_1.1 and recorded frozen source/config; GPU arrays e
 30/30完成，90行指标；本地逐样本复算PASS。方法结论见experiment_log.md本轮Task1表；nTDO宏平均F1=0.411354，旧FMT=0.595744，Raw=0.423525。
 
 
+## 2026-09-10 — Verify_Task678_DirectFMTFit_1.1
+
+用户授权完整冻结FMT直连网络、扩大网络/训练数据及过拟合诊断，沿用Git推送与Ibex运行授权。commit `05cb78bbed88c75c695a05f01335cea64c03a6bd`；配置 `config/Verify_Task678_DirectFMTFit_1.1.json`，Git/Linux原件SHA256 `8a4be2e873b0c8919b19da5c1ef779accd2a6789dfcd9c6fdadb7aeb6ea2c9e2`。独立检出 `/home/zhanx0o/FMT_Task678Fit_20260910`，输出 `outputs/Verify_Task678_DirectFMTFit_1.1`。完整提交命令在submissions.jsonl，各分片时间、节点、GPU自动写入job_events.jsonl与远端本表。四条件×九流场×一种子9100共36GPU分片。
+
+| Job ID | 阶段 | 提交时间 UTC+03 | 资源/数组 | 依赖 | 初始状态 |
+|---|---|---|---|---|---|
+| 51696908 | smoke | 2026-09-10T12:31:00.984699+03:00 | CPU4/16G/20分钟 | 无 | 已提交 |
+| 51696909 | prepare | 2026-09-10T12:31:01.059627+03:00 | 0–8%4，CPU4/24G/45分钟 | 51696908 | 已提交 |
+| 51696910 | build | 2026-09-10T12:31:01.120892+03:00 | 0–8%3，CPU8/48G/4小时 | 51696909 | 已提交 |
+| 51696911 | train_base | 2026-09-10T12:31:01.184209+03:00 | 0–26%6，单A100或V100，CPU4/32G/12小时 | 51696909 | 已提交 |
+| 51696912 | train_expanded | 2026-09-10T12:31:01.248284+03:00 | 27–35%3，单A100或V100，CPU4/48G/12小时 | 51696910 | 已提交 |
+| 51696913 | audit | 2026-09-10T12:31:01.309454+03:00 | CPU4/48G/2小时 | 51696911、51696912 | 已提交 |
+
+索引0–8为memorize16、9–17为small_base、18–26为large_base、27–35为large_expanded；各组按配置九数据顺序。原数据准备后先启动记忆和原数据拟合，与新增数据积分并行；扩大数据组等待build完成。全部270项任务/角色/条件/流场评估从保存预测复算，不保存模型文件。
+
+
+### 12:33+03 集群验证与原数据转换完成
+
+集群smoke51696908于12:31:01–12:31:56在cn604-18完成，6项测试、四条件30项短运行指标复算及篡改拒绝检查通过。prepare51696909_0–8全部COMPLETED/exit0，12:31:57首开始、12:32:51末结束，节点cn604-17/18；原训练/验证/测试缓存及原生FMT核验转换完成。扩充数据数组51696910已开始，GPU拟合数组51696911等待Priority。此时尚无真实GPU训练拟合结果。
+
+
 ### nTDO 1.1 Task2 实际运行记录
 
 | dataset | seed | job | 开始(+03) | 结束(+03) | 节点 | GPU |
@@ -2239,6 +2396,45 @@ All use Verify_LargeNeighbor_1.1 and recorded frozen source/config; GPU arrays e
 
 资源调整（不改变科学配置）：
 - {"job": "51696573", "time": "2026-09-10T12:35:24.839432+03:00", "change": "pending Slurm walltime 6h -> 2h", "reason": "same small frozen networks and 100-epoch cap; improve backfill eligibility", "scientific_config_changed": false, "command": ["scontrol", "update", "JobId=51696573", "TimeLimit=02:00:00"]}
+
+
+### Verify_Task678_DirectFMTGPU_1.1 — 短时真实数据GPU拟合/吞吐检查
+
+完整GPU数组因Priority等待，调度器12:35时估计约14:19:45启动；该估计不是承诺。为检查真实训练能否下降及预留时间是否合适，新增独立20分钟作业51697220，于2026-09-10T12:38:42.373911+03:00提交，CPU4/16G/单A100或V100。commit `5e237e3a1dd807c424404f16361e5c8dc04d2049`，独立worktree `/home/zhanx0o/FMT_Task678Fit_GPU_20260910`；原完整数组仍固定05cb78bb不变。使用原config SHA256 `8a4be2e873b0c8919b19da5c1ef779accd2a6789dfcd9c6fdadb7aeb6ea2c9e2` 的Re160首训练窗口16区域及同一个350万参数网络，Task6/Task7各仅1000更新，完整实际参数覆盖写入started/result JSON；该短运行重新以1000步计算学习率日程，不假称是正式40000步运行的同一前缀。仅检查训练集，不读取test，不替代正式条件。提交Shell SHA256 `d5239765f20ebcc96f8695012a03599613abbb4aa27260fb7d94b67eae5cfc9f`，命令原件为该worktree输出下submission.json。无checkpoint。
+
+
+### 12:36+03 扩充数据全部完成
+
+构建数组51696910_0–8全部COMPLETED/exit0，首开始12:32:52、末结束12:36:09，节点cn604-15/17。训练总区域4017→32157（8.005倍），验证2020及测试1980区域保持原样；所有新样本在原四个训练时间窗口内重新播种并积分。
+
+| 数据 | 原训练 | 新训练 | 验证 | 测试 |
+|---|---:|---:|---:|---:|
+| cylinder3d | 453 | 3589 | 225 | 223 |
+| halfcylinderRe640 | 448 | 3549 | 222 | 222 |
+| halfcylinderRe6400 | 429 | 3478 | 224 | 220 |
+| tangaroa | 436 | 3549 | 229 | 226 |
+| deltaWing_resampled | 450 | 3600 | 222 | 216 |
+| deltaWing_LBM | 450 | 3600 | 222 | 216 |
+| f22raptor | 390 | 3098 | 198 | 187 |
+| boeing747 | 450 | 3600 | 222 | 216 |
+| smokeBuoyancy | 511 | 4094 | 256 | 254 |
+
+真实GPU完整拟合数组仍排队。短检查51697220于12:39:17–12:39:24在gpu212-06失败（exit1），原因是独立worktree解析源缓存的相对路径，发生在优化之前；原完整数组在生成缓存的同一目录，不涉及此跨目录路径。修复commit `5f61f79d1776aeedce4afdaeaa62cd879161c498` 加入指定source-root解析及单项回归测试（PASS），不修改科学配置。短检查51697266于2026-09-10T12:42:07.742393+03:00重提，资源、1000更新与输入选择保持不变，使用独立job目录，保留旧失败日志。原完整数组仍固定05cb78bb。
+
+
+### 12:44+03 — 真实Re160短时GPU拟合检查完成
+
+独立短检查51697266在gpu212-06、Tesla V100-SXM2-32GB完成；程序记录12:43:45.900581开始、12:43:57.614019结束，commit `5f61f79d1776aeedce4afdaeaa62cd879161c498`。3504131参数、完整161维FMT、16训练区域，两网络各1000更新；Task6有两段共32个训练primitive实例，Task7有16个训练区域，每实例8条查询轨迹及63时间点。下表为全部非初始训练时刻的对应点误差/r，而非小批次损失。
+
+| 任务 | 未训练 | 500更新 | 1000更新后保存预测复算 | 下降比例 | 每更新平均秒数 |
+|---|---:|---:|---:|---:|---:|
+| Task6 | 8.197304315 | 0.137900434 | 0.127219300 | 98.448% | 0.004883 |
+| Task7 | 9.046948019 | 0.160429590 | 0.156445961 | 98.271% | 0.004572 |
+
+从保存float32预测与原训练真值重新复算两任务全部指标PASS，审计 `outputs/Verify_Task678_DirectFMTGPU_1.1/job_51697266/independent_audit.json`，学习曲线及result JSON已取回。它支持“直连大网络确实在学习并显著降低这个小训练集上的误差”，尚未达到正式memorize16的0.001r阈值，也不能将其与旧测试误差混比或视为完整数据泛化结果。没有读取test或保存checkpoint。
+
+基于真实V100每更新约0.005秒的吞吐，已把待运行数组51696911/51696912的Slurm预留时限从12小时降至1小时，以便回填；仍留出训练、全数据评估及节点差异余量。优化步数、网络、数据、学习率与停止规则均未修改。完整调度器修改前后状态保存于主输出 `resource_update.json`。
+
 
 ### Verify_Task678_DirectFMTFit_1.1 — 完整运行登记与终审
 
@@ -2907,6 +3103,7 @@ Full per-process records follow. All times are on 2026-09-10 in UTC+03; start/en
 | 51716649_7 | boeing747 | 2026-09-10T21:08:53 | 2026-09-10T21:09:48 | cn604-15/CPU | COMPLETED/0:0 |
 | 51716649_8 | smokeBuoyancy | 2026-09-10T21:11:09 | 2026-09-10T21:12:38 | cn604-13/CPU | COMPLETED/0:0 |
 
+
 ### 2026-09-10 — mainExp_Task6_Reconstruction_3.1 首轮提交
 
 checkout `/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910`；commit `9d73a0736b907478d1dc7cc3ac75d764a9aeefce`；配置SHA256 `eaf8c0cf6e902589cd5c68b8811601b593fe040e51d660c354e320b705cca6cb`。数据扩至每流场24万train，54组主训练，含已用历史test benchmark复评。前序afterok依赖。
@@ -3043,6 +3240,7 @@ checkout `/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910`；commit `9d73a07
 
 前台只读监测已在final_audit完成后退出；没有后台定时任务。未生成/保留模型checkpoint。
 
+
 ### 2026-09-10 — Verify_Task6_ScarceGeneralization_4.1 搜索提交
 
 独立checkout `/ibex/user/zhanx0o/FMT_Task6Scarce_20260910`；先运行小训练集子集准备和324个train/validation搜索模型，测试阶段尚未提交。完整参数见冻结配置与协议。
@@ -3055,6 +3253,7 @@ checkout `/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910`；commit `9d73a07
 | 51722508 | select | 2026-09-10T23:35:03.215744+03:00 | 2b6006ac4f01441dfd44b7f70655f115b82061fdac5b891bb9fdd33eb6b069c8 | bc874a1eb4508293b07f0989e07e170b4a102140 | CPU / None | SUBMITTED |
 
 51722505已于2026-09-10T23:36:08至23:36:19在cn113-35-l完成，9项测试通过，COMPLETED/0:0。前台轻量SSH监测只读本实验search与调度状态，无独立Slurm ID、无定时任务；selection.json产生或发现失败时退出。
+
 
 ### 2026-09-10 — Task6小训练集4.1首批实际运行
 
@@ -3124,6 +3323,7 @@ checkout `/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910`；commit `9d73a07
 - 2026-09-11T00:11:12.635116+03:00 | 51722951 | audit | config/Verify_Task6_ScarceGeneralization_4.1.json | SHA256 2b6006ac4f01441dfd44b7f70655f115b82061fdac5b891bb9fdd33eb6b069c8 | commit bc874a1eb4508293b07f0989e07e170b4a102140 | CPU array=None | SUBMITTED
 
 候选c6/r0/r2已经冻结；27个GPU组各3种新子集种子、3个唯一方法，预计243个最终模型。结果之后由独立CPU作业从预测复算，不保留checkpoint。前台只读SSH监测，无后台定时任务。
+
 
 ### 2026-09-11 — Task6小训练集4.1 最终阶段实际启动与资源预留
 
@@ -3242,6 +3442,7 @@ checkout `/ibex/user/zhanx0o/FMT_Task6Reconstruction_20260910`；commit `9d73a07
 | 51724746_6 / 51724782 | fit_check | 2026-09-11T03:52:53 | 2026-09-11T04:02:11 | 2026-09-11T04:03:16 | gpu214-10 / Tesla V100-SXM2-32GB | COMPLETED/0:0 |
 | 51724746_7 / 51724783 | fit_check | 2026-09-11T03:52:53 | 2026-09-11T04:02:11 | 2026-09-11T04:03:09 | gpu214-02 / Tesla V100-SXM2-32GB | COMPLETED/0:0 |
 | 51724746_8 / 51724746 | fit_check | 2026-09-11T03:52:53 | 2026-09-11T04:02:11 | 2026-09-11T04:03:17 | gpu213-06 / Tesla V100-SXM2-32GB | COMPLETED/0:0 |
+
 正式验证集搜索启动：2026-09-11T04:04:40.252238+03:00
 
 | Array index / raw job | 流场 / 配置 | 开始时间 | 节点 / GPU | 状态 |
@@ -3433,6 +3634,7 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 
 5.1所有Slurm进程退出0，但科学验收失败：37个FMT最终模型validation>=3，未生成其test预测；完整比较不能丢弃失败后重算FMT总体平均。独立审计九流场通过，287组预测/8323行记录全部复算，最大差1.0614e-13；没有checkpoint。方法级结论见experiment_log中新审计条目。
 
+
 ### 2026-09-11 — Verify_Task6_PNNTrans_1.1 提交
 
 独立目录：`/ibex/user/zhanx0o/FMT_Task6PNNTrans_20260911`。科学代码固定 `21108d729e36a5d4186c673d361d9a913171ea0e`。每阶段开始/结束由任务脚本自动补写远端registry及events；验证门槛失败时不提交最终训练。
@@ -3459,6 +3661,7 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 - 2026-09-11T12:50:21.646277+03:00 | 51737882_0 | Verify_Task6_PNNTrans_1.1 Task6 prepare | ENDED node=cn604-18 device=CPU exit=0
 - 2026-09-11T12:50:22.018140+03:00 | 51737882_1 | Verify_Task6_PNNTrans_1.1 Task6 prepare | ENDED node=cn604-18 device=CPU exit=0
 - 2026-09-11T12:50:22.100645+03:00 | 51737882_2 | Verify_Task6_PNNTrans_1.1 Task6 prepare | ENDED node=cn604-18 device=CPU exit=0
+
 
 ### 2026-09-11 — Verify_Task6_PNNTrans_1.1 最终作业状态
 
@@ -3543,6 +3746,7 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 - 2026-09-11T13:07:26.428926+03:00 | 51737886 | Verify_Task6_PNNTrans_1.1 Task6 advance | STARTED node=cn113-35-l device=CPU exit=None
 - 2026-09-11T13:07:30.649089+03:00 | 51737886 | Verify_Task6_PNNTrans_1.1 Task6 advance | ENDED node=cn113-35-l device=CPU exit=1
 
+
 ### 2026-09-11 — Verify_Task6_PNNTrans_1.2 Ibex提交
 
 独立目录`/ibex/user/zhanx0o/FMT_Task6PNNTransTuning_20260911`，科学代码固定`4a206bc1d02f74e006643ac20b85425f846e7673`。开始/结束事件由远端任务脚本自动登记。
@@ -3570,10 +3774,12 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 - 2026-09-11T14:14:03.113283+03:00 | 51740511 | Verify_Task6_PNNTrans_1.2 Task6 prepare | STARTED node=cn113-35-l device=CPU exit=None
 - 2026-09-11T14:14:08.324542+03:00 | 51740511 | Verify_Task6_PNNTrans_1.2 Task6 prepare | ENDED node=cn113-35-l device=CPU exit=0
 
+
 ### 2026-09-11 — Verify_Task6_PNNTrans_1.2 最大网络GPU检查通过
 
 - 51740512_0 | Verify_Task6_PNNTrans_1.2 Task6 capacity_check pnn_trans | START 2026-09-11T14:16:05+03:00 END 14:16:21 | gpu609-02 | Tesla V100-SXM2-32GB | COMPLETED exit 0; peak 2761677312 bytes; 数值有限/反向通过，非性能结论。
 - 51740512_1 | Verify_Task6_PNNTrans_1.2 Task6 capacity_check raw_trans | START 2026-09-11T14:16:05+03:00 END 14:16:18 | gpu214-18 | Tesla V100-SXM2-32GB | COMPLETED exit 0; peak 2700282368 bytes; 数值有限/反向通过，非性能结论。
+
 
 ### 2026-09-11 — Verify_Task6_PNNTrans_1.2 验证完成，仍未超过两种Raw对照
 
@@ -3760,6 +3966,7 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 - 2026-09-11T16:07:29.152911+03:00 | 51740517 | Verify_Task6_PNNTrans_1.2 Task6 advance | STARTED node=cn604-18 device=CPU exit=None
 - 2026-09-11T16:07:31.552705+03:00 | 51740517 | Verify_Task6_PNNTrans_1.2 Task6 advance | ENDED node=cn604-18 device=CPU exit=1
 
+
 ### 2026-09-11 — Verify_Task6_PNNTrans_1.3 Ibex部署
 
 科学commit `9b33826c91ece524d3ed36b9f42e288a8658eb3c`，配置SHA256 `67ac3e6397689f71e4cef9360a3629c2ea365871c0fc5063296e9f658c46703a`。独立目录`/ibex/user/zhanx0o/FMT_Task6PNNDataSchedule_20260911`。2026-09-11 18:07:00–01 +03提交预检51743949、数据核验51743950、九流场Raw重训51743953、27模型学习率筛选51743954、保留参考组的四候选选择51743955、72模型配对验证51743956、冻结选择51743957、条件启动最终测试51743958。每GPU作业独占一张分配到的GPU，最多18个作业并行；不代表一个模型使用18张GPU。最终81模型尚未提交，需验证门槛通过。
@@ -3785,6 +3992,7 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 - 2026-09-11T18:08:26.618237+03:00 | 51743949 | Verify_Task6_PNNTrans_1.3 Task6 preflight | STARTED node=cn113-35-l device=CPU exit=None
 
 - 2026-09-11T18:09:15.543478+03:00 | 51743949 | Verify_Task6_PNNTrans_1.3 Task6 preflight | ENDED node=cn113-35-l device=CPU exit=0
+
 
 ### 2026-09-11 — Verify_Task6_PNNTrans_1.3 验证完成：误差改善，仍未超过Raw
 
@@ -4096,6 +4304,7 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 
 - 2026-09-11T20:56:25.000100+03:00 | 51743958 | Verify_Task6_PNNTrans_1.3 Task6 advance | ENDED node=cn113-35-l device=CPU exit=1
 
+
 ### 2026-09-12 — Verify_Task6_FMTGeometryMoE_1.1 Ibex 首次部署
 
 工作目录 `/ibex/user/zhanx0o/FMT_Task6FMTGeometryMoE_20260912`；Task6，每流场 3072 条训练 primitive，九流场分别训练。
@@ -4115,9 +4324,11 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 
 提交时为 PENDING；GPU 阶段最多 18 个作业并行，拟合检查最多 9 个。所有阶段按 afterok 依赖执行，失败不会继续读测试。后续真实节点、GPU、起止时间自动追加远端 `runtime_events.jsonl` 与同名注册文档；最终作业 ID 由 advance 阶段按冻结验证选择提交后登记。
 
+
 ### 2026-09-12 — Verify_Task6_FMTGeometryMoE_1.1 集群预检通过
 
 `51758242` preflight：2026-09-12T01:42:02.584436+03:00 STARTED，2026-09-12T01:42:32.289479+03:00 ENDED，节点 cn604-18，CPU，exit=0。五项测试通过（26.646s）。科学 commit `4859c0caec1ac519f5932ed8772a8c775e71f688`，配置 SHA256 `2ad8965a5240f59ef8543f44c53a7d41d5f55e265117c1a49c059a400e76249c`。其余作业保留原登记；当前 `51758243` 为 PENDING/Priority，GPU 作业等待前置依赖。
+
 
 ### 2026-09-12 — Verify_Task6_FMTGeometryMoE_1.1 最终性能：全连接几何有效，FMT 混合未带来净收益
 
@@ -4301,6 +4512,7 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 | 51774630_1 | audit | 10:02:29 | 10:02:39 | cn511-16 | CPU | 0 |
 | 51774631 | merge | 10:11:09 | 10:11:15 | cn113-35-l | CPU | 0 |
 
+
 ### 2026-09-12 — Verify_Task36_MultiGate_1.1 Ibex 联合任务部署
 
 工作目录 `/ibex/user/zhanx0o/FMT_Task36MultiGate_20260912`，Task3＋Task6。科学 commit `c3f95c9b9d5d89750fd7ff38f7ff9467c7aa1885`；配置 `config/Verify_Task36_MultiGate_1.1.json`，SHA256 `efa42423912b2dfbfbf29acf13aa6ddd7034a675c512b637931fe72a0310323a`。九流场各 3072 训练 primitive，七组固定方法；开发 63 模型，后续三种子最终 189 模型。全部任务提交后立即在远端同名文档及 `submissions.jsonl` 登记。
@@ -4314,6 +4526,7 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 | 51809312 | advance / 单作业 | 2026-09-12T12:50:43.250626+03:00 | CPU | 51809311 |
 
 预检 `51809306` 已在 CPU 节点 `cn605-27-l` 开始，后续标签与训练作业等待依赖。精确起止时间、设备和退出码由远端 `runtime_events.jsonl` 自动记录；GPU 最大并行数 18。尚无真实新性能结果。
+
 
 ### 2026-09-12 — Verify_Task36_MultiGate_1.1 预检通过与标签准备记录
 
@@ -4333,6 +4546,7 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 | 51809307_1 | 2026-09-12T12:52:16.126037+03:00 | cn605-19-l / CPU | 2026-09-12T12:52:56.809564+03:00 / 0 |
 
 证据：`outputs/Verify_Task36_MultiGate_1.1/status_snapshot.json`；持续起止记录由远端 `runtime_events.jsonl` 与同名 registry 自动追加。
+
 
 ### 2026-09-12 — Verify_Task36_MultiGate_1.1 开发完成、数值检查未通过
 
@@ -4418,6 +4632,7 @@ Task6 5.1及独立审计完整终态（源scheduler.psv，2026-09-11核查）：
 
 完整调度终态及 GPU 型号由 `outputs/Verify_Task36_MultiGate_1.1/evidence_development/scheduler_development.psv` 和 `runtime_events.jsonl` 交叉保留；失败进程 51809312 未重写或删除。
 
+
 ### 2026-09-12 — Verify_Task36_BalancedScale_1.2 Ibex 最终测试链部署
 
 独立目录 `/ibex/user/zhanx0o/FMT_Task36BalancedScale_20260912`，Task3＋Task6。科学 commit `d7fbf812345b9b855001a8d418eb774514c660ed`，配置 `config/Verify_Task36_BalancedScale_1.2.json`，SHA256 `dfd9e7c444f5f96897ad0b1b193e8d7645e8520ca8e008c08a2f7f2cd60c5648`。最大 18 GPU 并行。252 开发模型后自动冻结配置并执行 432 最终模型，最终数组已经实际提交。
@@ -4449,3 +4664,8 @@ Ibex 十项预检全部通过（46.433 秒），已观察到 5/9 个流场准备
 | 51823058_5 | 2026-09-12T18:25:53.713176+03:00 | cn604-11 / CPU | 仍在运行 |
 
 本地证据：`outputs/Verify_Task36_BalancedScale_1.2/submissions.jsonl`、`runtime_deployment.jsonl` 和 `preflight_51823057.err`。当前尚无真实 1.2 训练或测试指标。
+
+
+### 2026-09-13 — Verify_Task36_BalancedScale_1.2 完整作业链终态
+
+核查自 Ibex 独立 checkout 的 `runtime_events.jsonl` 和最终审计。八个父作业及数组子作业全部以退出码 0 结束：252 个开发 GPU 模型、432 个最终 GPU 模型和 18 个 CPU 审计均完成。最后最终模型于 2026-09-13T05:01:03.607818+03:00 结束（`51823062_428`，gpu609-09 / Tesla V100-SXM2-32GB）；审计于 05:02:18 结束；汇总 `51823064` 于 05:02:24–05:02:33 在 cn113-35-l / CPU 执行，退出码 0。训练阶段实际使用 A100/V100 GPU，最大数组并行度为 18。最终审计时间为 2026-09-13T05:02:30.537491+03:00，`audit_passed=true`、工程失败数 0；主要指标和结论记录于 `docs/experiment_log.md` 同名段落，下载的审计证据为 `outputs/Verify_Task36_BalancedScale_1.2/final_audit.json`。

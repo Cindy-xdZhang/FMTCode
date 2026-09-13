@@ -6,6 +6,51 @@
 
 **2026-09-09 历史登记**：当时增加的Task6局部流映射查询、Task7遮挡区域补全、Task8短流映射组合及实现、验证、Git推送和Ibex批量运行授权见[Task6/7/8旧协议1.1](Task678_flowmap_protocol_1.1.md)。旧Task8使用旧Task6的逐粒子查询器，不能因当前任务定义改变而自动改用VAE几何重建网络。方法证据和轮廓系数观察见[进展记录](experiment_log.md#progress-2026-09-09)。
 
+## 0. 客观性（Objectivity）基础定义 — 2026-09-10
+
+以下按用户提供的定义抄录，仅整理公式排版并显式保留时间参数；本节不改变既有算法、实验版本或性能指标。
+
+> **Objectivity.** Given a time-dependent reference frame transformation (rotation \(Q\) and translation \(c\)):
+>
+> \[
+> x^\ast=Q(t)x+c(t).
+> \]
+>
+> Objectivity can be formally defined as follows: A scalar field \(s\) is objective if the scalar values remain unchanged under any rigid-body reference frame transformation, i.e.
+>
+> \[
+> s^\ast(x^\ast,t)=s(x,t).
+> \]
+>
+> A vector field \(v\) is objective if the vectors transform as:
+>
+> \[
+> v^\ast(x^\ast,t)=Q(t)v(x,t).
+> \]
+>
+> A second-order tensor field \(T\) is objective if the tensors transform as:
+>
+> \[
+> T^\ast(x^\ast,t)=Q(t)T(x,t)Q(t)^{\mathsf T}.
+> \]
+
+这里 \(Q(t)^{\mathsf T}Q(t)=I\)，旋转满足 \(\det Q(t)=1\)，同一时刻全部空间点采用同一个 \(Q(t)\) 和 \(c(t)\)，时间不变。上述 \(v\) 是客观向量场定义中的一般符号，不意味着任意被称为“向量场”的具体物理量都已满足此变换规律。
+
+**同一时刻、任意一对对应物质点之间的相对位置向量天然客观，点间欧氏距离天然是客观标量。** 设
+\[
+d_{ij}(t)=x_j(t)-x_i(t),\qquad \ell_{ij}(t)=\|d_{ij}(t)\|,
+\]
+则
+\[
+d_{ij}^\ast(t)=Q(t)d_{ij}(t),\qquad
+\ell_{ij}^\ast(t)=\ell_{ij}(t).
+\]
+同一时刻相对向量之间的内积和夹角也保持不变。不得以相对位置向量的坐标分量随 \(Q(t)\) 改变为理由，否定其客观性；不得要求客观向量逐分量数值不变。
+
+**后续计算必须独立核查，不能改变对输入的上述判断。** 每次分析先标明正在判断输入、中间量还是输出，并声明它是标量、几何向量还是二阶张量。标量检查数值不变；向量检查 \(v^\ast-Qv\)；张量检查 \(T^\ast-QTQ^{\mathsf T}\)。由若干标量拼成的“feature vector”不因名称含vector就成为按物理空间 \(Q(t)\) 变换的几何向量。
+
+同时间客观相对位置作为编码输入时，必须明确写“输入是客观向量”。若后续沿时间对坐标分量做差分、傅里叶或其他混合运算，另行核查这些运算及输出的变换规律；输出检查失败不推翻输入客观性。若输入是数值不变的距离标量数组，相同固定确定性计算的输出也不变，包括该标量序列的时间差分、傅里叶以及固定网络；不得把向量坐标分量的运算与距离标量运算混为一谈。
+
 ## 1. 总体研究命题
 
 研究对象是 pathline cross primitive。2D primitive 通常为中心线和 `x±、y±` 共 5 条线；3D primitive 为中心线和 `x±、y±、z±` 共 7 条线。
