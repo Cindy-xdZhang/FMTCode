@@ -2,6 +2,9 @@
 
 ## 当前工作状态（2026-09-13 用户更新，优先于下文历史“当前”状态）
 
+2026-09-14最新部署`Ablation_Task4C_GeneralizedCrossEntropy_4.11`，协议`docs/Task4C_generalized_cross_entropy_protocol_4.11.md`。固定原4.1数据、4.3网络、4.5训练，仅比较广义交叉熵q=0/0.3/0.7，保留零对照及三种子复核，不重标/删除样本、不读取test。工程核验通过，科学commit97e3f7ea，首批四项已运行；尚无完整科学结果。
+
+
 目标会议为 ICLR。停止继续推进现有客观化方向；暂停 Task6/7/8 几何 tokenizer、Point-NN 与混合专家调参，
 包括 Task36 联合分类/重建。Task1/2/3/5 主表与 Task4-a/b 历史结果保持。
 09-13 最新用户要求 Task4-c 加入论文预处理，扩展到Channel+TBL两个快照的Hairpin / Non-hairpin二分类；

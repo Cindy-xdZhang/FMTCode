@@ -3090,3 +3090,14 @@ Conv3D零权重/0.5权重三种子验证F1为0.422313±0.013825 / 0.421731±0.00
 独立NumPy复算14份预测所有分组指标、验证阈值/epoch，核对原4.1验证metadata逐文件哈希与全部预测身份、当前配置/源码/预测哈希、首轮权重排名、三种子均值/标准差及最终选择，全部通过，最大误差1.67e−16；17/17Slurm任务COMPLETED、exit0，无权重文件及test读取。报告`outputs/Ablation_Task4C_SupervisedContrastive_4.10/independent_development_audit.json`；selector SHA256 `fdd2d61a84d6490269760ae40fc8cccbf787e5ae9a118403d3dadc140dbc7320`。原4.6测试FMT0.335526/Conv0.304615与目标状态保持，不能以验证的小幅改善替代真实测试目标。
 
 4.7完整selector SHA256为`5be01a5c37de40a60bffb0bb3cc08ea8d0cfc805af525d305a6aaa47c5408f3f`；20/20调度任务结束及无模型文件检查已补入其原审计报告。4.7/4.10所有原始预测和审计留在个人Ibex，本地仅写获准读取的汇总与运行元数据。
+
+
+### Ablation_Task4C_GeneralizedCrossEntropy_4.11：固定原监督标签的损失对照
+
+上一目标轮只回答状态，没有改变方法或完成实验，按无进展重新核实。本轮完成新损失实现、独立工程检查及真实Ibex部署。以Zhang和Sabuncu（NeurIPS2018）式(6)广义交叉熵检验低置信度样本梯度减弱能否改善当前分类；保留原类别权重、标签平滑及4.5尺度一致性，q=0直接调用原交叉熵。不是原论文噪声基准复现；未知本数据错标率，不能断言GT有误或套用其理论保证。q同时影响监督项相对于固定一致性项的强度，也可能损害困难正样本学习。详见`docs/Task4C_generalized_cross_entropy_protocol_4.11.md`。
+
+固定原4.1全部物理数据、4.3网络及4.5优化设置；不使用4.10投影器、SAM、样本剔除、重标或测试投票。q=0/0.3/0.7，种子96311首轮六次，始终保留零对照及验证选定正q，以96312/96313复核八次。测试与目标保持，不将开发结果代替0.6测试要求。
+
+工程核验已完成：独立NumPy加权平滑公式与有限差分梯度（最大误差6.84e-11）、q极限与非法/极端输入、两实际模型零q连续三步参数和dropout随机数逐值一致、正q有限梯度及原尺度项不变、回调异常/成功恢复、拒绝test、240训练束缓存14次pilot训练和完整选择。证据`outputs/Verify_Task4C_GeneralizedCrossEntropyCode_4.11/checks.json`，pilot分数不计科学结果；没有新增一次性test/verify源码。
+
+科学commit `97e3f7eaf6aef41f976c7575b43bf01f1e7282ec`，config SHA256 `d8cb0631a38f868d089e081af8201c7dda89f836f0d196f77d607e5e8d2a93e9`，代码包SHA256 `3ed7be64c80c2fce14e7794aa948f55df88a9ca1d47f0c5771687e6103063baf`。仅三份新runner/config/bash传到个人Ibex `FMT_Task4C_GeneralizedCrossEntropy_20260914`，无预测/报告传输或公开push。UTC22:32:59提交encode51867216、search51867217[0-5]、rank51867218、confirm51867219[0-7]、select51867220，全部已登记。编码复制校验完成，27,000训练+3,000验证、test_encoded=false；UTC22:33:58调度器确认四项search在RTX2080Ti/P100运行。尚无完整科学结果，目标未达成。

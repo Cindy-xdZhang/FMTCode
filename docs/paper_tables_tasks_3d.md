@@ -510,3 +510,8 @@ UTC15:04:43全部结束；逐样本预测、分流场/每头区指标、验证�
 | Conv3D | 0.422313 ± 0.013825 | 0.5 | 0.421731 ± 0.009352 |
 
 最终验证选择为FMT权重0.1、Conv3D权重0。完整报告在原Ibex输出`independent_development_audit.json`；selector SHA256 `fdd2d61a84d6490269760ae40fc8cccbf787e5ae9a118403d3dadc140dbc7320`。方法判断及证据边界见实验日志。
+
+
+## Task4-c 4.11：广义交叉熵对照，运行中
+
+科学commit `97e3f7ea`，固定原4.1数据、4.3网络及4.5优化设置；q=0/0.3/0.7，原交叉熵对照与选定正q三种子复核。27,000训练+3,000验证编码检查通过，首批作业运行；尚无可报告科学F1，不改写4.6测试。见[4.11协议](Task4C_generalized_cross_entropy_protocol_4.11.md)。

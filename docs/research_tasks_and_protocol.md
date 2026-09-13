@@ -4,6 +4,9 @@
 
 **2026-09-13 当前推进状态（取代下面的历史推进状态）**：目标会议为 ICLR；按用户决定，停止现有客观化路线，
 暂停 Task6/7/8 几何 tokenizer、Point-NN 与混合专家探索（包括 Task36）。Task1/2/3/5 保留冻结主结果。
+
+2026-09-14最新部署 **`Ablation_Task4C_GeneralizedCrossEntropy_4.11`**：固定原数据/网络/优化设置，仅比较加权平滑广义交叉熵q=0/0.3/0.7，始终保留交叉熵对照并三种子验证。没有样本剔除、重标或test读取；工程检查通过，科学commit97e3f7ea，首批训练已在Ibex运行，尚无完整科学成绩。见[4.11协议](Task4C_generalized_cross_entropy_protocol_4.11.md)。
+
 用户在当天后续指定 **Task4-c 3.1**：Channel+TBL各一帧，加入论文lambda2/正oyf头区、RK45双向涡线、清洗、弧长重采样及整束归一化，比较FMT＋多层感知机与Conv3D＋多层感知机。
 这取代当天较早“仅整理、不启动训练、新任务未选定”的状态；Task4-a/b 算法与历史结果冻结。
 3.1 的[论文预处理与二分类协议](Task4C_paper_bundles_protocol_3.1.md)及完整结果冻结。

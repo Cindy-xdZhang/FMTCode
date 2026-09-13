@@ -1,0 +1,26 @@
+{
+  "version": "Ablation_Task4C_GeneralizedCrossEntropy_4.11",
+  "base_config": "config/Ablation_Task4C_Sharpness_4.8.json",
+  "base_config_sha256": "f32d089d6e76d33c0323c750da7caa4d1bbf3d850f6d60762b92457172031d15",
+  "output": "outputs/Ablation_Task4C_GeneralizedCrossEntropy_4.11",
+  "generalized_loss": {
+    "source": "Zhang and Sabuncu, NeurIPS 2018, equation 6",
+    "q_candidates": [0.0, 0.3, 0.7],
+    "adaptation": "same class weights and label smoothing as frozen 4.5 cross entropy",
+    "denominator": "sum of hard-target class weights, matching weighted smoothed cross entropy",
+    "pruning": false,
+    "relabeling": false,
+    "noise_rate_assumption": null,
+    "selection": "always confirm q=0 control and validation-selected positive q"
+  },
+  "training_overrides": {
+    "development_seed": 96311,
+    "confirmation_seeds": [96312, 96313]
+  },
+  "target": {
+    "f1": 0.6,
+    "scope": "unchanged_three_seed_mean_pooled_fixed_test_for_both_models",
+    "this_ablation": "train_validation_only",
+    "test_sample_count": 10000
+  }
+}
