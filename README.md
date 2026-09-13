@@ -6,6 +6,7 @@ FMT 将中心轨线及其邻居组成的轨线组编码为几何特征。编码�
 目标会议为 ICLR。**2026-09-13 当前状态**：保留 Task1/2/3/5 已冻结的分类研究，停止继续追求现有客观化路线，
 暂停 Task6/7/8 几何 tokenizer 及混合专家调参。用户随后选定并修订 [Task4-c 2.1](docs/Task4C_hairpin_binary_protocol_2.1.md)：
 从Channel局部线簇几何判断Hairpin / Non-hairpin，比较FMT＋多层感知机与Conv3D＋多层感知机。
+首轮六次训练与独立复算已完成，结果见[Task4-c记录](docs/experiment_log.md#task4c-binary-2026-09-13)。
 原 FMT 不能整体宣称对任意时变刚体参考系客观，也未证明具有通用几何重建优势。
 研究进展、关键反例和修订依据集中在[项目进展记录](docs/experiment_log.md#progress-2026-09-13)；
 [验证总表](docs/Verify_experiments.md#status-20260913)提供按问题查找的入口。

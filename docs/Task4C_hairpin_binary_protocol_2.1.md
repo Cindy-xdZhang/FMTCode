@@ -109,3 +109,6 @@ python -m experiments.Task4C_HairpinBinary_2_1 submit
 依赖链为CPU准备→六次GPU训练（最多3个并行）→CPU汇总。每次提交立即写入`docs/ibex_run_registry.md`和`submissions.jsonl`，开始/结束事件自动补节点、设备和退出码。
 按用户要求，本轮临时数值与流程验证代码在检查通过并保存报告后删除；正式运行入口保留数据哈希、有限值和空间隔离等必要检查。
 旧1.1合并测试文件同时删除，历史验证结果与冻结BiLSTM实现保留。
+
+2026-09-13执行状态：科学commit `63b44d8c`的六次训练与结果汇总全部完成，预测和GT对应关系独立复算通过。
+方法结果和证据边界见`experiment_log.md`的Task4-c 2.1记录；本地临时验证代码已删除。

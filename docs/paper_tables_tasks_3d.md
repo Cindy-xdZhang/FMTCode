@@ -401,3 +401,19 @@ Re160 未超过 strongest Raw，Re160/Smoke 未超过 fixed-scale FMT transfer�
 - Task2统一主表：`mainExp_Task2_3D_6.2_uniform_confirmation`（14 A100、4 P100、2 V100 children；10条目×2 arms×5 seeds；100条逐次结果；20/20 stderr为空；summary/per-run/独立审计 SHA-256 `a15d596a…0564`/`e7381d4d…624c`/`cc1580ed…79f4`）。历史补充为`mainExp_Task2_3D_5.2`。
 - Task3统一主表：`mainExp_Task3_3D_9.2_uniform_confirmation`（19 A100、1 RTX 2080 Ti children；10条目×2 arms×5 seeds；100条逐次结果；20/20 stderr为空；summary/per-run/独立审计 SHA-256 `f577a632…6ab9`/`6e80adfa…50a9`/`e8af36e4…7a8e`）。历史补充为`mainExp_Task3_3D_8.1`；同一逐family方法的另一空间复现为`mainExp_Task3_3D_7.2`。
 - Task5：`mainExp_Task5_3D_1.1`（Ibex V100；10条目×5训练seed×4 held-out confirmation时间片×9个未见尺度tuple；归档SHA-256 `6053ed15…c58ec`）。
+
+## Task4-c 2.1：Channel Hairpin / Non-hairpin 二分类（独立实验）
+
+版本`mainExp_Task4C_HairpinBinary_2.1`，科学commit `63b44d8c9cd9d4a6d2d7ec84eed255202f127571`。
+同一Channel快照固定x空间60%/20%/20%划分，完整GT实例及原生插值节点隔离；train/validation/test为30000/7500/7500条局部七线簇，全部积分有效。
+测试标签为线簇中心是否在原始GT单元中，956个正类、6544个负类；评价总体限于满足lambda2阈值及空间支撑范围的涡候选。
+三个种子94211/94212/94213；下列为均值±样本标准差，不与Task1/2/3/5主表混合平均，也不是论文曲面检测F1。
+
+| 方法 | 可训练参数 | Hairpin F1 | 平均精确率AP | 平衡准确率 |
+|---|---:|---:|---:|---:|
+| FMT＋MLP | 74,497 | 0.3161 ± 0.0102 | 0.2956 ± 0.0087 | 0.6312 ± 0.0050 |
+| Conv3D＋MLP | 84,361 | 0.2659 ± 0.0364 | 0.2707 ± 0.0501 | 0.5786 ± 0.0223 |
+
+两方法使用完全相同的线簇几何；Conv3D输入为空间体素中的占据率及单位切向量。只按验证AP选epoch，随后按验证F1选阈值，测试不参与选择。
+完整六次预测、独立指标复算及7500个中心GT逐项核验均通过；证据`outputs/mainExp_Task4C_HairpinBinary_2.1/`，包含`metrics.csv`、`results.json`和`independent_prediction_audit.json`。
+结论与限制只记入[实验日志](experiment_log.md#task4c-binary-2026-09-13)，完整定义见[协议2.1](Task4C_hairpin_binary_protocol_2.1.md)。

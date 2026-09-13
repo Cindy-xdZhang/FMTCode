@@ -35,9 +35,12 @@ def write(path, data):
 
 
 def identity(config):
-    sources = [__file__, "FMT_Utils/Task4C_HairpinBinary_2_1.py", "FMT_Utils/DFT_FMT_3D.py"]
+    # Runner and utility intentionally share a basename; keep full relative keys.
+    sources = {"experiments/Task4C_HairpinBinary_2_1.py": __file__,
+               "FMT_Utils/Task4C_HairpinBinary_2_1.py": "FMT_Utils/Task4C_HairpinBinary_2_1.py",
+               "FMT_Utils/DFT_FMT_3D.py": "FMT_Utils/DFT_FMT_3D.py"}
     return {"commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
-            "source_sha256": {str(Path(p).name): sha(p) for p in sources}, "config_sha256": sha(config),
+            "source_sha256": {key: sha(path) for key, path in sources.items()}, "config_sha256": sha(config),
             "host": socket.gethostname(), "job": os.environ.get("SLURM_JOB_ID"),
             "array_index": os.environ.get("SLURM_ARRAY_TASK_ID")}
 

@@ -4669,3 +4669,38 @@ Ibex 十项预检全部通过（46.433 秒），已观察到 5/9 个流场准备
 ### 2026-09-13 — Verify_Task36_BalancedScale_1.2 完整作业链终态
 
 核查自 Ibex 独立 checkout 的 `runtime_events.jsonl` 和最终审计。八个父作业及数组子作业全部以退出码 0 结束：252 个开发 GPU 模型、432 个最终 GPU 模型和 18 个 CPU 审计均完成。最后最终模型于 2026-09-13T05:01:03.607818+03:00 结束（`51823062_428`，gpu609-09 / Tesla V100-SXM2-32GB）；审计于 05:02:18 结束；汇总 `51823064` 于 05:02:24–05:02:33 在 cn113-35-l / CPU 执行，退出码 0。训练阶段实际使用 A100/V100 GPU，最大数组并行度为 18。最终审计时间为 2026-09-13T05:02:30.537491+03:00，`audit_passed=true`、工程失败数 0；主要指标和结论记录于 `docs/experiment_log.md` 同名段落，下载的审计证据为 `outputs/Verify_Task36_BalancedScale_1.2/final_audit.json`。
+
+### 2026-09-13 — mainExp_Task4C_HairpinBinary_2.1 部署与提交
+
+用户授权仅Channel Hairpin / Non-hairpin二分类，FMT＋MLP对照Conv3D＋MLP；不运行BiLSTM。
+科学commit `63b44d8c9cd9d4a6d2d7ec84eed255202f127571`，配置 `config/mainExp_Task4C_HairpinBinary_2.1.json`，SHA256 `fc896a75bd7ba6a5b98448e4f030ba79b44d553977be2178f13c307086da45e4`。
+独立checkout `/ibex/user/zhanx0o/FMT_Task4C_HairpinBinary_20260913`。本地与Ibex代码、配置及两份输入数据哈希一致，Linux入口语法检查通过。
+
+| 作业ID | 阶段 | 提交时间UTC | 预期设备/依赖 | 已观察状态 |
+|---|---|---|---|---|
+| 51857585 | 数据准备 | 2026-09-13T13:55:09.374162Z | 8 CPU、32GB、1h；无依赖 | cn604-03，13:55:10–13:56:02 UTC，COMPLETED，exit0 |
+| 51857586[0-5] | 三种子×两方法训练 | 2026-09-13T13:55:09.446247Z | 每项4 CPU、24GB、1×A100/V100、2h，最多3项并行；afterok:51857585 | 首批13:56:08 UTC开始；实际V100-SXM2-32GB；终态另补 |
+| 51857587 | 完整结果汇总 | 2026-09-13T13:55:09.754270Z | 2 CPU、8GB、10min；afterok:51857586 | 等待六次训练完成 |
+
+父数组0/2/4为三个FMT种子，1/3/5为相同种子的Conv3D。完整sbatch参数已立即记入远端与本地`outputs/mainExp_Task4C_HairpinBinary_2.1/submissions.jsonl`；每项开始/结束事件写入`runtime_events.jsonl`及远端本登记表。
+正式train/validation/test为30000/7500/7500个有效线簇，负/正类分别24660/5340、6494/1006、6544/956；实际实例数44/8/7，各集合实例和原生插值节点均不重叠。此处只记录数据数量，不是模型性能。
+
+元数据补充：原部署的identity字典使用basename，运行器与工具模块同名导致运行器键被覆盖。科学commit仍唯一确定两文件；另存`deployment_manifest.json`以完整相对路径补全每个源文件SHA256：运行器`5e6cf749b5a1ffba79df61cf53a06b3ca0cefec4afb7a678b94243c16e254f83`，工具模块`218f396f3192c753301d3e53ea5d4ec0098901c089f05324440663d5abb6d2ca`。本地随后仅修复记录键名，运行中的科学checkout、数据、配置和模型不改写。
+
+### 2026-09-13 — Task4-c 2.1 完整终态
+
+所有阶段退出码均0。以下时间为UTC；详细原始事件保留于同目录runtime_events.jsonl，调度开始时间与Python初始化事件时间分别记录。
+
+| 作业ID | 方法/阶段 | 调度开始UTC | 完成UTC | 节点/设备 | 状态 |
+|---|---|---|---|---|---|
+| 51857585 | 数据准备 | 13:55:10 | 13:56:02 | cn604-03 / CPU | COMPLETED |
+| 51857586_0 | FMT seed94211 | 13:56:08 | 13:56:50 | gpu208-18 / V100-SXM2-32GB | COMPLETED |
+| 51857586_1 | Conv3D seed94211 | 13:56:08 | 13:58:26 | gpu208-18 / V100-SXM2-32GB | COMPLETED |
+| 51857586_2 | FMT seed94212 | 13:56:53 | 13:57:15 | gpu208-18 / V100-SXM2-32GB | COMPLETED |
+| 51857586_3 | Conv3D seed94212 | 13:57:13 | 13:59:13 | gpu609-03 / V100-SXM2-32GB | COMPLETED |
+| 51857586_4 | FMT seed94213 | 13:57:16 | 13:57:37 | gpu208-18 / V100-SXM2-32GB | COMPLETED |
+| 51857586_5 | Conv3D seed94213 | 13:57:40 | 13:59:51 | gpu208-18 / V100-SXM2-32GB | COMPLETED |
+| 51857587 | 完整汇总 | 13:59:52 | 13:59:55 | cn604-18 / CPU | COMPLETED |
+
+主要结果见experiment_log的同版本终态；完整结果已下载并独立复算六次指标、验证选择及7500个中心的原始GT标签，PASS。
+归档SHA256 `063c9547af535904c5311635ee2be1afb3e69654f798b1231f1043d273bc92cf`，无模型checkpoint；独立报告已同步至远端同一输出目录。本次不存在尚在排队或运行的依赖作业。

@@ -10,6 +10,8 @@
 GT单元支持区域为Hairpin（包括实例0），GT外涡候选为该benchmark的负类；不使用旧四类部位/质量标签。
 完整实例和实际原生插值节点均不得跨train/validation/test。1.1的BiLSTM实现保留但不运行。
 用户已授权完成验证后删除临时验证代码、commit、push并在Ibex部署运行；验证记录保留，正式运行的数据检查保留。
+2.1首轮三种子×两方法及汇总已全部完成，独立预测/GT复算通过；科学运行固定commit `63b44d8c`。
+结论见`docs/experiment_log.md`的`task4c-binary-2026-09-13`，不得把已用test当作新确认集继续挑参数。
 现有证据不能概括为“所有客观特征都无效”或“傅里叶编码必然无法回归”。方法进展和证据边界见
 `docs/experiment_log.md` 的 `progress-2026-09-13`；归档路径与恢复方式见 `docs/repository_maintenance.md`。
 下文的任务定义与历史版本继续有效，其中推进授权不覆盖本次暂停决定。
