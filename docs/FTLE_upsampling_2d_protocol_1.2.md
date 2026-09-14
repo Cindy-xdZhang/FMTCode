@@ -28,10 +28,10 @@ Dropout2d指训练时以固定概率随机置零整个特征通道，并缩放�
 
 | 方法版本 | 技术和位置 | 主代码 | 结果 |
 |---|---|---|---|
-| ESPCN SR 1.2 p0/p15 | 仅低分辨率FTLE；两次隐藏卷积ReLU之后各一次Dropout2d | `FTLE_Upsampling_2D_1_2.py::Model` | 待完成审计 |
-| U-Net SR 1.2 p0/p15 | 五个DoubleConv模块输出后各一次Dropout2d，包括三层编码和两层解码；跳跃连接使用同一已dropout的编码输出 | 同上 | 待完成审计 |
-| Raw/FMT/objective2.2/FMTv5 + U-Net 1.2 p0/p15 | 与普通U-Net相同位置和概率；32通道几何投影与输入、输出头均不额外dropout | 同上 | 待完成审计 |
-| bilinear/bicubic 1.2 | 固定节点坐标插值；相同评价区域；无训练或dropout | `FTLE_Data_2D.py::interpolation` | 待完成审计 |
+| ESPCN SR 1.2 p0/p15 | 仅低分辨率FTLE；两次隐藏卷积ReLU之后各一次Dropout2d | `FTLE_Upsampling_2D_1_2.py::Model` | 已完成；见paper_tables_ftle_2d的1.2部分 |
+| U-Net SR 1.2 p0/p15 | 五个DoubleConv模块输出后各一次Dropout2d，包括三层编码和两层解码；跳跃连接使用同一已dropout的编码输出 | 同上 | 已完成；见paper_tables_ftle_2d的1.2部分 |
+| Raw/FMT/objective2.2/FMTv5 + U-Net 1.2 p0/p15 | 与普通U-Net相同位置和概率；32通道几何投影与输入、输出头均不额外dropout | 同上 | 已完成；见paper_tables_ftle_2d的1.2部分 |
+| bilinear/bicubic 1.2 | 固定节点坐标插值；相同评价区域；无训练或dropout | `FTLE_Data_2D.py::interpolation` | 已完成；见paper_tables_ftle_2d的1.2部分 |
 
 ESPCN为Efficient Sub-Pixel Convolutional Neural Network，通过低分辨率卷积和像素重排上采样。
 U-Net是有跳跃连接的编码、解码卷积网络。本次保留PyFlowVis改编网络的参数形状。
@@ -81,4 +81,4 @@ MSE是Mean Squared Error，即平方误差均值。训练数据单独拟合全�
 独立预检覆盖旧基线哈希、0概率与冻结网络逐元素相同、eval关闭dropout、train随机性、
 全部倍率输出大小和反向梯度、五线几何、故意重叠时间窗及共享源帧的拒绝检查。
 
-科学提交、验证、运行和最终结果在完成后补入专门验证记录；方法结论仅写入`docs/experiment_log.md`。
+已完成：科学commit25578a8f；432次训练、2592份预测及44个Slurm进程全部独立核对通过。证据见`docs/FTLE_upsampling_2d_validation_1.2.md`；方法结论仅写入`docs/experiment_log.md`。
