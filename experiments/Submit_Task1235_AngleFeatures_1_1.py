@@ -2,12 +2,12 @@
 import argparse
 import datetime
 import json
-import os
 from pathlib import Path
 import shutil
 import subprocess
 
 from experiments.Run_Task135_GeometricControls import sha, write_json
+from experiments.Record_Task1235_AngleFeatures_1_1 import append_record
 
 CONFIG = 'config/Verify_Task1235_AngleFeatures_1.1.json'
 
@@ -58,11 +58,7 @@ def main():
                 'expected_device': 'A100 or V100' if phase in ('Task2','Task35') else 'CPU',
                 'command': command}
         for path in [root / 'submissions.jsonl', Path('docs/ibex_run_registry.md')]:
-            with path.open('a', encoding='utf-8') as handle:
-                payload = json.dumps(item)
-                handle.write(payload + '\n' if path.suffix == '.jsonl' else '\n- **SUBMITTED angles 1.1** ' + payload + '\n')
-                handle.flush()
-                os.fsync(handle.fileno())
+            append_record(path, item, 'SUBMITTED angles 1.1')
         write_json(marker, jobs)
         print(json.dumps(item), flush=True)
 

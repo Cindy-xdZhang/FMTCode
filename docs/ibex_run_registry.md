@@ -6492,3 +6492,13 @@ UTC2026-09-14 09:26:41完成，12/12调度任务COMPLETED、exit0，编码/训�
 科学commit `5fabbe4d031a3311bd9d43dfc4e5d4630183dc9d`；配置`config/Verify_Task1235_AngleFeatures_1.1.json`。全部94个调度进程COMPLETED/exit0，120分片、780行主指标及2160行Task5逐尺度指标复算通过；原始源标签、尺度编号、配置/数据哈希和网络容量另行核对通过，450个临时checkpoint已删除。新旧方法全部在本批配对重训，不替换历史主表。
 
 完整预测及审计留在Ibex `/ibex/user/zhanx0o/FMT_AngleFeatures_20260914/outputs/Verify_Task1235_AngleFeatures_1.1`。本地保留不含模型的指标、配置、运行与审计记录。`macro_summary.csv` SHA256 `e33a8ce003cf2cdc19954355029c3d7eabd5e97fd7234bd64997801803895342`。独立源审计代码`experiments/Audit_Task1235_AngleSources_1_1.py`，审计文件`source_audit.json`、`independent_audit.json`、`scheduler_audit.json`。
+
+### AngleFeatures lifecycle record reconciliation
+
+共享lifecycle.jsonl含186条有效记录和1空行；94个逐作业stdout完整保留188条起止记录。缺少的两条从对应原始stdout逐字恢复并另存lifecycle_recovered.jsonl，原汇总文件保持；其余186条逐字段相同。188条均有节点与设备、94个结束码均0；不改变训练或指标。证据lifecycle_audit.json。
+
+- **RECOVERED FROM JOB STDOUT** {"record": {"experiment": "Verify_Task1235_AngleFeatures_1.1", "phase": "Task1", "event": "start", "time": "2026-09-14T14:38:13.661715+03:00", "job": "51882601", "array_job": "51882494", "array_task": "10", "node": "cn511-11", "device": "CPU", "config": "config/Verify_Task1235_AngleFeatures_1.1.json", "config_sha256": "6d09f3fbca732ff5d399d625643046f172983384b7a0bda6e26e306b937b21b0", "git_commit": "5fabbe4d031a3311bd9d43dfc4e5d4630183dc9d", "exit_code": null}, "log": "logs\\Task1.51882494_10.out"}
+
+- **RECOVERED FROM JOB STDOUT** {"record": {"experiment": "Verify_Task1235_AngleFeatures_1.1", "phase": "Task1", "event": "start", "time": "2026-09-14T14:38:10.636313+03:00", "job": "51882595", "array_job": "51882494", "array_task": "8", "node": "cn604-04", "device": "CPU", "config": "config/Verify_Task1235_AngleFeatures_1.1.json", "config_sha256": "6d09f3fbca732ff5d399d625643046f172983384b7a0bda6e26e306b937b21b0", "git_commit": "5fabbe4d031a3311bd9d43dfc4e5d4630183dc9d", "exit_code": null}, "log": "logs\\Task1.51882494_8.out"}
+
+运行结束后的记录器修补：共享追加使用文件锁，同时每个生命周期事件单独持久化。独立Ibex文件系统核验8个并发进程×100条、每条10,000字节payload，800条全部完整且无重复/丢失（lifecycle_writer_check.json）。此次仅检验记录器，未重新训练或改变科学快照5fabbe4d。原始记录及恢复记录分开保留。
