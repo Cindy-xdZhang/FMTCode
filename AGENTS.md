@@ -2,13 +2,13 @@
 
 ## 当前工作状态（2026-09-13 用户更新，优先于下文历史“当前”状态）
 
-2026-09-14最新用户要求执行`mainExp_Task4C_NearbySampling_4.13`：保持27,000训练束，新中心偏移原邻居距离5%–15%后重新积分，另建3,000邻近验证及10,000邻近测试；共享训练头区/源网格支持，不宣称空间独立。原FMT/Conv3D比较无正则化与dropout0.15、weight decay0.0001，各三种子，仅验证选epoch，全部固定组测试均报告。科学commit52ae26a4，已提交Ibex；协议`docs/Task4C_nearby_sampling_protocol_4.13.md`。旧4.6测试不读取，旧4.12训练拟合结果保持。
+2026-09-14用户指定的`mainExp_Task4C_NearbySampling_4.13`已完成：原27,000训练束保持，新增3,000邻近验证和10,000邻近测试，偏移原邻居距离5%–15%后重新积分；共享训练头区和源网格支持。原FMT/Conv3D各无正则化与dropout0.15、weight decay0.0001三种子，邻近测试F1依次为FMT0.943793±0.001428 / 0.989491±0.004233，Conv0.984681±0.001704 / 0.990186±0.005765。18个调度任务和12份预测独立核对完成，科学commit52ae26a4；见`docs/Task4C_nearby_sampling_protocol_4.13.md`及experiment_log。只衡量局部泛化，不覆盖旧4.6空间测试；当前没有自动新增实验。
 
 
 2026-09-14用户最新要求的完整训练集拟合已完成：`Verify_Task4C_TrainingMemorization_4.12`原27,000训练束固定阈值0.5，原FMT/Conv3D训练F1=0.997007/0.995148，错误26/42，均连续三轮≥0.99；全量预测与样本覆盖独立复算通过。原结构无需增容。额外增容FMT已完成并保留，增容Conv及四组merge在原模型达标后取消，不宣称四组比较完成。科学commit26f52805，见`docs/Task4C_training_memorization_protocol_4.12.md`。当前不继续测试调参，4.6历史测试结果不变。
 
 
-2026-09-14最新部署`Ablation_Task4C_GeneralizedCrossEntropy_4.11`，协议`docs/Task4C_generalized_cross_entropy_protocol_4.11.md`。固定原4.1数据、4.3网络、4.5训练，仅比较广义交叉熵q=0/0.3/0.7，保留零对照及三种子复核，不重标/删除样本、不读取test。工程核验通过，科学commit97e3f7ea，首批四项已运行；尚无完整科学结果。
+2026-09-14补齐`Ablation_Task4C_GeneralizedCrossEntropy_4.11`最终记录，协议`docs/Task4C_generalized_cross_entropy_protocol_4.11.md`。固定原4.1数据、4.3网络、4.5训练，仅比较广义交叉熵q=0/0.3/0.7；14次训练及三种子选择全部独立复算通过。对照/选定正q验证F1：FMT0.392898/0.398741（q0.3），Conv0.428428/0.432079（q0.7）。无test读取，科学commit97e3f7ea；方法结论见experiment_log，不改变当前4.13。
 
 
 目标会议为 ICLR。停止继续推进现有客观化方向；暂停 Task6/7/8 几何 tokenizer、Point-NN 与混合专家调参，

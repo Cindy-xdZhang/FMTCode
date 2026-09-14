@@ -5949,3 +5949,71 @@ Science commit `6bfc357bc8d9ac321f91cfb512eb39d2facf0332`; config `config/Ablati
 - Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:36:31.180377+00:00", "phase": "prepare", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51869130", "array_index": "0", "host": "cn604-18"}
 
 - Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:36:31.180323+00:00", "phase": "prepare", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51869123", "array_index": "1", "host": "cn604-18"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:37:22.564969+00:00", "phase": "prepare", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51869130", "array_index": "0", "host": "cn604-18"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:37:36.694531+00:00", "phase": "prepare", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51869123", "array_index": "1", "host": "cn604-18"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:37:44.769831+00:00", "phase": "encode", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51869124", "array_index": null, "host": "gpu609-05"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:38:24.939193+00:00", "phase": "encode", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51869124", "array_index": null, "host": "gpu609-05"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:38:38.820180+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51869144", "array_index": "2", "host": "gpu210-14"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:38:38.820223+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51869145", "array_index": "3", "host": "gpu210-14"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:38:43.292628+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51869142", "array_index": "0", "host": "gpu210-18"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:38:43.292597+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51869143", "array_index": "1", "host": "gpu210-18"}
+
+- Task4-c 4.13 scheduling update: {"version": "mainExp_Task4C_NearbySampling_4.13", "job_id": "51869125", "confirmed_at_utc": "2026-09-14T03:50:37.679720+00:00", "action": "ArrayTaskThrottle 4 to 8", "command_exit_code": 1, "scheduler_message": "Array members 2 and 6 already finished", "verification": "scontrol confirmed ArrayTaskThrottle=8; all remaining eight runs RUNNING", "retried": false, "scientific_config_changed": false, "planned_runs_unchanged": 12}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:42:23.785314+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51869142", "array_index": "0", "host": "gpu210-18"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:42:31.596702+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51869167", "array_index": "4", "host": "gpu210-18"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:44:43.209487+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51869167", "array_index": "4", "host": "gpu210-18"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:44:49.651961+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51869180", "array_index": "5", "host": "gpu210-18"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:45:55.015764+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51869144", "array_index": "2", "host": "gpu210-14"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:46:00.672483+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51869187", "array_index": "6", "host": "gpu210-14"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:49:51.585376+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51869187", "array_index": "6", "host": "gpu210-14"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:49:56.538075+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51869215", "array_index": "7", "host": "gpu210-14"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:50:22.626764+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51869217", "array_index": "8", "host": "gpu210-14"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:50:22.626724+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51869218", "array_index": "9", "host": "gpu210-14"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:50:25.130565+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51869219", "array_index": "10", "host": "gpu210-10"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:50:25.130528+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51869125", "array_index": "11", "host": "gpu210-10"}
+
+- Task4-c 4.11 runtime status: {"time": "2026-09-13T22:51:05.368573+00:00", "phase": "select", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51867220", "array_index": null, "host": "cn604-18"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:53:47.130481+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51869217", "array_index": "8", "host": "gpu210-14"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:54:37.401156+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51869143", "array_index": "1", "host": "gpu210-18"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T03:55:13.415114+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51869219", "array_index": "10", "host": "gpu210-10"}
+
+- Task4-c 4.11 FINAL: scientific commit97e3f7ea; all17 Slurm tasks COMPLETED exit0; all14 runs independently audited, max error1.67e-16, no test/checkpoints. q0/positive validation F1: FMT0.392898/0.398741(q0.3), Conv0.428428/0.432079(q0.7); selector SHA256 6159c985130c3235bc925da6c84a6ed742b9ada0652dd6e046b0fd6a67c386ff. Report retained in original Ibex output independent_development_audit.json.
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T04:00:16.990292+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51869180", "array_index": "5", "host": "gpu210-18"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T04:04:31.010730+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51869145", "array_index": "3", "host": "gpu210-14"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T04:08:11.326180+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51869218", "array_index": "9", "host": "gpu210-14"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T04:08:48.070234+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51869125", "array_index": "11", "host": "gpu210-10"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T04:11:46.986145+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51869215", "array_index": "7", "host": "gpu210-14"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T04:11:55.648910+00:00", "phase": "merge", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51869126", "array_index": null, "host": "cn511-04"}
+
+- Task4-c 4.13 runtime status: {"kind": "runtime", "time": "2026-09-14T04:11:58.724576+00:00", "phase": "merge", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51869126", "array_index": null, "host": "cn511-04"}
+
+- Task4-c 4.13 FINAL: scientific commit52ae26a4, config SHA256 9b7b11e0c76344ce18bb9e89794240bb688936b14cd093cc3efe8fcc3f576b18, completed 2026-09-14T04:11:57.518670+00:00; 18/18 tasks COMPLETED exit0, all12 prediction sets independently verified, max error4.44e-16; actual GPU Tesla V100-SXM2-32GB. Summary SHA256 c36bbdda028904073c7294ab264fc7cbb195dc7e404c44e857420ea43002bdef. FMT unregularized/regularized nearby test F1 0.943793±0.001428 / 0.989491±0.004233; Conv 0.984681±0.001704 / 0.990186±0.005765. Original spatial test unchanged and unread; no checkpoints. Data, input-repeat and prediction audits retained in original Ibex output; sacct timestamps UTC+03:00, runtime events UTC.

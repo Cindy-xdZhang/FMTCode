@@ -2,7 +2,7 @@
 
 本文件是 Task1–Task8 的唯一任务定义。旧文档若与本文件冲突，以本文件为准。协议自 2026-08-23 起生效；Task5 自 2026-08-26 起加入；Task6/7/8 自 2026-09-09 起加入；历史实验 ID 和输出目录不追溯改名。
 
-2026-09-14最新用户要求执行`mainExp_Task4C_NearbySampling_4.13`：保持27,000训练束，新中心偏移原邻居距离5%–15%后重新积分，另建3,000邻近验证及10,000邻近测试；共享训练头区/源网格支持，不宣称空间独立。原FMT/Conv3D比较无正则化与dropout0.15、weight decay0.0001，各三种子，仅验证选epoch，全部固定组测试均报告。科学commit52ae26a4，已提交Ibex；协议`docs/Task4C_nearby_sampling_protocol_4.13.md`。旧4.6测试不读取，旧4.12训练拟合结果保持。
+2026-09-14用户指定的`mainExp_Task4C_NearbySampling_4.13`已完成：原27,000训练束保持，新增3,000邻近验证和10,000邻近测试，偏移原邻居距离5%–15%后重新积分；共享训练头区和源网格支持。原FMT/Conv3D各无正则化与dropout0.15、weight decay0.0001三种子，邻近测试F1依次为FMT0.943793±0.001428 / 0.989491±0.004233，Conv0.984681±0.001704 / 0.990186±0.005765。18个调度任务和12份预测独立核对完成，科学commit52ae26a4；见`docs/Task4C_nearby_sampling_protocol_4.13.md`及experiment_log。只衡量局部泛化，不覆盖旧4.6空间测试；当前没有自动新增实验。
 
 
 2026-09-14用户最新要求的完整训练集拟合已完成：`Verify_Task4C_TrainingMemorization_4.12`原27,000训练束固定阈值0.5，原FMT/Conv3D训练F1=0.997007/0.995148，错误26/42，均连续三轮≥0.99；全量预测与样本覆盖独立复算通过。原结构无需增容。额外增容FMT已完成并保留，增容Conv及四组merge在原模型达标后取消，不宣称四组比较完成。科学commit26f52805，见`docs/Task4C_training_memorization_protocol_4.12.md`。当前不继续测试调参，4.6历史测试结果不变。
@@ -11,7 +11,7 @@
 **2026-09-13 当前推进状态（取代下面的历史推进状态）**：目标会议为 ICLR；按用户决定，停止现有客观化路线，
 暂停 Task6/7/8 几何 tokenizer、Point-NN 与混合专家探索（包括 Task36）。Task1/2/3/5 保留冻结主结果。
 
-2026-09-14最新部署 **`Ablation_Task4C_GeneralizedCrossEntropy_4.11`**：固定原数据/网络/优化设置，仅比较加权平滑广义交叉熵q=0/0.3/0.7，始终保留交叉熵对照并三种子验证。没有样本剔除、重标或test读取；工程检查通过，科学commit97e3f7ea，首批训练已在Ibex运行，尚无完整科学成绩。见[4.11协议](Task4C_generalized_cross_entropy_protocol_4.11.md)。
+2026-09-14补齐 **`Ablation_Task4C_GeneralizedCrossEntropy_4.11`**：固定原数据/网络/优化设置，比较加权平滑广义交叉熵q=0/0.3/0.7，14次训练和三种子选择全部独立复算通过。对照/选定正q验证F1为FMT0.392898/0.398741（q0.3）、Conv0.428428/0.432079（q0.7）。无test读取，科学commit97e3f7ea，方法判断见experiment_log。见[4.11协议](Task4C_generalized_cross_entropy_protocol_4.11.md)。
 
 用户在当天后续指定 **Task4-c 3.1**：Channel+TBL各一帧，加入论文lambda2/正oyf头区、RK45双向涡线、清洗、弧长重采样及整束归一化，比较FMT＋多层感知机与Conv3D＋多层感知机。
 这取代当天较早“仅整理、不启动训练、新任务未选定”的状态；Task4-a/b 算法与历史结果冻结。
