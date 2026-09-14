@@ -1,0 +1,12 @@
+{
+  "upstream_commit": "3040ace90b34483fd80387166f17d97305d7ae45",
+  "source": "FMT_Utils\\model_zoo.py",
+  "source_sha256": "5b1d5e94fcdd86bf417e6a1b1783d1a6a21537b693ee687c83cee9cacf3653e6",
+  "classes": {
+    "DoubleConv": "6323647de7462857b7a91f717211d437826fdb0da31ae305a4fcaabfbf6e3f19",
+    "Down": "07a5f70764cc4429332af3b8cdf385a34dcbff38f21ad95796532f928f821f2f",
+    "Up": "8526916c7892dd9a3fe7441baa88a24de4d0c818c1cea95c4e518ff85077a4d9",
+    "ESPCN_SR": "2b005adcfb4d7a7e4811f539ae70f53a1ff8826cbe55d0ce64a355b8bef3446b",
+    "UNet_SR": "418873a95ee618fffc1841aececcce272bf60a7d69459d80efb6981f548962e8"
+  }
+}
