@@ -592,7 +592,7 @@ Channel三档(ds,单向最大步数)=(0.001,80)/(0.002,50)/(0.004,30)，TBL=(0.0
 
 F1：
 
-| Task | Raw | Raw-PCA residual | 原FMT配方 | fmt_v5 5.1 | 距离版2.1 | 距离+夹角2.2 |
+| Task | Raw | Raw-PCA residual | FMT+运动学估计 | fmt_v5+运动学估计 | 距离版2.1 | 距离+夹角2.2 |
 |---|---:|---:|---:|---:|---:|---:|
 | Task1 | 0.423541±0.000117 | — | 0.595787±0.000252 | 0.599186±0.000047 | 0.305793±0.003446 | 0.322713±0.000199 |
 | Task2 | 0.482806±0.010384 | — | 0.560551±0.004939 | 0.517190±0.022260 | 0.233557±0.013586 | 0.362336±0.011118 |
@@ -601,7 +601,7 @@ F1：
 
 Average Precision（平均精确率，按召回率增量加权的精确率）：
 
-| Task | Raw | Raw-PCA residual | 原FMT配方 | fmt_v5 5.1 | 距离版2.1 | 距离+夹角2.2 |
+| Task | Raw | Raw-PCA residual | FMT+运动学估计 | fmt_v5+运动学估计 | 距离版2.1 | 距离+夹角2.2 |
 |---|---:|---:|---:|---:|---:|---:|
 | Task3 | 0.677931±0.006658 | 0.725327±0.010275 | 0.820581±0.010087 | 0.797553±0.003458 | 0.709362±0.001762 | 0.727608±0.001216 |
 | Task5 | 0.647947±0.004679 | 0.664385±0.002428 | 0.797309±0.007870 | 0.789649±0.003717 | 0.697861±0.002635 | 0.703235±0.002332 |
@@ -610,4 +610,6 @@ Task3当前配方aivd1w3_dft在本批共同容量下重跑F1为0.868073±0.00427
 
 完整预测及审计留在Ibex `/ibex/user/zhanx0o/FMT_AngleFeatures_20260914/outputs/Verify_Task1235_AngleFeatures_1.1`。本地保留不含模型的指标、配置、运行与审计记录。`macro_summary.csv` SHA256 `e33a8ce003cf2cdc19954355029c3d7eabd5e97fd7234bd64997801803895342`。独立源审计代码`experiments/Audit_Task1235_AngleSources_1_1.py`，审计文件`source_audit.json`、`independent_audit.json`、`scheduler_audit.json`。
 
-方法判断见[实验流水](experiment_log.md#task1235-angles-2026-09-14)。
+2026-09-14命名更正：上述FMT两列不是独立编码器结果。Task1/2/3分别为`fmt_all+kin4`与`fmt_v5+kin4`，Task5分别为`fmt_all+gram2+kin6`与`fmt_v5+gram2+kin6`。`kin4/kin6`从轨线估算速度梯度、涡量、IVD-like偏差等标量，再取4/6频率傅里叶系数；不能将其省略而标为“原FMT”。数值不变。
+
+方法判断及此前表述更正见[实验流水](experiment_log.md#task1235-angles-baseline-correction-2026-09-14)。

@@ -60,3 +60,9 @@ Raw-PCA只在训练数据拟合433个分量。全部辅助网络的总参数与�
 科学commit `5fabbe4d031a3311bd9d43dfc4e5d4630183dc9d`；配置`config/Verify_Task1235_AngleFeatures_1.1.json`。全部94个调度进程COMPLETED/exit0，120分片、780行主指标及2160行Task5逐尺度指标复算通过；原始源标签、尺度编号、配置/数据哈希和网络容量另行核对通过，450个临时checkpoint已删除。新旧方法全部在本批配对重训，不替换历史主表。
 
 Task2结束后将Task35并发从6调至12，沿用原来两GPU数组合计12路的上限；调度更新过程与警告保留在resource_updates.jsonl。科学配置未改变。全部指标见paper_tables_tasks_3d，方法结论见experiment_log。
+
+## 2026-09-14 执行后基线身份核对
+
+本节为执行后说明，不修改以上冻结协议和科学配置。用户指出“原FMT”的简称可能隐藏IVD估计。核对确认：Task1/2/3的old_fmt实际是`fmt_all+kin4`，Task5是`fmt_all+gram2+kin6`；fmt_v5实验分支也包含相同附加块。`kin4/kin6`显式估算速度梯度、涡量和IVD-like等标量，并非纯原161维FMT。单独的`aivd1w3_dft`参照与kin分支共用运动学标量估计函数。结果表已展开说明该区别，冻结运行的arm标识不改名。
+
+独立编码器的实现维数仍为161/326/231/396；本次实际实验输入维数不可用该表替代。此前结论的更正及可支持范围仅见[实验日志](experiment_log.md#task1235-angles-baseline-correction-2026-09-14)。
