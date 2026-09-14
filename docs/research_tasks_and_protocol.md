@@ -1,5 +1,7 @@
 # FMT 研究任务与统一协议
 
+2026-09-14最新用户要求`Verify_Task4C_Encoders_4.15`：在冻结4.14数据上比较纯fmt_v5 5.1、用户明确选择的距离+夹角fmt_objective_ntod_v2 2.2与Conv3D，三方法各三种子，保留训练规则；不加kin/IVD估计或旧方向频谱。新协议`docs/Task4C_encoders_protocol_4.15.md`，当前预检，无性能结论。上一批Task1/2/3/5的基线命名已在experiment_log中更正；“含kin的FMT”不得被称为纯原始FMT。
+
 2026-09-14用户新增授权 `Verify_Task1235_AngleFeatures_1.1`：开发fmt_v5 5.1（原FMT+15条同时间中心夹角傅里叶）与fmt_objective_ntod_v2 2.2（冻结距离版+同一夹角分支），在原10个3D条目上配对测试Task1/2/3/5。三种子、旧数据/标签/训练规则保持；Task6/7/8仍暂停。协议`docs/Task1235_angle_features_protocol_1.1.md`，科学commit5fabbe4d；94个调度进程、120分片全部完成，780行主指标与2160行逐尺度指标、原始源标签及容量检查全部复算通过，450个临时模型已清理。完整结果见experiment_log的task1235-angles-2026-09-14及paper_tables_tasks_3d。当前没有自动追加实验。旧objective_fmt_nTDO_v2 2.1及主表不改。
 
 
