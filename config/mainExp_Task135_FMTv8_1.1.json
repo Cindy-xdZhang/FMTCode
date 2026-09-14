@@ -1,0 +1,387 @@
+{
+  "experiment": "mainExp_Task135_FMTv8_1.1",
+  "output_root": "/ibex/user/zhanx0o/FMT_Task135_FMTv8_20260914/outputs/mainExp_Task135_FMTv8_1.1",
+  "base_commit": "5c92f8accebcaa8c20c78c2f0744b6a78ee9db63",
+  "datasets": [
+    "channel",
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400",
+    "tangaroa",
+    "deltaWing_resampled",
+    "deltaWing_LBM",
+    "f22raptor",
+    "boeing747",
+    "smokeBuoyancy"
+  ],
+  "tasks": [
+    "Task1",
+    "Task3",
+    "Task5"
+  ],
+  "roots": {
+    "fixed": "/home/zhanx0o/FMT_Uniform_3D_20260901",
+    "multiscale": "/home/zhanx0o/FMT_Task12_3D_20260823"
+  },
+  "cylinder_datasets": [
+    "cylinder3d",
+    "halfcylinderRe640",
+    "halfcylinderRe6400"
+  ],
+  "minimum_cylinder_time": 7.5,
+  "dataset_splits": {
+    "cylinder3d": {
+      "Task1": {
+        "train": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "validation": [
+          8,
+          9
+        ],
+        "confirmation": [
+          2,
+          3
+        ]
+      },
+      "Task2": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      },
+      "Task3": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      }
+    },
+    "halfcylinderRe640": {
+      "Task1": {
+        "train": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "validation": [
+          8,
+          9
+        ],
+        "confirmation": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "Task2": {
+        "train": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      },
+      "Task3": {
+        "train": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      }
+    },
+    "halfcylinderRe6400": {
+      "Task1": {
+        "train": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "validation": [
+          8,
+          9
+        ],
+        "confirmation": [
+          2,
+          3
+        ]
+      },
+      "Task2": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      },
+      "Task3": {
+        "train": [
+          4,
+          5
+        ],
+        "validation": [
+          6,
+          7
+        ],
+        "confirmation": [
+          8,
+          9
+        ]
+      }
+    }
+  },
+  "protocol": {
+    "reused_benchmark": true,
+    "no_model_selection_on_test": true,
+    "benchmark_limit": "Reused benchmark, not new independent confirmation. Distinct cache files do not guarantee disjoint physical trajectory windows in historical Task1/2/3 or fixed Task3 transfer. No claim of full temporal independence.",
+    "encoder": "Five user-specified 161/233/326/398/100D combinations, no kin or IVD estimates",
+    "paired_parents": "Same frozen original161 cache in every arm; 233 and398 also receive identical72D normalized direction block; V8 pools original138 into signed top4+mean",
+    "task3_reference": "No aivd1w3_dft arm",
+    "task2_capacity": "Task2 is not included",
+    "task35_capacity": "All five geometry arms and Raw-PCA padded to433; identical total/trainable network parameters",
+    "test_policy": "All models and thresholds frozen per shard before loading evaluation features and labels. No selection using evaluation results.",
+    "angles": "theta_ij(t)=atan2(norm(cross(unit(d_i),unit(d_j))),dot(unit(d_i),unit(d_j))); i<j among six neighbors. Geometry float64, spectrum cast to parent dtype. Undefined angles fail without filtering rows.",
+    "frequency_axis": "Stored sample index, not physical Hz. Existing trajectory samples and sampling irregularity retained.",
+    "task5_cache_reuse": "Read-only corrected late_task5_cache_r2 from the nTDO 1.1 execution revision 2; preserve 18/6/9 disjoint scale tuples.",
+    "objectivity_scope": "Distance+angle encoder is a deterministic function of invariant scalars with material correspondence. Raw-plus-objective supervised network still takes non-objective Raw coordinates.",
+    "selection": "Five combinations specified by user before new evaluation; original task training and validation-only selection preserved",
+    "name_collision": "Existing objective_fmt_nTDO_v2 distance-only method 2.1 stays untouched; requested fmt_objective_ntod_v2 has new method revision 2.2.",
+    "parent_cache": "Use the unchanged cached 161D original representation (historical neighbor_scale=1, neighbor_weight=1) in both paired arms; append angle spectrum only. This preserves historical float32 cache arithmetic.",
+    "direction_normalization": "Only direction branch: per-primitive all224-point centroid and maximum radius, computed float64 then castfloat32; original161 unchanged"
+  },
+  "task1": {
+    "train": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "validation": [
+      8,
+      9
+    ],
+    "confirmation": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "seeds": [
+      7380,
+      7381,
+      7382
+    ],
+    "kmeans_n_init": 20,
+    "pca_dim": 8,
+    "arms": [
+      "raw",
+      "fmt_161",
+      "fmt_direction_233",
+      "fmt_v5_326",
+      "fmt_v5_direction_398",
+      "fmt_v8_100"
+    ]
+  },
+  "features": {
+    "raw": "raw",
+    "fmt_161": "fmt_161",
+    "fmt_direction_233": "fmt_direction_233",
+    "fmt_v5_326": "fmt_v5_326",
+    "fmt_v5_direction_398": "fmt_v5_direction_398",
+    "fmt_v8_100": "fmt_v8_100"
+  },
+  "task3": {
+    "train": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "validation": [
+      6,
+      7
+    ],
+    "confirmation": [
+      8,
+      9
+    ],
+    "seeds": [
+      40,
+      41,
+      42
+    ],
+    "arms": [
+      "raw",
+      "raw_wide",
+      "raw_pca",
+      "fmt_161",
+      "fmt_direction_233",
+      "fmt_v5_326",
+      "fmt_v5_direction_398",
+      "fmt_v8_100"
+    ],
+    "auxiliary_input_width": 433,
+    "fusion": {
+      "alpha_min": 0.0,
+      "alpha_max": 3.0,
+      "alpha_steps": 61,
+      "selection_metric": "minimum_gain",
+      "minimum_f1_gain": 0.0
+    }
+  },
+  "task5": {
+    "train": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "validation": [
+      4,
+      5
+    ],
+    "confirmation": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "seeds": [
+      40,
+      41,
+      42
+    ],
+    "arms": [
+      "raw",
+      "raw_wide",
+      "raw_pca",
+      "fmt_161",
+      "fmt_direction_233",
+      "fmt_v5_326",
+      "fmt_v5_direction_398",
+      "fmt_v8_100",
+      "fixed_task3_raw"
+    ],
+    "auxiliary_input_width": 433,
+    "fusion": {
+      "fixed_alpha": 1.0,
+      "selection_metric": "average_precision"
+    },
+    "features": {
+      "raw": "raw",
+      "fmt_161": "fmt_161",
+      "fmt_direction_233": "fmt_direction_233",
+      "fmt_v5_326": "fmt_v5_326",
+      "fmt_v5_direction_398": "fmt_v5_direction_398",
+      "fmt_v8_100": "fmt_v8_100"
+    }
+  },
+  "task5_rebuilt_datasets": [
+    "cylinder3d",
+    "halfcylinderRe6400"
+  ],
+  "raw_model": {
+    "temporal_width": 64,
+    "embedding_dim": 128,
+    "auxiliary_dim": 64
+  },
+  "model": {
+    "embedding_dim": 128,
+    "auxiliary_dim": 64,
+    "residual_input": "geometry_fmt"
+  },
+  "training": {
+    "device": "cuda",
+    "batch_size": 512,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "max_epochs": 100,
+    "patience": 20,
+    "min_delta": 0.0001
+  },
+  "task5_cache_directory": "/home/zhanx0o/FMT_nTDO_20260910/outputs/Verify_Task1235_ObjectiveFMTnTDO_1.1/late_task5_cache_r2",
+  "execution_revision": 1,
+  "task5_source_times": {
+    "development": [
+      7.5,
+      7.7,
+      7.9,
+      8.1,
+      9.5,
+      9.7
+    ],
+    "confirmation": [
+      12.5,
+      12.8,
+      13.1,
+      13.4
+    ]
+  },
+  "method_dimensions": {
+    "fmt_161": 161,
+    "fmt_direction_233": 233,
+    "fmt_v5_326": 326,
+    "fmt_v5_direction_398": 398,
+    "fmt_v8_100": 100
+  },
+  "pooling": "Signed absolute-top4 of all138, stable ties by original column; signed arithmetic mean including zeros; before standardization"
+}
