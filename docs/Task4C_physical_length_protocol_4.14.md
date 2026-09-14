@@ -40,3 +40,7 @@ lambda2阈值仍Channel−13.395、TBL−0.0272，候选原生单元8个顶点�
 新增一个入口`experiments/Task4C_PhysicalLength_4_14.py`、一个配置`config/mainExp_Task4C_PhysicalLength_4.14.json`、一个Ibex脚本`ibex_bash/task4c_physical_length_4p14.sh`。旧模型、编码器、训练器保持原文件；新入口复用训练器并记录新数据协议及自身源码哈希。
 
 内联工程核验的持久证据集中`outputs/Verify_Task4C_PhysicalLengthCode_4.14/`，不保留一次性test/verify源码。验证解析螺旋线端点、六组步数/弧长、确定性空间块、距离拒绝、两个真实流场小预检及实际训练/预测指标。小预检与训练pilot不计正式科研成绩。生产顺序为两个流场preflight→完整采样→GPU编码→6次训练→汇总，所有Ibex进程登记；失败也保留记录。最终独立检查数据身份、坐标间隔、标签和实际弧长、保存预测及选择过程，结论仅记experiment_log。
+
+## 完成记录
+
+UTC2026-09-14 09:26:41完成，科学commit`5c9c904228d5185447a084953b2652a8938c0485`；12个Slurm任务全部成功。全量数据身份/物理长度/距离、实际网络输入精确重复、六次保存预测、验证选择及最终汇总均独立核对通过，无权重文件。summary SHA256 `7104bcbf34e637a6462c5eb77936e7b37f6731f2bd13368d0eed45b9d82b9889`。原始证据留在个人Ibex本版本输出目录；数值表见`docs/paper_tables_tasks_3d.md`，方法结论见`docs/experiment_log.md`。没有根据新测试改动本协议。

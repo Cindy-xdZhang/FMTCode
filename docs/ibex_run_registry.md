@@ -6035,3 +6035,62 @@ Science commit `6bfc357bc8d9ac321f91cfb512eb39d2facf0332`; config `config/Ablati
 - Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T08:50:43.556796+00:00", "phase": "preflight", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51877271", "array_index": "0", "host": "cn511-13"}
 
 - Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T08:50:43.556629+00:00", "phase": "preflight", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51877188", "array_index": "1", "host": "cn511-13"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T08:52:09.377007+00:00", "phase": "prepare", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51877189", "array_index": "1", "host": "cn511-11"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T08:52:09.996533+00:00", "phase": "prepare", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51877355", "array_index": "0", "host": "cn604-07"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T08:54:14.179517+00:00", "phase": "prepare", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51877355", "array_index": "0", "host": "cn604-07"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T08:56:11.808533+00:00", "phase": "prepare", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51877189", "array_index": "1", "host": "cn511-11"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T08:58:32.643657+00:00", "phase": "encode", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51877190", "array_index": null, "host": "gpu214-10"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T08:59:13.882219+00:00", "phase": "encode", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51877190", "array_index": null, "host": "gpu214-10"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:00:25.983779+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51877538", "array_index": "3", "host": "gpu213-10"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:00:25.983735+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51877537", "array_index": "2", "host": "gpu213-10"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:00:26.183366+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51877539", "array_index": "4", "host": "gpu212-18"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:00:26.589475+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51877535", "array_index": "0", "host": "gpu609-05"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:00:31.916116+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51877536", "array_index": "1", "host": "gpu214-14"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:00:33.071324+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "job": "51877191", "array_index": "5", "host": "gpu212-10"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:01:58.966915+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51877537", "array_index": "2", "host": "gpu213-10"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:02:42.231656+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51877539", "array_index": "4", "host": "gpu212-18"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:04:48.215106+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51877535", "array_index": "0", "host": "gpu609-05"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:23:06.712232+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51877536", "array_index": "1", "host": "gpu214-14"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:25:30.823343+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51877538", "array_index": "3", "host": "gpu213-10"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:26:32.859509+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "job": "51877191", "array_index": "5", "host": "gpu212-10"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:26:39.709958+00:00", "phase": "merge", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51877192", "array_index": null, "host": "cn604-04"}
+
+- Task4-c 4.14 runtime status: {"kind": "runtime", "time": "2026-09-14T09:26:42.679113+00:00", "phase": "merge", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51877192", "array_index": null, "host": "cn604-04"}
+
+### Task4-c 4.14 最终完成与独立核对
+
+UTC2026-09-14 09:26:41完成，12/12调度任务COMPLETED、exit0，编码/训练实际均Tesla V100-SXM2-32GB。六次保存预测与全量数据审计通过；合并测试三种子FMT0.673624±0.009154、Conv3D0.811226±0.013250，FMT在TBL单独均值0.591833。支持本版已知头区内部有距离间隔的测试结果，不支持FMT优于Conv，也不改写旧4.6/4.13；完整结论仅见experiment_log。无模型文件，summary SHA256 7104bcbf34e637a6462c5eb77936e7b37f6731f2bd13368d0eed45b9d82b9889。
+
+| Job ID | 状态 | 开始（UTC+03:00） | 结束（UTC+03:00） | 节点 |
+|---|---|---|---|---|
+| 51877190 | COMPLETED, 0:0 | 2026-09-14T11:58:11 | 2026-09-14T11:59:14 | gpu214-10 |
+| 51877192 | COMPLETED, 0:0 | 2026-09-14T12:26:35 | 2026-09-14T12:26:42 | cn604-04 |
+| 51877188_0 | COMPLETED, 0:0 | 2026-09-14T11:49:55 | 2026-09-14T11:50:43 | cn511-13 |
+| 51877188_1 | COMPLETED, 0:0 | 2026-09-14T11:49:55 | 2026-09-14T11:50:43 | cn511-13 |
+| 51877189_0 | COMPLETED, 0:0 | 2026-09-14T11:52:00 | 2026-09-14T11:54:14 | cn604-07 |
+| 51877189_1 | COMPLETED, 0:0 | 2026-09-14T11:52:00 | 2026-09-14T11:56:12 | cn511-11 |
+| 51877191_0 | COMPLETED, 0:0 | 2026-09-14T12:00:20 | 2026-09-14T12:04:48 | gpu609-05 |
+| 51877191_1 | COMPLETED, 0:0 | 2026-09-14T12:00:20 | 2026-09-14T12:23:07 | gpu214-14 |
+| 51877191_2 | COMPLETED, 0:0 | 2026-09-14T12:00:20 | 2026-09-14T12:01:59 | gpu213-10 |
+| 51877191_3 | COMPLETED, 0:0 | 2026-09-14T12:00:20 | 2026-09-14T12:25:31 | gpu213-10 |
+| 51877191_4 | COMPLETED, 0:0 | 2026-09-14T12:00:20 | 2026-09-14T12:02:42 | gpu212-18 |
+| 51877191_5 | COMPLETED, 0:0 | 2026-09-14T12:00:20 | 2026-09-14T12:26:33 | gpu212-10 |
