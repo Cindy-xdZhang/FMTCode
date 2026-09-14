@@ -6658,3 +6658,25 @@ UTC2026-09-14 09:26:41完成，12/12调度任务COMPLETED、exit0，编码/训�
 - Task4-c 4.18 runtime {"kind": "runtime", "time": "2026-09-14T14:18:38.224005+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB, GPU-d047c4ce-16dd-f29d-4840-8571462b3508", "job": "51888670", "array_index": "1", "host": "gpu609-04"}
 
 - Task4-c 4.18 runtime {"kind": "runtime", "time": "2026-09-14T14:18:45.207190+00:00", "phase": "train", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB, GPU-262faaee-bfa1-3e60-bc73-61c88ac9506f", "job": "51888669", "array_index": "0", "host": "gpu609-09"}
+
+### Task4-c 4.18 最终完成
+
+2026-09-14T14:40:58.419222+00:00完成，5/5项COMPLETED、exit0。三次V100小Conv运行和独立核对均完成，测试均值0.789915，平均训练18.432分钟；参数83,918为FMT的94.8076%。完整结论和比较边界见experiment_log，summary SHA256 `6091bc29458fc6837131b511abe213713b65b9d0e197ec67e71347c1655cfceb`。
+
+| Job ID | 状态 | 开始（UTC+03:00） | 结束（UTC+03:00） | 节点 |
+|---|---|---|---|---|
+| 51888655 | COMPLETED, 0:0 | 2026-09-14T17:18:01 | 2026-09-14T17:18:18 | cn604-17 |
+| 51888657 | COMPLETED, 0:0 | 2026-09-14T17:40:54 | 2026-09-14T17:40:59 | cn604-18 |
+| 51888656_0 | COMPLETED, 0:0 | 2026-09-14T17:18:31 | 2026-09-14T17:36:40 | gpu609-09 |
+| 51888656_1 | COMPLETED, 0:0 | 2026-09-14T17:18:31 | 2026-09-14T17:34:33 | gpu609-04 |
+| 51888656_2 | COMPLETED, 0:0 | 2026-09-14T17:18:31 | 2026-09-14T17:40:52 | gpu214-02 |
+
+- Task4-c 4.18 runtime {"kind": "runtime", "time": "2026-09-14T14:34:33.289606+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB, GPU-d047c4ce-16dd-f29d-4840-8571462b3508", "job": "51888670", "array_index": "1", "host": "gpu609-04"}
+
+- Task4-c 4.18 runtime {"kind": "runtime", "time": "2026-09-14T14:36:40.353002+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB, GPU-262faaee-bfa1-3e60-bc73-61c88ac9506f", "job": "51888669", "array_index": "0", "host": "gpu609-09"}
+
+- Task4-c 4.18 runtime {"kind": "runtime", "time": "2026-09-14T14:40:51.519500+00:00", "phase": "train", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB, GPU-1a1c2672-3827-faae-5d70-466ff6da8a83", "job": "51888656", "array_index": "2", "host": "gpu214-02"}
+
+- Task4-c 4.18 runtime {"kind": "runtime", "time": "2026-09-14T14:40:56.694030+00:00", "phase": "merge", "state": "STARTED", "exit_code": null, "device": "CPU", "job": "51888657", "array_index": null, "host": "cn604-18"}
+
+- Task4-c 4.18 runtime {"kind": "runtime", "time": "2026-09-14T14:40:59.593981+00:00", "phase": "merge", "state": "ENDED", "exit_code": 0, "device": "CPU", "job": "51888657", "array_index": null, "host": "cn604-18"}

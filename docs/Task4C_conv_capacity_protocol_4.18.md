@@ -20,3 +20,7 @@ GroupNorm分组4、GELU、Dropout3d、LayerNorm及分类激活位置均保持原
 代码入口`experiments/Task4C_ConvCapacity_4_18.py`集中结构、缓存核验、训练适配和正式预测复算；配置`config/Ablation_Task4C_ConvCapacity_4.18.json`；部署`ibex_bash/task4c_conv_capacity_4p18.sh`。旧训练器及网络源码不修改。仅内存最佳权重，不产生checkpoint。准备1项、训练3项、汇总及审计1项，共5个Slurm进程，完整登记。
 
 本地内联检查：参数公式与实际数目、算子顺序、所有参数梯度、27组独立分类指标及三次真实工程小缓存训练通过。首份工程夹具要求每流场16个正类，但本地预检只有13/12个，改用每类8个、合计32个既有工程训练样本；生产配额不变。夹具跨集合复用只是训练接口检查，分数不作为科研结果。证据集中`outputs/Verify_Task4C_ConvCapacityCode_4.18/checks.json`与实际夹具配置，不新增临时test/verify代码文件。正式结果独立复算全部分组指标、验证选定epoch/阈值、逐轮训练覆盖和输入身份，并核对源码/配置/预测哈希。
+
+## 完成记录
+
+2026-09-14T14:40:58.419222+00:00完成，科学commit33db52c6；5项调度任务全部成功。三份预测、缓存身份、验证选择和最终汇总独立核对通过，无权重文件。summary SHA256 `6091bc29458fc6837131b511abe213713b65b9d0e197ec67e71347c1655cfceb`。数值见实验表，方法结论只见experiment_log；没有根据新测试修改结构或训练设置。
