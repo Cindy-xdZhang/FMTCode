@@ -1,0 +1,93 @@
+{
+  "version": "Other_FTLEUpsampling2D_1.2",
+  "output": "outputs/Other_FTLEUpsampling2D_1.2",
+  "data_root": "/home/zhanx0o/DeepVortex/FLowDataFolder",
+  "flows": [
+    {
+      "name": "cylinder2d",
+      "high_shape": [
+        65,
+        513
+      ]
+    },
+    {
+      "name": "boussinesq",
+      "high_shape": [
+        385,
+        129
+      ]
+    },
+    {
+      "name": "pipedcylinder2d",
+      "high_shape": [
+        129,
+        385
+      ]
+    },
+    {
+      "name": "doublegyre2d",
+      "high_shape": [
+        129,
+        257
+      ]
+    }
+  ],
+  "scales": [
+    2,
+    4,
+    8
+  ],
+  "methods": [
+    "espcn",
+    "unet",
+    "raw",
+    "fmt",
+    "fmt_objective_ntod_v2",
+    "fmt_v5"
+  ],
+  "seeds": [
+    97111,
+    97112,
+    97113
+  ],
+  "split_counts": {
+    "train": 12,
+    "validation": 3,
+    "test": 3
+  },
+  "integration": {
+    "tau": 1.0,
+    "max_dt": 0.005,
+    "samples": 32,
+    "offset": 0.005
+  },
+  "fourier_bins": 6,
+  "training": {
+    "epochs": 100,
+    "patience": 15,
+    "learning_rate": 0.001,
+    "weight_decay": 1e-06,
+    "batch_size": 8,
+    "patch_high_intervals": 64,
+    "patch_stride_high": 32
+  },
+  "model": {
+    "base": 32,
+    "f1": 3,
+    "f2": 3,
+    "n1": 128,
+    "n2": 128,
+    "geometry_projection": 32,
+    "padded_geometry_channels": 320
+  },
+  "selection": "minimum whole-field validation MSE; test only after best epoch selection",
+  "checkpoint_policy": "best weights held in memory; no checkpoint files",
+  "scope": "within-flow time-block generalization; no cross-flow generalization claim",
+  "dropout_rates": [
+    0.0,
+    0.15
+  ],
+  "evaluation_mask": "Intersection of geometric validity masks across all scales; identical per slice for all methods and dropout rates.",
+  "temporal_policy": "Frozen 1.1 time blocks; no training/validation/test integration or source-frame overlap. Reused benchmark, not a new confirmation set.",
+  "dropout_placement": "Dropout2d after each UNet DoubleConv block (5 locations), or after each ESPCN hidden activation (2 locations). No output or input dropout."
+}
