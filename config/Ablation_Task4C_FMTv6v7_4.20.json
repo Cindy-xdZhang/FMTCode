@@ -1,0 +1,48 @@
+{
+  "version": "Ablation_Task4C_FMTv6v7_4.20",
+  "output": "outputs/Ablation_Task4C_FMTv6v7_4.20",
+  "parent_config": "config/mainExp_Task4C_PhysicalLength_4.14.json",
+  "parent_config_sha256": "3909eaab4093c0cb85f9bbd400fcf81e9dc036c879df7b8b9f6f214b6a281e6d",
+  "parent_commit": "5c9c904228d5185447a084953b2652a8938c0485",
+  "parent_summary_sha256": "7104bcbf34e637a6462c5eb77936e7b37f6731f2bd13368d0eed45b9d82b9889",
+  "parent_output": "/ibex/user/zhanx0o/FMT_Task4C_PhysicalLength_20260914/outputs/mainExp_Task4C_PhysicalLength_4.14",
+  "encoders": [
+    "fmt_V6",
+    "fmt_V7"
+  ],
+  "encoder_definitions": {
+    "fmt_V6": "6.1: original 4.14 center23 + neighbor138 + direction72 = 233",
+    "fmt_V7": "7.1: original 4.14 center23 + direction72 = 95"
+  },
+  "fourier_bins": 6,
+  "additional_kinematic_blocks": [],
+  "expected_training_samples": 27000,
+  "candidates": [
+    {
+      "name": "regularized",
+      "dropout": 0.15,
+      "weight_decay": 0.0001
+    }
+  ],
+  "training": {
+    "seeds": [
+      96611,
+      96612,
+      96613
+    ],
+    "batch_size": 128,
+    "epochs": 500,
+    "patience": 50,
+    "learning_rate": 0.001,
+    "lr_patience": 15,
+    "selection": "validation_fixed_0.5_F1_then_average_precision",
+    "sampling": "all_training_rows_once_per_epoch_without_replacement"
+  },
+  "normalization": "Frozen 4.14 signed-log, training-only per-channel standardization, clip to [-8,8]; padding mask excluded",
+  "checkpoint_policy": "memory_only_no_weight_files",
+  "test_scope": "Already-used 4.14 benchmark: shared heads, instances and source snapshots; no test-driven tuning",
+  "conv3d_reference": "Reuse frozen 4.14 seeds 96611/96612/96613; independently reproduced in 4.15; no new Conv training",
+  "initialization": "V6 keeps original LearnedLinePooling initialization exactly. V7 uses EncoderLinePooling(95): only first Linear is replaced, all hidden initial weights match the same-seed baseline.",
+  "comparison": "User-specified 233D and 95D combinations after validation-only 4.19; rerun both with all three frozen seeds, no hyperparameter search",
+  "expected_device": "Tesla V100-SXM2-32GB"
+}
