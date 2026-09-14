@@ -584,6 +584,17 @@ Channel三档(ds,单向最大步数)=(0.001,80)/(0.002,50)/(0.004,30)，TBL=(0.0
 全部12项作业及六次预测独立复算通过，summary SHA256 `7104bcbf34e637a6462c5eb77936e7b37f6731f2bd13368d0eed45b9d82b9889`；结果和审计留在Ibex `FMT_Task4C_PhysicalLength_20260914/outputs/mainExp_Task4C_PhysicalLength_4.14`。旧4.6/4.13表保持原定义，不能直接视为单因素改进。见[4.14协议](Task4C_physical_length_protocol_4.14.md)；方法结论仅见实验日志。
 
 
-## 2026-09-14 新增夹角特征实验（尚无结果）
+## 2026-09-14 新增夹角特征实验（Task1/2阶段性结果）
 
 `Verify_Task1235_AngleFeatures_1.1`比较原FMT与fmt_v5、距离版与距离+夹角版，10个3D条目、Task1/2/3/5各三种子。旧主表冻结；新结果属于复用benchmark上的配对方法实验，完成审计后单列。协议见[夹角特征1.1](Task1235_angle_features_protocol_1.1.md)。
+
+Task1阶段性结果已由原始源标签和保存预测独立复算通过（30分片、150行，job51882494，科学commit5fabbe4d）；其余任务进行中。
+
+| 任务 | 原FMT | fmt_v5 | 距离版2.1 | 距离+夹角2.2 |
+|---|---:|---:|---:|---:|
+| Task1 F1 | 0.595787±0.000252 | 0.599186±0.000047 | 0.305793±0.003446 | 0.322713±0.000199 |
+| Task2 F1 | 0.560551±0.004939 | 0.517190±0.022260 | 0.233557±0.013586 | 0.362336±0.011118 |
+
+此表为各seed的10条目平均值再取三种子均值±样本标准差。Task1 Raw为0.423541±0.000117。证据`outputs/Verify_Task1235_AngleFeatures_1.1/Task1_progress_audit.json`；方法判断仅见实验流水。
+
+Task2也已完成30分片150行原始源标签与预测独立复算（job51882496）；Raw F1为0.482806±0.010384。证据`outputs/Verify_Task1235_AngleFeatures_1.1/Task2_progress_audit.json`。Task3/5继续运行，完整总审计尚未结束。
