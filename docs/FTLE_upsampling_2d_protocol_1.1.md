@@ -32,13 +32,13 @@ PyFlowVis 源 commit：`3040ace90b34483fd80387166f17d97305d7ae45`。
 
 | 方法 | 固定输入和技术 | 主代码 | 结果 |
 |---|---|---|---|
-| ESPCN 1.1 | 低分辨率 FTLE，3×3卷积128/128通道，像素重排；来自 PyFlowVis 配方 | `FTLE_Baselines_2D.py::ESPCN_SR` | 待完成 |
-| U-Net 1.1 | 低分辨率 FTLE；基础宽32，两层下采样及跳跃连接，像素重排 | `FTLE_Baselines_2D.py::UNet_SR` | 待完成 |
-| Raw+U-Net 1.1 | 五线32时刻；中心减其起点，四邻居减同时刻中心，320维 | `FTLE_Encoders_2D.py::encode` | 待完成 |
-| fmt 2D adapter 1.1 | 冻结二维 `DCT_FMT` 的中心运动及四邻居相对运动差分，正负6对频率及DC，65维 | 同上及`DCT_FMT_encoder.py` | 待完成 |
-| fmt_objective_ntod_v2 2.2, 2D adapter 1.1 | 10对同时间点距 + 6个同时间中心夹角，各保留6个实系数、5个虚系数，176维 | `FTLE_Encoders_2D.py` | 待完成 |
-| fmt_v5 5.1, 2D adapter 1.1 | 原65维FMT逐项保留，仅追加66维夹角频谱，131维 | 同上 | 待完成 |
-| bilinear / bicubic | 在真实低网格节点坐标上插值，非图像半像素坐标 | `FTLE_Data_2D.py::interpolation` | 待完成 |
+| ESPCN 1.1 | 低分辨率 FTLE，3×3卷积128/128通道，像素重排；来自 PyFlowVis 配方 | `FTLE_Baselines_2D.py::ESPCN_SR` | 已完成，见`paper_tables_ftle_2d.md` |
+| U-Net 1.1 | 低分辨率 FTLE；基础宽32，两层下采样及跳跃连接，像素重排 | `FTLE_Baselines_2D.py::UNet_SR` | 已完成，见`paper_tables_ftle_2d.md` |
+| Raw+U-Net 1.1 | 五线32时刻；中心减其起点，四邻居减同时刻中心，320维 | `FTLE_Encoders_2D.py::encode` | 已完成，见`paper_tables_ftle_2d.md` |
+| fmt 2D adapter 1.1 | 冻结二维 `DCT_FMT` 的中心运动及四邻居相对运动差分，正负6对频率及DC，65维 | 同上及`DCT_FMT_encoder.py` | 已完成，见`paper_tables_ftle_2d.md` |
+| fmt_objective_ntod_v2 2.2, 2D adapter 1.1 | 10对同时间点距 + 6个同时间中心夹角，各保留6个实系数、5个虚系数，176维 | `FTLE_Encoders_2D.py` | 已完成，见`paper_tables_ftle_2d.md` |
+| fmt_v5 5.1, 2D adapter 1.1 | 原65维FMT逐项保留，仅追加66维夹角频谱，131维 | 同上 | 已完成，见`paper_tables_ftle_2d.md` |
+| bilinear / bicubic | 在真实低网格节点坐标上插值，非图像半像素坐标 | `FTLE_Data_2D.py::interpolation` | 已完成，见`paper_tables_ftle_2d.md` |
 
 二维原谱采用本仓库已修复正、负频率的复数 x+iy 变换；不是把二维路径线送入三维
 Gram 不变量，也不把 (x,y,t) 中的 t 当作 z。`DCT_FMT` 历史类名虽含 DCT，
@@ -125,3 +125,11 @@ FTLE物理单位的均方根误差（Root Mean Squared Error，RMSE）和平均�
 依赖链为preflight → prepare[4] → audit-data → train[24，每项6方法] → summarize → audit-results。
 初始本地预检使用`tmp/ftle_2d_local_preflight.json`，仅覆盖数据根目录和输出位置。
 方法级结论仅写入`docs/experiment_log.md`；本协议表记录版本与结果指针。
+
+## 完成记录（2026-09-14）
+
+科学commit`9943fcfe`，144次训练、864份预测、960行逐次指标、64行分流场汇总均已完成并复算PASS。32个调度进程全部COMPLETED/0:0，64条开始/结束事件、配置与科学源文件哈希一致；源结果压缩包SHA256为`f845b08d6e8effc2c1312daf32e462de707310a330e59d15bc81bfd5465d188e`。无checkpoint文件。正式时间范围17:24:12–17:41:22 Asia/Riyadh。
+
+训练设备为108次V100、36次A100；同一流场/倍率/种子的六方法在同一GPU上顺序执行。跨种子的标准差也包含设备差异，不能将小均值差自动称为显著改善。
+
+完整表见[FTLE结果表](paper_tables_ftle_2d.md)，方法判断见[实验记录](experiment_log.md#ftle-upsampling-2d-results-2026-09-14)。结果目录`outputs/Other_FTLEUpsampling2D_1.1`；报告生成入口`experiments/Report_FTLE_Upsampling_2D_1_1.py`。正式完成后未追加调参。
