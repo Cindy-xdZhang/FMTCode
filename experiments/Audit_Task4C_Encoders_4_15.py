@@ -49,10 +49,19 @@ def preflight(spec, config):
             raise ValueError('Frozen 4.14 local FMT prefix changed')
         for encoder in spec['encoders']:
             if encoder == 'conv3d':
-                value = bundle_voxels(geometry, counts).cpu().numpy().astype(np.float16)
+                recomputed = bundle_voxels(geometry, counts).cpu().numpy().astype(np.float16)
                 cached = np.load(Path(spec['parent_output']) / name / 'train/voxels.npy', mmap_mode='r')[chosen]
-                if not np.array_equal(value, cached):
-                    raise ValueError('Frozen Conv3D voxel input differs')
+                difference = np.abs(recomputed.astype(np.float32)-cached.astype(np.float32))
+                voxel_check = dict(exact=np.array_equal(recomputed, cached), max_absolute_difference=float(difference.max()),
+                    differing_values=int(np.count_nonzero(difference)), values=int(difference.size),
+                    occupancy_mask_exact=np.array_equal(recomputed[:, 0] > 0, cached[:, 0] > 0),
+                    maximum_allowed_absolute_difference=2**-11)
+                run.pipeline.write(root / (name+'_voxel_recomputation.json'), voxel_check)
+                # CUDA scatter-add order need not reproduce cached float16 bits.
+                # Actual model inputs always use the original, hash-checked cache.
+                if difference.max() > 2**-11 or not voxel_check['occupancy_mask_exact']:
+                    raise ValueError('Voxel recomputation differs beyond one float16 step on [-1,1]')
+                value = np.array(cached)
             else:
                 token = encode_lines(geometry, seeds, counts, encoder)
                 if torch.any(token[~mask] != 0) or not torch.equal(token[..., -1].bool(), mask):
@@ -77,7 +86,8 @@ def preflight(spec, config):
         if not torch.allclose(before, after, atol=2e-9, rtol=2e-9):
             raise ValueError('Scalar encoder changed under a rigid observer with fixed correspondence')
         checks.append(dict(flow=name, training_rows=chosen.tolist(), frozen_fmt_prefix_exact=True,
-            voxel_cache_exact=True, masked_padding_zero=True, direct_encoder_only=True, fixed_correspondence_objectivity_max_error=error))
+            model_voxel_input_is_original_cache=True, voxel_recomputation=voxel_check,
+            masked_padding_zero=True, direct_encoder_only=True, fixed_correspondence_objectivity_max_error=error))
     models = {}
     for encoder in spec['encoders']:
         torch.manual_seed(96611); model = make_model(encoder, .15).to(device)
