@@ -91,7 +91,7 @@ def merge(spec,config):
     for path in (root/'cache').glob('*/*/temporary_backbones/backbones.json'):
         search_raw_seconds+=sum(v['seconds'] for v in json.loads(path.read_text())['results'].values())
     for directory in [root/'cache',root/'final_backbones',root/'search',root/'refine',root/'final']:
-        run.old.cleanup_checkpoints(directory)
+        run.cleanup_weights(spec,directory)
     assert not [p for ext in ('*.pt','*.pth','*.ckpt') for p in root.rglob(ext)]
     run.old.write_csv(root/'summary.csv',table);run.old.write_csv(root/'per_dataset.csv',per_flow);run.old.write_csv(root/'per_seed_macro.csv',seed_rows)
     run.write(root/'summary.json',dict(version=spec['version'],selected=lock['selected'],rows=table,composite=composite,
@@ -119,13 +119,18 @@ def complete(root):
     durable=[json.loads(p.read_text()) for p in (root/'lifecycle_events').glob('*.json')]
     encode=lambda rr:collections.Counter(json.dumps(r,sort_keys=True) for r in rr)
     assert encode(events)==encode(durable) and len(events)==2*len(expected)
+    spec=json.loads((root/'run_config.json').read_text());failed=set(spec.get('prior_failed_preflight_jobs',[]))
     for r in actual.values():
         pair=[e for e in events if e['job']==r['JobIDRaw']]
         assert len(pair)==2 and {e['state'] for e in pair}=={'STARTED','ENDED'}
-        assert r['State']=='COMPLETED' and r['ExitCode']=='0:0'
+        if r['JobID'] in failed:
+            assert r['State']=='FAILED' and r['ExitCode']=='1:0'
+            assert all(e['phase']=='preflight' for e in pair)
+        else:assert r['State']=='COMPLETED' and r['ExitCode']=='0:0'
         assert all(e['host']==r['NodeList'] for e in pair)
-        assert next(e for e in pair if e['state']=='ENDED')['exit_code']==0
+        assert next(e for e in pair if e['state']=='ENDED')['exit_code']==(1 if r['JobID'] in failed else 0)
     run.write(root/'completion_audit.json',dict(status='PASS',processes=len(expected),events=len(events),scheduler_rows=rows,
+        retained_failed_engineering_jobs=sorted(failed),scientific_and_successful_processes=len(expected)-len(failed),
         auditor_sha256=run.old.sha(__file__),independent_audit_sha256=run.old.sha(root/'independent_audit.json')))
     archive=root/'metrics_evidence.tar.gz';included=[]
     with tarfile.open(archive,'w:gz') as z:

@@ -37,6 +37,23 @@ def write(path, value):
     old.write_json(Path(path),value)
 
 
+def cleanup_weights(spec,directory):
+    """Delete only this experiment's known temporary model files, with receipts."""
+    root=Path(spec['output']).resolve();directory=Path(directory).resolve()
+    relative=directory.relative_to(root)
+    if not relative.parts or relative.parts[0] not in ('engineering_smoke','cache','final_backbones','search','refine','final'):
+        raise ValueError('Unexpected cleanup directory: '+str(directory))
+    deleted=[]
+    for extension in ('*.pt','*.pth','*.ckpt'):
+        for path in directory.rglob(extension):
+            resolved=path.resolve();resolved.relative_to(directory)
+            if path.is_symlink():raise ValueError('Refusing to delete linked checkpoint')
+            row=dict(path=str(resolved),sha256=old.sha(resolved),time=time.time())
+            resolved.unlink();deleted.append(row)
+            append_record(root/'weight_cleanup.jsonl',row,'FMTv8 Search 2.1 temporary weight removed')
+    return deleted
+
+
 def identity(config):
     manifest=json.loads(Path('SOURCE_MANIFEST.json').read_text())
     for name,expected in manifest.items():
@@ -255,7 +272,7 @@ def search(spec,config,index,refine=False):
         if task=='Task4C':result,_=task4_fit(spec,config,seed,pool,profile,data,folder)
         else:
             result,item=residual_fit(spec,config,task,dataset,seed,pool,profile,data,folder,cache_folder(spec,task,dataset)/'temporary_backbones')
-            del item;old.cleanup_checkpoints(folder)
+            del item;cleanup_weights(spec,folder)
         audit_validation(folder)
         print('FINISHED',phase,task,dataset,pid,profile,result['validation']['f1'],flush=True)
 
@@ -363,15 +380,16 @@ def final(spec,config,index):
         for key in ('scale_id','flow_index'):
             if key in test:
                 row['per_group'][key]={str(int(i)):old.metrics(y[test[key]==i],probability[test[key]==i],row['threshold']) for i in np.unique(test[key])}
-        write(folder/'final_result.json',row);old.cleanup_checkpoints(folder)
+        write(folder/'final_result.json',row);cleanup_weights(spec,folder)
     del fitted
-    if temporary.exists():old.cleanup_checkpoints(temporary)
+    if temporary.exists():cleanup_weights(spec,temporary)
     print('FINAL',task,dataset,seed,flush=True)
 
 
 def preflight(spec,config):
     assert torch.cuda.is_available() and 'V100' in torch.cuda.get_device_name(0)
-    identity(config);torch.manual_seed(1701);checks=[]
+    identity(config);cleanup_weights(spec,Path(spec['output'])/'engineering_smoke')
+    torch.manual_seed(1701);checks=[]
     values=torch.randn(19,138);values[0,:8]=torch.tensor([-9.,9.,-8.,7.,-6.,5.,0.,0.]);values[1]=0
     grouped=values.reshape(-1,6,23).sort(-2,descending=True).values;values=grouped.flatten(1)
     source=torch.randn(19,233);source[:,23:161]=values
@@ -413,7 +431,7 @@ def preflight(spec,config):
     small4={role:{key:value[ids] for key,value in fixture.items()} for role,ids in {
         'train':np.r_[indexes[0][:32],indexes[1][:32]],
         'validation':np.r_[indexes[0][32:48],indexes[1][32:48]]}.items()}
-    smoke=Path(spec['output'])/'engineering_smoke'
+    smoke=Path(spec['output'])/'engineering_smoke'/('attempt'+str(spec.get('execution_revision',1)))
     with patch(__name__+'.parents',return_value=(base,b4)):
         backbones=smoke/'temporary_backbones'
         train_backbones(spec,'Task3',base['datasets'][0],0,small['train'],small['validation'],backbones)
@@ -423,7 +441,7 @@ def preflight(spec,config):
             del item;audit_validation(folder)
             folder=smoke/'Task4C'/profile
             task4_fit(spec,config,0,spec['pools'][0],profile,small4,folder);audit_validation(folder)
-    old.cleanup_checkpoints(smoke)
+    cleanup_weights(spec,smoke)
     write(Path(spec['output'])/'preflight.json',dict(status='PASS',identity=identity(config),checks=checks,
         all_four_profiles_finite=True,frozen_v8_pool_exact=True,source_233_exact=True,
         real_training_only_smoke_all_profiles=True,test_read=False))

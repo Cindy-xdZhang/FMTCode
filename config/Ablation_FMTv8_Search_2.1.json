@@ -499,5 +499,9 @@
   "checkpoint_policy": "Remote temporary dependency checkpoints only; remove after final audit; never download",
   "capacity": "Task3/5 h0 h1 h2 pad433 and retain142914 total; h3 block projections counted separately; Task4 first-layer width changes recorded",
   "benchmark_scope": "Existing benchmark repeatedly used historically; no search test reads and no test-based selection",
-  "maximum_concurrent_gpus": 12
+  "maximum_concurrent_gpus": 12,
+  "execution_revision": 2,
+  "prior_failed_preflight_jobs": [
+    "51897132"
+  ]
 }
