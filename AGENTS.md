@@ -1,5 +1,8 @@
 # FMT 项目研究协议
 
+2026-09-14用户新增授权 `Verify_Task1235_AngleFeatures_1.1`：开发fmt_v5 5.1（原FMT+15条同时间中心夹角傅里叶）与fmt_objective_ntod_v2 2.2（冻结距离版+同一夹角分支），在原10个3D条目上配对测试Task1/2/3/5。三种子、旧数据/标签/训练规则保持；Task6/7/8仍暂停。协议`docs/Task1235_angle_features_protocol_1.1.md`，当前开发及预检中，尚无性能结论。旧objective_fmt_nTDO_v2 2.1及主表不改。
+
+
 ## 当前工作状态（2026-09-13 用户更新，优先于下文历史“当前”状态）
 
 2026-09-14最新用户要求推进`mainExp_Task4C_PhysicalLength_4.14`：重新构建27,000训练、3,000验证、10,000测试。Channel单向目标弧长0.08/0.10/0.12，TBL4/5/6，ds均在用户范围内；RK45物理步长、实际半线弧长与最大步数独立校验。每个候选头区内部5个空间块分配3/1/1，评价中心距任意训练中心至少1h且距同头区训练中心不超过4h；共享头区/实例/源场，不宣称独立涡实例泛化。两原模型固定dropout0.15、weight decay0.0001各三种子，验证选模型后测试一次。解析检查、真实流场小预检及六次工程pilot通过，科学commit5c9c9042；协议`docs/Task4C_physical_length_protocol_4.14.md`。Ibex preflight51877188、prepare51877189、encode51877190、train51877191[0-5]、merge51877192共12个任务及六次预测均已独立核对完成。固定0.5阈值合并测试FMT0.673624±0.009154、Conv3D0.811226±0.013250；分流场Channel/TBL为FMT0.722775/0.591833、Conv0.848018/0.751596。结果见experiment_log与paper_tables_tasks_3d；未按新测试调数据距离，旧版本不改写。

@@ -3217,3 +3217,15 @@ FMT无正则化逐种子测试[0.944238,0.944946,0.942195]，正则化[0.992647,
 验证选阈值仅作补充：FMT三种子阈值0.504453/0.425631/0.683957，对应测试均值0.674464±0.008264；Conv0.403815/0.522739/0.500045，对应0.811505±0.014801。主比较仍固定阈值0.5，补充分数不替代主表。
 
 独立NumPy复算六份保存预测的训练/验证/测试合并、分流场、分头区和分尺度指标，检查固定阈值与验证所选阈值、最佳epoch、每epoch27,000行无放回覆盖、三集合身份、配置/全部来源源码/选择锁/预测哈希及最终均值和样本标准差，全部通过，最大误差4.44e-16。选择锁写入后才读取新test；未读取旧4.6封存测试，无模型权重文件。原始预测和`independent_physical_data_audit.json`、`independent_input_overlap_audit.json`、`independent_predictions_audit.json`、`scheduler_final_status.json`均留在个人Ibex `FMT_Task4C_PhysicalLength_20260914/outputs/mainExp_Task4C_PhysicalLength_4.14`。最终summary SHA256 `7104bcbf34e637a6462c5eb77936e7b37f6731f2bd13368d0eed45b9d82b9889`，配置SHA256 `3909eaab4093c0cb85f9bbd400fcf81e9dc036c879df7b8b9f6f214b6a281e6d`。调度器时间UTC+03:00，runtime事件与汇总时间UTC。本地只记录汇总指标和运行元数据，不公开push或传输原始预测/数据/报告。
+
+
+## 2026-09-14 — Verify_Task1235_AngleFeatures_1.1 预注册
+
+2026-09-14用户新增授权 `Verify_Task1235_AngleFeatures_1.1`：开发fmt_v5 5.1（原FMT+15条同时间中心夹角傅里叶）与fmt_objective_ntod_v2 2.2（冻结距离版+同一夹角分支），在原10个3D条目上配对测试Task1/2/3/5。三种子、旧数据/标签/训练规则保持；Task6/7/8仍暂停。协议`docs/Task1235_angle_features_protocol_1.1.md`，当前开发及预检中，尚无性能结论。旧objective_fmt_nTDO_v2 2.1及主表不改。
+
+| 方法 | 版本 | 代码 | 结果 |
+|---|---|---|---|
+| 原FMT+中心夹角频谱 | fmt_v5 5.1 | FMT_Utils/fmt_v5.py | 待预检及测试 |
+| 同时间距离+中心夹角频谱 | fmt_objective_ntod_v2 2.2 | FMT_Utils/fmt_objective_ntod_v2.py | 待预检及测试 |
+
+夹角在进入傅里叶之前构造，六个邻居共15对、六频率共165维。完整距离信息已确定同时间夹角；本次检验显式角度表示能否改善既定学习管线，不预设优势。原FMT和新FMT的运动学附加块保持一致；客观距离两组只用距离/角度。监督Raw分支的客观性与编码器分开判断。冻结父版本与旧主表不修改；新结果不得冒称独立确认。

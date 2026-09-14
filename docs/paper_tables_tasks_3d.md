@@ -582,3 +582,8 @@ Channel三档(ds,单向最大步数)=(0.001,80)/(0.002,50)/(0.004,30)，TBL=(0.0
 测试各流场5,000束，正类Channel1,075/TBL692；实际不同测试中心1,104/1,030，多尺度变体不是独立物理实例。模型输入跨集合精确重复数均0。FMT在TBL单独测试均值0.591833；合并测试不是两个流场F1的算术平均。验证选阈值的补充测试FMT0.674464±0.008264、Conv0.811505±0.014801，不替代固定0.5主表。
 
 全部12项作业及六次预测独立复算通过，summary SHA256 `7104bcbf34e637a6462c5eb77936e7b37f6731f2bd13368d0eed45b9d82b9889`；结果和审计留在Ibex `FMT_Task4C_PhysicalLength_20260914/outputs/mainExp_Task4C_PhysicalLength_4.14`。旧4.6/4.13表保持原定义，不能直接视为单因素改进。见[4.14协议](Task4C_physical_length_protocol_4.14.md)；方法结论仅见实验日志。
+
+
+## 2026-09-14 新增夹角特征实验（尚无结果）
+
+`Verify_Task1235_AngleFeatures_1.1`比较原FMT与fmt_v5、距离版与距离+夹角版，10个3D条目、Task1/2/3/5各三种子。旧主表冻结；新结果属于复用benchmark上的配对方法实验，完成审计后单列。协议见[夹角特征1.1](Task1235_angle_features_protocol_1.1.md)。
