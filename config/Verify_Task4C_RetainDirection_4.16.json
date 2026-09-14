@@ -1,0 +1,54 @@
+{
+  "version": "Verify_Task4C_RetainDirection_4.16",
+  "output": "outputs/Verify_Task4C_RetainDirection_4.16",
+  "parent_config": "config/mainExp_Task4C_PhysicalLength_4.14.json",
+  "parent_config_sha256": "3909eaab4093c0cb85f9bbd400fcf81e9dc036c879df7b8b9f6f214b6a281e6d",
+  "parent_commit": "5c9c904228d5185447a084953b2652a8938c0485",
+  "parent_summary_sha256": "7104bcbf34e637a6462c5eb77936e7b37f6731f2bd13368d0eed45b9d82b9889",
+  "parent_output": "/ibex/user/zhanx0o/FMT_Task4C_PhysicalLength_20260914/outputs/mainExp_Task4C_PhysicalLength_4.14",
+  "encoders": [
+    "fmt_4_14",
+    "fmt_v5_4_14",
+    "fmt_objective_ntod_v2_4_14"
+  ],
+  "encoder_definitions": {
+    "fmt_4_14": "Frozen full 4.14: local FMT 161 plus coordinate/tangent spectrum 72 = 233",
+    "fmt_v5_4_14": "Original cached 233 coordinates unchanged plus fmt_v5 5.1 angle block 165 = 398",
+    "fmt_objective_ntod_v2_4_14": "2.2 distance block 231 plus original cached coordinate/tangent 72 plus angle block 165 = 468; whole model is not objective"
+  },
+  "objective_version_choice": "User explicitly selected the newly developed distance-plus-angle 2.2 before submission",
+  "local_primitive": "Each valid line plus six closest valid seed neighbors; frozen stable-distance ordering from 4.3",
+  "fourier_bins": 6,
+  "additional_kinematic_blocks": [],
+  "additional_signed_direction_blocks": [
+    "original_4.14_coordinate_tangent_spectrum_72_copied_bitwise"
+  ],
+  "expected_training_samples": 27000,
+  "candidates": [
+    {
+      "name": "regularized",
+      "dropout": 0.15,
+      "weight_decay": 0.0001
+    }
+  ],
+  "training": {
+    "seeds": [
+      96611,
+      96612,
+      96613
+    ],
+    "batch_size": 128,
+    "epochs": 500,
+    "patience": 50,
+    "learning_rate": 0.001,
+    "lr_patience": 15,
+    "selection": "validation_fixed_0.5_F1_then_average_precision",
+    "sampling": "all_training_rows_once_per_epoch_without_replacement"
+  },
+  "normalization": "Frozen 4.14 signed-log, training-only per-channel standardization, clip to [-8,8]; padding mask excluded",
+  "checkpoint_policy": "memory_only_no_weight_files",
+  "test_scope": "Already-used 4.14 benchmark: shared heads, instances and source snapshots; no test-driven tuning",
+  "conv3d_reference": "Reuse frozen 4.14 seeds 96611/96612/96613; independently reproduced in 4.15; no new Conv training",
+  "initialization": "Original 4.14 model is unchanged. Extended models use the 4.15 adapter with default full first-Linear initialization at the new input width; hidden-layer state matches the same-seed baseline, first-layer state need not match.",
+  "comparison": "Correct accidental removal of 72 directional features in 4.15; no parameter search, one prespecified run per method and seed"
+}

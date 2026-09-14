@@ -1,5 +1,7 @@
 # Task4-c 4.15：在4.14数据上比较纯编码器与Conv3D
 
+**2026-09-14用户质疑后标记**：本版额外移除了原72维方向几何输入，偏离用户要求。源码及原始数值保留；不用于回答单独增加角度的效果。纠正版本见`Task4C_retain_direction_protocol_4.16.md`。
+
 2026-09-14用户要求将`fmt_v5`和`objective_fmt_nTDO_v2`用于Task4-c 4.14，与Conv3D比较。实验版本`Verify_Task4C_Encoders_4.15`；保留原4.14数据、代码和结果，不重新采样或改变积分长度。方法结论仅记`experiment_log.md`。
 
 ## 方法身份
