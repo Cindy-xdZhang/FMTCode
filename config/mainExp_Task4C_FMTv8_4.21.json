@@ -1,0 +1,90 @@
+{
+  "version": "mainExp_Task4C_FMTv8_4.21",
+  "output": "outputs/mainExp_Task4C_FMTv8_4.21",
+  "parent_config": "config/mainExp_Task4C_PhysicalLength_4.14.json",
+  "parent_config_sha256": "3909eaab4093c0cb85f9bbd400fcf81e9dc036c879df7b8b9f6f214b6a281e6d",
+  "parent_commit": "5c9c904228d5185447a084953b2652a8938c0485",
+  "parent_summary_sha256": "7104bcbf34e637a6462c5eb77936e7b37f6731f2bd13368d0eed45b9d82b9889",
+  "parent_output": "/ibex/user/zhanx0o/FMT_Task4C_PhysicalLength_20260914/outputs/mainExp_Task4C_PhysicalLength_4.14",
+  "encoders": [
+    "fmt_161",
+    "fmt_direction_233",
+    "fmt_v5_326",
+    "fmt_v5_direction_398",
+    "fmt_v8_100"
+  ],
+  "encoder_definitions": {
+    "fmt_161": [
+      "center23",
+      "neighbor138"
+    ],
+    "fmt_direction_233": [
+      "center23",
+      "neighbor138",
+      "direction72"
+    ],
+    "fmt_v5_326": [
+      "center23",
+      "neighbor138",
+      "angle165"
+    ],
+    "fmt_v5_direction_398": [
+      "center23",
+      "neighbor138",
+      "direction72",
+      "angle165"
+    ],
+    "fmt_v8_100": [
+      "center23",
+      "direction72",
+      "signed_absolute_top4",
+      "signed_mean1"
+    ]
+  },
+  "fourier_bins": 6,
+  "additional_kinematic_blocks": [],
+  "expected_training_samples": 27000,
+  "candidates": [
+    {
+      "name": "regularized",
+      "dropout": 0.15,
+      "weight_decay": 0.0001
+    }
+  ],
+  "training": {
+    "seeds": [
+      96611,
+      96612,
+      96613
+    ],
+    "batch_size": 128,
+    "epochs": 500,
+    "patience": 50,
+    "learning_rate": 0.001,
+    "lr_patience": 15,
+    "selection": "validation_fixed_0.5_F1_then_average_precision",
+    "sampling": "all_training_rows_once_per_epoch_without_replacement"
+  },
+  "normalization": "Frozen 4.14 signed-log, training-only per-channel standardization, clip to [-8,8]; padding mask excluded",
+  "checkpoint_policy": "memory_only_no_weight_files",
+  "test_scope": "Already-used 4.14 benchmark: shared heads, instances and source snapshots; no test-driven tuning",
+  "conv3d_reference": "Reuse frozen 4.14 seeds 96611/96612/96613; independently reproduced in 4.15; no new Conv training",
+  "initialization": "233D original model exact; other widths use frozen EncoderLinePooling adapter. Hidden initial weights match each seed, first layer follows width-specific default initialization.",
+  "comparison": "All five user-specified feature combinations, three fresh V100 seeds each; no added hyperparameter search",
+  "expected_device": "Tesla V100-SXM2-32GB",
+  "v5_reference": {
+    "output": "/ibex/user/zhanx0o/FMT_Task4C_RetainDirection_20260914/outputs/Verify_Task4C_RetainDirection_4.16",
+    "summary_sha256": "5de6bf85b8b8d060a85f9a89b76068b314d5f37ab6d863f0050d71820ae41d75"
+  },
+  "conv_capacity_reference": {
+    "test_f1_mean": 0.7499,
+    "test_f1_std": 0.0126,
+    "source": "User independent correction on 2026-09-14 after data-audit issues; user requested no further verification",
+    "parameters_recorded": 83918,
+    "training_minutes_recorded": 18.432,
+    "epoch_seconds_recorded": 6.551,
+    "parameter_and_timing_source": "original4.18_run_metadata",
+    "revised_per_seed_or_per_flow_metrics_available": false
+  },
+  "pooling": "Across all 138 unstandardized signed neighbor coefficients: top4 selected by descending absolute value with stable original-column ties; signed arithmetic mean of all138 including structural zeros"
+}
