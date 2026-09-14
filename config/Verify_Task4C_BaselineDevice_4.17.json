@@ -1,0 +1,13 @@
+{
+  "version": "Verify_Task4C_BaselineDevice_4.17",
+  "output": "outputs/Verify_Task4C_BaselineDevice_4.17",
+  "base_config": "config/Verify_Task4C_RetainDirection_4.16.json",
+  "base_config_sha256": "660f8582c63a2d17ef332596685cec3249b59ba270e5ecd40ecedd1258e7faf1",
+  "source_output": "/ibex/user/zhanx0o/FMT_Task4C_RetainDirection_20260914/outputs/Verify_Task4C_RetainDirection_4.16",
+  "source_commit": "dfdc87b10f0d3de21d694e20f3dc97f7295dc66f",
+  "encoder": "fmt_4_14",
+  "seed": 96611,
+  "required_device": "Tesla V100-SXM2-32GB",
+  "reason": "Only 4.16 original-FMT seed 96611 ran on A100 and failed baseline reproduction; rerun that baseline on the original V100 environment. Retain all original runs; no new-method retraining or hyperparameter changes.",
+  "after_job": "51887823"
+}
