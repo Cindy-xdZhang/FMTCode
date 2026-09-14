@@ -1,0 +1,18 @@
+{
+  "version": "Ablation_Task4C_ConvCapacity_4.18",
+  "output": "outputs/Ablation_Task4C_ConvCapacity_4.18",
+  "parent_config": "config/mainExp_Task4C_PhysicalLength_4.14.json",
+  "parent_config_sha256": "3909eaab4093c0cb85f9bbd400fcf81e9dc036c879df7b8b9f6f214b6a281e6d",
+  "parent_commit": "5c9c904228d5185447a084953b2652a8938c0485",
+  "parent_summary_sha256": "7104bcbf34e637a6462c5eb77936e7b37f6731f2bd13368d0eed45b9d82b9889",
+  "parent_output": "/ibex/user/zhanx0o/FMT_Task4C_PhysicalLength_20260914/outputs/mainExp_Task4C_PhysicalLength_4.14",
+  "fmt_reference_parameters": 88514,
+  "parameter_ratio_range": [0.90, 0.95],
+  "conv_parameters": 83918,
+  "conv_channels": [12, 24, 48],
+  "head_width": 96,
+  "required_device": "Tesla V100-SXM2-32GB",
+  "methods": ["conv3d_mlp"],
+  "selection_policy": "One architecture fixed by parameter budget before training; no test-based selection",
+  "comparison_scope": "Frozen 4.14 data and optimization; original FMT and Conv3D results reused as references"
+}

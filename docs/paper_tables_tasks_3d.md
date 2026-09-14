@@ -664,3 +664,7 @@ Task3当前配方aivd1w3_dft在本批共同容量下重跑F1为0.868073±0.00427
 本地证据在`outputs/Verify_Task4C_RetainDirection_4.16`（124文件）及`outputs/Verify_Task4C_BaselineDevice_4.17`（15文件）。无模型证据包SHA256分别`7ce3ba4faf10ba266f5f44cc566c5aace86229f9e6bea6dc92b1399243b7454d`、`12f550fae5fce136e7c068f0cde88d0827ebc1a2ef99deb194b42dc270c8737b`。个人Ibex对应根目录为`/ibex/user/zhanx0o/FMT_Task4C_RetainDirection_20260914`及`/ibex/user/zhanx0o/FMT_Task4C_BaselineDevice_20260914`。
 
 方法判断及旧结论更正见[实验日志](experiment_log.md#task4c-retain-direction-4-16-2026-09-14)。
+
+## Task4-c 4.18：Conv参数预算，已提交
+
+`Ablation_Task4C_ConvCapacity_4.18`，科学commit33db52c6。新Conv83,918参数（原FMT88,514的94.8076%），三层通道12/24/48、分类头384→96→64→2；相同4.14体素缓存、数据/标签/训练设置和96611–96613三种子，限定V100。旧FMT与Conv保留参考；尚无新科学F1。见[4.18协议](Task4C_conv_capacity_protocol_4.18.md)。
