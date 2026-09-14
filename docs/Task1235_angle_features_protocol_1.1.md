@@ -53,3 +53,10 @@ Raw-PCA只在训练数据拟合433个分量。全部辅助网络的总参数与�
 报告逐数据、逐种子以及每种子的10条目平均值；总体标准差采用三个种子平均值的标准差，不将异质流场混在一起当成种子波动。主要差值为fmt_v5−原FMT、距离+夹角−距离版，逐任务如实报告负值。
 
 每个调度任务立即登记job ID、提交时刻、config、科学commit、源清单和预期设备；进程开始/结束补节点、实际GPU和状态。使用用户个人Ibex目录中的代码快照，SOURCE_COMMIT与文件SHA256确定来源，不向公开GitHub发布。依赖链结束且预测/指标复算成功后删除临时checkpoint；不下载模型。
+
+
+## 执行完成
+
+科学commit `5fabbe4d031a3311bd9d43dfc4e5d4630183dc9d`；配置`config/Verify_Task1235_AngleFeatures_1.1.json`。全部94个调度进程COMPLETED/exit0，120分片、780行主指标及2160行Task5逐尺度指标复算通过；原始源标签、尺度编号、配置/数据哈希和网络容量另行核对通过，450个临时checkpoint已删除。新旧方法全部在本批配对重训，不替换历史主表。
+
+Task2结束后将Task35并发从6调至12，沿用原来两GPU数组合计12路的上限；调度更新过程与警告保留在resource_updates.jsonl。科学配置未改变。全部指标见paper_tables_tasks_3d，方法结论见experiment_log。

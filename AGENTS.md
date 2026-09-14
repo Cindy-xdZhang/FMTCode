@@ -1,6 +1,6 @@
 # FMT 项目研究协议
 
-2026-09-14用户新增授权 `Verify_Task1235_AngleFeatures_1.1`：开发fmt_v5 5.1（原FMT+15条同时间中心夹角傅里叶）与fmt_objective_ntod_v2 2.2（冻结距离版+同一夹角分支），在原10个3D条目上配对测试Task1/2/3/5。三种子、旧数据/标签/训练规则保持；Task6/7/8仍暂停。协议`docs/Task1235_angle_features_protocol_1.1.md`，科学commit5fabbe4d；两项预检通过，Task1/2已完成并从原始源标签及预测独立复算，结果见experiment_log。Task3/5数组51882498继续运行，总审计51882499、原始源复核51882789待依赖；不得重复提交。旧objective_fmt_nTDO_v2 2.1及主表不改。
+2026-09-14用户新增授权 `Verify_Task1235_AngleFeatures_1.1`：开发fmt_v5 5.1（原FMT+15条同时间中心夹角傅里叶）与fmt_objective_ntod_v2 2.2（冻结距离版+同一夹角分支），在原10个3D条目上配对测试Task1/2/3/5。三种子、旧数据/标签/训练规则保持；Task6/7/8仍暂停。协议`docs/Task1235_angle_features_protocol_1.1.md`，科学commit5fabbe4d；94个调度进程、120分片全部完成，780行主指标与2160行逐尺度指标、原始源标签及容量检查全部复算通过，450个临时模型已清理。完整结果见experiment_log的task1235-angles-2026-09-14及paper_tables_tasks_3d。当前没有自动追加实验。旧objective_fmt_nTDO_v2 2.1及主表不改。
 
 
 ## 当前工作状态（2026-09-13 用户更新，优先于下文历史“当前”状态）
