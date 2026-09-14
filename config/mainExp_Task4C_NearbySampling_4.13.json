@@ -1,0 +1,37 @@
+{
+  "version": "mainExp_Task4C_NearbySampling_4.13",
+  "base_config": "config/Ablation_Task4C_Sharpness_4.8.json",
+  "base_config_sha256": "f32d089d6e76d33c0323c750da7caa4d1bbf3d850f6d60762b92457172031d15",
+  "output": "outputs/mainExp_Task4C_NearbySampling_4.13",
+  "expected_training_samples": 27000,
+  "nearby": {
+    "seed": 96501,
+    "per_flow_counts": {"validation": 1500, "test": 5000},
+    "offset_neighbor_distance_range": [0.05, 0.15],
+    "minimum_distance_to_any_train_center_over_anchor_distance": 0.01,
+    "maximum_attempts_per_anchor": 256,
+    "anchor_sampling": "uniform_permutation_of_original_training_rows_without_label_balancing",
+    "scale": "retain_anchor_neighbor_distance_and_RK45_scale",
+    "labels": "same_original_candidate_head_GT_rule",
+    "scope": "local_generalization_same_training_heads_and_native_source_support"
+  },
+  "methods": ["fmt_mlp", "conv3d_mlp"],
+  "candidates": [
+    {"name": "unregularized", "dropout": 0.0, "weight_decay": 0.0},
+    {"name": "regularized", "dropout": 0.15, "weight_decay": 0.0001}
+  ],
+  "training": {
+    "seeds": [96511, 96512, 96513],
+    "batch_size": 128,
+    "epochs": 500,
+    "patience": 50,
+    "learning_rate": 0.001,
+    "lr_patience": 15,
+    "sampling": "all_training_rows_once_per_epoch_without_replacement",
+    "loss": "unweighted_cross_entropy_without_label_smoothing",
+    "selection": "nearby_validation_fixed_0.5_F1_then_average_precision",
+    "test": "one_evaluation_after_selection_for_every_prespecified_arm_and_seed"
+  },
+  "checkpoint_policy": "memory_only_no_weight_files",
+  "original_spatial_test": "unchanged_and_not_read"
+}

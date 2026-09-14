@@ -2,6 +2,9 @@
 
 ## 当前工作状态（2026-09-13 用户更新，优先于下文历史“当前”状态）
 
+2026-09-14最新用户要求执行`mainExp_Task4C_NearbySampling_4.13`：保持27,000训练束，新中心偏移原邻居距离5%–15%后重新积分，另建3,000邻近验证及10,000邻近测试；共享训练头区/源网格支持，不宣称空间独立。原FMT/Conv3D比较无正则化与dropout0.15、weight decay0.0001，各三种子，仅验证选epoch，全部固定组测试均报告。科学commit52ae26a4，已提交Ibex；协议`docs/Task4C_nearby_sampling_protocol_4.13.md`。旧4.6测试不读取，旧4.12训练拟合结果保持。
+
+
 2026-09-14用户最新要求的完整训练集拟合已完成：`Verify_Task4C_TrainingMemorization_4.12`原27,000训练束固定阈值0.5，原FMT/Conv3D训练F1=0.997007/0.995148，错误26/42，均连续三轮≥0.99；全量预测与样本覆盖独立复算通过。原结构无需增容。额外增容FMT已完成并保留，增容Conv及四组merge在原模型达标后取消，不宣称四组比较完成。科学commit26f52805，见`docs/Task4C_training_memorization_protocol_4.12.md`。当前不继续测试调参，4.6历史测试结果不变。
 
 
