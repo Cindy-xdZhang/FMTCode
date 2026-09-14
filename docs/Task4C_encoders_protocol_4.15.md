@@ -37,3 +37,9 @@
 不写模型权重文件；仅内存保存最佳epoch。预测、JSON/CSV及运行证据保留于个人Ibex，新实验不推送到公开GitHub。方法代码和冻结配置本地commit确定，不覆盖父实验。
 
 首次工程预检51886086在体素重算的逐位相等检查失败，正式编码/训练尚未提交。原CUDA体素构造含scatter-add累加，重算结果不要求与float16缓存逐位相同；改为记录全部差异、要求占据mask完全一致且最大绝对误差不超过[-1,1]内一个float16间隔2^-11。模型实际输入始终直接读取原缓存，文件哈希要求完全相同，工程训练也使用缓存；未改变体素表示、数据或网络。失败记录保留，重新预检确认数值差异量级。
+
+## 完成记录
+
+九次正式训练、汇总与独立预测复算全部通过；F1和Average Precision的复算最大差异0。调度及逐事件核对PASS：13个成功进程、1个保留的早期失败预检，28条开始/结束记录完整；81行逐次指标和九份预测保留，无模型权重文件。summary SHA256 `a5a11208d800dca0b40297ae4a5da4007a3d2df00baae9859a5404bbb6783a5f`；证据包SHA256 `5b2b4f0cf423b1a70b55c570fda99016c261d7bbf7f5da6ca1ac529a3ae3c3fc`。本地`outputs/Verify_Task4C_Encoders_4.15`，完整源输入及结果在个人Ibex `/ibex/user/zhanx0o/FMT_Task4C_Encoders_20260914/outputs/Verify_Task4C_Encoders_4.15`。独立数值复算`experiments/Audit_Task4C_Encoders_4_15.py`；调度复核`experiments/Audit_Task4C_EncodersRuntime_4_15.py`，后者提交99546af9。
+
+冻结三种子训练全部完成；科学配置没有按测试更改。指标见paper_tables_tasks_3d，方法结论仅见experiment_log的task4c-encoders-4-15-2026-09-14。

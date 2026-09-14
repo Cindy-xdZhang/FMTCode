@@ -1,6 +1,6 @@
 # FMT 项目研究协议
 
-2026-09-14最新用户要求`Verify_Task4C_Encoders_4.15`：复用Task4-c 4.14的27,000/3,000/10,000几何样本，比较纯fmt_v5 5.1、用户明确指定的距离+夹角fmt_objective_ntod_v2 2.2及原Conv3D，各三种子；两个新分支不加kin/IVD估计或旧72维方向频谱。保留4.14训练和逐线聚合结构，仅适配输入维数；旧结果不改。协议`docs/Task4C_encoders_protocol_4.15.md`，当前实现与预检，尚无性能结论。Task1/2/3/5上一批“原FMT”的命名更正见experiment_log的task1235-angles-baseline-correction-2026-09-14，不得再将含kin方案称为纯原FMT。
+2026-09-14完成`Verify_Task4C_Encoders_4.15`：复用Task4-c 4.14的27,000/3,000/10,000样本，纯fmt_v5 5.1（326维）、用户明确选定的距离+夹角fmt_objective_ntod_v2 2.2（396维）及原Conv3D各三种子。固定0.5合并测试F1分别0.320565±0.010570、0.202781±0.032300、0.811226±0.013250；Conv三种子与4.14完全一致。新编码输入无kin/IVD估计或旧72维方向分支，不能把与历史161+72维FMT的差距单独归因于加夹角。科学commit785f96ce，九次训练及独立预测/调度复算PASS；13个成功进程及1个失败预检均保留，无模型文件。协议`docs/Task4C_encoders_protocol_4.15.md`，结论见experiment_log的task4c-encoders-4-15-2026-09-14。当前不自动追加调参。Task1/2/3/5旧含kin基线的命名更正继续有效。
 
 2026-09-14用户新增授权 `Verify_Task1235_AngleFeatures_1.1`：开发fmt_v5 5.1（原FMT+15条同时间中心夹角傅里叶）与fmt_objective_ntod_v2 2.2（冻结距离版+同一夹角分支），在原10个3D条目上配对测试Task1/2/3/5。三种子、旧数据/标签/训练规则保持；Task6/7/8仍暂停。协议`docs/Task1235_angle_features_protocol_1.1.md`，科学commit5fabbe4d；94个调度进程、120分片全部完成，780行主指标与2160行逐尺度指标、原始源标签及容量检查全部复算通过，450个临时模型已清理。完整结果见experiment_log的task1235-angles-2026-09-14及paper_tables_tasks_3d。当前没有自动追加实验。旧objective_fmt_nTDO_v2 2.1及主表不改。
 
