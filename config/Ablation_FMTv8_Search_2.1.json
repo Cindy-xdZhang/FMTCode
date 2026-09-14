@@ -1,0 +1,503 @@
+{
+  "version": "Ablation_FMTv8_Search_2.1",
+  "output": "outputs/Ablation_FMTv8_Search_2.1",
+  "task135_config": "config/mainExp_Task135_FMTv8_1.1.json",
+  "task4_config": "config/mainExp_Task4C_FMTv8_4.21.json",
+  "frozen_config_hashes": {
+    "config/mainExp_Task135_FMTv8_1.1.json": "c3e7ea9765bb7bafe9dad91645feb76480d26c0e0aa1b02c360a4c462c97b950",
+    "config/mainExp_Task4C_FMTv8_4.21.json": "896b4e1106a3463cad9ff4560a69a17e1b1233483d4821fa3f70a56235d4e447",
+    "config/mainExp_Task4C_PhysicalLength_4.14.json": "3909eaab4093c0cb85f9bbd400fcf81e9dc036c879df7b8b9f6f214b6a281e6d"
+  },
+  "task135_reference": "/ibex/user/zhanx0o/FMT_Task135_FMTv8_20260914/outputs/mainExp_Task135_FMTv8_1.1",
+  "task4_reference": "/ibex/user/zhanx0o/FMT_Task4C_FMTv8_20260914/outputs/mainExp_Task4C_FMTv8_4.21",
+  "task135_preflight_sha256": "7fd6b678b0ff58ff7eafac2f8751216135a5f40259710db482fbc1efbca2ab14",
+  "task4_encoding_sha256": "89b56f0cb151fcb6b6ed139ace0818760920dfc5048bd71f353d6e8f9ffbe141",
+  "pools": [
+    {
+      "kind": "absolute_top",
+      "k": 4,
+      "pooled_dimensions": 5,
+      "id": "p00",
+      "feature_dimensions": 100
+    },
+    {
+      "kind": "absolute_top",
+      "k": 1,
+      "pooled_dimensions": 2,
+      "id": "p01",
+      "feature_dimensions": 97
+    },
+    {
+      "kind": "absolute_top",
+      "k": 8,
+      "pooled_dimensions": 9,
+      "id": "p02",
+      "feature_dimensions": 104
+    },
+    {
+      "kind": "absolute_top",
+      "k": 16,
+      "pooled_dimensions": 17,
+      "id": "p03",
+      "feature_dimensions": 112
+    },
+    {
+      "kind": "absolute_top",
+      "k": 24,
+      "pooled_dimensions": 25,
+      "id": "p04",
+      "feature_dimensions": 120
+    },
+    {
+      "kind": "absolute_top",
+      "k": 32,
+      "pooled_dimensions": 33,
+      "id": "p05",
+      "feature_dimensions": 128
+    },
+    {
+      "kind": "absolute_top",
+      "k": 48,
+      "pooled_dimensions": 49,
+      "id": "p06",
+      "feature_dimensions": 144
+    },
+    {
+      "kind": "absolute_top",
+      "k": 64,
+      "pooled_dimensions": 65,
+      "id": "p07",
+      "feature_dimensions": 160
+    },
+    {
+      "kind": "absolute_top",
+      "k": 96,
+      "pooled_dimensions": 97,
+      "id": "p08",
+      "feature_dimensions": 192
+    },
+    {
+      "kind": "absolute_top",
+      "k": 138,
+      "pooled_dimensions": 139,
+      "id": "p09",
+      "feature_dimensions": 234
+    },
+    {
+      "kind": "signed_extremes",
+      "k": 4,
+      "pooled_dimensions": 5,
+      "id": "p10",
+      "feature_dimensions": 100
+    },
+    {
+      "kind": "signed_extremes",
+      "k": 1,
+      "pooled_dimensions": 2,
+      "id": "p11",
+      "feature_dimensions": 97
+    },
+    {
+      "kind": "signed_extremes",
+      "k": 8,
+      "pooled_dimensions": 9,
+      "id": "p12",
+      "feature_dimensions": 104
+    },
+    {
+      "kind": "signed_extremes",
+      "k": 16,
+      "pooled_dimensions": 17,
+      "id": "p13",
+      "feature_dimensions": 112
+    },
+    {
+      "kind": "signed_extremes",
+      "k": 24,
+      "pooled_dimensions": 25,
+      "id": "p14",
+      "feature_dimensions": 120
+    },
+    {
+      "kind": "signed_extremes",
+      "k": 32,
+      "pooled_dimensions": 33,
+      "id": "p15",
+      "feature_dimensions": 128
+    },
+    {
+      "kind": "signed_extremes",
+      "k": 48,
+      "pooled_dimensions": 49,
+      "id": "p16",
+      "feature_dimensions": 144
+    },
+    {
+      "kind": "signed_extremes",
+      "k": 64,
+      "pooled_dimensions": 65,
+      "id": "p17",
+      "feature_dimensions": 160
+    },
+    {
+      "kind": "signed_extremes",
+      "k": 96,
+      "pooled_dimensions": 97,
+      "id": "p18",
+      "feature_dimensions": 192
+    },
+    {
+      "kind": "signed_extremes",
+      "k": 138,
+      "pooled_dimensions": 139,
+      "id": "p19",
+      "feature_dimensions": 234
+    },
+    {
+      "kind": "indexed_top",
+      "k": 4,
+      "pooled_dimensions": 138,
+      "id": "p20",
+      "feature_dimensions": 233
+    },
+    {
+      "kind": "indexed_top",
+      "k": 1,
+      "pooled_dimensions": 138,
+      "id": "p21",
+      "feature_dimensions": 233
+    },
+    {
+      "kind": "indexed_top",
+      "k": 8,
+      "pooled_dimensions": 138,
+      "id": "p22",
+      "feature_dimensions": 233
+    },
+    {
+      "kind": "indexed_top",
+      "k": 16,
+      "pooled_dimensions": 138,
+      "id": "p23",
+      "feature_dimensions": 233
+    },
+    {
+      "kind": "indexed_top",
+      "k": 24,
+      "pooled_dimensions": 138,
+      "id": "p24",
+      "feature_dimensions": 233
+    },
+    {
+      "kind": "indexed_top",
+      "k": 32,
+      "pooled_dimensions": 138,
+      "id": "p25",
+      "feature_dimensions": 233
+    },
+    {
+      "kind": "indexed_top",
+      "k": 48,
+      "pooled_dimensions": 138,
+      "id": "p26",
+      "feature_dimensions": 233
+    },
+    {
+      "kind": "indexed_top",
+      "k": 64,
+      "pooled_dimensions": 138,
+      "id": "p27",
+      "feature_dimensions": 233
+    },
+    {
+      "kind": "indexed_top",
+      "k": 96,
+      "pooled_dimensions": 138,
+      "id": "p28",
+      "feature_dimensions": 233
+    },
+    {
+      "kind": "indexed_top",
+      "k": 138,
+      "pooled_dimensions": 138,
+      "id": "p29",
+      "feature_dimensions": 233
+    },
+    {
+      "kind": "semantic_statistics",
+      "statistics": [
+        "mean"
+      ],
+      "pooled_dimensions": 23,
+      "id": "p30",
+      "feature_dimensions": 118
+    },
+    {
+      "kind": "semantic_statistics",
+      "statistics": [
+        "max"
+      ],
+      "pooled_dimensions": 23,
+      "id": "p31",
+      "feature_dimensions": 118
+    },
+    {
+      "kind": "semantic_statistics",
+      "statistics": [
+        "min"
+      ],
+      "pooled_dimensions": 23,
+      "id": "p32",
+      "feature_dimensions": 118
+    },
+    {
+      "kind": "semantic_statistics",
+      "statistics": [
+        "std"
+      ],
+      "pooled_dimensions": 23,
+      "id": "p33",
+      "feature_dimensions": 118
+    },
+    {
+      "kind": "semantic_statistics",
+      "statistics": [
+        "rms"
+      ],
+      "pooled_dimensions": 23,
+      "id": "p34",
+      "feature_dimensions": 118
+    },
+    {
+      "kind": "semantic_statistics",
+      "statistics": [
+        "mean",
+        "max"
+      ],
+      "pooled_dimensions": 46,
+      "id": "p35",
+      "feature_dimensions": 141
+    },
+    {
+      "kind": "semantic_statistics",
+      "statistics": [
+        "mean",
+        "std"
+      ],
+      "pooled_dimensions": 46,
+      "id": "p36",
+      "feature_dimensions": 141
+    },
+    {
+      "kind": "semantic_statistics",
+      "statistics": [
+        "min",
+        "max"
+      ],
+      "pooled_dimensions": 46,
+      "id": "p37",
+      "feature_dimensions": 141
+    },
+    {
+      "kind": "semantic_statistics",
+      "statistics": [
+        "mean",
+        "max",
+        "std"
+      ],
+      "pooled_dimensions": 69,
+      "id": "p38",
+      "feature_dimensions": 164
+    },
+    {
+      "kind": "semantic_statistics",
+      "statistics": [
+        "mean",
+        "min",
+        "max",
+        "std"
+      ],
+      "pooled_dimensions": 92,
+      "id": "p39",
+      "feature_dimensions": 187
+    },
+    {
+      "kind": "semantic_ranks",
+      "ranks": [
+        0
+      ],
+      "pooled_dimensions": 23,
+      "id": "p40",
+      "feature_dimensions": 118
+    },
+    {
+      "kind": "semantic_ranks",
+      "ranks": [
+        0,
+        5
+      ],
+      "pooled_dimensions": 46,
+      "id": "p41",
+      "feature_dimensions": 141
+    },
+    {
+      "kind": "semantic_ranks",
+      "ranks": [
+        0,
+        2,
+        5
+      ],
+      "pooled_dimensions": 69,
+      "id": "p42",
+      "feature_dimensions": 164
+    },
+    {
+      "kind": "semantic_ranks",
+      "ranks": [
+        0,
+        1,
+        4,
+        5
+      ],
+      "pooled_dimensions": 92,
+      "id": "p43",
+      "feature_dimensions": 187
+    },
+    {
+      "kind": "semantic_ranks",
+      "ranks": [
+        0,
+        1,
+        2,
+        4,
+        5
+      ],
+      "pooled_dimensions": 115,
+      "id": "p44",
+      "feature_dimensions": 210
+    },
+    {
+      "kind": "semantic_ranks",
+      "ranks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "pooled_dimensions": 138,
+      "id": "p45",
+      "feature_dimensions": 233
+    },
+    {
+      "kind": "semantic_absolute_top",
+      "k": 1,
+      "pooled_dimensions": 23,
+      "id": "p46",
+      "feature_dimensions": 118
+    },
+    {
+      "kind": "semantic_absolute_top",
+      "k": 2,
+      "pooled_dimensions": 46,
+      "id": "p47",
+      "feature_dimensions": 141
+    },
+    {
+      "kind": "semantic_absolute_top",
+      "k": 3,
+      "pooled_dimensions": 69,
+      "id": "p48",
+      "feature_dimensions": 164
+    },
+    {
+      "kind": "semantic_absolute_top",
+      "k": 4,
+      "pooled_dimensions": 92,
+      "id": "p49",
+      "feature_dimensions": 187
+    }
+  ],
+  "profiles": {
+    "h0": {
+      "description": "Frozen baseline training and projection",
+      "residual_model": {},
+      "residual_training": {},
+      "task4": {}
+    },
+    "h1": {
+      "description": "Stronger dropout and weight decay",
+      "residual_model": {
+        "auxiliary_dropout": 0.15
+      },
+      "residual_training": {
+        "weight_decay": 0.001
+      },
+      "task4": {
+        "dropout": 0.3,
+        "weight_decay": 0.001
+      }
+    },
+    "h2": {
+      "description": "SiLU activation with lower learning rate",
+      "residual_model": {
+        "auxiliary_projection_activation_override": "silu",
+        "auxiliary_dropout": 0.05
+      },
+      "residual_training": {
+        "learning_rate": 0.0005
+      },
+      "task4": {
+        "activation": "silu",
+        "learning_rate": 0.0005
+      }
+    },
+    "h3": {
+      "description": "Separate learned projections of center, direction and pooled neighbors",
+      "residual_model": {
+        "auxiliary_projection": "blockwise_layernorm_gelu",
+        "auxiliary_block_dims": [
+          23,
+          72,
+          338
+        ]
+      },
+      "residual_training": {},
+      "task4": {
+        "blockwise": true
+      }
+    }
+  },
+  "screen_seed": 40,
+  "screen_task4_seed": 96611,
+  "final_seeds": [
+    44,
+    45,
+    46
+  ],
+  "final_task4_seeds": [
+    96621,
+    96622,
+    96623
+  ],
+  "target": {
+    "baseline": "same new final seeds p00_h0; historical V8 also reported",
+    "relative_gain": [
+      0.15,
+      0.2
+    ],
+    "aggregation": "equal mean over Task3 ten-flow macro F1, Task5 ten-flow macro F1, Task4C pooled F1"
+  },
+  "selection": {
+    "first_stage": "all 50 pools, h0, one seed, all21 task-dataset units",
+    "shortlist": "top3 common pools by validation only",
+    "refinement": "each shortlisted pool with h1 h2 h3",
+    "final": "one common pool/profile selected from all59; 3 fresh paired seeds versus p00_h0"
+  },
+  "inputs": "Frozen center23, direction72, neighbor138 only; no angle165, no kinematic/IVD estimator; masks unchanged",
+  "checkpoint_policy": "Remote temporary dependency checkpoints only; remove after final audit; never download",
+  "capacity": "Task3/5 h0 h1 h2 pad433 and retain142914 total; h3 block projections counted separately; Task4 first-layer width changes recorded",
+  "benchmark_scope": "Existing benchmark repeatedly used historically; no search test reads and no test-based selection",
+  "maximum_concurrent_gpus": 12
+}

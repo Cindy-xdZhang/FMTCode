@@ -1,0 +1,102 @@
+# FMT v8.2池化与训练配置搜索
+
+2026-09-15用户授权：在不增加V8输入信息的前提下，测试约50种池化方式和保留维数，并允许修改正则化、激活函数及神经投影方式。覆盖Task3、Task5、Task4-c 4.14；Task1/2不在此次范围。版本`Ablation_FMTv8_Search_2.1`，历史v8.1代码、配置和结果冻结。
+
+## 输入和目标
+
+池化前输入固定为中心步进频域23维、中心线坐标/单位切向方向频谱72维、邻居相对变化频域138维。保留两个非邻居分支的全部95维，只改变138维邻居描述量的聚合/保留方式。不加入角度165维、kin、curl或IVD估计；Task4-c有效线标记原样保留。新输出可以超过100维。
+
+138维是按六个排序位置、每位置23类描述量展开；每个描述量分别对六邻居排序，排序位置不是物理邻居身份。分描述量池化把138项重排为[6,23]，沿长度6的排序轴聚合，不能错误地把相邻23项看成同一描述量。
+
+Task3/5沿用v8.1缓存和每primitive质心/Rmax方向分支，原161维数值不变。Task4-c沿用4.14原233维缓存及其归一化、邻居缩放，不重新积分。池化先于标准化和signed-log；所有新池化含正负号，标准差/RMS本身按定义非负。零填充有效线必须仍为零。
+
+目标暂按三任务F1等权平均的相对提升15%–20%解释，并同时报告每任务差值。Task3/5先对原10个数据条目等权平均，Task4-c为Channel+TBL合并F1。主测试增益与同三个新种子重跑的原V8配对比较，历史V8值另列。15%不是15个百分点；此目标不预设成功，也不能据测试结果重选配置。
+
+## 已固定搜索步骤
+
+1. 首轮50种池化全部使用原训练配置h0。Task3/5各10条目使用seed40；Task4-c使用seed96611。共1,050次验证拟合。p00严格重现旧V8（全局幅值前4项保留符号＋带符号均值），进入后续选择前核对21个任务/流场的原验证指标、选定epoch/融合系数；Task4-c还逐值核对旧验证概率。
+2. 以三任务等权验证F1选前三种共同池化；每种另试h1/h2/h3三种预先固定的训练配置，共189次验证拟合。前三种的h0直接复用首轮。各流场不得分别挑池化或配置。
+3. 在全部59个组合中按三任务平均验证F1选唯一共同配置；并列先选平均参数更少者，再按固定ID排序。写入选择锁后，用Task3/5新种子44/45/46及Task4-c新种子96621/96622/96623，将其与原p00/h0配对重训、测试。共126次最终拟合；如胜者就是原V8则去重为63次。
+4. 所有候选与最终模型均只用训练/验证选择epoch，保持原任务的融合、阈值规则。Task4-c固定0.5测试；Task3/5阈值仍来自验证。测试是已用benchmark，不宣称新独立确认集。此批不根据测试追加搜索。
+
+50种池化由五类各10种组成：全局幅值排序保留、全局数值两端保留、按幅值选取但留在原列位置、分描述量统计、分描述量保留排序位置或幅值前若干项。全局保留数为4/1/8/16/24/32/48/64/96/138。全局两端同时保留大值与小值；奇数时大值端多一项。全局排序两类额外追加138项均值；原列位置类始终输出138槽，其余置零，因此“保留k项”不意味着只有k个输出维度。幅值相等按原列位置稳定排序。
+
+| 配置 | Task3/5 | Task4-c |
+|---|---|---|
+| h0 | 原训练、原投影；lr0.001，weight decay0.0001 | 原训练，dropout0.15、lr0.001、weight decay0.0001 |
+| h1 | 辅助表示dropout0.15，weight decay0.001 | dropout0.30，weight decay0.001 |
+| h2 | 辅助投影使用SiLU激活，辅助dropout0.05，lr0.0005 | 全部GELU替换为SiLU，lr0.0005 |
+| h3 | 中心、方向、邻居三分支分别线性投影＋LayerNorm＋GELU，再拼接 | 同样三分支投影，之后复用原逐线层和分类头 |
+
+SiLU指函数x·sigmoid(x)；GELU指高斯误差线性单元。h3是有训练参数的神经投影，不将其称为无参数FMT编码器的一部分。Task3/5的433维辅助槽保持：h3块宽为23/72/338，最后一块含邻居输出及剩余零槽。Task4-c块宽为23/72/实际池化输出维数。
+
+## 参数和成本
+
+Task3/5原Raw骨干及Raw-wide选择参照在每个流场、种子仅训练一次，并由所有候选共用；保持原冻结骨干策略及原融合规则。h0/h1/h2都补零到433槽，总参数142,914；h3使用分支投影后按实际参数报告，不宣称同参数。Task4-c随池化输出宽度改变首层参数，隐藏宽度128及分类头保持；h3单独计数。
+
+报告每次输入维度、总/可训练参数、选定epoch、训练耗时、公共Raw骨干耗时，以及整个1,239次搜索拟合和公共骨干的总成本。单个方法的训练成本包括一次Raw骨干＋自身残差训练；搜索总成本不把公共骨干重复计算50次。编码、缓存读取、最终测试另计，不将池化读取缓存的耗时当完整几何编码耗时。
+
+Task3/5训练预算、早停、采样、标签和尺度沿用v8.1；Task4-c保持27000训练、3000验证、10000测试、最多500轮和patience50。Cylinder起始时刻仍至少7.5；Task5保留18/6/9个训练/验证/测试尺度组合。
+
+## 执行与完成条件
+
+代码`FMT_Utils/FMT_V8_Search_2_1.py`、`experiments/FMTv8_Search_2_1.py`，独立复算`experiments/Audit_FMTv8_Search_2_1.py`。先检验所有池化的NumPy独立实现、符号/并列/零槽、实际维数与全部配置前反向，再用真实训练子集走完整训练、恢复、预测流程；工程子集不来自验证或测试。
+
+个人Ibex独立目录运行，限定V100，最多12个GPU并发。每个Slurm进程立即登记提交与起止信息、源码commit、配置哈希、节点和设备。主流程预期256个调度进程：preflight1、prepare21、search105、shortlist1、refine63、select1、final63、merge1。失败也保留，不能从清单中删除。
+
+Raw和残差权重仅为当前依赖链在Ibex临时保留；残差预测保存后删除，公共骨干在全部依赖结束后删除。不下载权重。逐样本验证/测试概率、标签身份、分尺度指标、选择依据、参数和训练日志长期保留。方法结论写入experiment_log，完整配置与结果表加入论文记录。
+
+## 50种池化的固定清单
+
+| ID | 操作 | 参数 | 邻居输出维数 | 总特征维数 |
+|---|---|---|---:|---:|
+| p00 | absolute_top | {"k": 4} | 5 | 100 |
+| p01 | absolute_top | {"k": 1} | 2 | 97 |
+| p02 | absolute_top | {"k": 8} | 9 | 104 |
+| p03 | absolute_top | {"k": 16} | 17 | 112 |
+| p04 | absolute_top | {"k": 24} | 25 | 120 |
+| p05 | absolute_top | {"k": 32} | 33 | 128 |
+| p06 | absolute_top | {"k": 48} | 49 | 144 |
+| p07 | absolute_top | {"k": 64} | 65 | 160 |
+| p08 | absolute_top | {"k": 96} | 97 | 192 |
+| p09 | absolute_top | {"k": 138} | 139 | 234 |
+| p10 | signed_extremes | {"k": 4} | 5 | 100 |
+| p11 | signed_extremes | {"k": 1} | 2 | 97 |
+| p12 | signed_extremes | {"k": 8} | 9 | 104 |
+| p13 | signed_extremes | {"k": 16} | 17 | 112 |
+| p14 | signed_extremes | {"k": 24} | 25 | 120 |
+| p15 | signed_extremes | {"k": 32} | 33 | 128 |
+| p16 | signed_extremes | {"k": 48} | 49 | 144 |
+| p17 | signed_extremes | {"k": 64} | 65 | 160 |
+| p18 | signed_extremes | {"k": 96} | 97 | 192 |
+| p19 | signed_extremes | {"k": 138} | 139 | 234 |
+| p20 | indexed_top | {"k": 4} | 138 | 233 |
+| p21 | indexed_top | {"k": 1} | 138 | 233 |
+| p22 | indexed_top | {"k": 8} | 138 | 233 |
+| p23 | indexed_top | {"k": 16} | 138 | 233 |
+| p24 | indexed_top | {"k": 24} | 138 | 233 |
+| p25 | indexed_top | {"k": 32} | 138 | 233 |
+| p26 | indexed_top | {"k": 48} | 138 | 233 |
+| p27 | indexed_top | {"k": 64} | 138 | 233 |
+| p28 | indexed_top | {"k": 96} | 138 | 233 |
+| p29 | indexed_top | {"k": 138} | 138 | 233 |
+| p30 | semantic_statistics | {"statistics": ["mean"]} | 23 | 118 |
+| p31 | semantic_statistics | {"statistics": ["max"]} | 23 | 118 |
+| p32 | semantic_statistics | {"statistics": ["min"]} | 23 | 118 |
+| p33 | semantic_statistics | {"statistics": ["std"]} | 23 | 118 |
+| p34 | semantic_statistics | {"statistics": ["rms"]} | 23 | 118 |
+| p35 | semantic_statistics | {"statistics": ["mean", "max"]} | 46 | 141 |
+| p36 | semantic_statistics | {"statistics": ["mean", "std"]} | 46 | 141 |
+| p37 | semantic_statistics | {"statistics": ["min", "max"]} | 46 | 141 |
+| p38 | semantic_statistics | {"statistics": ["mean", "max", "std"]} | 69 | 164 |
+| p39 | semantic_statistics | {"statistics": ["mean", "min", "max", "std"]} | 92 | 187 |
+| p40 | semantic_ranks | {"ranks": [0]} | 23 | 118 |
+| p41 | semantic_ranks | {"ranks": [0, 5]} | 46 | 141 |
+| p42 | semantic_ranks | {"ranks": [0, 2, 5]} | 69 | 164 |
+| p43 | semantic_ranks | {"ranks": [0, 1, 4, 5]} | 92 | 187 |
+| p44 | semantic_ranks | {"ranks": [0, 1, 2, 4, 5]} | 115 | 210 |
+| p45 | semantic_ranks | {"ranks": [0, 1, 2, 3, 4, 5]} | 138 | 233 |
+| p46 | semantic_absolute_top | {"k": 1} | 23 | 118 |
+| p47 | semantic_absolute_top | {"k": 2} | 46 | 141 |
+| p48 | semantic_absolute_top | {"k": 3} | 69 | 164 |
+| p49 | semantic_absolute_top | {"k": 4} | 92 | 187 |
