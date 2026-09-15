@@ -10725,4 +10725,3 @@ All timestamps below are UTC; complete commands, resource adjustments and their 
 
 The original audit51907440 failed solely at its over-strict float32-derived normalization check;51909831 recomputed statistics using an independent float64 reference and propagated rounding bounds. All88 development fits and their selected method stayed unchanged. Final144 fits used one common GTX1080Ti device per paired flow/scale/seed. Method-level interpretation is recorded only in experiment_log.
 <!-- ftlep35-final-registry-2.1-end -->
-

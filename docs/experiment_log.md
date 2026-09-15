@@ -3918,4 +3918,3 @@ PSNR为峰值信噪比，范围由训练真值固定；每种子先平均三张�
 
 完整报告、全部指标、逐时间片预测及图源为`outputs/Other_FTLEP35Fusion_2.1/final/`；数据归档和调度证据为父目录。机制说明`docs/FTLE_p35_fusion_mechanism_2.1_zh.md`，执行协议`docs/FTLE_p35_fusion_protocol_2.1.md`。当前请求的实验比较完成，不自动新增调参。
 <!-- ftlep35-final-results-2.1-end -->
-
