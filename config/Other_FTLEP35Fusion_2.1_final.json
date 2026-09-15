@@ -1,0 +1,8 @@
+{
+  "version": "Other_FTLEP35Fusion_2.1",
+  "output": "outputs/Other_FTLEP35Fusion_2.1/final",
+  "development_config": "config/Other_FTLEP35Fusion_2.1.json",
+  "development_commit": "52ec9d8b9be9444a2b49da1b0c0995602562fd4f",
+  "seeds": [98211, 98212, 98213],
+  "test_policy": "Require audited passing validation gate and immutable selection lock. Fit every comparator before loading test NPZ. Reused historical benchmark, no further selection from final results."
+}
