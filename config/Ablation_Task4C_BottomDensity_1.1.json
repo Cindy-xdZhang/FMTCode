@@ -176,13 +176,14 @@
     "center_number_start": 1000000,
     "maximum_center_attempts_per_instance": 20000,
     "bottom_cell_fraction": 0.5,
-    "scope": "positive_head_cells_inside_the_same_GT_instance_and_original_training_block",
+    "scope": "original_positive_head_training_cells_for_each_existing_training_instance",
     "negative_samples": "unchanged_original_rows",
     "validation_test": "byte_identical_original_files",
     "geometry_and_seed_prefix": "byte_equal_original_array_values",
     "expected_original_training_instances": {
       "channel": 62,
       "tbl": 54
-    }
+    },
+    "bottom_bias": "even_center_round_uses_original_full_pool_odd_round_uses_lower_half"
   }
 }

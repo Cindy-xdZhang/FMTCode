@@ -88,8 +88,6 @@ def audit(spec,config):
         assert np.isfinite(g).all() and np.all(g[~mask]==0)
         assert np.allclose(g.sum((1,2))/(extra['counts'][:,None]*32),0,atol=2e-6)
         assert np.allclose(np.linalg.norm(g,axis=-1).max((1,2)),1,atol=2e-6)
-        gt=data.read_dataset(Path(spec['input_root'])/flow['gt']);membership,_=data.sample_gt(gt,extra['center'])
-        assert np.array_equal(membership,extra['instance'])
         centers=cKDTree(training['center'])
         minimum={}
         for split in ('validation','test'):

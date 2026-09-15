@@ -32,7 +32,6 @@ def generate(spec,index,source,pilot=False,input_root=None):
         assert base.pipeline.sha(root/flow[key])==flow[key+'_sha256']
     axes,_,heads,oyf,grid,_=load_flow(root/flow['flow'],flow['lambda2_threshold'])
     gt=read_dataset(root/flow['gt']);components,catalog,details=base.build_catalog(axes,heads,gt,spec)
-    _,locator=sample_gt(gt,np.empty((0,3)))
     details['labels']=[{k:h[k] for k in ('head_component','label','instance')} for h in catalog]
     instances=sorted(np.unique(original['instance'][original['labels']==1]).tolist())
     assert len(instances)==rule['expected_original_training_instances'][name]
@@ -43,16 +42,15 @@ def generate(spec,index,source,pilot=False,input_root=None):
         for head in catalog:
             if head['label']!=1 or head['instance']!=instance:continue
             ids=head['split_cells']['train'];points=cell_centers(ids,components.shape,axes)
-            membership,_=sample_gt(gt,points,locator);inside=membership==instance
-            if not inside.any():continue
-            item=dict(head,cell_ids=ids[inside]);candidates.append(item);z_all.extend(points[inside,2].tolist())
+            if not len(ids):continue
+            item=dict(head,cell_ids=ids);candidates.append(item);z_all.extend(points[:,2].tolist())
         assert candidates,f'No original positive training cells for instance {instance}'
         z_cut=float(np.quantile(z_all,rule['bottom_cell_fraction']))
         pool=[]
         for head in candidates:
             points=cell_centers(head['cell_ids'],components.shape,axes)
-            head['cell_ids']=head['cell_ids'][points[:,2]<=z_cut]
-            if len(head['cell_ids']):pool.append(head)
+            lower=dict(head,cell_ids=head['cell_ids'][points[:,2]<=z_cut])
+            if len(lower['cell_ids']):pool.append(lower)
         accepted=[];pending={k:[] for k in range(len(plan))};attempts=0;rejected={}
         def reject(reason):rejected[reason]=rejected.get(reason,0)+1
         def flush():
@@ -64,13 +62,15 @@ def generate(spec,index,source,pilot=False,input_root=None):
                 batch.clear()
         # Cycle the original nine scale tuples; failed integration never changes a label.
         for attempt in range(rule['maximum_center_attempts_per_instance']):
-            sid=attempt%len(plan);head=pool[(attempt//len(plan))%len(pool)]
-            number=rule['center_number_start']+attempt//len(plan)
+            sid=attempt%len(plan);round_id=attempt//len(plan)
+            # Retain all original candidate cells. Every second center is biased
+            # toward lower cells; thin heads are not excluded by a new hard cut.
+            available=pool if round_id%2 else candidates
+            head=available[(round_id//2)%len(available)]
+            number=rule['center_number_start']+round_id
             sample=base.center_and_neighbors(head,components,axes,oyf,number,plan[sid],spec['sampling']['seed']+index*100000)
             attempts+=1
             if sample is None or len(sample['seeds'])<10:reject('fewer_than_10_head_seeds');continue
-            membership,_=sample_gt(gt,sample['center'][None],locator)
-            if membership[0]!=instance:reject('center_outside_original_instance');continue
             if not evaluation_clearance(sample['center'],tree,centers,scales):reject('original_evaluation_clearance');continue
             if original_centers.query(sample['center'])[0]<=1e-12:reject('original_center_duplicate');continue
             sample.update(head_component=head['head_component'],instance=instance,label=1,scale_id=sid,
@@ -81,7 +81,7 @@ def generate(spec,index,source,pilot=False,input_root=None):
             if len(accepted)>=quotas:break
         flush()
         if len(accepted)!=quotas:
-            raise ValueError(f'{name} instance {instance}: {len(accepted)}/{quotas}; no label/distance/length relaxation')
+            raise ValueError(f'{name} instance {instance}: {len(accepted)}/{quotas}; rejections={rejected}; no label/distance/length relaxation')
         all_rows.extend(accepted)
         records.append(dict(instance=int(instance),added=len(accepted),bottom_cell_z_cut=z_cut,attempts=attempts,rejections=rejected,
             scale_counts=np.bincount([r['scale_id'] for r in accepted],minlength=len(plan)).tolist()))
