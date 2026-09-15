@@ -3969,3 +3969,11 @@ PSNR为峰值信噪比，范围由训练真值固定；每种子先平均三张�
 方法结论：本轮FMT测试F1为0.760842，超过8³ Conv的0.709658，但低于24³的0.831460和32³的0.853504；FMT训练平均7.652分钟，32³为46.661分钟。该设置支持FMT相对粗体素的准确率优势及相对较细体素的训练耗时优势，不能支持FMT在所有体素分辨率上准确率更高。未增加完全相同p35/n0_k06与小Conv在未加密数据上的配对重跑，因此不把与历史约0.72的差额全部归因于底部加密。此前v2测试集合不同，不混为同一次配对比较。
 
 全部36份train/validation/test预测哈希、标签、每流场完整行覆盖及sklearn F1独立复算通过；21个进程各STARTED/ENDED共42事件一一匹配且退出码0。无pt/pth模型文件；查看器数据包已由merge生成，尚未重建本地交互页面。原始证据：outputs/Ablation_Task4C_BottomDensity_1.1/final_verified_evidence.json；正式Ibex根目录FMT_Task4C_BottomDensity_20260915_r2。当前请求完成，不自动新增调参。
+
+
+<a id="task4c-bottom-density-fivefold-20260916"></a>
+## 2026-09-16：Task4-c训练扩大五倍（1.2）
+
+用户新增授权 `Ablation_Task4C_BottomDensity_1.2`。唯一数据变化是在1.1训练采样分布下新增154,400个实际积分的线簇，总193,000训练；旧训练前缀及3,000验证/10,000测试保留。每个来源样本的头区、标签、实例、尺度、完整/下半区池各增加四束新中心，保持已有底部Hairpin偏置。积分、标签、空间块和评价距离规则冻结。只运行p35/n0_k06和Conv16³/24³各三种子，参数76,738/72,192，V100，原训练配置不变。每轮仍遍历全训练集，因此计算预算随样本数增加，不称等计算量比较。
+
+配置与实现：config/Ablation_Task4C_BottomDensity_1.2.json、FMT_Utils/Task4C_BottomDensity_1_2.py、experiments/Task4C_BottomDensity_1_2.py；完整规则见docs/Task4C_bottom_density_protocol_1.2.md。CPU模型前后向、参数、体素独立参考/稀疏往返、标准化和确定性池化检查通过。Ibex须先完成每候选头区×尺度×采样池真实pilot及数据核验，之后才训练。当前尚无新F1，不推断五倍训练一定改善FMT，旧1.1结论不改写。
