@@ -10725,3 +10725,61 @@ All timestamps below are UTC; complete commands, resource adjustments and their 
 
 The original audit51907440 failed solely at its over-strict float32-derived normalization check;51909831 recomputed statistics using an independent float64 reference and propagated rounding bounds. All88 development fits and their selected method stayed unchanged. Final144 fits used one common GTX1080Ti device per paired flow/scale/seed. Method-level interpretation is recorded only in experiment_log.
 <!-- ftlep35-final-registry-2.1-end -->
+
+
+<!-- task4c-v915-v2-formal-20260915 -->
+## Task4-c-v9.15_v2 单向长度正式构建与 n0_k06 比较（2026-09-15）
+
+科学commit `9769c68d5e74df837821f52e394560d3e6d87357`；配置SHA256 `a06693f90a2a529ee9a96df54ddd6298df0e2d1a94b13a88691f23db878eb090`；远程 `/ibex/user/zhanx0o/FMT_Task4C_InstanceCoverage_9p15_v2_20260915_formal`。当前为提交状态，无正式结果。
+
+| Job ID | Phase | Array | Submitted UTC | Device | Dependency |
+|---|---|---|---|---|---|
+| 51911059 | preflight | single | 2026-09-15T14:29:06.563757+00:00 | V100 | none |
+| 51911060 | pilot | 0-15%8 | 2026-09-15T14:29:06.644085+00:00 | CPU | 51911059 |
+| 51911061 | capacity | single | 2026-09-15T14:29:06.714771+00:00 | V100 | 51911060 |
+| 51911062 | prepare | 0-15%8 | 2026-09-15T14:29:06.782522+00:00 | CPU | 51911061 |
+| 51911063 | audit | single | 2026-09-15T14:29:06.856610+00:00 | CPU | 51911062 |
+| 51911064 | encode | 0-1%2 | 2026-09-15T14:29:06.927880+00:00 | V100 | 51911063 |
+| 51911065 | train | 0-11%6 | 2026-09-15T14:29:06.992022+00:00 | V100 | 51911064 |
+| 51911066 | merge | single | 2026-09-15T14:29:07.059780+00:00 | CPU | 51911065 |
+
+完整命令、源码hash、配置与提交身份：`outputs/mainExp_Task4C_InstanceCoverage_9.15_v2/formal_submissions.jsonl`。50个调度进程，开始/结束事件由runtime.jsonl记录；数据量132,000，预定四模型×三种子，150轮固定预算。
+
+V100预检51911059完成，n0_k06标准化对照、三分辨率体素重建、确定性池化前向/梯度及优化步骤均PASS。正式pipeline开始/结束事件（UTC）：
+
+| Job | Array | Phase | Event | UTC | Host | GPU | Exit |
+|---|---|---|---|---|---|---|---|
+| 51911059 | None | preflight | STARTED | 2026-09-15T14:30:26.836452+00:00 | gpu609-09 | Tesla V100-SXM2-32GB | None |
+| 51911059 | None | preflight | ENDED | 2026-09-15T14:30:34.632576+00:00 | gpu609-09 | Tesla V100-SXM2-32GB | 0 |
+| 51911118 | 0 | pilot | STARTED | 2026-09-15T14:30:39.030980+00:00 | cn604-14 | CPU | None |
+| 51911122 | 4 | pilot | STARTED | 2026-09-15T14:30:39.474855+00:00 | cn604-12 | CPU | None |
+| 51911121 | 3 | pilot | STARTED | 2026-09-15T14:30:39.474855+00:00 | cn604-12 | CPU | None |
+| 51911123 | 5 | pilot | STARTED | 2026-09-15T14:30:41.652775+00:00 | cn604-10 | CPU | None |
+| 51911124 | 6 | pilot | STARTED | 2026-09-15T14:30:41.652776+00:00 | cn604-10 | CPU | None |
+| 51911125 | 7 | pilot | STARTED | 2026-09-15T14:30:41.652753+00:00 | cn604-10 | CPU | None |
+| 51911120 | 2 | pilot | STARTED | 2026-09-15T14:30:43.128195+00:00 | cn604-13 | CPU | None |
+| 51911119 | 1 | pilot | STARTED | 2026-09-15T14:30:43.128195+00:00 | cn604-13 | CPU | None |
+| 51911122 | 4 | pilot | ENDED | 2026-09-15T14:30:56.860424+00:00 | cn604-12 | CPU | 0 |
+| 51911121 | 3 | pilot | ENDED | 2026-09-15T14:30:57.181397+00:00 | cn604-12 | CPU | 0 |
+| 51911118 | 0 | pilot | ENDED | 2026-09-15T14:30:57.876192+00:00 | cn604-14 | CPU | 0 |
+| 51911124 | 6 | pilot | ENDED | 2026-09-15T14:30:58.793754+00:00 | cn604-10 | CPU | 0 |
+| 51911133 | 9 | pilot | STARTED | 2026-09-15T14:31:00.052947+00:00 | cn604-12 | CPU | None |
+| 51911123 | 5 | pilot | ENDED | 2026-09-15T14:31:01.156397+00:00 | cn604-10 | CPU | 0 |
+| 51911119 | 1 | pilot | ENDED | 2026-09-15T14:31:01.253757+00:00 | cn604-13 | CPU | 0 |
+| 51911132 | 8 | pilot | STARTED | 2026-09-15T14:31:01.338927+00:00 | cn604-15 | CPU | None |
+| 51911120 | 2 | pilot | ENDED | 2026-09-15T14:31:01.470177+00:00 | cn604-13 | CPU | 0 |
+| 51911134 | 10 | pilot | STARTED | 2026-09-15T14:31:01.949709+00:00 | cn604-14 | CPU | None |
+| 51911135 | 11 | pilot | STARTED | 2026-09-15T14:31:01.981936+00:00 | cn604-12 | CPU | None |
+| 51911125 | 7 | pilot | ENDED | 2026-09-15T14:31:03.806538+00:00 | cn604-10 | CPU | 0 |
+| 51911140 | 14 | pilot | STARTED | 2026-09-15T14:31:04.924109+00:00 | cn604-10 | CPU | None |
+| 51911139 | 13 | pilot | STARTED | 2026-09-15T14:31:04.933381+00:00 | cn604-13 | CPU | None |
+| 51911138 | 12 | pilot | STARTED | 2026-09-15T14:31:04.933380+00:00 | cn604-13 | CPU | None |
+| 51911060 | 15 | pilot | STARTED | 2026-09-15T14:31:07.813723+00:00 | cn604-10 | CPU | None |
+| 51911133 | 9 | pilot | ENDED | 2026-09-15T14:31:16.737742+00:00 | cn604-12 | CPU | 0 |
+| 51911135 | 11 | pilot | ENDED | 2026-09-15T14:31:17.192785+00:00 | cn604-12 | CPU | 0 |
+| 51911134 | 10 | pilot | ENDED | 2026-09-15T14:31:18.477373+00:00 | cn604-14 | CPU | 0 |
+| 51911138 | 12 | pilot | ENDED | 2026-09-15T14:31:20.801218+00:00 | cn604-13 | CPU | 0 |
+| 51911140 | 14 | pilot | ENDED | 2026-09-15T14:31:21.716571+00:00 | cn604-10 | CPU | 0 |
+| 51911139 | 13 | pilot | ENDED | 2026-09-15T14:31:22.044744+00:00 | cn604-13 | CPU | 0 |
+| 51911060 | 15 | pilot | ENDED | 2026-09-15T14:31:22.849361+00:00 | cn604-10 | CPU | 0 |
+| 51911132 | 8 | pilot | ENDED | 2026-09-15T14:31:25.289489+00:00 | cn604-15 | CPU | 0 |
