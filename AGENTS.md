@@ -1,5 +1,7 @@
 # FMT 项目研究协议
 
+2026-09-15用户指定`task4-c-v9.15_v2`：确认保持132,000束（每实例500正＋500负），增加Channel11档/TBL12档长度，每实例3束必选head保留。长度区间[0.08,0.12]/[3,5.5]的单向或双向含义仍待回复，正式配置明确待确认并阻止采样/训练；尚无v2数据或F1。原v9.15预检51907304失败、47依赖进程开始前取消；v2预检51908822继续定位最大池化问题，修复平均/最大池化后51908979在V100通过（科学commitaf392332），模型参数不变。查看器1.3新增GT Head＋Non-hairpin模式和TP/TN/FP/FN着色，目前展示旧4.14结果；原页面刷新即可进入。协议docs/Task4C_instance_coverage_protocol_9.15_v2.md，失败与预检全部登记。
+
 2026-09-15新增`mainExp_Task4C_InstanceCoverage_9.15`（用户task4-c-v9.15）：每个Channel/TBL Hairpin实例目标500正＋500负，其中3束由GT内部velocity–curl夹角>45°的head播种。用户已确认有效播种点局部标签；重叠扩张采样盒同集合，67/7和52/6实例划分，119,000训练/13,000测试。132实例792束小预检、两实例各1,000束配额及CPU模型/体素检查通过。p35 141维76,738参数，对比32³/36³/48³小Conv72,192参数；150固定轮次后三种子测试一次。科学commit433c71b4，作业51907304–51907309（48进程）已提交，尚无新F1。协议docs/Task4C_instance_coverage_protocol_9.15.md。查看器新增预测两类独立数量控制；旧实验不改。
 
 2026-09-15新增`Other_Task4C_BundleVisualization_1.1`：已生成按预测二分类着色的真实涡线簇＋半透明GT曲面查看器，可切换Channel/TBL、训练/测试及已完成模型。首版FMT4.14与Conv32³4.22，seed96611；960束/16,981条有效线，物理坐标、VTP标签与概率、GT边界核验PASS。导出科学commitd5b778f9、CPU作业51906466完成；本地HTML和六个VTP位于outputs/Other_Task4C_BundleVisualization_1.1/viewer。浏览器交互核验因本机origin访问的自动审批拒绝而待授权，不能称交互测试完成。协议docs/Task4C_bundle_visualization_protocol_1.1.md；旧指标不改。

@@ -67,3 +67,11 @@ CPU作业51907655在cn604-10完成，实际UTC运行12:34:34.113378至12:34:44.4
 48³在此次导出时尚未完成，未展示或补造预测。Node执行正式加载器验证全部2,681束Channel训练预测Hairpin可被选择并加载，最后不足128束分片及共享请求均通过；这仍是代码检查，未执行浏览器交互验证。
 
 交付`outputs/Other_Task4C_BundleVisualization_1.2/viewer/index.html`及同目录`geometry/`。原1.1页面已设为指向新版的相对路径跳转，原完整HTML和清单位于原viewer的`history/`目录，旧包未改。核验依据：新输出目录中的`full_geometry_audit.json`、`full_loader_checks.json`、`runtime_events.jsonl`和`viewer_redirect.json`。新版HTML SHA256为`958bce7639143592eba825c2eec1e9796576bcd3def2ae58988005bd48c1af27`。
+
+## 1.3：GT Head模式与TP/TN/FP/FN着色（2026-09-15）
+
+新增GT Head附近真实正类线簇＋真实Non-hairpin模式，使用实际中心的GT包含关系及velocity–curl锐角>45°判断，保留漏检Head。该模式数量控件按真实标签计数，普通模式继续按预测类别计数。分析勾选按局部束真值与0.5预测阈值显示TP正确正类、TN正确负类、FP误报、FN漏检四种颜色，线与中心点一致，完整集合F1不受显示筛选影响。
+
+当前页面`outputs/Other_Task4C_BundleVisualization_1.3/viewer/index.html`仍使用4.14全量37,000束和三个已载入模型，并非待构建v9.15_v2的新结果。Head正类数量为Channel训练1883/测试713、TBL训练1437/测试517；负类仍包括全部真实Non-hairpin候选。全部head标记与独立SciPy插值及GT包含检查一致，新旧全部坐标、标签、预测及292个几何分片相同，Node四类真值表、0.5边界和漏检Head保留检查PASS。浏览器交互未执行，旧本地origin访问自动审批拒绝仍有效。
+
+原1.1和1.2入口已更新为指向1.3；原1.2全量HTML保留为其viewer目录的`index_1.2_full37000.html`，同目录几何仍可加载。证据为1.3输出目录`geometry_and_head_audit.json`、`head_analysis_checks.json`与`redirects.json`。

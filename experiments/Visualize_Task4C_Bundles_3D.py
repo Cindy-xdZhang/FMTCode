@@ -19,6 +19,7 @@ import numpy as np
 
 CONFIG = 'config/Other_Task4C_BundleVisualization_1.1.json'
 COLORS = {'hairpin': '#218990', 'non_hairpin': '#c08650', 'ground_truth': '#a6a0b4'}
+ANALYSIS_COLORS = {'TP': '#218990', 'TN': '#91a5b1', 'FP': '#d09251', 'FN': '#b86b80'}
 
 
 def sha(path):
@@ -278,17 +279,19 @@ def build_viewer(package, input_root, output, make_previews):
     from plotly.offline import get_plotlyjs
     package=Path(package); output=Path(output); output.mkdir(parents=True, exist_ok=True)
     manifest=json.loads((package/'manifest.json').read_text(encoding='utf-8'))
-    models=manifest['models']; payload=dict(models=models, pending=manifest['pending'], colors=COLORS,
+    models=manifest['models']; payload=dict(models=models, pending=manifest['pending'], colors=COLORS, analysis_colors=ANALYSIS_COLORS,
         threshold=.5, display_bundles=manifest['config']['display_bundles'], flows={}, evidence_note=manifest.get('evidence_note'))
     chunk_size=int(manifest['config'].get('geometry_chunk_size',0))
     payload['default_hairpin_count']=manifest['config'].get('default_hairpin_count')
     payload['default_nonhairpin_count']=manifest['config'].get('default_nonhairpin_count')
-    payload['viewer_version']='1.2' if chunk_size else '1.1'
+    payload['default_view_mode']=manifest['config'].get('default_view_mode','all')
+    payload['viewer_version']='1.3'
     records=[]; surfaces={}; vtk_files=[]
     for flow in manifest['flows']:
         name=flow['name']; native=Path(input_root)/flow['flow']; gt_path=Path(input_root)/flow['gt']
         assert sha(native)==flow['flow_sha256']; assert sha(gt_path)==flow['gt_sha256']
-        domain=read_vtk(native).GetBounds(); gt=gt_surface(gt_path); surfaces[name]=gt
+        native_grid=read_vtk(native); domain=native_grid.GetBounds(); gt=gt_surface(gt_path); surfaces[name]=gt
+        head_context=None
         points=vtk_to_numpy(gt.GetPoints().GetData()); faces=vtk_to_numpy(gt.GetPolys().GetConnectivityArray()).reshape(-1,3)
         ids=vtk_to_numpy(gt.GetCellData().GetArray('VortexIds'))
         gt_file=output/f'{name}_ground_truth.vtp';save_vtp(gt,gt_file);vtk_files.append(gt_file.name)
@@ -305,7 +308,25 @@ def build_viewer(package, input_root, output, make_previews):
                 entry['splits'][split]['geometry_chunks']=geometry_chunks(pack,output,name+'_'+split,chunk_size)
             else:
                 entry['splits'][split]['geometry']=array_json(pack['geometry'],'<f4')
-            for optional in ('owner_instance','mandatory_head'):
+            # Older packages lack head flags: derive them at the actual bundle
+            # centers from the frozen field and GT, never from predictions.
+            if 'center_is_head' not in pack:
+                from FMT_Utils.Task4C_PaperBundles_3_1 import load_flow
+                from FMT_Utils.Task4C_InstanceCoverage_9_15 import vector_at, head_mask
+                from FMT_Utils.Task4C_HairpinBinary_2_1 import sample_gt
+                if head_context is None:
+                    axes, _, _, _, vectors, _ = load_flow(native,flow['lambda2_threshold'])
+                    shape=tuple(len(a) for a in axes[::-1])
+                    velocity=vtk_to_numpy(native_grid.GetPointData().GetArray('velocity')).reshape(*shape,3)
+                    omega=vtk_to_numpy(vectors.GetPointData().GetArray('vorticity')).reshape(*shape,3)
+                    annotated=read_vtk(gt_path)
+                    head_context=(axes,velocity,omega,annotated)
+                axes,velocity,omega,annotated=head_context
+                flags,cosine=head_mask(vector_at(pack['center'],axes,velocity),vector_at(pack['center'],axes,omega))
+                center_ids,_=sample_gt(annotated,pack['center'])
+                pack['center_is_head']=flags & (center_ids>=0)
+                pack['center_abs_cosine']=cosine
+            for optional in ('owner_instance','mandatory_head','center_is_head','center_abs_cosine','ds','maxiteration','requested_half_length','requested_total_length'):
                 if optional in pack: entry['splits'][split][optional]=pack[optional].tolist()
             if not chunk_size:
                 mesh=bundle_mesh(pack,models);vtk_file=output/f'{name}_{split}_bundles.vtp';save_vtp(mesh,vtk_file);vtk_files.append(vtk_file.name)
@@ -328,7 +349,10 @@ def build_viewer(package, input_root, output, make_previews):
         source_gt_sha256={f['name']:f['gt_sha256'] for f in manifest['flows']},previews=records,vtk_files=vtk_files,
         full_population_loaded=all(v['selected']==v['population'] for v in manifest['splits'].values()),
         geometry_chunk_count=sum(len(s.get('geometry_chunks',[])) for f in payload['flows'].values() for s in f['splits'].values()),
-        class_counts={key:value.get('class_counts') for key,value in manifest['splits'].items()}))
+        class_counts={key:value.get('class_counts') for key,value in manifest['splits'].items()},
+        head_mode_counts={f+'/'+s:dict(head=sum(bool(h) and y==1 for h,y in zip(v['center_is_head'],v['labels'])),
+            non_hairpin=sum(y==0 for y in v['labels'])) for f,flow in payload['flows'].items() for s,v in flow['splits'].items()},
+        analysis_threshold=.5,head_definition='GT center inside; acute velocity-curl angle strictly above 45 degrees'))
     print(json.dumps(dict(status='PASS',viewer=str(path.resolve()),models=[m['id'] for m in models],html_mb=path.stat().st_size/1e6)),flush=True)
 
 
