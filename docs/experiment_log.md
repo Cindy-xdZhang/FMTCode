@@ -3775,3 +3775,13 @@ Task4-c逐线141→128→128，再对有效线均值/最大聚合为256，分类
 用户要求按Hairpin/Non-hairpin预测为涡线簇着色并叠加半透明GT曲面，新增`Other_Task4C_BundleVisualization_1.1`。入口`experiments/Visualize_Task4C_Bundles_3D.py`，模板`experiments/templates/task4c_bundles.html`，协议`Task4C_bundle_visualization_protocol_1.1.md`。原4.14归一化线簇按radius/centroid还原物理位置；相同的空间抽取样本用于FMT4.14与小Conv32³4.22（seed96611）显示，不以标签/分数选图。共960束/16,981条线，四组VTP全部顶点、行号、概率和颜色核验通过；GT不平滑不简化，Channel实例0保留。图只展示采样束分类，F1显示完整流场对应集合，不宣称稠密分割或独立实例泛化。
 
 导出科学commit`d5b778f98b0c920257e47663b5e8448318e71eaf`，Ibex51906466及两条运行事件核对完成，退出0；展示包manifest SHA256 `b75a29c9f149380680f9ca8a3d12761540a8aa3be2940ab00c2599a464939e58`。本地HTML、六个VTP、Channel/TBL预览已生成并检查真实几何。浏览器交互核验被本机origin访问的自动审批阻止，等待用户明确授权；不写成交互测试通过。不修改原实验指标。
+
+
+<a id="fmtv8-norm-frequency-deployment-3-1-2026-09-15"></a>
+### P35归一化/频率3.1部署与输入设备修订
+
+用户确认全部统一：几何归一化、邻居倍率和特征标准化。初始代码commit `0d77e3e57957393d82008a5a0ce8befcf45134a2`，配置SHA256 `6a87037d3bd5714fd3217c2c564d99c7a6bfa206307b2764477312de497ba82c`，代码包SHA256 `d7d6be195ed92a50088b06a355d701dab6dffec1a8a8d63306fecc9bca0c9672`。预检51906453通过，随后提交准备51906470[0–20]、复现51906471[0–20]、搜索51906472[0–83]、汇总51906473。
+
+补充只读检查发现CPU原编码器无法复现Task4-c原GPU缓存。搜索仍未开始时将搜索/汇总hold；修订为与原4.14相同的V100、32束批次。修订commit `c61434ac65f71a595617606f978a8516d815e288`，配置SHA256 `72ec704f6c9b48cdcb4a0bc536628aa6d925e3f9a96d9f73ba091447285350f0`，代码包SHA256 `96775b5ae91c64e8da960f25b6287c7c8b3ad7728beaddc726e653f81ff884d1`。追加预检51906546通过：Channel/TBL各32训练束的全部原特征逐值完全复现原缓存；CPU与GPU在其中236条有效线选择了不同邻居集合。因而该修订恢复固定输入，不作为归一化候选收益。
+
+搜索/汇总未启动作业的WorkDir改为独立source_revision2，搜索增加修订预检成功依赖，11:26:45 UTC解除hold。共享Raw准备和原p35复现保持初始源码，因为两阶段不调用新重编码。20候选、h0训练、数据和拟合预算未改。合计129调度进程，不取消、不删除旧预检或调度记录；当前尚无20组完整结果。两版源码目录及逐次调度更改完整保留在个人Ibex目录FMT_V8NormFrequency_20260915。
