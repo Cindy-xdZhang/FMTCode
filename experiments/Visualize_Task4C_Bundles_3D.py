@@ -1,6 +1,6 @@
 """Inspect physical vortex-line bundles, binary predictions and annotated surfaces.
 
-Export selected real examples on Ibex, then build a self-contained local viewer.
+Export real examples on Ibex, then build a local viewer with optional geometry chunks.
 This reads completed predictions, never model weights or unfinished checkpoints.
 """
 from __future__ import annotations
@@ -77,7 +77,10 @@ def export_examples(config, output):
             with np.load(part/'metadata.npz') as z: meta = {k:z[k] for k in z.files}
             geometry = np.load(part/'geometry.npy', mmap_mode='r')
             assert geometry.shape == (len(meta['labels']), 27, 32, 3)
-            ids = diverse_centers(meta['center'], spec['maximum_bundles_per_flow_split'], spec['selection_seed']+100*fi+si)
+            if spec.get('selection') == 'all_source_rows':
+                ids = np.arange(len(meta['labels']), dtype=np.int64)
+            else:
+                ids = diverse_centers(meta['center'], spec['maximum_bundles_per_flow_split'], spec['selection_seed']+100*fi+si)
             counts = meta['counts'][ids].astype(np.int64)
             assert np.all((counts >= 10) & (counts <= 27))
             g = np.asarray(geometry[ids], dtype=np.float64)
@@ -135,10 +138,14 @@ def export_examples(config, output):
         part = root/'physical'/key
         entries[key] = dict(file=filename, sha256=sha(output/filename), selected=len(pack['row_ids']),
             population=len(source[key]['labels']), metadata_sha256=sha(part/'metadata.npz'), geometry_sha256=sha(part/'geometry.npy'),
-            selection_uses_labels_or_scores=False, physical_coordinates_restored=True)
+            selection_uses_labels_or_scores=False, physical_coordinates_restored=True,
+            class_counts={m['id']:dict(hairpin=int((pack['p_'+m['id']]>=.5).sum()),
+                non_hairpin=int((pack['p_'+m['id']]<.5).sum())) for m in models})
     manifest = dict(version=spec['version'], identity=identity(config), config=spec, flows=data_spec['flows'],
         models=models, pending=pending, splits=entries, threshold=.5, completed_at_utc=datetime.now(timezone.utc).isoformat(),
         evidence_scope='Real selected bundles and completed per-bundle predictions; metrics use full per-flow split', weights_read=False)
+    if spec.get('selection') == 'all_source_rows':
+        manifest['evidence_note']='提供完整训练/测试集合，未抽样或复制线簇。分类按已完成模型的原始概率和0.5阈值；可显示当前区域的全部预测Hairpin。几何按需加载，F1使用完整集合。束标签由原候选头区GT归属确定，坐标保持物理尺度。'
     write(output/'manifest.json', manifest)
     print(json.dumps(dict(status='PASS', models=[m['id'] for m in models], pending=[m['id'] for m in pending],
         selected_bundles=sum(e['selected'] for e in entries.values()), manifest_sha256=sha(output/'manifest.json'))), flush=True)
@@ -147,6 +154,24 @@ def export_examples(config, output):
 def array_json(value, dtype):
     value = np.ascontiguousarray(value, dtype=dtype)
     return dict(dtype=str(value.dtype), shape=list(value.shape), data=base64.b64encode(value.tobytes()).decode('ascii'))
+
+
+def geometry_chunks(pack, output, key, chunk_size):
+    """Local script chunks work with file:// without fetching the full geometry."""
+    output=Path(output); folder=output/'geometry'; folder.mkdir(exist_ok=True)
+    references=[]
+    for start in range(0,len(pack['counts']),chunk_size):
+        stop=min(start+chunk_size,len(pack['counts'])); counts=pack['counts'][start:stop]
+        offsets=np.r_[0,np.cumsum(counts*32*3)].astype(np.int64)
+        values=np.concatenate([pack['geometry'][i,:int(pack['counts'][i])].reshape(-1) for i in range(start,stop)])
+        assert len(values)==offsets[-1] and np.isfinite(values).all()
+        name=f'{key}_{start//chunk_size:04d}'
+        payload=dict(geometry=array_json(values,'<f4'),offsets=offsets.tolist())
+        path=folder/(name+'.js')
+        path.write_text('window.task4cGeometryChunk('+json.dumps(name)+','+json.dumps(payload,separators=(',',':'))+');\n',encoding='utf-8')
+        references.append(dict(key=name,path='geometry/'+path.name,start=start,count=stop-start,
+            sha256=sha(path),valid_points=int(offsets[-1]//3)))
+    return references
 
 
 def read_vtk(path):
@@ -255,6 +280,10 @@ def build_viewer(package, input_root, output, make_previews):
     manifest=json.loads((package/'manifest.json').read_text(encoding='utf-8'))
     models=manifest['models']; payload=dict(models=models, pending=manifest['pending'], colors=COLORS,
         threshold=.5, display_bundles=manifest['config']['display_bundles'], flows={}, evidence_note=manifest.get('evidence_note'))
+    chunk_size=int(manifest['config'].get('geometry_chunk_size',0))
+    payload['default_hairpin_count']=manifest['config'].get('default_hairpin_count')
+    payload['default_nonhairpin_count']=manifest['config'].get('default_nonhairpin_count')
+    payload['viewer_version']='1.2' if chunk_size else '1.1'
     records=[]; surfaces={}; vtk_files=[]
     for flow in manifest['flows']:
         name=flow['name']; native=Path(input_root)/flow['flow']; gt_path=Path(input_root)/flow['gt']
@@ -269,12 +298,17 @@ def build_viewer(package, input_root, output, make_previews):
             key=name+'/'+split; source=manifest['splits'][key];assert sha(package/source['file'])==source['sha256']
             with np.load(package/source['file']) as z: pack={k:z[k] for k in z.files}
             entry['splits'][split]=dict(population=source['population'],selected=source['selected'],
-                geometry=array_json(pack['geometry'],'<f4'),
                 **{k:pack[k].tolist() for k in ('counts','row_ids','labels','center','head_component','instance','scale_id','radius','neighbor_distance')},
                 probabilities={m['id']:pack['p_'+m['id']].tolist() for m in models})
+            if chunk_size:
+                entry['splits'][split]['geometry_chunk_size']=chunk_size
+                entry['splits'][split]['geometry_chunks']=geometry_chunks(pack,output,name+'_'+split,chunk_size)
+            else:
+                entry['splits'][split]['geometry']=array_json(pack['geometry'],'<f4')
             for optional in ('owner_instance','mandatory_head'):
                 if optional in pack: entry['splits'][split][optional]=pack[optional].tolist()
-            mesh=bundle_mesh(pack,models);vtk_file=output/f'{name}_{split}_bundles.vtp';save_vtp(mesh,vtk_file);vtk_files.append(vtk_file.name)
+            if not chunk_size:
+                mesh=bundle_mesh(pack,models);vtk_file=output/f'{name}_{split}_bundles.vtp';save_vtp(mesh,vtk_file);vtk_files.append(vtk_file.name)
             if split=='test' and make_previews:
                 take=manifest['config']['display_bundles']; subset={k:v[:take] for k,v in pack.items()}
                 selected_mesh=bundle_mesh(subset,models)
@@ -291,13 +325,16 @@ def build_viewer(package, input_root, output, make_previews):
     write(output/'viewer_manifest.json',dict(version=manifest['version'],source_manifest_sha256=sha(package/'manifest.json'),
         html_sha256=sha(path),template_sha256=sha(template),build_source_sha256=sha(__file__),models=[m['id'] for m in models], pending=[m['id'] for m in manifest['pending']],
         ground_truth_exact_boundary=True,gt_smoothing=False,gt_decimation=False,instance_zero_included=True,
-        source_gt_sha256={f['name']:f['gt_sha256'] for f in manifest['flows']},previews=records,vtk_files=vtk_files))
+        source_gt_sha256={f['name']:f['gt_sha256'] for f in manifest['flows']},previews=records,vtk_files=vtk_files,
+        full_population_loaded=all(v['selected']==v['population'] for v in manifest['splits'].values()),
+        geometry_chunk_count=sum(len(s.get('geometry_chunks',[])) for f in payload['flows'].values() for s in f['splits'].values()),
+        class_counts={key:value.get('class_counts') for key,value in manifest['splits'].items()}))
     print(json.dumps(dict(status='PASS',viewer=str(path.resolve()),models=[m['id'] for m in models],html_mb=path.stat().st_size/1e6)),flush=True)
 
 
 def runtime(config, output, state, code=None):
     from experiments.Task4C_HairpinBinary_2_1 import append_locked
-    row=dict(version='Other_Task4C_BundleVisualization_1.1',state=state,exit_code=code,time=datetime.now(timezone.utc).isoformat(),**identity(config))
+    row=dict(version=json.loads(Path(config).read_text())['version'],state=state,exit_code=code,time=datetime.now(timezone.utc).isoformat(),**identity(config))
     append_locked(str(Path(output).parent/'runtime_events.jsonl'),json.dumps(row)+'\n')
     append_locked('docs/ibex_run_registry.md','\n- Task4-c bundle visualization runtime '+json.dumps(row)+'\n')
 

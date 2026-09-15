@@ -39,3 +39,31 @@ python -m experiments.Visualize_Task4C_Bundles_3D export --output outputs/Other_
 CPU导出作业51906466，科学commit`d5b778f98b0c920257e47663b5e8448318e71eaf`，2026-09-15T11:19:19 UTC完成，退出0。首版包含FMT4.14和32³小Conv4.22的seed96611，36³、48³尚未在此次导出时完成。四个分区各240束，共960束、16,981条有效线，全部VTP顶点、有效线数量、样本行号、两个模型的逐线概率和二分类颜色独立复核PASS。GT边界Channel313,567三角形/74实例（含0），TBL317,232三角形/58实例，无简化。
 
 输出`outputs/Other_Task4C_BundleVisualization_1.1/viewer/index.html`，内嵌Plotly和全部数据约36.8 MB，另有六个VTP和两个VTK预览PNG。源证据`package/manifest.json`，检查`code_checks.json`与`geometry_audit.json`，渲染清单`viewer/viewer_manifest.json`。浏览器访问`http://127.0.0.1:8896`被自动审批拒绝，理由是尚未明确授权该本机origin访问；交互检查等待授权，不能将源码和VTK检查写成浏览器验证通过。页面可由用户直接打开本地HTML。
+
+## 1.2：完整集合与全部Hairpin（2026-09-15）
+
+用户指出Hairpin数量最多28。核对1.1展示包，Channel训练240束中两个已载入模型各预测28束Hairpin；完整13,500训练束中，FMT预测2,681束、小Conv32³预测2,682束。这是查看器导出抽样造成的上限，不是训练数据只有28束。此前仅增加独立滑块，没有扩展导出范围，因此未满足大量查看Hairpin的需求。
+
+新增配置`config/Other_Task4C_BundleVisualization_1.2.json`，`selection=all_source_rows`，直接导出原训练/测试集合的每一行，合计37,000束（两个流场各13,500训练＋5,000测试），不重新积分、不复制曲线、不调整阈值或预测。主脚本和模板继续共用，不新增test/verify脚本。旧1.1数据包保留；新包位于`outputs/Other_Task4C_BundleVisualization_1.2/package`。
+
+页面默认选择全部预测Hairpin、100束Non-hairpin，新增“全部Hairpin”“全部Non-hairpin”及直接输入数量。上限是当前区域中实际预测类别的总数；全区域时覆盖完整集合。所有模型使用完全相同几何行，F1仍来自完整集合。预测Hairpin与真实Hairpin标签明确区分，不能为了多显示将负预测改成正预测。
+
+完整坐标每128束分成一个本地JavaScript文件，保留每条有效线的全部32点，去掉补零槽位。HTML先提供全部标签、概率和空间中心，显示所需几何才按需载入；同一分片的重复请求复用。用户需保留页面同目录的`geometry`子目录。全部文件位于本地，不使用网络CDN，不需要本机HTTP服务。新版本不默认输出37,000束的大型VTP；旧版六个VTP保留，新的两个GT边界VTP仍输出。
+
+纯JavaScript检查包含语法、真实几何分片长度、并发请求复用、最后不足128束分片、全部Hairpin及两类独立数量选择。实际浏览器交互检查仍未执行，不能以脚本检查代替浏览器验证。
+
+科学提交`5307bf3a849d07625dac21d92e3abb4a35778b44`，配置SHA256 `23c694e50428d55721ee83f649a0155b7e74922e7e4a0330bc4ef0f462d6784b`；CPU导出作业51907655，2026-09-15T12:34:30 UTC提交。实际完成与几何全量复算随后写入实验日志和Ibex登记。
+
+### 1.2 完成记录
+
+CPU作业51907655在cn604-10完成，实际UTC运行12:34:34.113378至12:34:44.418508，Slurm为COMPLETED/0:0。全量37,000束包含680,519条有效线，分为292个几何文件；HTML约30.14 MB。全部原样本行覆盖一次，逐束float32坐标、每条线全部32点、标签与三个模型概率逐元素核验通过；12个流场/集合/模型组合的混淆矩阵和F1与冻结结果一致。
+
+| 模型（seed96611） | Channel训练 Hairpin | Channel测试 Hairpin | TBL训练 Hairpin | TBL测试 Hairpin |
+|---|---:|---:|---:|---:|
+| FMT 4.14 | 2681 | 863 | 1939 | 466 |
+| 小Conv3D 32³ | 2682 | 935 | 1937 | 573 |
+| 小Conv3D 36³ | 2682 | 928 | 1937 | 522 |
+
+48³在此次导出时尚未完成，未展示或补造预测。Node执行正式加载器验证全部2,681束Channel训练预测Hairpin可被选择并加载，最后不足128束分片及共享请求均通过；这仍是代码检查，未执行浏览器交互验证。
+
+交付`outputs/Other_Task4C_BundleVisualization_1.2/viewer/index.html`及同目录`geometry/`。原1.1页面已设为指向新版的相对路径跳转，原完整HTML和清单位于原viewer的`history/`目录，旧包未改。核验依据：新输出目录中的`full_geometry_audit.json`、`full_loader_checks.json`、`runtime_events.jsonl`和`viewer_redirect.json`。新版HTML SHA256为`958bce7639143592eba825c2eec1e9796576bcd3def2ae58988005bd48c1af27`。

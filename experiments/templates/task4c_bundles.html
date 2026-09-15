@@ -13,6 +13,7 @@ main{display:grid;grid-template-columns:278px minmax(0,1fr);height:calc(100vh - 
 aside{padding:19px 20px;overflow:auto;background:#fafbf8;border-right:1px solid #e0e6df}
 label.control{display:block;font-size:12px;color:var(--muted);margin:0 0 13px}select{width:100%;padding:8px 9px;margin-top:5px;background:white;color:var(--ink);border:1px solid #d7dfd8;border-radius:5px;font:inherit}
 input[type=range]{display:block;width:100%;accent-color:var(--hairpin);margin:8px 0}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.section{padding-top:17px;margin-top:16px;border-top:1px solid #e0e6df}
+input[type=number]{width:88px;padding:5px 7px;border:1px solid #d7dfd8;border-radius:4px;background:white;color:var(--ink)}.count-entry{display:flex;gap:7px;align-items:center;margin-top:5px}
 button{padding:8px 10px;background:#edf2ed;color:var(--ink);border:1px solid #d3ddd3;border-radius:5px;cursor:pointer;font:inherit;font-size:12px}button:hover{background:#e2ebe4}button:disabled{opacity:.5;cursor:default}.wide{width:100%}
 .key{display:flex;align-items:center;gap:8px;margin:9px 0;font-size:12px}.swatch{width:22px;height:3px;background:var(--hairpin);flex:none}.swatch.non{background:var(--non)}.swatch.gt{height:13px;background:#a6a0b460;border:1px solid #a6a0b4}
 .check{font-size:12px;display:block;margin:8px 0;cursor:pointer}.check input{accent-color:var(--hairpin);vertical-align:middle;margin-right:7px}
@@ -32,7 +33,9 @@ article{display:flex;flex-direction:column;min-width:0}.metrics{padding:15px 23p
 <label class="control">真实标注区域<select id="region"><option value="all">全部标注区域</option></select></label>
 <label class="control"><span class="row"><span>Hairpin 线簇数量</span><span id="hairpinCountText"></span></span><input id="hairpinCount" type="range" min="0" max="240" step="1" value="50"></label>
 <label class="control"><span class="row"><span>Non-hairpin 线簇数量</span><span id="nonhairpinCountText"></span></span><input id="nonhairpinCount" type="range" min="0" max="240" step="1" value="50"></label>
-<div class="muted">数量按当前模型的预测类别分别控制；上限为当前区域中已载入的该类线簇数。</div>
+<div class="count-entry"><input id="hairpinNumber" type="number" min="0" step="1" aria-label="Hairpin线簇数"><button id="allHairpin">全部 Hairpin</button></div>
+<div class="count-entry"><input id="nonhairpinNumber" type="number" min="0" step="1" aria-label="Non-hairpin线簇数"><button id="allNonhairpin">全部 Non-hairpin</button></div>
+<div class="muted" style="margin-top:8px">上限为当前区域内该模型预测的实际束数。可直接输入数量，或点击“全部”；几何按需加载。</div>
 <div class="section">
 <label class="check"><input id="hairpin" type="checkbox" checked>显示预测 Hairpin</label>
 <label class="check"><input id="nonhairpin" type="checkbox" checked>显示预测 Non-hairpin</label>
@@ -53,13 +56,47 @@ article{display:flex;flex-direction:column;min-width:0}.metrics{padding:15px 23p
 const DATA=/*__PAYLOAD__*/;
 const $=id=>document.getElementById(id);
 if(DATA.evidence_note)$('evidenceNote').textContent=DATA.evidence_note;
-const state={flow:'channel',split:'test',model:DATA.models[0].id,selected:null,focus:false,revision:0,counts:{hairpin:Math.ceil(DATA.display_bundles/2),nonhairpin:Math.floor(DATA.display_bundles/2)}};
+if(DATA.viewer_version)document.querySelector('.version').textContent='3D result viewer · '+DATA.viewer_version;
+const state={flow:'channel',split:'test',model:DATA.models[0].id,selected:null,focus:false,revision:0,renderToken:0,counts:{hairpin:DATA.default_hairpin_count==='all'?Infinity:Math.ceil(DATA.display_bundles/2),nonhairpin:DATA.default_nonhairpin_count??Math.floor(DATA.display_bundles/2)}};
 function unpack(a){const binary=atob(a.data), bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);return a.dtype==='float32'?new Float32Array(bytes.buffer):new Int32Array(bytes.buffer);}
+const chunkCache=new Map(),chunkRequests=new Map(),chunkWaiters=new Map();
+window.task4cGeometryChunk=(key,payload)=>{
+ const waiter=chunkWaiters.get(key);if(!waiter)return;
+ try{const value={xyz:unpack(payload.geometry),offsets:payload.offsets};if(value.offsets.at(-1)!==value.xyz.length)throw new Error('几何长度不匹配');chunkCache.set(key,value);waiter.resolve(value);}
+ catch(error){waiter.reject(error);}finally{chunkWaiters.delete(key);}
+};
+function loadGeometryChunk(reference){
+ if(chunkCache.has(reference.key))return Promise.resolve(chunkCache.get(reference.key));
+ if(chunkRequests.has(reference.key))return chunkRequests.get(reference.key);
+ const promise=new Promise((resolve,reject)=>{
+  chunkWaiters.set(reference.key,{resolve,reject});const script=document.createElement('script');script.src=reference.path;
+  script.onload=()=>{script.remove();if(chunkWaiters.has(reference.key)){chunkWaiters.delete(reference.key);reject(new Error('几何文件没有返回数据'));}};
+  script.onerror=()=>{script.remove();chunkWaiters.delete(reference.key);reject(new Error('无法加载 '+reference.path+'；请保留页面旁的geometry文件夹'));};
+  document.head.appendChild(script);
+ }).finally(()=>chunkRequests.delete(reference.key));
+ chunkRequests.set(reference.key,promise);return promise;
+}
+async function ensureGeometry(split,indices){
+ if(split.xyz||!indices.length)return;
+ const pages=[...new Set(indices.map(i=>Math.floor(i/split.geometry_chunk_size)))];let cursor=0;
+ await Promise.all(Array.from({length:Math.min(6,pages.length)},async()=>{while(cursor<pages.length){const page=pages[cursor++];await loadGeometryChunk(split.geometry_chunks[page]);}}));
+}
+function trimGeometryCache(split,indices){
+ if(split.xyz)return;
+ const needed=new Set(indices.map(i=>split.geometry_chunks[Math.floor(i/split.geometry_chunk_size)].key));
+ for(const key of chunkCache.keys()){if(chunkCache.size<=128)break;if(!needed.has(key))chunkCache.delete(key);}
+}
+function bundleGeometry(split,id){
+ if(split.xyz)return split.xyz.subarray(id*27*32*3,id*27*32*3+split.counts[id]*32*3);
+ const reference=split.geometry_chunks[Math.floor(id/split.geometry_chunk_size)],chunk=chunkCache.get(reference.key),local=id-reference.start;
+ if(!chunk)throw new Error('线簇几何尚未加载');
+ return chunk.xyz.subarray(chunk.offsets[local],chunk.offsets[local+1]);
+}
 function columns(p){const n=p.length/3,x=new Float32Array(n),y=new Float32Array(n),z=new Float32Array(n);for(let i=0;i<n;i++){x[i]=p[i*3];y[i]=p[i*3+1];z[i]=p[i*3+2];}return {x,y,z};}
 for(const [name,flow] of Object.entries(DATA.flows)){
  flow.gt.xyz=columns(unpack(flow.gt.points));flow.gt.triangles=unpack(flow.gt.faces);flow.gt.instanceIds=unpack(flow.gt.ids);
  delete flow.gt.points;delete flow.gt.faces;delete flow.gt.ids;
- for(const split of Object.values(flow.splits)){split.xyz=unpack(split.geometry);delete split.geometry;}
+ for(const split of Object.values(flow.splits)){if(split.geometry){split.xyz=unpack(split.geometry);delete split.geometry;}}
 }
 for(const model of DATA.models){const option=new Option(model.label,model.id);$('model').add(option);}
 if(DATA.pending.length)$('pending').textContent='尚未完成、暂未载入：'+DATA.pending.map(m=>m.label).join('；');
@@ -67,27 +104,29 @@ $('hairpinCount').value=Math.ceil(DATA.display_bundles/2);
 $('nonhairpinCount').value=Math.floor(DATA.display_bundles/2);
 function current(){return DATA.flows[state.flow].splits[state.split];}
 function gtBounds(instance){const gt=DATA.flows[state.flow].gt;if(instance==='all')return gt.bounds.slice();const b=[Infinity,-Infinity,Infinity,-Infinity,Infinity,-Infinity];for(let f=0;f<gt.instanceIds.length;f++){if(gt.instanceIds[f]!==+instance)continue;for(let j=0;j<3;j++){let p=gt.triangles[f*3+j];for(let a=0;a<3;a++){const v=gt.xyz[['x','y','z'][a]][p];b[2*a]=Math.min(b[2*a],v);b[2*a+1]=Math.max(b[2*a+1],v);}}}return b;}
-function bundleBounds(indices){const split=current(),b=[Infinity,-Infinity,Infinity,-Infinity,Infinity,-Infinity];for(const idx of indices)for(let k=0;k<split.counts[idx]*32;k++)for(let a=0;a<3;a++){let v=split.xyz[idx*27*32*3+k*3+a];b[2*a]=Math.min(b[2*a],v);b[2*a+1]=Math.max(b[2*a+1],v);}return b;}
+function bundleBounds(indices){const split=current(),b=[Infinity,-Infinity,Infinity,-Infinity,Infinity,-Infinity];for(const idx of indices){const xyz=bundleGeometry(split,idx);for(let k=0;k<split.counts[idx]*32;k++)for(let a=0;a<3;a++){let v=xyz[k*3+a];b[2*a]=Math.min(b[2*a],v);b[2*a+1]=Math.max(b[2*a+1],v);}}return b;}
 function pad(b,fraction=.08){const span=Math.max(...[0,1,2].map(i=>b[2*i+1]-b[2*i]));return b.map((v,i)=>v+(i%2?1:-1)*span*fraction);}
 function mergeBounds(a,b){return a.map((v,i)=>i%2?Math.max(v,b[i]):Math.min(v,b[i]));}
 function refreshRegions(){const saved=$('region').value;$('region').innerHTML='';$('region').add(new Option('全部标注区域','all'));for(const i of DATA.flows[state.flow].gt.instances)$('region').add(new Option('Hairpin 实例 '+i,String(i)));$('region').value=[...$('region').options].some(o=>o.value===saved)?saved:'all';}
 function meshTrace(region){const gt=DATA.flows[state.flow].gt,i=[],j=[],k=[];for(let f=0;f<gt.instanceIds.length;f++){if(region!=='all'&&gt.instanceIds[f]!==+region)continue;i.push(gt.triangles[f*3]);j.push(gt.triangles[f*3+1]);k.push(gt.triangles[f*3+2]);}return {type:'mesh3d',...gt.xyz,i,j,k,color:DATA.colors.ground_truth,opacity:+$('opacity').value/100,visible:$('gt').checked,hoverinfo:'skip',showlegend:false,name:'Hairpin ground truth',flatshading:false,lighting:{ambient:.65,diffuse:.65,specular:.08,roughness:.8},lightposition:{x:100,y:-200,z:300}};}
-function lineTrace(indices,positive){const s=current(),x=[],y=[],z=[];for(const id of indices){if((s.probabilities[state.model][id]>=.5)!==positive)continue;for(let line=0;line<s.counts[id];line++){for(let p=0;p<32;p++){const a=(id*27*32+line*32+p)*3;x.push(s.xyz[a]);y.push(s.xyz[a+1]);z.push(s.xyz[a+2]);}x.push(null);y.push(null);z.push(null);}}return {type:'scatter3d',mode:'lines',x,y,z,line:{color:positive?DATA.colors.hairpin:DATA.colors.non_hairpin,width:2.4},hoverinfo:'skip',showlegend:false,name:positive?'Predicted Hairpin':'Predicted Non-hairpin',connectgaps:false};}
+function lineTrace(indices,positive){const s=current(),x=[],y=[],z=[];for(const id of indices){if((s.probabilities[state.model][id]>=.5)!==positive)continue;const xyz=bundleGeometry(s,id);for(let line=0;line<s.counts[id];line++){for(let p=0;p<32;p++){const a=(line*32+p)*3;x.push(xyz[a]);y.push(xyz[a+1]);z.push(xyz[a+2]);}x.push(null);y.push(null);z.push(null);}}return {type:'scatter3d',mode:'lines',x,y,z,line:{color:positive?DATA.colors.hairpin:DATA.colors.non_hairpin,width:2.4},hoverinfo:'skip',showlegend:false,name:positive?'Predicted Hairpin':'Predicted Non-hairpin',connectgaps:false};}
 function centerTrace(indices){const s=current();return {type:'scatter3d',mode:'markers',x:indices.map(i=>s.center[i][0]),y:indices.map(i=>s.center[i][1]),z:indices.map(i=>s.center[i][2]),customdata:indices.map(i=>[i,s.row_ids[i],s.probabilities[state.model][i],s.labels[i]?'Hairpin':'Non-hairpin']),marker:{size:3,color:indices.map(i=>s.probabilities[state.model][i]>=.5?DATA.colors.hairpin:DATA.colors.non_hairpin),opacity:.9},hovertemplate:'线簇 %{customdata[1]}<br>P(Hairpin) = %{customdata[2]:.3f}<br>真实束标签：%{customdata[3]}<extra></extra>',showlegend:false,name:'Bundle centers'};}
 function groundPlane(bounds){const z=DATA.flows[state.flow].domain[4];return {type:'mesh3d',x:[bounds[0],bounds[1],bounds[1],bounds[0]],y:[bounds[2],bounds[2],bounds[3],bounds[3]],z:[z,z,z,z],i:[0,0],j:[1,2],k:[2,3],color:'#e3e8e0',opacity:.15,hoverinfo:'skip',showlegend:false,flatshading:true};}
 function selectedDetails(id){const s=current(),p=s.probabilities[state.model][id];state.selected=id;$('focus').disabled=false;$('detail').innerHTML='<strong>线簇 '+s.row_ids[id]+'</strong><br>预测：'+(p>=.5?'Hairpin':'Non-hairpin')+'<br>真实束标签：'+(s.labels[id]?'Hairpin':'Non-hairpin')+'<br><span class="value">P(Hairpin) = '+p.toFixed(4)+'</span><br>'+s.counts[id]+' 条有效线 · 尺度 '+s.scale_id[id]+(s.owner_instance?'<br>附近实例：'+s.owner_instance[id]:'')+(s.mandatory_head&&s.mandatory_head[id]?'<br>必选 head 线束':'');}
 async function render(reset=false){
- const s=current(),model=DATA.models.find(m=>m.id===state.model),region=$('region').value;
+ const token=++state.renderToken,s=current(),model=DATA.models.find(m=>m.id===state.model),region=$('region').value;
  $('status').textContent='更新场景…';$('opacityText').textContent=$('opacity').value+'%';
  let indices=Array.from({length:s.selected},(_,i)=>i),roi=null;
  if(region!=='all'){roi=pad(gtBounds(region),.25);indices=indices.filter(i=>s.center[i].every((v,a)=>v>=roi[a*2]&&v<=roi[a*2+1]));}
- if(state.focus&&state.selected!==null){roi=pad(bundleBounds([state.selected]),.45);indices=indices.filter(i=>s.center[i].every((v,a)=>v>=roi[a*2]&&v<=roi[a*2+1]));indices=[state.selected,...indices.filter(i=>i!==state.selected)];}
+ if(state.focus&&state.selected!==null){await ensureGeometry(s,[state.selected]);if(token!==state.renderToken)return;roi=pad(bundleBounds([state.selected]),.45);indices=indices.filter(i=>s.center[i].every((v,a)=>v>=roi[a*2]&&v<=roi[a*2+1]));indices=[state.selected,...indices.filter(i=>i!==state.selected)];}
  const positive=indices.filter(i=>s.probabilities[state.model][i]>=.5),negative=indices.filter(i=>s.probabilities[state.model][i]<.5);
  for(const [name,available] of [['hairpin',positive.length],['nonhairpin',negative.length]]){
   const control=$(name+'Count');control.max=available;control.value=Math.min(state.counts[name],available);
+  $(name+'Number').max=available;$(name+'Number').value=control.value;
   $(name+'CountText').textContent=($(name).checked?control.value:0)+' / '+available;
  }
  indices=selectClassIndices(indices,s.probabilities[state.model],$('hairpin').checked?+$('hairpinCount').value:0,$('nonhairpin').checked?+$('nonhairpinCount').value:0);
+ $('status').textContent='加载 '+indices.length.toLocaleString()+' 束的几何…';await ensureGeometry(s,indices);if(token!==state.renderToken)return;trimGeometryCache(s,indices);
  let bounds=roi||gtBounds('all');if(!roi&&indices.length)bounds=mergeBounds(bounds,bundleBounds(indices));if(!roi)bounds[4]=DATA.flows[state.flow].domain[4];bounds=pad(bounds,.025);
  const traces=[meshTrace(region),lineTrace(indices,true),lineTrace(indices,false),centerTrace(indices),groundPlane(bounds)];
  const camera={eye:{x:.85,y:-1.65,z:.85},up:{x:0,y:0,z:1},projection:{type:'perspective'}};
@@ -98,7 +137,7 @@ async function render(reset=false){
  await Plotly.react('plot',traces,layout,{responsive:true,displaylogo:false,scrollZoom:true,modeBarButtonsToRemove:['toImage','resetCameraLastSave3d'],toImageButtonOptions:{format:'png',width:1800,height:1100,scale:1}});
  $('metricLabel').textContent='完整流场'+(state.split==='test'?'测试集':'训练集')+' F1';$('f1').textContent=model.metrics[state.split==='train'?'train':'test'].per_flow[state.flow].f1.toFixed(4);
  $('shown').textContent=indices.length+' / '+s.selected;$('population').textContent=s.population.toLocaleString();$('modelNote').textContent='种子 '+model.seed+' · '+model.parameters.toLocaleString()+' 参数';
- $('status').textContent=indices.length?'可旋转、缩放；点击中心点查看单束预测。':'此区域没有已抽取的线簇，可切换区域或恢复全场。';
+ $('status').textContent=indices.length?'可旋转、缩放；点击中心点查看单束预测。':'当前区域没有符合分类筛选的线簇，可调整数量或恢复全场。';
  if(state.selected!==null)selectedDetails(state.selected);
 }
 function update(reset=false){render(reset).catch(e=>{$('status').classList.add('error');$('status').textContent='场景加载失败：'+e.message;console.error(e);});}
@@ -112,7 +151,9 @@ $('split').onchange=()=>{state.split=$('split').value;state.selected=null;state.
 $('model').onchange=()=>{state.model=$('model').value;update();};
 $('region').onchange=()=>{state.focus=false;state.revision++;update(true);};
 for(const name of ['hairpin','nonhairpin','gt'])$(name).onchange=()=>update();
-for(const name of ['hairpin','nonhairpin']){$(name+'Count').oninput=()=>{state.counts[name]=+$(name+'Count').value;$(name+'CountText').textContent=$(name+'Count').value+' / '+$(name+'Count').max;};$(name+'Count').onchange=()=>update();}
+for(const name of ['hairpin','nonhairpin']){$(name+'Count').oninput=()=>{state.counts[name]=+$(name+'Count').value;$(name+'Number').value=$(name+'Count').value;$(name+'CountText').textContent=$(name+'Count').value+' / '+$(name+'Count').max;};$(name+'Count').onchange=()=>update();$(name+'Number').onchange=()=>{state.counts[name]=Math.max(0,Math.min(+$(name+'Number').max,Math.floor(+$(name+'Number').value)||0));update();};}
+$('allHairpin').onclick=()=>{state.counts.hairpin=Infinity;$('hairpin').checked=true;update();};
+$('allNonhairpin').onclick=()=>{state.counts.nonhairpin=Infinity;$('nonhairpin').checked=true;update();};
 $('opacity').oninput=()=>{$('opacityText').textContent=$('opacity').value+'%';if($('plot').data)Plotly.restyle('plot',{opacity:+$('opacity').value/100},[0]);};
 $('reset').onclick=()=>{state.focus=false;state.revision++;$('region').value='all';update(true);};
 $('focus').onclick=()=>{state.focus=true;state.revision++;update(true);};

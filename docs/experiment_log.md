@@ -3811,3 +3811,13 @@ Task4-c原索引51906472_80–83在PENDING/未运行、未产生任何Task4-c搜
 执行适配器commit `9b6b8451127407eece2216e25b4f6f175b3d7928`，代码SHA256 `33c138a7a2400a74168e0149ed38604238d571c4f57307f1477c996ede234120`，包SHA256 `8ab3665aed5477c70e288cca007d1d905dfc46abe39e59310da08b2a87e7ad40`。该适配器直接调用冻结c61434ac的task4_fit，配置SHA仍为72ec704f6c9b48cdcb4a0bc536628aa6d925e3f9a96d9f73ba091447285350f0；没有替换科学训练函数或20个配方。每个Task4-c结果另存执行适配器commit/文件SHA/候选索引，便于查证调度拆分。
 
 21项原p35逐概率复现均通过，独立检查333份原始源文件、准备缓存及原p35预测通过。截至本条记录尚未完成20组全部比较，不作新方法性能结论。
+
+<!-- task4c-full-viewer-1.2 -->
+## Task4-c 全量线簇查看器1.2（2026-09-15）
+
+用户指出Hairpin数量上限只有28。此前：1.1仅导出每流场/集合240束，Channel训练子集恰有28束预测Hairpin；现在：直接提供完整37,000束，原FMT的Channel训练/测试预测Hairpin为2681/863，TBL为1939/466。更正原因是展示抽样限制，原训练样本数量、模型预测和评价均未改变。此前只增加两类独立滑块仍未解除导出上限，未满足用户查看大量Hairpin的需求。
+
+`Other_Task4C_BundleVisualization_1.2`默认全部Hairpin＋100束Non-hairpin，支持两类独立滑块、直接输入与全部按钮。每128束几何按需加载，共292分片、680519条有效线。使用冻结4.14几何和FMT/小Conv32³/36³的seed96611预测；48³在导出时未完成。源代码与配置的科学commit为`5307bf3a849d07625dac21d92e3abb4a35778b44`，CPU作业51907655完成。全量坐标、行号、标签、概率和12项分流场F1复算通过；Node全部Hairpin加载检查通过，浏览器交互未测试。检查记录`outputs/Other_Task4C_BundleVisualization_1.2/full_geometry_audit.json`与`full_loader_checks.json`，完整协议`docs/Task4C_bundle_visualization_protocol_1.1.md`的1.2节。原页面刷新后转至新版，旧HTML已保留。
+
+本次属于结果显示修正，不构成新的训练实验或新的泛化证据，也不改变正在运行的task4-c-v9.15。
+<!-- /task4c-full-viewer-1.2 -->
