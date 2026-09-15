@@ -3767,3 +3767,11 @@ Task4-c逐线141→128→128，再对有效线均值/最大聚合为256，分类
 2026-09-15用户要求Ablation_FMTv8_NormFrequency_3.1：基于p35/h0，4套公共几何/特征归一化×5档DFT频率（2/4/6/10/16）共20组，Task3/5及Task4-c直接以原验证集合选方案。原p35先做21项逐概率复现，再420次候选拟合；原h0训练和Raw分支冻结，不读取test、不追加最终种子。统一最大/均方根半径与普通/保留符号log标准化，邻居倍率1/1。代码及CPU独立NumPy检查通过，尚未提交Ibex。协议docs/FMT_v8_norm_frequency_protocol_3.1.md。
 
 原冻结验证参考为Task3/5/Task4-c 0.794475819517293/0.7377752578222153/0.7270560190703218，等权0.7531023654699434；不引用不同角色的历史测试代替参考。统一公式分别由各模型训练数据拟合，不混合任务数据。新候选45/93/141/237/381维，Task3/5固定142914参数，Task4-c参数随输入维数报告。尚无新性能结论；原物理数据、标签、候选选择集合及h0训练保持。
+
+
+<a id="task4c-bundle-visualization-1-1-2026-09-15"></a>
+## Task4-c三维涡线簇分类查看器1.1
+
+用户要求按Hairpin/Non-hairpin预测为涡线簇着色并叠加半透明GT曲面，新增`Other_Task4C_BundleVisualization_1.1`。入口`experiments/Visualize_Task4C_Bundles_3D.py`，模板`experiments/templates/task4c_bundles.html`，协议`Task4C_bundle_visualization_protocol_1.1.md`。原4.14归一化线簇按radius/centroid还原物理位置；相同的空间抽取样本用于FMT4.14与小Conv32³4.22（seed96611）显示，不以标签/分数选图。共960束/16,981条线，四组VTP全部顶点、行号、概率和颜色核验通过；GT不平滑不简化，Channel实例0保留。图只展示采样束分类，F1显示完整流场对应集合，不宣称稠密分割或独立实例泛化。
+
+导出科学commit`d5b778f98b0c920257e47663b5e8448318e71eaf`，Ibex51906466及两条运行事件核对完成，退出0；展示包manifest SHA256 `b75a29c9f149380680f9ca8a3d12761540a8aa3be2940ab00c2599a464939e58`。本地HTML、六个VTP、Channel/TBL预览已生成并检查真实几何。浏览器交互核验被本机origin访问的自动审批阻止，等待用户明确授权；不写成交互测试通过。不修改原实验指标。

@@ -1,0 +1,39 @@
+{
+  "version": "Other_Task4C_BundleVisualization_1.1",
+  "physical_output": "/ibex/user/zhanx0o/FMT_Task4C_PhysicalLength_20260914/outputs/mainExp_Task4C_PhysicalLength_4.14",
+  "data_config": "config/mainExp_Task4C_Multiscale_4.1.json",
+  "data_config_sha256": "0c06c0530dcda7da82573a562e26c4932fb3331476347f7d3ba7aa6d8cc5cb99",
+  "splits": ["test", "train"],
+  "maximum_bundles_per_flow_split": 240,
+  "display_bundles": 100,
+  "selection_seed": 42301,
+  "selection": "farthest_centers_in_axis_normalized_space_without_labels_or_predictions",
+  "fixed_threshold": 0.5,
+  "ground_truth_opacity": 0.18,
+  "models": [
+    {
+      "id": "fmt414",
+      "label": "FMT · 4.14",
+      "seed": 96611,
+      "result": "/ibex/user/zhanx0o/FMT_Task4C_PhysicalLength_20260914/outputs/mainExp_Task4C_PhysicalLength_4.14/runs/regularized_fmt_mlp_seed96611/result.json"
+    },
+    {
+      "id": "conv32",
+      "label": "Conv3D 32³ · 4.22",
+      "seed": 96611,
+      "result": "/ibex/user/zhanx0o/FMT_Task4C_ConvResolution_20260915/outputs/Ablation_Task4C_ConvResolution_4.22/r32/runs/regularized_conv3d_mlp_seed96611/result.json"
+    },
+    {
+      "id": "conv36",
+      "label": "Conv3D 36³ · 4.22",
+      "seed": 96611,
+      "result": "/ibex/user/zhanx0o/FMT_Task4C_ConvResolution_20260915/outputs/Ablation_Task4C_ConvResolution_4.22/r36/runs/regularized_conv3d_mlp_seed96611/result.json"
+    },
+    {
+      "id": "conv48",
+      "label": "Conv3D 48³ · 4.22",
+      "seed": 96611,
+      "result": "/ibex/user/zhanx0o/FMT_Task4C_ConvResolution_20260915/outputs/Ablation_Task4C_ConvResolution_4.22/r48/runs/regularized_conv3d_mlp_seed96611/result.json"
+    }
+  ]
+}

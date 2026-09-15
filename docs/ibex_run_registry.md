@@ -9889,3 +9889,10 @@ UTC2026-09-14 09:26:41完成，12/12调度任务COMPLETED、exit0，编码/训�
 - 4.22 runtime {"time": "2026-09-15T10:22:37.933054+00:00", "phase": "prepare", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "host": "gpu210-14", "job": "51905888", "array_index": "0", "commit": "223ea781feb913c0fada4449b1266639c1f28402", "config_sha256": "59ab1f1344f63bb81eb7b8b17dc3dc964881cbd75bbb3cb8f8947e2a03f18af7"}
 
 - 4.22 runtime {"time": "2026-09-15T10:23:15.137717+00:00", "phase": "prepare", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "host": "gpu210-10", "job": "51905889", "array_index": "1", "commit": "223ea781feb913c0fada4449b1266639c1f28402", "config_sha256": "59ab1f1344f63bb81eb7b8b17dc3dc964881cbd75bbb3cb8f8947e2a03f18af7"}
+
+
+## Task4-c 三维线簇可视化1.1（2026-09-15）
+
+CPU导出作业`51906466`，2026-09-15T11:17:39.404089 UTC提交；科学commit`d5b778f98b0c920257e47663b5e8448318e71eaf`，配置`config/Other_Task4C_BundleVisualization_1.1.json`，SHA256 `aac781547bf6e60db9317b8e9e8c09e6bc3e12267379b35f4d02eaed88b2174d`。2 CPU、4 GiB、15分钟；只读取已完成模型预测并导出每流场每集合240束用于本地可视化，不训练、不读取权重。状态SUBMITTED；实际开始/结束与节点待运行事件补齐。
+
+Task4-c可视化作业`51906466`完成：cn604-18，程序11:19:18.142717–11:19:19.150744 UTC，exit0；Slurm主进程、batch、extern均COMPLETED 0:0。开始/结束事件与commit/config一致，stderr为空。导出960束、FMT4.14及Conv32³4.22（固定seed96611）；源预测、元数据、完整集合F1、物理坐标恢复检查PASS，无模型文件。展示包manifest SHA256 `b75a29c9f149380680f9ca8a3d12761540a8aa3be2940ab00c2599a464939e58`。

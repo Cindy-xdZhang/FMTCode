@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Task4-c · 涡线簇分类</title>
+<style>
+:root{color-scheme:light;--ink:#283c3c;--muted:#6e7c7a;--hairpin:#218990;--non:#c08650;--gt:#a6a0b4}
+*{box-sizing:border-box}body{margin:0;background:#f3f5f2;color:var(--ink);font:14px/1.6 "Segoe UI","Microsoft YaHei",sans-serif}
+header{height:83px;padding:16px 26px;background:#fff;border-bottom:1px solid #e0e6df;display:flex;align-items:center;justify-content:space-between}
+h1{font-size:22px;letter-spacing:.1px;margin:0;font-weight:600}.subtitle,.muted{color:var(--muted);font-size:12px}
+.version{padding:5px 10px;border:1px solid #dde5de;border-radius:5px;color:var(--muted);font-size:12px}
+main{display:grid;grid-template-columns:278px minmax(0,1fr);height:calc(100vh - 83px);min-height:630px}
+aside{padding:19px 20px;overflow:auto;background:#fafbf8;border-right:1px solid #e0e6df}
+label.control{display:block;font-size:12px;color:var(--muted);margin:0 0 13px}select{width:100%;padding:8px 9px;margin-top:5px;background:white;color:var(--ink);border:1px solid #d7dfd8;border-radius:5px;font:inherit}
+input[type=range]{display:block;width:100%;accent-color:var(--hairpin);margin:8px 0}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.section{padding-top:17px;margin-top:16px;border-top:1px solid #e0e6df}
+button{padding:8px 10px;background:#edf2ed;color:var(--ink);border:1px solid #d3ddd3;border-radius:5px;cursor:pointer;font:inherit;font-size:12px}button:hover{background:#e2ebe4}button:disabled{opacity:.5;cursor:default}.wide{width:100%}
+.key{display:flex;align-items:center;gap:8px;margin:9px 0;font-size:12px}.swatch{width:22px;height:3px;background:var(--hairpin);flex:none}.swatch.non{background:var(--non)}.swatch.gt{height:13px;background:#a6a0b460;border:1px solid #a6a0b4}
+.check{font-size:12px;display:block;margin:8px 0;cursor:pointer}.check input{accent-color:var(--hairpin);vertical-align:middle;margin-right:7px}
+article{display:flex;flex-direction:column;min-width:0}.metrics{padding:15px 23px 10px;display:flex;gap:30px;min-height:77px;align-items:center;background:#f7f9f5}.metric small{display:block;color:var(--muted);font-size:11px}.metric strong{font-size:21px;font-weight:500;font-variant-numeric:tabular-nums}.metric.note{margin-left:auto;color:var(--muted);max-width:250px;font-size:12px}
+#plot{flex:1;min-height:450px;position:relative}footer{padding:8px 23px 12px;color:var(--muted);font-size:11px;border-top:1px solid #e3e8e0;background:#fafbf8}
+#detail{font-size:12px;color:var(--muted);min-height:90px}#detail strong{font-weight:600;color:var(--ink)}#detail .value{font-variant-numeric:tabular-nums}#pending{font-size:11px;color:var(--muted);margin-top:15px}#status{font-size:12px;color:var(--muted);padding:6px 0}.error{color:#a64f38!important}
+@media(max-width:900px){main{grid-template-columns:225px minmax(0,1fr)}aside{padding:14px}.metrics{gap:18px;padding:12px}.metric.note{display:none}.metric strong{font-size:18px}}
+</style>
+<script>/*__PLOTLY__*/</script>
+</head>
+<body>
+<header><div><h1>涡线簇分类 <span style="font-weight:400;color:#738480">/ Task4-c</span></h1><div class="subtitle">真实涡线簇 · 预测二分类 · 半透明 Hairpin 标注曲面</div></div><span class="version">3D result viewer · 1.1</span></header>
+<main><aside>
+<label class="control">流场<select id="flow"><option value="channel">Channel flow</option><option value="tbl">TBL flow</option></select></label>
+<label class="control">查看集合<select id="split"><option value="test">测试集</option><option value="train">训练集</option></select></label>
+<label class="control">分类模型<select id="model"></select></label>
+<label class="control">真实标注区域<select id="region"><option value="all">全部标注区域</option></select></label>
+<label class="control"><span class="row"><span>显示线簇</span><span id="countText"></span></span><input id="count" type="range" min="10" max="240" step="10" value="100"></label>
+<div class="section">
+<label class="check"><input id="hairpin" type="checkbox" checked>显示预测 Hairpin</label>
+<label class="check"><input id="nonhairpin" type="checkbox" checked>显示预测 Non-hairpin</label>
+<label class="check"><input id="gt" type="checkbox" checked>显示真实标注曲面</label>
+<label class="control"><span class="row"><span>曲面不透明度</span><span id="opacityText">18%</span></span><input id="opacity" type="range" min="0" max="55" step="1" value="18"></label>
+<button id="reset" class="wide">恢复全场视角</button>
+<div class="key"><i class="swatch"></i>预测 Hairpin</div><div class="key"><i class="swatch non"></i>预测 Non-hairpin</div><div class="key"><i class="swatch gt"></i>Ground truth：Hairpin 区域</div>
+</div>
+<div class="section"><div class="muted" style="margin-bottom:8px">点击线簇中心点查看预测</div><div id="detail">每条线簇整体使用同一预测颜色。<br>拖动旋转，滚轮缩放。</div><button id="focus" class="wide" disabled>聚焦所选线簇</button></div>
+<div id="pending"></div><div id="status" role="status">正在加载三维场景…</div>
+</aside><article>
+<div class="metrics"><div class="metric"><small id="metricLabel">完整流场测试集 F1</small><strong id="f1">—</strong></div><div class="metric"><small>当前显示 / 可查看</small><strong id="shown">—</strong></div><div class="metric"><small>该流场集合总量</small><strong id="population">—</strong></div><div class="metric note" id="modelNote"></div></div>
+<div id="plot" aria-label="按二分类着色的三维涡线簇与半透明真实标注曲面"></div>
+<footer>F1使用该流场的完整集合，阈值固定为0.5；展示样本仅按空间位置抽取，未依据标签或预测挑选。真实标签属于候选头区，线簇可延伸到标注曲面外。坐标与长宽比例保持物理尺度，z向上。</footer>
+</article></main>
+<script>
+'use strict';
+const DATA=/*__PAYLOAD__*/;
+const $=id=>document.getElementById(id);
+const state={flow:'channel',split:'test',model:DATA.models[0].id,selected:null,focus:false,revision:0};
+function unpack(a){const binary=atob(a.data), bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);return a.dtype==='float32'?new Float32Array(bytes.buffer):new Int32Array(bytes.buffer);}
+function columns(p){const n=p.length/3,x=new Float32Array(n),y=new Float32Array(n),z=new Float32Array(n);for(let i=0;i<n;i++){x[i]=p[i*3];y[i]=p[i*3+1];z[i]=p[i*3+2];}return {x,y,z};}
+for(const [name,flow] of Object.entries(DATA.flows)){
+ flow.gt.xyz=columns(unpack(flow.gt.points));flow.gt.triangles=unpack(flow.gt.faces);flow.gt.instanceIds=unpack(flow.gt.ids);
+ delete flow.gt.points;delete flow.gt.faces;delete flow.gt.ids;
+ for(const split of Object.values(flow.splits)){split.xyz=unpack(split.geometry);delete split.geometry;}
+}
+for(const model of DATA.models){const option=new Option(model.label,model.id);$('model').add(option);}
+if(DATA.pending.length)$('pending').textContent='尚未完成、暂未载入：'+DATA.pending.map(m=>m.label).join('；');
+$('count').value=DATA.display_bundles;
+function current(){return DATA.flows[state.flow].splits[state.split];}
+function gtBounds(instance){const gt=DATA.flows[state.flow].gt;if(instance==='all')return gt.bounds.slice();const b=[Infinity,-Infinity,Infinity,-Infinity,Infinity,-Infinity];for(let f=0;f<gt.instanceIds.length;f++){if(gt.instanceIds[f]!==+instance)continue;for(let j=0;j<3;j++){let p=gt.triangles[f*3+j];for(let a=0;a<3;a++){const v=gt.xyz[['x','y','z'][a]][p];b[2*a]=Math.min(b[2*a],v);b[2*a+1]=Math.max(b[2*a+1],v);}}}return b;}
+function bundleBounds(indices){const split=current(),b=[Infinity,-Infinity,Infinity,-Infinity,Infinity,-Infinity];for(const idx of indices)for(let k=0;k<split.counts[idx]*32;k++)for(let a=0;a<3;a++){let v=split.xyz[idx*27*32*3+k*3+a];b[2*a]=Math.min(b[2*a],v);b[2*a+1]=Math.max(b[2*a+1],v);}return b;}
+function pad(b,fraction=.08){const span=Math.max(...[0,1,2].map(i=>b[2*i+1]-b[2*i]));return b.map((v,i)=>v+(i%2?1:-1)*span*fraction);}
+function mergeBounds(a,b){return a.map((v,i)=>i%2?Math.max(v,b[i]):Math.min(v,b[i]));}
+function refreshRegions(){const saved=$('region').value;$('region').innerHTML='';$('region').add(new Option('全部标注区域','all'));for(const i of DATA.flows[state.flow].gt.instances)$('region').add(new Option('Hairpin 实例 '+i,String(i)));$('region').value=[...$('region').options].some(o=>o.value===saved)?saved:'all';}
+function meshTrace(region){const gt=DATA.flows[state.flow].gt,i=[],j=[],k=[];for(let f=0;f<gt.instanceIds.length;f++){if(region!=='all'&&gt.instanceIds[f]!==+region)continue;i.push(gt.triangles[f*3]);j.push(gt.triangles[f*3+1]);k.push(gt.triangles[f*3+2]);}return {type:'mesh3d',...gt.xyz,i,j,k,color:DATA.colors.ground_truth,opacity:+$('opacity').value/100,visible:$('gt').checked,hoverinfo:'skip',showlegend:false,name:'Hairpin ground truth',flatshading:false,lighting:{ambient:.65,diffuse:.65,specular:.08,roughness:.8},lightposition:{x:100,y:-200,z:300}};}
+function lineTrace(indices,positive){const s=current(),x=[],y=[],z=[];for(const id of indices){if((s.probabilities[state.model][id]>=.5)!==positive)continue;for(let line=0;line<s.counts[id];line++){for(let p=0;p<32;p++){const a=(id*27*32+line*32+p)*3;x.push(s.xyz[a]);y.push(s.xyz[a+1]);z.push(s.xyz[a+2]);}x.push(null);y.push(null);z.push(null);}}return {type:'scatter3d',mode:'lines',x,y,z,line:{color:positive?DATA.colors.hairpin:DATA.colors.non_hairpin,width:2.4},hoverinfo:'skip',showlegend:false,name:positive?'Predicted Hairpin':'Predicted Non-hairpin',connectgaps:false};}
+function centerTrace(indices){const s=current();return {type:'scatter3d',mode:'markers',x:indices.map(i=>s.center[i][0]),y:indices.map(i=>s.center[i][1]),z:indices.map(i=>s.center[i][2]),customdata:indices.map(i=>[i,s.row_ids[i],s.probabilities[state.model][i],s.labels[i]?'Hairpin':'Non-hairpin']),marker:{size:3,color:indices.map(i=>s.probabilities[state.model][i]>=.5?DATA.colors.hairpin:DATA.colors.non_hairpin),opacity:.9},hovertemplate:'线簇 %{customdata[1]}<br>P(Hairpin) = %{customdata[2]:.3f}<br>真实束标签：%{customdata[3]}<extra></extra>',showlegend:false,name:'Bundle centers'};}
+function groundPlane(bounds){const z=DATA.flows[state.flow].domain[4];return {type:'mesh3d',x:[bounds[0],bounds[1],bounds[1],bounds[0]],y:[bounds[2],bounds[2],bounds[3],bounds[3]],z:[z,z,z,z],i:[0,0],j:[1,2],k:[2,3],color:'#e3e8e0',opacity:.15,hoverinfo:'skip',showlegend:false,flatshading:true};}
+function selectedDetails(id){const s=current(),p=s.probabilities[state.model][id];state.selected=id;$('focus').disabled=false;$('detail').innerHTML='<strong>线簇 '+s.row_ids[id]+'</strong><br>预测：'+(p>=.5?'Hairpin':'Non-hairpin')+'<br>真实束标签：'+(s.labels[id]?'Hairpin':'Non-hairpin')+'<br><span class="value">P(Hairpin) = '+p.toFixed(4)+'</span><br>'+s.counts[id]+' 条有效线 · 尺度 '+s.scale_id[id];}
+async function render(reset=false){
+ const s=current(),model=DATA.models.find(m=>m.id===state.model),region=$('region').value;
+ $('status').textContent='更新场景…';$('count').max=s.selected;$('countText').textContent=$('count').value+' 束';$('opacityText').textContent=$('opacity').value+'%';
+ let indices=Array.from({length:s.selected},(_,i)=>i),roi=null;
+ if(region!=='all'){roi=pad(gtBounds(region),.25);indices=indices.filter(i=>s.center[i].every((v,a)=>v>=roi[a*2]&&v<=roi[a*2+1]));}
+ if(state.focus&&state.selected!==null){roi=pad(bundleBounds([state.selected]),.45);indices=indices.filter(i=>s.center[i].every((v,a)=>v>=roi[a*2]&&v<=roi[a*2+1]));indices=[state.selected,...indices.filter(i=>i!==state.selected)];}
+ indices=indices.slice(0,+$('count').value).filter(i=>s.probabilities[state.model][i]>=.5?$('hairpin').checked:$('nonhairpin').checked);
+ let bounds=roi||gtBounds('all');if(!roi&&indices.length)bounds=mergeBounds(bounds,bundleBounds(indices));if(!roi)bounds[4]=DATA.flows[state.flow].domain[4];bounds=pad(bounds,.025);
+ const traces=[meshTrace(region),lineTrace(indices,true),lineTrace(indices,false),centerTrace(indices),groundPlane(bounds)];
+ const camera={eye:{x:.85,y:-1.65,z:.85},up:{x:0,y:0,z:1},projection:{type:'perspective'}};
+ const axis=(title,range)=>({title:{text:title,font:{size:11,color:'#536964'}},range,showbackground:false,showgrid:false,zeroline:false,tickfont:{size:10,color:'#72817a'},showspikes:false});
+ const scene={aspectmode:'data',xaxis:axis('x · streamwise',bounds.slice(0,2)),yaxis:axis('y · spanwise',bounds.slice(2,4)),zaxis:axis('z · vertical',bounds.slice(4,6)),dragmode:'orbit'};
+ if(reset||!$('plot').data)scene.camera=camera;
+ const layout={paper_bgcolor:'#f3f5f2',plot_bgcolor:'#f3f5f2',margin:{l:2,r:2,t:2,b:2},scene,showlegend:false,uirevision:state.flow+'-'+state.revision,font:{family:'Segoe UI, Microsoft YaHei, sans-serif'}};
+ await Plotly.react('plot',traces,layout,{responsive:true,displaylogo:false,scrollZoom:true,modeBarButtonsToRemove:['toImage','resetCameraLastSave3d'],toImageButtonOptions:{format:'png',width:1800,height:1100,scale:1}});
+ $('metricLabel').textContent='完整流场'+(state.split==='test'?'测试集':'训练集')+' F1';$('f1').textContent=model.metrics[state.split==='train'?'train':'test'].per_flow[state.flow].f1.toFixed(4);
+ $('shown').textContent=indices.length+' / '+s.selected;$('population').textContent=s.population.toLocaleString();$('modelNote').textContent='种子 '+model.seed+' · '+model.parameters.toLocaleString()+' 参数';
+ $('status').textContent=indices.length?'可旋转、缩放；点击中心点查看单束预测。':'此区域没有已抽取的线簇，可切换区域或恢复全场。';
+ if(state.selected!==null)selectedDetails(state.selected);
+}
+function update(reset=false){render(reset).catch(e=>{$('status').classList.add('error');$('status').textContent='场景加载失败：'+e.message;console.error(e);});}
+$('flow').onchange=()=>{state.flow=$('flow').value;state.selected=null;state.focus=false;state.revision++;$('focus').disabled=true;$('region').value='all';refreshRegions();update(true);};
+$('split').onchange=()=>{state.split=$('split').value;state.selected=null;state.focus=false;state.revision++;$('focus').disabled=true;update(true);};
+$('model').onchange=()=>{state.model=$('model').value;update();};
+$('region').onchange=()=>{state.focus=false;state.revision++;update(true);};
+for(const name of ['hairpin','nonhairpin','gt'])$(name).onchange=()=>update();
+$('count').oninput=()=>{$('countText').textContent=$('count').value+' 束';};$('count').onchange=()=>update();
+$('opacity').oninput=()=>{$('opacityText').textContent=$('opacity').value+'%';if($('plot').data)Plotly.restyle('plot',{opacity:+$('opacity').value/100},[0]);};
+$('reset').onclick=()=>{state.focus=false;state.revision++;$('region').value='all';update(true);};
+$('focus').onclick=()=>{state.focus=true;state.revision++;update(true);};
+refreshRegions();render(true).then(()=>{$('plot').on('plotly_click',event=>{const point=event.points.find(p=>p.customdata);if(point)selectedDetails(point.customdata[0]);});}).catch(e=>{$('status').textContent=e.message;$('status').classList.add('error');});
+</script>
+</body></html>
