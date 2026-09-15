@@ -75,3 +75,9 @@ CPU作业51907655在cn604-10完成，实际UTC运行12:34:34.113378至12:34:44.4
 当前页面`outputs/Other_Task4C_BundleVisualization_1.3/viewer/index.html`仍使用4.14全量37,000束和三个已载入模型，并非待构建v9.15_v2的新结果。Head正类数量为Channel训练1883/测试713、TBL训练1437/测试517；负类仍包括全部真实Non-hairpin候选。全部head标记与独立SciPy插值及GT包含检查一致，新旧全部坐标、标签、预测及292个几何分片相同，Node四类真值表、0.5边界和漏检Head保留检查PASS。浏览器交互未执行，旧本地origin访问自动审批拒绝仍有效。
 
 原1.1和1.2入口已更新为指向1.3；原1.2全量HTML保留为其viewer目录的`index_1.2_full37000.html`，同目录几何仍可加载。证据为1.3输出目录`geometry_and_head_audit.json`、`head_analysis_checks.json`与`redirects.json`。
+
+### 1.3 相机预设与合作者交接
+
+2026-09-15新增相机下拉框：三维斜视、±y两侧视、±z俯/仰视、±x上/下游端视。六个轴向视角使用正交投影，顶/底视的up向量沿+y，避免与观察方向平行；斜视保持透视。选择预设只更新相机，手动旋转/缩放后标记为自由视角，可重新选择同一预设恢复。显示数量/类别/模型变化保留当前相机，恢复全场按上次选定预设复位。
+
+模板JavaScript语法、七种相机方向、六种正交投影、部分相机事件的up向量保留、重新选择复位及只更新相机的Node检查通过；HTML内数据载荷哈希与修改前一致。记录`outputs/Other_Task4C_BundleVisualization_1.3/camera_checks.json`；浏览器交互未验证。面向合作者的短文档为`docs/Task4C_handoff.md`，无性能结果，明确v2长度定义待确认且正式数据尚未生成。

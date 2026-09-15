@@ -32,6 +32,7 @@ article{display:flex;flex-direction:column;min-width:0}.metrics{padding:15px 23p
 <label class="control">分类模型<select id="model"></select></label>
 <label class="control">展示模式<select id="viewMode"><option value="all">全部线簇</option><option value="heads">GT Head 附近线簇＋Non-hairpin</option></select></label>
 <label class="control">真实标注区域<select id="region"><option value="all">全部标注区域</option></select></label>
+<label class="control">相机视角<select id="cameraPreset"><option value="oblique">三维斜视</option><option value="side">侧视 x-z（从 −y 看）</option><option value="sideReverse">反向侧视 x-z（从 +y 看）</option><option value="top">俯视 x-y（从 +z 看）</option><option value="bottom">仰视 x-y（从 −z 看）</option><option value="upstream">上游端视 y-z（从 −x 看）</option><option value="downstream">下游端视 y-z（从 +x 看）</option><option value="custom" disabled>自由旋转 / 缩放</option></select></label>
 <label class="control"><span class="row"><span id="positiveCountLabel">Hairpin 线簇数量</span><span id="hairpinCountText"></span></span><input id="hairpinCount" type="range" min="0" max="240" step="1" value="50"></label>
 <label class="control"><span class="row"><span>Non-hairpin 线簇数量</span><span id="nonhairpinCountText"></span></span><input id="nonhairpinCount" type="range" min="0" max="240" step="1" value="50"></label>
 <div class="count-entry"><input id="hairpinNumber" type="number" min="0" step="1" aria-label="Hairpin线簇数"><button id="allHairpin">全部 Hairpin</button></div>
@@ -60,7 +61,25 @@ const $=id=>document.getElementById(id);
 if(DATA.evidence_note)$('evidenceNote').textContent=DATA.evidence_note;
 if(DATA.viewer_version)document.querySelector('.version').textContent='3D result viewer · '+DATA.viewer_version;
 $('viewMode').value=DATA.default_view_mode||'all';
-const state={flow:'channel',split:'test',model:DATA.models[0].id,selected:null,focus:false,revision:0,renderToken:0,counts:{hairpin:DATA.default_hairpin_count==='all'?Infinity:(DATA.default_hairpin_count??Math.ceil(DATA.display_bundles/2)),nonhairpin:DATA.default_nonhairpin_count??Math.floor(DATA.display_bundles/2)}};
+const state={flow:'channel',split:'test',model:DATA.models[0].id,selected:null,focus:false,revision:0,renderToken:0,cameraPreset:'oblique',camera:null,counts:{hairpin:DATA.default_hairpin_count==='all'?Infinity:(DATA.default_hairpin_count??Math.ceil(DATA.display_bundles/2)),nonhairpin:DATA.default_nonhairpin_count??Math.floor(DATA.display_bundles/2)}};
+function presetCamera(name){
+ const eyes={oblique:[.85,-1.65,.85],side:[0,-2.4,0],sideReverse:[0,2.4,0],top:[0,0,2.4],bottom:[0,0,-2.4],upstream:[-2.4,0,0],downstream:[2.4,0,0]};
+ if(!eyes[name])throw new Error('未知相机预设：'+name);
+ const [x,y,z]=eyes[name],vertical=name==='top'||name==='bottom';
+ return {eye:{x,y,z},center:{x:0,y:0,z:0},up:vertical?{x:0,y:1,z:0}:{x:0,y:0,z:1},projection:{type:name==='oblique'?'perspective':'orthographic'}};
+}
+function cameraMatches(a,b){return ['eye','center','up'].every(k=>['x','y','z'].every(c=>Math.abs((a[k]?.[c]??b[k][c])-b[k][c])<1e-6))&&(a.projection?.type??b.projection.type)===b.projection.type;}
+function rememberCamera(event){
+ if(!event['scene.camera'])return;
+ const incoming=event['scene.camera'],previous=state.camera||presetCamera(state.cameraPreset);
+ state.camera={...previous,...incoming};for(const k of ['eye','center','up','projection'])state.camera[k]={...previous[k],...incoming[k]};
+ $('cameraPreset').value=cameraMatches(state.camera,presetCamera(state.cameraPreset))?state.cameraPreset:'custom';
+}
+async function applyCameraPreset(){
+ const name=$('cameraPreset').value;if(name==='custom')return;
+ state.cameraPreset=name;state.camera=presetCamera(name);
+ if($('plot').data)await Plotly.relayout('plot',{'scene.camera':state.camera});
+}
 function unpack(a){const binary=atob(a.data), bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);return a.dtype==='float32'?new Float32Array(bytes.buffer):new Int32Array(bytes.buffer);}
 const chunkCache=new Map(),chunkRequests=new Map(),chunkWaiters=new Map();
 window.task4cGeometryChunk=(key,payload)=>{
@@ -150,10 +169,10 @@ async function render(reset=false){
  let bounds=roi||gtBounds('all');if(!roi&&indices.length)bounds=mergeBounds(bounds,bundleBounds(indices));if(!roi)bounds[4]=DATA.flows[state.flow].domain[4];bounds=pad(bounds,.025);
  const categories=$('analysis').checked?['TP','TN','FP','FN']:['Hairpin','Non-hairpin'];
  const traces=[meshTrace(region),...categories.map(c=>lineTrace(indices,c)),centerTrace(indices),groundPlane(bounds)];
- const camera={eye:{x:.85,y:-1.65,z:.85},up:{x:0,y:0,z:1},projection:{type:'perspective'}};
+ if(reset||!state.camera){state.camera=presetCamera(state.cameraPreset);$('cameraPreset').value=state.cameraPreset;}
  const axis=(title,range)=>({title:{text:title,font:{size:11,color:'#536964'}},range,showbackground:false,showgrid:false,zeroline:false,tickfont:{size:10,color:'#72817a'},showspikes:false});
  const scene={aspectmode:'data',xaxis:axis('x · streamwise',bounds.slice(0,2)),yaxis:axis('y · spanwise',bounds.slice(2,4)),zaxis:axis('z · vertical',bounds.slice(4,6)),dragmode:'orbit'};
- if(reset||!$('plot').data)scene.camera=camera;
+ scene.camera=state.camera;
  const layout={paper_bgcolor:'#f3f5f2',plot_bgcolor:'#f3f5f2',margin:{l:2,r:2,t:2,b:2},scene,showlegend:false,uirevision:state.flow+'-'+state.revision,font:{family:'Segoe UI, Microsoft YaHei, sans-serif'}};
  await Plotly.react('plot',traces,layout,{responsive:true,displaylogo:false,scrollZoom:true,modeBarButtonsToRemove:['toImage','resetCameraLastSave3d'],toImageButtonOptions:{format:'png',width:1800,height:1100,scale:1}});
  if(token!==state.renderToken)return;
@@ -171,6 +190,7 @@ function selectClassIndices(indices,probabilities,hairpinCount,nonhairpinCount){
 $('flow').onchange=()=>{state.flow=$('flow').value;state.selected=null;state.focus=false;state.revision++;$('focus').disabled=true;$('region').value='all';refreshRegions();update(true);};
 $('split').onchange=()=>{state.split=$('split').value;state.selected=null;state.focus=false;state.revision++;$('focus').disabled=true;update(true);};
 $('model').onchange=()=>{state.model=$('model').value;update();};
+$('cameraPreset').onchange=()=>applyCameraPreset().catch(e=>{$('status').textContent='相机设置失败：'+e.message;});
 $('viewMode').onchange=()=>{state.counts={hairpin:Infinity,nonhairpin:100};state.focus=false;state.selected=null;$('focus').disabled=true;update();};
 $('region').onchange=()=>{state.focus=false;state.revision++;update(true);};
 for(const name of ['hairpin','nonhairpin','gt','analysis'])$(name).onchange=()=>update();
@@ -180,6 +200,6 @@ $('allNonhairpin').onclick=()=>{state.counts.nonhairpin=Infinity;$('nonhairpin')
 $('opacity').oninput=()=>{$('opacityText').textContent=$('opacity').value+'%';if($('plot').data)Plotly.restyle('plot',{opacity:+$('opacity').value/100},[0]);};
 $('reset').onclick=()=>{state.focus=false;state.revision++;$('region').value='all';update(true);};
 $('focus').onclick=()=>{state.focus=true;state.revision++;update(true);};
-refreshRegions();render(true).then(()=>{$('plot').on('plotly_click',event=>{const point=event.points.find(p=>p.customdata);if(point)selectedDetails(point.customdata[0]);});}).catch(e=>{$('status').textContent=e.message;$('status').classList.add('error');});
+refreshRegions();render(true).then(()=>{$('plot').on('plotly_click',event=>{const point=event.points.find(p=>p.customdata);if(point)selectedDetails(point.customdata[0]);});$('plot').on('plotly_relayout',rememberCamera);}).catch(e=>{$('status').textContent=e.message;$('status').classList.add('error');});
 </script>
 </body></html>
