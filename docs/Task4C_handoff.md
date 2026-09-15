@@ -6,7 +6,7 @@
 
 ## 2. 最新数据：task4-c-v9.15_v2
 
-**状态：2026-09-15已确认单向长度，正在部署正式数据构建。**
+**状态：2026-09-15已确认单向长度，Ibex全部132,000束已构建并通过数据检查，模型编码与训练作业已提交。**
 
 - Channel 74个、TBL 58个Hairpin实例；每实例500正＋500负，共132,000束。相交采样盒分组后约90%实例训练、10%测试：119,000/13,000束；测试实例的全部束只进测试，轨线穿入另一集合GT则剔除。
 - 在实例扩张包围盒内以`lambda2 < −13.395`（Channel）/`−0.0272`（TBL）及`ω′y > 0`筛选种子。GT内速度与涡量的锐角>45°视为head，每实例必须有3个不同中心的head束。
@@ -22,7 +22,7 @@
 
 读取VTK的`point_data['velocity']`；GT为`cell_data['VortexIds']`，实例0有效，GT外记−1。坐标：x流向、y展向、z竖直，壁面在zmin。
 
-生成后读取`outputs/mainExp_Task4C_InstanceCoverage_9.15_v2/physical/<flow>/<instance>/`：`geometry.npy`形状`[N,27,32,3]`；`metadata.npz`的`labels`为二分类、`counts`为有效线数（其后是补零）、`mandatory_head`标记必选head；`coverage.json`的`role`给出train/test。新模型沿用此划分。
+Ibex实验目录为`/ibex/user/zhanx0o/FMT_Task4C_InstanceCoverage_9p15_v2_20260915_formal`（科学提交`9769c68d`）。读取其下`outputs/mainExp_Task4C_InstanceCoverage_9.15_v2/physical/<flow>/<instance>/`：`geometry.npy`形状`[N,27,32,3]`；`metadata.npz`的`labels`为二分类、`counts`为有效线数（其后是补零）、`mandatory_head`标记必选head；`coverage.json`的`role`给出train/test。新模型沿用此划分。
 
 入口：[配置](../config/mainExp_Task4C_InstanceCoverage_9.15_v2.json) · [数据构建](../FMT_Utils/Task4C_InstanceCoverage_9_15_v2.py) · [训练接口](../experiments/Task4C_InstanceCoverage_9_15_v2.py)。
 
