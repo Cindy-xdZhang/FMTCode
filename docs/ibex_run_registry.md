@@ -9854,3 +9854,38 @@ UTC2026-09-14 09:26:41完成，12/12调度任务COMPLETED、exit0，编码/训�
 - **FMTv8 Search 2.2 scheduler_final** {"AllocTRES": "billing=4,cpu=4,mem=32G,node=1", "Elapsed": "00:00:39", "End": "2026-09-15T02:57:24", "ExitCode": "0:0", "JobID": "51897586", "JobIDRaw": "51897586", "NodeList": "cn604-12", "Start": "2026-09-15T02:56:45", "State": "COMPLETED", "commit": "bc09a2422738048c6a63d3371bb721fd20b93aa1", "experiment": "Ablation_FMTv8_Search_2.2"}
 
 - **FMTv8 Search 2.2 audited_result** {"allocated_gpu_hours": 24.1975, "archive_sha256": "0abf74c3438cf400d3cfd499bb423ed3c04de9447407b2eac6ec1583e6012634", "commit": "bc09a2422738048c6a63d3371bb721fd20b93aa1", "events": 554, "evidence": "outputs/Ablation_FMTv8_Search_2.2/metrics_evidence.tar.gz", "experiment": "Ablation_FMTv8_Search_2.2", "features": 141, "final_runs": 126, "processes": 277, "relative_test_gain": 0.030108363958926798, "selected": "p35/h0", "status": "PASS", "target_met": false, "task4_relative_change": -0.023499772857519696, "temporary_models_remaining": 0, "validation_fits": 1239}
+
+
+## Task4-c 4.22：小卷积体素分辨率（2026-09-15）
+
+科学commit `223ea781feb913c0fada4449b1266639c1f28402`；配置`config/Ablation_Task4C_ConvResolution_4.22.json`，SHA256 `59ab1f1344f63bb81eb7b8b17dc3dc964881cbd75bbb3cb8f8947e2a03f18af7`。独立目录`/ibex/user/zhanx0o/FMT_Task4C_ConvResolution_20260915`。固定4 CPU线程、64 GiB主机内存；GPU阶段限定Tesla V100-SXM2-32GB。用户于09-15明确要求提交，沿用已准备的4.14数据/评估，24³保留用户修订参考。原实验不改写。
+
+| Job ID | 阶段 | 分辨率 | 种子 | 提交时间 UTC | 依赖 | 预期设备 | 状态 |
+|---|---|---:|---:|---|---|---|---|
+| 51905885_0 | prepare | 32 | — | 2026-09-15T10:21:17.666032+00:00 | — | Tesla V100-SXM2-32GB | SUBMITTED |
+| 51905885_1 | prepare | 36 | — | 2026-09-15T10:21:17.666032+00:00 | — | Tesla V100-SXM2-32GB | SUBMITTED |
+| 51905885_2 | prepare | 48 | — | 2026-09-15T10:21:17.666032+00:00 | — | Tesla V100-SXM2-32GB | SUBMITTED |
+| 51905886_0 | train | 32 | 96611 | 2026-09-15T10:21:17.752659+00:00 | 51905885 | Tesla V100-SXM2-32GB | SUBMITTED |
+| 51905886_1 | train | 32 | 96612 | 2026-09-15T10:21:17.752659+00:00 | 51905885 | Tesla V100-SXM2-32GB | SUBMITTED |
+| 51905886_2 | train | 32 | 96613 | 2026-09-15T10:21:17.752659+00:00 | 51905885 | Tesla V100-SXM2-32GB | SUBMITTED |
+| 51905886_3 | train | 36 | 96611 | 2026-09-15T10:21:17.752659+00:00 | 51905885 | Tesla V100-SXM2-32GB | SUBMITTED |
+| 51905886_4 | train | 36 | 96612 | 2026-09-15T10:21:17.752659+00:00 | 51905885 | Tesla V100-SXM2-32GB | SUBMITTED |
+| 51905886_5 | train | 36 | 96613 | 2026-09-15T10:21:17.752659+00:00 | 51905885 | Tesla V100-SXM2-32GB | SUBMITTED |
+| 51905886_6 | train | 48 | 96611 | 2026-09-15T10:21:17.752659+00:00 | 51905885 | Tesla V100-SXM2-32GB | SUBMITTED |
+| 51905886_7 | train | 48 | 96612 | 2026-09-15T10:21:17.752659+00:00 | 51905885 | Tesla V100-SXM2-32GB | SUBMITTED |
+| 51905886_8 | train | 48 | 96613 | 2026-09-15T10:21:17.752659+00:00 | 51905885 | Tesla V100-SXM2-32GB | SUBMITTED |
+| 51905887 | merge | 全部 | — | 2026-09-15T10:21:17.845010+00:00 | 51905886 | CPU | SUBMITTED |
+
+准备任务内含完整batch128 GPU预检与六个分区重新体素化；训练先选择验证模型再测试一次；汇总含全部预测与体素缓存独立复算。失败与取消记录同样保留。
+
+4.22启动核对：三种尺寸完整batch128 GPU预检均PASS，最大独立体素误差6.37e−7，峰值已分配显存32³/36³/48³分别0.918/1.303/3.058 GiB。32³、36³准备成功，48³继续生成；当前无stderr错误。下列job为Slurm实际子进程ID，逻辑数组ID由phase和array_index对应上表。
+
+- 4.22 runtime {"time": "2026-09-15T10:21:23.304133+00:00", "phase": "prepare", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "host": "gpu210-14", "job": "51905888", "array_index": "0", "commit": "223ea781feb913c0fada4449b1266639c1f28402", "config_sha256": "59ab1f1344f63bb81eb7b8b17dc3dc964881cbd75bbb3cb8f8947e2a03f18af7"}
+
+- 4.22 runtime {"time": "2026-09-15T10:21:23.670594+00:00", "phase": "prepare", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "host": "gpu208-18", "job": "51905885", "array_index": "2", "commit": "223ea781feb913c0fada4449b1266639c1f28402", "config_sha256": "59ab1f1344f63bb81eb7b8b17dc3dc964881cbd75bbb3cb8f8947e2a03f18af7"}
+
+- 4.22 runtime {"time": "2026-09-15T10:21:24.727652+00:00", "phase": "prepare", "state": "STARTED", "exit_code": null, "device": "Tesla V100-SXM2-32GB", "host": "gpu210-10", "job": "51905889", "array_index": "1", "commit": "223ea781feb913c0fada4449b1266639c1f28402", "config_sha256": "59ab1f1344f63bb81eb7b8b17dc3dc964881cbd75bbb3cb8f8947e2a03f18af7"}
+
+- 4.22 runtime {"time": "2026-09-15T10:22:37.933054+00:00", "phase": "prepare", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "host": "gpu210-14", "job": "51905888", "array_index": "0", "commit": "223ea781feb913c0fada4449b1266639c1f28402", "config_sha256": "59ab1f1344f63bb81eb7b8b17dc3dc964881cbd75bbb3cb8f8947e2a03f18af7"}
+
+- 4.22 runtime {"time": "2026-09-15T10:23:15.137717+00:00", "phase": "prepare", "state": "ENDED", "exit_code": 0, "device": "Tesla V100-SXM2-32GB", "host": "gpu210-10", "job": "51905889", "array_index": "1", "commit": "223ea781feb913c0fada4449b1266639c1f28402", "config_sha256": "59ab1f1344f63bb81eb7b8b17dc3dc964881cbd75bbb3cb8f8947e2a03f18af7"}

@@ -43,8 +43,8 @@ def identity(config):
 
 
 def require_data_confirmation(spec):
-    if spec['data_revision_status'] != 'user_confirmed_original_4.14_data_and_evaluator':
-        raise ValueError('Clarify the user-corrected 24-cubed data/evaluator before production runs')
+    if spec['data_revision_status'] != 'user_authorized_existing_4.22_configuration':
+        raise ValueError('Production submission requires authorization of the configured data and evaluator')
 
 
 def resolution_spec(spec, resolution):

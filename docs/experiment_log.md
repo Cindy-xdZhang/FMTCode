@@ -3740,3 +3740,11 @@ p35/h0保持141维、76,738参数、h0训练设置和同一训练标准化；0.7
 核验代码`experiments/Verify_FMTv8_TableProvenance_1_1.py`；报告生成器已将集合、种子写入表头和CSV字段。证据在`outputs/Ablation_FMTv8_Search_2.2/table_provenance_report.md`、`table_provenance_audit.json`及`table_provenance_source_check.json`。科学源码仍为bc09a2422738048c6a63d3371bb721fd20b93aa1。
 
 本次核验脚本SHA256 `22a0f42a5b1389e3f257393208fa52ddf8533b5764c30f8be06ab585fd6e7fe6`；原始源数据核验回执SHA256 `4aa07395e067ea71365f492833b4c7bdbaac0bf79659516a94d32a5b6d6efb70`；原归档SHA256 `0abf74c3438cf400d3cfd499bb423ed3c04de9447407b2eac6ec1583e6012634`。
+
+
+<a id="task4c-conv-resolution-4-22-submitted-2026-09-15"></a>
+## Task4-c 4.22：用户授权原配置提交Ibex
+
+2026-09-15用户明确要求“提交ibex运行”，因此继续原4.14数据和评估的既定方案，取代09-14等待确认状态。用户未提供替换数据/评估；不能写成已经核实24³修订原因。24³的0.7499±0.0126仅为用户修订历史参考，三个新分辨率之间使用相同物理样本及评估。科学commit`223ea781feb913c0fada4449b1266639c1f28402`；代码包只包含配置、入口和部署脚本，旧4.18源码冻结。原输入/源码身份核验通过，CPU检查PASS。
+
+准备`51905885[0–2]`、训练`51905886[0–8]`、汇总`51905887`于10:21:17 UTC提交，共13进程，逐进程登记见ibex_run_registry。新F1尚未产生；不得将提交状态写成实验完成。

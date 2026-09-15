@@ -19,7 +19,8 @@
   "voxel_resolutions": [32, 36, 48],
   "voxel_subdivisions": 4,
   "encoding_batch_size": 32,
-  "data_revision_status": "pending_user_clarification",
+  "data_revision_status": "user_authorized_existing_4.22_configuration",
+  "submission_authorization": "2026-09-15 user explicitly requested submission after the existing 4.14 data/evaluator configuration was presented; no replacement data or evaluator provided",
   "reference_24": {
     "version": "Ablation_Task4C_ConvCapacity_4.18",
     "test_f1_mean": 0.7499,
