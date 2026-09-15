@@ -73,3 +73,10 @@
 为使Task4-c也能利用短GPU空档，将尚未启动的原四个五配置进程替换为20个单配置进程，每个申请24GiB、V100、30分钟、4 CPU，最多12个并行。仍直接调用冻结c61434ac源码中的task4_fit，500epoch、patience50、seed96611、全部数据和20个候选不变。独立执行适配器为experiments/FMTv8_NormFrequency_Task4Single_3_1.py，其commit/文件SHA单独登记；核心代码/config的commit/SHA不变。原四项取消前必须为PENDING，且没有产生Task4-c搜索输出，取消记录保留。
 
 汇总依赖改为等待原搜索数组和新Task4-c数组全部结束；汇总内部仍严格要求420份候选结果完整并逐预测核验，缺失或失败不能产生有效结果表。该拆分不增加候选拟合次数；总调度登记预计149项，其中4项在启动前取消、145项执行，对应290个开始/结束事件。
+
+
+## 最终执行状态（2026-09-15）
+
+20组共420次新候选拟合、21次原p35复现完成；149项登记中145项实际执行成功，4项在开始前取消，290条运行事件完整。Task3/5全部结束后，Task4-c剩余作业并发由4恢复12，总上限仍12；没有更改拟合预算。441份预测、333份源文件和缓存及全部调度记录独立核对PASS，临时模型已清理。执行科学commit0d77e3e5/c61434ac，单Task4-c调度适配器9b6b8451。
+
+共同选择配置`n0_k06`，141维，Task4-c 76,738参数。完整20组数值见`outputs/Ablation_FMTv8_NormFrequency_3.1/performance_tables.md`及`docs/paper_tables_tasks_3d.md`；方法结论只记入`docs/experiment_log.md#fmtv8-norm-frequency-results-3-1-2026-09-15`。证据包SHA256 `44b0f8612b27109dcb9d889708a41fac5fcae2eb4dcce82f75d5bd7b1f5c4a0d`，独立核验代码SHA256 `86c88e04a32e59260ab3d72ad758acd086c2930d3a50181eaa1303bf3be41431`。
