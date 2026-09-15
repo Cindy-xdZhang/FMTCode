@@ -16,7 +16,8 @@ from FMT_Utils.FTLE_P35_2D_2_1 import encode,WIDTHS
 
 read,dump,stamp=dev.read,dev.dump,dev.stamp
 EXTRA=['experiments/FTLE_P35_Final_2_1.py','experiments/Audit_FTLE_P35_Final_2_1.py',
-       'config/Other_FTLEP35Fusion_2.1_final.json','ibex_bash/ftle_p35_final_2p1.sh']
+       'config/Other_FTLEP35Fusion_2.1_final.json','ibex_bash/ftle_p35_final_2p1.sh',
+       'FMT_Utils/FTLE_Statistics_Audit_2_1.py','experiments/Audit_FTLE_P35_Numerics_2_1.py']
 
 
 def provenance(config):

@@ -7,6 +7,7 @@ from experiments import FTLE_P35_Final_2_1 as final
 from experiments import FTLE_P35_Fusion_2_1 as dev
 from experiments.Audit_FTLE_Upsampling_2D_1_2 import independent_metrics
 from FMT_Utils.FTLE_Data_2D import file_sha256
+from FMT_Utils.FTLE_Statistics_Audit_2_1 import audit_training_statistics
 
 
 def preflight(spec,config):
@@ -22,7 +23,7 @@ def preflight(spec,config):
 
 
 def audit(spec,config):
-    development,record=final.locked(spec);root=Path(spec['output']);rows=[];prediction_count=0
+    development,record=final.locked(spec);root=Path(spec['output']);rows=[];prediction_count=0;statistics_checks=[]
     for flow,scale in dev.matrix(development):
         tr=dev.load_data(development,flow,scale,'train');va=dev.load_data(development,flow,scale,'validation')
         # Final audit is permitted only after the choice was locked; no fitting occurs here.
@@ -48,7 +49,8 @@ def audit(spec,config):
                 step='epoch' if definition.get('reference') else 'step'
                 assert best[step]==result['best_'+step]
                 stats=dev.stats_for(tr,definition.get('feature','none'))
-                for key,value in stats.items():np.testing.assert_allclose(result['normalization'][key],value,atol=1e-9,rtol=1e-8)
+                statistics_checks.append({'flow':flow,'scale':scale,'seed':seed,'method':definition['id'],
+                    **audit_training_statistics(tr,definition.get('feature','none'),result['normalization'],dev.scalar_stats(tr))})
                 assert len(result['metrics'])==len(va)+len(te)
                 for split,data in [('validation',va),('test',te)]:
                     recomputed=[]
@@ -93,5 +95,5 @@ def audit(spec,config):
         np.testing.assert_allclose(comparison['mean_psnr_gain'],np.mean(gains),atol=1e-7)
     assert not [p for p in root.rglob('*') if p.suffix in ('.pt','.pth','.ckpt')]
     final.dump(root/'audit.json',{'status':'PASS','trainings':len(rows)//2,'predictions_recomputed':prediction_count,
-                               'selected':record['selected'],'provenance':final.provenance(config)})
+                               'selected':record['selected'],'statistics_checks':statistics_checks,'provenance':final.provenance(config)})
     print('Final audit PASS',len(rows)//2,'trainings',prediction_count,'predictions',flush=True)

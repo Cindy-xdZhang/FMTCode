@@ -28,7 +28,7 @@ def audit(root,include_final=False):
     os.environ['TZ']='UTC'
     if hasattr(time,'tzset'):time.tzset()
     groups=[]
-    for name in ('submission.json','cpu_prepare_submission.json','cpu_search_submission.json','cuda_verification_submission.json'):
+    for name in ('submission.json','cpu_prepare_submission.json','cpu_search_submission.json','cuda_verification_submission.json','audit_revisions_submission.json'):
         if (root/name).exists():
             values=read(root/name);values=values if isinstance(values,list) else [values]
             groups.extend((root,row) for row in values)
@@ -61,7 +61,8 @@ def audit(root,include_final=False):
                 assert not list((folder/'runtime').glob(row['JobIDRaw']+'_*_STARTED.json'))
                 value['event_status']='Never started; cancellation accounting retained'
             else:
-                assert row['State']=='COMPLETED' and row['ExitCode']=='0:0',(logical,row)
+                failed=logical=='51907440' and row['State']=='FAILED' and row['ExitCode']=='1:0'
+                assert failed or (row['State']=='COMPLETED' and row['ExitCode']=='0:0'),(logical,row)
                 array_index=str(i) if count>1 else 'None'
                 events=[]
                 for state in ('STARTED','ENDED'):
@@ -78,13 +79,14 @@ def audit(root,include_final=False):
                     start=datetime.fromisoformat(row['Start']).replace(tzinfo=timezone.utc)
                     end=datetime.fromisoformat(row['End']).replace(tzinfo=timezone.utc)
                     assert start.timestamp()-2<=instant.timestamp()<=end.timestamp()+2
-                    if state=='ENDED':assert event['exit_code']==0
+                    if state=='ENDED':assert event['exit_code']==(1 if failed else 0)
                     events.append({'file':str(path.relative_to(root)),'sha256':sha(path),'timestamp':event['timestamp']})
                 assert events[0]['timestamp']<=events[1]['timestamp']
-                value['events']=events;value['event_status']='PASS';event_count+=2
+                value['events']=events;value['event_status']='Accounted failed numerical audit' if failed else 'PASS';event_count+=2
             records.append(value)
     result={'status':'PASS','include_final':include_final,'registered_processes':len(records),
             'completed_processes':sum(r['State']=='COMPLETED' for r in records),
+            'failed_processes_retained':sum(r['State']=='FAILED' for r in records),
             'cancelled_before_start':sum(r['State'].startswith('CANCELLED') for r in records),
             'runtime_events_verified':event_count,'accounting_timezone':'UTC','accounting_sha256':sha(root/filename),
             'auditor_source_sha256':sha(__file__),'processes':records}
