@@ -1,0 +1,17 @@
+{
+  "version": "Other_FTLEP35Fusion_2.1",
+  "output": "outputs/Other_FTLEP35Fusion_2.1",
+  "source_output": "/ibex/user/zhanx0o/FMT_FTLE2D_Dropout_20260914/outputs/Other_FTLEUpsampling2D_1.2",
+  "reference_config": "config/Other_FTLEUpsampling2D_1.2.json",
+  "flows": ["cylinder2d", "boussinesq", "pipedcylinder2d", "doublegyre2d"],
+  "scales": [4, 8],
+  "tau": 1.0,
+  "split_counts": {"train": 12, "validation": 3, "test": 3},
+  "search_seed": 98201,
+  "final_seeds": [98211, 98212, 98213],
+  "width": 48,
+  "training": {"steps": 800, "batch_size": 2, "lr": 0.001, "weight_decay": 0.00001, "validate_every": 20, "patience_steps": 100},
+  "selection": "Maximum mean validation PSNR across four flows and both scales among p35 candidates; final gate requires gains versus ESPCN, UNet and the matched no-geometry decoder at each scale.",
+  "test_policy": "Development cannot load test. Reuse historical time blocks and masks; no new confirmation-set claim.",
+  "checkpoint_policy": "Memory only; no model files."
+}
