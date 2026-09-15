@@ -22,8 +22,125 @@
     }
   ],
   "integration": {
-    "channel": [],
-    "tbl": [],
+    "channel": [
+      {
+        "ds": 0.001005,
+        "maxiteration": 80,
+        "requested_user_length": 0.0804
+      },
+      {
+        "ds": 0.0020076190476190476,
+        "maxiteration": 42,
+        "requested_user_length": 0.08432
+      },
+      {
+        "ds": 0.003042758620689655,
+        "maxiteration": 29,
+        "requested_user_length": 0.08824
+      },
+      {
+        "ds": 0.004006956521739131,
+        "maxiteration": 23,
+        "requested_user_length": 0.09216
+      },
+      {
+        "ds": 0.004804,
+        "maxiteration": 20,
+        "requested_user_length": 0.09608
+      },
+      {
+        "ds": 0.002,
+        "maxiteration": 50,
+        "requested_user_length": 0.1
+      },
+      {
+        "ds": 0.0019984615384615384,
+        "maxiteration": 52,
+        "requested_user_length": 0.10392
+      },
+      {
+        "ds": 0.0029955555555555556,
+        "maxiteration": 36,
+        "requested_user_length": 0.10784
+      },
+      {
+        "ds": 0.003991428571428571,
+        "maxiteration": 28,
+        "requested_user_length": 0.11176
+      },
+      {
+        "ds": 0.0048200000000000005,
+        "maxiteration": 24,
+        "requested_user_length": 0.11568
+      },
+      {
+        "ds": 0.0010050420168067227,
+        "maxiteration": 119,
+        "requested_user_length": 0.1196
+      }
+    ],
+    "tbl": [
+      {
+        "ds": 0.010016556291390729,
+        "maxiteration": 302,
+        "requested_user_length": 3.025
+      },
+      {
+        "ds": 0.019939024390243903,
+        "maxiteration": 164,
+        "requested_user_length": 3.27
+      },
+      {
+        "ds": 0.030042735042735042,
+        "maxiteration": 117,
+        "requested_user_length": 3.515
+      },
+      {
+        "ds": 0.04,
+        "maxiteration": 94,
+        "requested_user_length": 3.76
+      },
+      {
+        "ds": 0.049444444444444444,
+        "maxiteration": 81,
+        "requested_user_length": 4.005
+      },
+      {
+        "ds": 0.01,
+        "maxiteration": 425,
+        "requested_user_length": 4.25
+      },
+      {
+        "ds": 0.01997777777777778,
+        "maxiteration": 225,
+        "requested_user_length": 4.495
+      },
+      {
+        "ds": 0.030000000000000002,
+        "maxiteration": 158,
+        "requested_user_length": 4.74
+      },
+      {
+        "ds": 0.039880000000000006,
+        "maxiteration": 125,
+        "requested_user_length": 4.985
+      },
+      {
+        "ds": 0.05,
+        "maxiteration": 100,
+        "requested_user_length": 5.0
+      },
+      {
+        "ds": 0.01,
+        "maxiteration": 523,
+        "requested_user_length": 5.23
+      },
+      {
+        "ds": 0.019981751824817515,
+        "maxiteration": 274,
+        "requested_user_length": 5.475
+      }
+    ],
     "step_units": "physical_length",
     "rk45_step_policy": "initial_minimum_maximum_equal_ds",
     "vtk_maximum_number_of_steps": "maxiteration_with_output_capped_at_maxiteration_segments",
@@ -32,7 +149,7 @@
     "minimum_actual_half_arc_fraction": 0.95,
     "maximum_actual_half_arc_fraction": 1.002,
     "maximum_error_over_ds": 0.0001,
-    "length_definition": "pending_user_confirmation",
+    "length_definition": "per_direction",
     "length_ranges": {
       "channel": [
         0.08,
@@ -46,7 +163,8 @@
     "mandatory_head_target": {
       "channel": 0.1,
       "tbl": 5.0
-    }
+    },
+    "confirmed_by_user": true
   },
   "bundles": {
     "minimum_valid_lines": 10,
@@ -110,7 +228,15 @@
       36,
       48
     ],
-    "sparse_cache": true
+    "sparse_cache": true,
+    "fmt_definition": {
+      "id": "n0_k06",
+      "geometry": "max_radius",
+      "features": "zscore",
+      "recipe": "n0",
+      "frequencies": 6,
+      "feature_dimensions": 141
+    }
   },
   "checkpoint_policy": "memory_only_no_weight_files",
   "model_parameters": {

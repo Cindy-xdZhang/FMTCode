@@ -21,8 +21,8 @@ from FMT_Utils.Task4C_InstanceCoverage_9_15_v2 import (
     write, load_scene, scene_report, generate_instance, save_instance, sparse_voxels,
     dense_sparse_batch, head_mask, local_label,
 )
-from FMT_Utils.Task4C_LinePooling_4_3 import line_fmt
-from FMT_Utils.FMT_V8_Search_2_1 import select_features, pooling_candidates, task4_model, pool_numpy
+from FMT_Utils.FMT_V8_Search_2_1 import task4_model
+from FMT_Utils.FMT_P35_NormFrequency_3_1 import candidates, encode as encode_p35, apply_normalizer
 from experiments.Task4C_HairpinBinary_2_1 import append_locked
 
 CONFIG = 'config/mainExp_Task4C_InstanceCoverage_9.15_v2.json'
@@ -38,7 +38,7 @@ def sha(path):
 
 def identity(config):
     paths = [__file__, 'FMT_Utils/Task4C_InstanceCoverage_9_15_v2.py', 'FMT_Utils/Task4C_InstanceCoverage_9_15.py',
-        'FMT_Utils/Task4C_LinePooling_4_3.py', 'FMT_Utils/FMT_V8_Search_2_1.py',
+        'FMT_Utils/FMT_P35_NormFrequency_3_1.py', 'FMT_Utils/FMT_V8_Search_2_1.py',
         'FMT_Utils/Task4C_Encoders_4_15.py', 'FMT_Utils/DFT_FMT_3D.py',
         'FMT_Utils/Task4C_PaperBundles_3_1.py', 'FMT_Utils/Task4C_Multiscale_4_1.py',
         'FMT_Utils/Task4C_HairpinBinary_2_1.py', 'experiments/Task4C_PhysicalLength_4_14.py',
@@ -56,6 +56,7 @@ def load_spec(config, allow_pending_length=False):
     assert spec['labels']['confirmed_by_user']
     assert spec['training']['selection'] == 'fixed_last_epoch_no_test_selection'
     assert spec['encoding']['batch_size'] == 32 and spec['sampling']['mandatory_head_bundles'] == 3
+    assert spec['encoding']['fmt_definition'] == next(c for c in candidates() if c['id'] == 'n0_k06')
     from FMT_Utils.Task4C_InstanceCoverage_9_15_v2 import validate_spec
     if not (allow_pending_length and spec['integration']['length_definition']=='pending_user_confirmation'):
         validate_spec(spec)
@@ -119,6 +120,9 @@ def metrics(y, p):
 
 
 def prepare(spec, config, index, pilot=False, input_root=None):
+    if not pilot:
+        capacity_report = json.loads((Path(spec['output'])/'capacity.json').read_text())
+        assert capacity_report['complete'] and capacity_report['identity']['config_sha256'] == sha(config)
     shards = spec['sampling']['shards_per_flow']; flow_index, shard = divmod(index, shards)
     scene = load_scene(spec, flow_index, input_root)
     name = scene['flow']['name']; root = Path(spec['output']); report = scene_report(scene)
@@ -160,10 +164,14 @@ def manifests(spec):
 
 def encode(spec, config, index):
     deterministic('cuda'); root = Path(spec['output']); name = spec['flows'][index]['name']
+    audit = json.loads((root/'data_audit.json').read_text())
+    assert audit['complete'] and audit['identity']['config_sha256'] == sha(config)
     rows = [r for r in manifests(spec) if r['flow'] == name]
-    pool = next(p for p in pooling_candidates() if p['id'] == 'p35')
+    definition = spec['encoding']['fmt_definition']
     batch = spec['encoding']['batch_size']; results = []
     for row in rows:
+        if shutil.disk_usage(root).free < 10*2**30:
+            raise RuntimeError('Encoding stopped before the next instance: less than 10 GiB reserve')
         src = root/'physical'/name/str(row['instance'])
         for filename, digest in row['files'].items():
             assert sha(src/filename) == digest
@@ -177,9 +185,9 @@ def encode(spec, config, index):
             gg = torch.as_tensor(np.array(g[sl]), device='cuda')
             ss = torch.as_tensor(np.array(seeds[sl]), device='cuda')
             cc = torch.as_tensor(counts[sl], device='cuda')
-            original = line_fmt(gg, ss, cc)
-            selected = select_features(original[..., :233], pool)
-            tokens[sl] = torch.cat((selected, original[..., -1:]), -1).cpu().numpy()
+            selected = encode_p35(gg, definition, seeds=ss, counts=cc)
+            mask = (torch.arange(27, device='cuda')[None] < cc[:, None]).to(gg.dtype)
+            tokens[sl] = torch.cat((selected, mask[..., None]), -1).cpu().numpy()
             for resolution, part in sparse.items():
                 offset, ids, values = sparse_voxels(gg, cc, resolution)
                 part['offsets'].append(offset[1:]+part['offsets'][-1][-1])
@@ -194,6 +202,86 @@ def encode(spec, config, index):
         write(dest/'manifest.json', record); results.append(record)
         print('encoded', name, row['instance'], len(g), flush=True)
     write(root/'encoding'/f'{index}.json', dict(complete=True, identity=identity(config), instances=results))
+
+
+def capacity(spec, config):
+    """Measure sparse storage on every pilot instance before the full allocation."""
+    deterministic('cuda'); root = Path(spec['output']); sampled = total_sparse = 0
+    for index in range(2*spec['sampling']['shards_per_flow']):
+        report = json.loads((root/'pilot_completed'/f'{index}.json').read_text())
+        assert report['complete']
+        for item in report['instances']:
+            source = root/'pilot'/item['flow']/str(item['instance'])
+            g = torch.as_tensor(np.load(source/'geometry.npy'),device='cuda')
+            with np.load(source/'metadata.npz') as m: counts = torch.as_tensor(m['counts'],device='cuda')
+            sampled += len(g)
+            for resolution in spec['encoding']['voxel_resolutions']:
+                arrays = sparse_voxels(g, counts, resolution)
+                total_sparse += sum(a.nbytes for a in arrays)
+    assert sampled == 132*6
+    total = spec['expected_counts']['total']
+    estimated_sparse = total_sparse/sampled*total
+    # Includes physical geometry, seeds, uncompressed metadata, tokens, viewer copy and margin.
+    other_bytes = total*(27*32*3*4*2 + 27*3*4 + 27*142*4 + 12000)
+    required = 2*estimated_sparse + other_bytes + 10*2**30
+    available = shutil.disk_usage(root).free
+    report = dict(complete=available>=required, identity=identity(config), pilot_samples=sampled,
+        estimated_sparse_bytes=estimated_sparse, required_bytes=required, available_bytes=available,
+        sparse_safety_factor=2, reserve_gib=10)
+    write(root/'capacity.json',report)
+    if not report['complete']:
+        raise RuntimeError(f'Pilot storage estimate requires {required/2**30:.1f} GiB; available {available/2**30:.1f} GiB')
+    print(json.dumps(report),flush=True)
+
+
+def audit(spec, config):
+    """Re-read every saved sample before any representation or model is fitted."""
+    root = Path(spec['output']); coverage = manifests(spec)
+    totals = dict(train=0, test=0); seen = set(); reports = []
+    assert spec['integration']['length_definition'] == 'per_direction'
+    for item in coverage:
+        src = root/'physical'/item['flow']/str(item['instance'])
+        for filename, digest in item['files'].items():
+            assert sha(src/filename) == digest
+        g = np.load(src/'geometry.npy', mmap_mode='r')
+        with np.load(src/'metadata.npz') as z: m = {k:z[k] for k in z.files}
+        n = m['counts']; valid = np.arange(27)[None] < n[:,None]
+        assert len(g) == 1000 and np.all((n >= 10) & (n <= 27))
+        assert np.isfinite(g).all() and np.all(g[~valid] == 0)
+        center = (g.astype(np.float64)*valid[:,:,None,None]).sum((1,2))/(n[:,None]*32)
+        assert np.allclose(center, 0, atol=2e-6)
+        assert np.allclose(np.linalg.norm(g, axis=-1).max((1,2)), 1, atol=2e-6)
+        lower, upper = spec['integration']['length_ranges'][item['flow']]
+        eps = 2e-6*upper
+        half = m['half_arc_lengths'][valid]
+        assert np.all((half >= lower-eps) & (half <= upper+eps))
+        steps = m['half_step_counts']
+        assert np.all(steps[valid] <= np.broadcast_to(m['maxiteration'][:,None,None], steps.shape)[valid])
+        assert np.allclose(m['requested_half_length'], m['ds']*m['maxiteration'])
+        arcs = np.linalg.norm(np.diff(g.astype(np.float64),axis=2),axis=-1).sum(2)*m['radius'][:,None]
+        assert np.allclose(arcs[valid], m['resampled_total_arc_lengths'][valid], atol=eps)
+        assert np.all((arcs[valid] >= 2*lower-eps) & (arcs[valid] <= 2*upper+eps))
+        assert np.allclose(m['raw_total_arc_lengths'][valid], half.sum(1))
+        assert np.sum(m['labels']==1) == 500 and np.sum(m['labels']==0) == 500
+        heads = m['mandatory_head']; assert heads.sum() == 3
+        assert np.all(m['labels'][heads] == 1) and m['center_is_head'][heads].all()
+        assert np.all(m['center_abs_cosine'][heads]**2 < .5)
+        assert len(np.unique(m['center'][heads],axis=0)) == 3
+        for i in range(len(g)):
+            label, instance = local_label(m['seed_gt_ids'][i,:n[i]])
+            assert label == m['labels'][i] and instance == m['instance'][i]
+            assert not label or instance == item['instance']
+            digest = hashlib.sha256(g[i].tobytes()).hexdigest()
+            assert digest not in seen, 'Duplicated geometry in the dataset'
+            seen.add(digest)
+        totals[item['role']] += len(g)
+        reports.append(dict(flow=item['flow'],instance=item['instance'],role=item['role'],samples=len(g),
+            half_length_minmax=[float(half.min()),float(half.max())],
+            integration_index_counts=item['integration_index_counts']))
+    assert totals == {k:spec['expected_counts'][k] for k in ('train','test')}
+    write(root/'data_audit.json',dict(complete=True,identity=identity(config),counts=totals,
+        distinct_geometry=len(seen),mandatory_heads=396,instances=reports))
+    print(json.dumps(dict(data_audit='PASS',counts=totals,mandatory_heads=396)),flush=True)
 
 
 def load_parts(spec, role, method):
@@ -226,7 +314,6 @@ def normalization(parts):
     for part in parts:
         x = np.asarray(part['tokens']); valid = x[..., -1] > .5
         values = x[..., :-1][valid]
-        values = np.sign(values)*np.log1p(np.abs(values))
         local_mean = values.mean(0, dtype=np.float64)
         local_m2 = ((values-local_mean)**2).sum(0, dtype=np.float64)
         delta = local_mean-mean; n = len(values)
@@ -240,9 +327,7 @@ def get_batch(parts, ids, method, norm, device='cuda'):
     if method != 'p35':
         return dense_sparse_batch(parts, ids, int(method[4:]), device)
     x = np.stack([parts[p]['tokens'][i] for p, i in ids])
-    # Same float32 signed log and train-only per-feature normalization as p35.
-    value = np.sign(x[..., :-1])*np.log1p(np.abs(x[..., :-1]))
-    value = np.clip(((value-norm[0])/norm[1]).astype(np.float32), -8, 8)*x[..., -1:]
+    value = apply_normalizer(x[..., :-1], dict(kind='zscore', mean=norm[0], std=norm[1]), x[..., -1:])
     return torch.as_tensor(np.concatenate((value, x[..., -1:]), -1), device=device)
 
 
@@ -334,12 +419,19 @@ def preflight(spec, config, device):
         geometry[:, i, :, 1] = .17*torch.sin(3*t+i*.03)+i*.008
         geometry[:, i, :, 2] = .18*torch.cos(2*t+i*.04)-i*.006
     counts = torch.tensor([27, 19], device=device); geometry[1, 19:] = 0
-    seeds = geometry[:, :, 16].clone(); original = line_fmt(geometry, seeds, counts)
-    pool = next(p for p in pooling_candidates() if p['id'] == 'p35')
-    tokens = select_features(original[..., :233], pool)
-    reference_pool = pool_numpy(original[..., 23:161].cpu().numpy(), pool)
-    assert np.allclose(tokens[..., 95:].cpu().numpy(), reference_pool, atol=2e-6)
-    fmt_input = torch.cat((tokens, original[..., -1:]), -1)
+    seeds = geometry[:, :, 16].clone()
+    tokens = encode_p35(geometry, spec['encoding']['fmt_definition'], seeds=seeds, counts=counts)
+    mask = (torch.arange(27, device=device)[None] < counts[:, None]).to(geometry.dtype)
+    packed = torch.cat((tokens, mask[..., None]), -1).cpu().numpy()
+    parts = [dict(tokens=packed)]
+    norm = normalization(parts)
+    from FMT_Utils.FMT_P35_NormFrequency_3_1 import fit_normalizer
+    reference = fit_normalizer(packed[..., :-1], packed[..., -1:], 'zscore')
+    assert np.allclose(norm[0], reference['mean'], atol=1e-12)
+    assert np.allclose(norm[1], reference['std'], atol=1e-12)
+    fmt_input = get_batch(parts, [(0,0),(0,1)], 'p35', norm, device)
+    expected = apply_normalizer(packed[..., :-1], reference, packed[..., -1:])
+    assert np.allclose(fmt_input[..., :-1].cpu().numpy(), expected, atol=1e-6)
     fmt_model = task4_model(141, 'h0').to(device)
     fmt_optimizer = torch.optim.AdamW(fmt_model.parameters(), lr=.001)
     for _ in range(2):
@@ -353,7 +445,9 @@ def preflight(spec, config, device):
     parameters = dict(p35=sum(p.numel() for p in task4_model(141, 'h0').parameters()),
                       conv=sum(p.numel() for p in Conv915().parameters()))
     assert parameters['p35'] == 76738 and .90 <= parameters['conv']/parameters['p35'] <= .95
-    report = dict(parameters=parameters, resolutions={}, deterministic_pool_checks=pool_checks, device=device, identity=identity(config))
+    report = dict(parameters=parameters, resolutions={}, deterministic_pool_checks=pool_checks,
+        fmt_definition=spec['encoding']['fmt_definition'], train_only_zscore_reference=True,
+        device=device, identity=identity(config))
     for r in spec['encoding']['voxel_resolutions']:
         offsets, indices, values = sparse_voxels(geometry, counts, r)
         recovered = dense_sparse_batch([dict(offsets=offsets, indices=indices, values=values)], [(0, 0), (0, 1)], r, device)
@@ -470,12 +564,14 @@ def runtime(spec, config, phase, state, code=None):
 
 
 def submit(spec, config):
-    if shutil.disk_usage(Path.cwd()).free < 100*2**30:
-        raise RuntimeError('Need at least 100 GiB free for geometry and sparse caches; no old results are deleted')
+    if shutil.disk_usage(Path.cwd()).free < 10*2**30:
+        raise RuntimeError('Need at least 10 GiB reserve for preflight/pilot; full capacity is checked after pilot')
     root = Path(spec['output']).resolve(); root.mkdir(parents=True, exist_ok=False); (root/'logs').mkdir()
     write(root/'config.frozen.json', spec); previous = None
     phases = [('preflight', None, True, '00:20:00'), ('pilot', '0-15%8', False, '02:00:00'),
-              ('prepare', '0-15%8', False, '16:00:00'), ('encode', '0-1%2', True, '08:00:00'),
+              ('capacity', None, True, '00:30:00'),
+              ('prepare', '0-15%8', False, '16:00:00'), ('audit', None, False, '00:30:00'),
+              ('encode', '0-1%2', True, '08:00:00'),
               ('train', '0-11%6', True, '2-00:00:00'), ('merge', None, False, '00:30:00')]
     for phase, array, gpu, limit in phases:
         cmd = ['sbatch', '--parsable', '--nodes=1', '--ntasks=1', '--cpus-per-task=4', '--mem=32G',
@@ -496,7 +592,7 @@ def submit(spec, config):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('phase', choices=('pilot', 'prepare', 'encode', 'train', 'merge', 'preflight', 'runtime', 'submit'))
+    parser.add_argument('phase', choices=('pilot', 'capacity', 'prepare', 'audit', 'encode', 'train', 'merge', 'preflight', 'runtime', 'submit'))
     parser.add_argument('--config', default=CONFIG); parser.add_argument('--index', type=int, default=0)
     parser.add_argument('--input-root'); parser.add_argument('--device', default='cuda', choices=('cpu', 'cuda'))
     parser.add_argument('--runtime-phase'); parser.add_argument('--state'); parser.add_argument('--exit-code', type=int)
