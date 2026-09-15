@@ -2,34 +2,30 @@
 
 ## 1. 任务
 
-输入一簇三维涡线的几何，二分类：Hairpin=1、Non-hairpin=0。Channel与TBL都是单帧流场，沿涡量`curl(u)`积分。新增模型使用同一几何和实例划分；GT、速度、涡量及实例ID用于构建标签，不作为模型输入。
+输入一簇三维涡线几何，分类Hairpin/Non-hairpin。两个流场均为单帧，沿涡量curl(u)双向积分；GT、速度和涡量用于数据构建，不作为网络输入。
 
-## 2. 最新数据：task4-c-v9.15_v2
+## 2. 最新数据：task4-c-v9.15_v2（已纠正）
 
-**状态：2026-09-15已确认单向长度，Ibex全部132,000束已构建并通过数据检查，模型编码与训练作业已提交。**
+**原commit `9769c68d` 的实例留出、局部标签和固定150轮运行已废弃，不是有效v2结果。当前修正版正在重新构建。**
 
-- Channel 74个、TBL 58个Hairpin实例；每实例500正＋500负，共132,000束。相交采样盒分组后约90%实例训练、10%测试：119,000/13,000束；测试实例的全部束只进测试，轨线穿入另一集合GT则剔除。
-- 在实例扩张包围盒内以`lambda2 < −13.395`（Channel）/`−0.0272`（TBL）及`ω′y > 0`筛选种子。GT内速度与涡量的锐角>45°视为head，每实例必须有3个不同中心的head束。
-- Runge–Kutta–Fehlberg（RK45）双向积分；剔除短线、任一轴零方差等退化线，每束保留10–27线，每线按弧长重采样32点，整束以质心平移并除以最大半径。邻居距离多尺度；Channel**单向长度[0.08,0.12]**、ds[0.001,0.005]、11档；TBL**单向长度[3,5.5]**、ds[0.01,0.05]、12档。双向整条曲线长度分别为[0.16,0.24]、[6,11]。
-- 清洗后有效种子≥50%属于唯一同一GT实例则为正；全部在GT外为负；其余混合束和并列归属剔除。
+- 恢复4.14候选及标签：lambda2阈值Channel −13.395、TBL −0.0272，候选单元八顶点过阈值且展向脉动涡量为正。完整候选头区单个GT实例覆盖≥50%为Hairpin，零覆盖为Non-hairpin，混合头区排除。
+- 恢复同一头区内空间分块，训练/验证/测试共享涡实例，**完整实例留出数为0**。评价中心距训练中心至少1个网格间距、距同头区训练中心不超过4个。总132,000束，按旧比例为89,100训练、9,900验证、33,000测试；不设每实例正负配额。
+- 负样本采样沿用旧实现。正类头区每隔一个采样编号使用其原分区内z较低的一半单元，其余仍用完整单元池，使底部采样更密。
+- Channel **单向长度0.08–0.12**、ds 0.001–0.005、11档；TBL **单向长度3–5.5**、ds 0.01–0.05、12档。双向全线长度分别0.16–0.24、6–11。邻距仍为网格间距的0.25/0.5/1倍。RK45积分并清洗，每束10–27线、每线32点，整束质心/最大半径归一化。
 
-原始数据根目录（不随Git发布）：Windows为`C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D`；Ibex为`/ibex/user/zhanx0o/FMT_Task4B_VelocityCurl_4p1_20260906/repo/inputs`，需目录读取权限。
+原始数据根目录：Windows `C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D`；Ibex `/ibex/user/zhanx0o/FMT_Task4B_VelocityCurl_4p1_20260906/repo/inputs`（需读取权限，不随Git发布）。
 
-| 流场 | 速度场文件 | GT文件 |
+|流场|速度场|GT|
 |---|---|---|
-| Channel | `channel_flow/channel.vtk` | `channel_flow/channel_GTs.vtk` |
-| TBL | `tbl_flow/tbl.vtk` | `tbl_flow/tbl_GTs.vtk` |
+|Channel|`channel_flow/channel.vtk`|`channel_flow/channel_GTs.vtk`|
+|TBL|`tbl_flow/tbl.vtk`|`tbl_flow/tbl_GTs.vtk`|
 
-读取VTK的`point_data['velocity']`；GT为`cell_data['VortexIds']`，实例0有效，GT外记−1。坐标：x流向、y展向、z竖直，壁面在zmin。
+VTK速度为`point_data['velocity']`，GT为`cell_data['VortexIds']`，实例0有效、GT外−1。x流向、y展向、z竖直，壁面zmin。
 
-Ibex实验目录为`/ibex/user/zhanx0o/FMT_Task4C_InstanceCoverage_9p15_v2_20260915_formal`（科学提交`9769c68d`）。读取其下`outputs/mainExp_Task4C_InstanceCoverage_9.15_v2/physical/<flow>/<instance>/`：`geometry.npy`形状`[N,27,32,3]`；`metadata.npz`的`labels`为二分类、`counts`为有效线数（其后是补零）、`mandatory_head`标记必选head；`coverage.json`的`role`给出train/test。新模型沿用此划分。
+修正版Ibex目录：`/ibex/user/zhanx0o/FMT_Task4C_v2_Restored_20260915`。生成后读取其下`outputs/mainExp_Task4C_InstanceCoverage_9.15_v2/restored_4.14/physical/<flow>/<train|validation|test>/`：`geometry.npy [N,27,32,3]`、`seeds.npy`；`metadata.npz`中的`labels/counts/head_component/instance`给出标签、有效线数及来源。沿用固定集合。
 
-入口：[配置](../config/mainExp_Task4C_InstanceCoverage_9.15_v2.json) · [数据构建](../FMT_Utils/Task4C_InstanceCoverage_9_15_v2.py) · [训练接口](../experiments/Task4C_InstanceCoverage_9_15_v2.py)。
+比较p35/n0_k06与32³/36³/48³ Conv3D；恢复验证集选最佳轮次、平台降学习率和早停。入口：[配置](../config/mainExp_Task4C_InstanceCoverage_9.15_v2.json) · [数据](../FMT_Utils/Task4C_InstanceCoverage_9_15_v2.py) · [训练](../experiments/Task4C_InstanceCoverage_9_15_v2.py)。
 
-当前比较：p35逐特征均值＋最大值池化，最大半径归一化、训练集逐特征标准化、6个频率（含零频）；与参数量接近的32³/36³/48³ Conv3D共用几何和划分。
+## 3. 可视化
 
-## 3. 可视化分析
-
-本地打开`outputs/Other_Task4C_BundleVisualization_1.3/viewer/index.html`，须保留旁边的`geometry/`目录。可切换流场、集合、模型、实例和标准相机视角；分别控制两类数量，叠加半透明GT。Head特殊模式保留GT head附近的束（含漏检）＋Non-hairpin；分析勾选显示TP正确正类、TN正确负类、FP误报、FN漏检。
-
-**当前页面展示旧4.14数据；v2完成后以新几何和预测重新构建。** 查看器入口：[Visualize_Task4C_Bundles_3D.py](../experiments/Visualize_Task4C_Bundles_3D.py)，输入`viewer_package`后运行`build`。
+`outputs/Other_Task4C_BundleVisualization_1.3/viewer/index.html`及旁边`geometry/`目录：支持模型/集合/实例切换、两类数量、标准相机视角、半透明GT、Head模式及TP/TN/FP/FN分析色。**目前仍展示旧4.14结果，未混入废弃运行。**

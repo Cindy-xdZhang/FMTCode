@@ -1,7 +1,4 @@
 {
-  "version": "mainExp_Task4C_InstanceCoverage_9.15_v2",
-  "user_version": "task4-c-v9.15_v2",
-  "output": "outputs/mainExp_Task4C_InstanceCoverage_9.15_v2",
   "input_root": "/ibex/user/zhanx0o/FMT_Task4B_VelocityCurl_4p1_20260906/repo/inputs",
   "flows": [
     {
@@ -21,6 +18,78 @@
       "gt_sha256": "4fcd5efcfe13e10765095afec377b104d72c7092a646d39531f9bfbfc05c419e"
     }
   ],
+  "labels": {
+    "positive_minimum_single_instance_fraction": 0.5,
+    "negative": "no_head_cell_center_in_GT",
+    "ambiguous_partial_overlap": "exclude",
+    "source": "whole_head_center_GT_membership_including_instance_zero_not_paper_human_bundle_labels"
+  },
+  "bundles": {
+    "minimum_head_cells": 10,
+    "minimum_valid_lines": 10,
+    "points_per_line": 32,
+    "maximum_lines": 27,
+    "integration_domain": "full_native_vorticity_in_disjoint_partition_lambda2_and_oyf_for_seeds_only"
+  },
+  "sampling": {
+    "seed": 96601,
+    "per_flow_counts": {
+      "train": 44550,
+      "validation": 4950,
+      "test": 16500
+    },
+    "minimum_class_count": 16,
+    "maximum_center_rounds": 500,
+    "trace_batch_primitives": 64,
+    "neighbor_grid_scales": [
+      0.25,
+      0.5,
+      1.0
+    ],
+    "selection": "head_cycling_within_prespecified_local_spatial_cell_blocks",
+    "bottom_emphasis": "positive_heads_every_second_center_uses_lower_z_half_of_its_original_split_cells"
+  },
+  "local_split": {
+    "blocks_per_head": 5,
+    "block_roles": [
+      "train",
+      "train",
+      "train",
+      "validation",
+      "test"
+    ],
+    "block_axis": "first_principal_axis_of_whole_head_cell_centers",
+    "evaluation_min_distance_to_any_train_over_local_grid_scale": 1.0,
+    "evaluation_max_distance_to_same_head_train_over_local_grid_scale": 4.0,
+    "test_min_distance_to_validation_over_local_grid_scale": 0.5,
+    "shared_heads_instances_and_native_support": true,
+    "scale_tuples_identical_across_splits": true
+  },
+  "training": {
+    "seeds": [
+      96611,
+      96612,
+      96613
+    ],
+    "batch_size": 128,
+    "epochs": 500,
+    "patience": 50,
+    "learning_rate": 0.001,
+    "lr_patience": 15,
+    "selection": "validation_fixed_0.5_F1_then_average_precision",
+    "sampling": "all_training_rows_once_per_epoch_without_replacement",
+    "weight_decay": 0.0001,
+    "dropout": 0.15,
+    "threshold": 0.5,
+    "minimum_learning_rate": 1e-06,
+    "scheduler": "validation_loss_plateau_factor_0.5"
+  },
+  "version": "mainExp_Task4C_InstanceCoverage_9.15_v2",
+  "user_version": "task4-c-v9.15_v2",
+  "execution_revision": "restored_4.14",
+  "output": "outputs/mainExp_Task4C_InstanceCoverage_9.15_v2/restored_4.14",
+  "superseded_commit": "9769c68d5e74df837821f52e394560d3e6d87357",
+  "reference_config": "config/mainExp_Task4C_PhysicalLength_4.14.json",
   "integration": {
     "channel": [
       {
@@ -160,63 +229,7 @@
         5.5
       ]
     },
-    "mandatory_head_target": {
-      "channel": 0.1,
-      "tbl": 5.0
-    },
     "confirmed_by_user": true
-  },
-  "bundles": {
-    "minimum_valid_lines": 10,
-    "points_per_line": 32,
-    "maximum_lines": 27
-  },
-  "labels": {
-    "rule": "valid_seeds_single_instance_at_least_half_else_all_outside_else_exclude",
-    "confirmed_by_user": true,
-    "exact_half_ties": "exclude"
-  },
-  "sampling": {
-    "seed": 91520,
-    "split_seed": 91501,
-    "bbox_relative_padding": 0.1,
-    "bbox_minimum_grid_padding": 2,
-    "neighbor_grid_scales": [
-      0.125,
-      0.25,
-      0.5,
-      1.0
-    ],
-    "bundles_per_class_per_instance": 500,
-    "minimum_bundles_per_instance": 20,
-    "mandatory_head_bundles": 3,
-    "head_angle": "acos_abs_cosine_strictly_above_45_degrees",
-    "maximum_batches_per_stage": 10000,
-    "shards_per_flow": 8,
-    "split_policy": "overlapping_expanded_sampling_boxes_same_role_exact_7_channel_6_tbl_test_instances",
-    "line_split_guard": "all_retained_polyline_segments_must_avoid_opposite_role_GT_cells"
-  },
-  "methods": [
-    "p35",
-    "conv32",
-    "conv36",
-    "conv48"
-  ],
-  "training": {
-    "seeds": [
-      91511,
-      91512,
-      91513
-    ],
-    "epochs": 150,
-    "batch_size": 128,
-    "learning_rate": 0.001,
-    "minimum_learning_rate": 1e-05,
-    "weight_decay": 0.0001,
-    "dropout": 0.15,
-    "scheduler": "cosine_fixed_budget",
-    "threshold": 0.5,
-    "selection": "fixed_last_epoch_no_test_selection"
   },
   "encoding": {
     "batch_size": 32,
@@ -238,7 +251,6 @@
       "feature_dimensions": 141
     }
   },
-  "checkpoint_policy": "memory_only_no_weight_files",
   "model_parameters": {
     "p35": 76738,
     "conv3d": 72192,
@@ -246,19 +258,18 @@
     "conv_ratio_to_p35": 0.9407594672782715,
     "pool_implementation": "same_adaptive_mean_and_nonoverlapping_max_bins_with_deterministic_backward"
   },
+  "methods": [
+    "p35",
+    "conv32",
+    "conv36",
+    "conv48"
+  ],
   "expected_counts": {
-    "train": 119000,
-    "test": 13000,
+    "train": 89100,
+    "validation": 9900,
+    "test": 33000,
     "total": 132000
   },
-  "visualization": {
-    "export": "all_rows",
-    "head_mode": "GT_positive_and_head_center_plus_GT_negative",
-    "analysis_categories": [
-      "TP",
-      "TN",
-      "FP",
-      "FN"
-    ]
-  }
+  "whole_instance_holdout_count": 0,
+  "checkpoint_policy": "memory_only_no_weight_files"
 }
