@@ -133,6 +133,8 @@ def report(root, aborted):
     for index, row in enumerate(lock['ranking'], 1):
         p = pools[row['pool']]
         ranking.append(dict(rank=index, pool=row['pool'], profile=row['profile'],
+                            evaluation_split='validation', Task3_seed=spec['screen_seed'],
+                            Task5_seed=spec['screen_seed'], Task4C_seed=spec['screen_task4_seed'],
                             total_dimensions=p['feature_dimensions'], neighbor_dimensions=p['pooled_dimensions'],
                             operation=pool_description(p), composite_validation_f1=row['score'],
                             relative_validation_gain=row['score']/baseline_validation-1,
@@ -150,7 +152,7 @@ def report(root, aborted):
         '| h2 | 使用SiLU激活函数（输入乘以其sigmoid值）；学习率0.0005；Task3/5辅助分支dropout=0.05 |',
         '| h3 | 对中心、方向、邻居三个特征块分别作可学习的线性投影、LayerNorm归一化和GELU激活，再拼接；固定几何池化仍无参数 |', '',
         '原V8为p00/h0。p31与p40、p29与p45分别为等价映射，已验证对应结果完全一致；这些重复配置没有被计作不同表示进入前三名细化。', '',
-        '| 排名 | 配置 | 特征维数 | 邻居池化操作 | Task3 | Task5 | Task4-c | 等权均值 | 相对原V8 |',
+        '| 排名 | 配置 | 特征维数 | 邻居池化操作 | Task3验证F1（seed40） | Task5验证F1（seed40） | Task4-c验证F1（seed96611） | 验证等权均值 | 相对原V8验证 |',
         '|---:|---|---:|---|---:|---:|---:|---:|---:|']
     for r in ranking:
         ranking_lines.append(f"| {r['rank']} | {r['pool']}/{r['profile']} | {r['total_dimensions']} | {r['operation']} | {r['Task3_validation_f1']:.6f} | {r['Task5_validation_f1']:.6f} | {r['Task4C_validation_f1']:.6f} | {r['composite_validation_f1']:.6f} | {r['relative_validation_gain']:+.2%} |")
@@ -165,15 +167,16 @@ def report(root, aborted):
                   scientific_commit=summary['identity']['commit'],
                   report_code_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
     (root/'report_metrics.json').write_text(json.dumps(result, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
-    lines=['# FMT v8.2池化与训练搜索结果', '',
+    lines=['# FMT v8池化与训练搜索2.2：最终测试结果', '',
            f"选定`{selected[0]}/{selected[1]}`：{result['selected_operation']}。输入为中心频域23＋方向频谱72＋邻居池化{pools[selected[0]]['pooled_dimensions']}，共{pools[selected[0]]['feature_dimensions']}维。", '',
-           '| 任务 | 本批原V8 | 选定方法 | 相对变化 | 配对差值均值 ± 标准差 |',
+           '本页F1均为最终测试：Task3/5种子44、45、46；Task4-c种子96621、96622、96623。验证搜索排名另见validation_rankings.md。', '',
+           '| 任务 | 原V8测试F1（三种子） | 选定方法测试F1（三种子） | 测试相对变化 | 测试配对差值均值 ± 标准差 |',
            '|---|---:|---:|---:|---:|']
     for row in paired:
         lines.append(f"| {row['task']} | {format_moments(row['baseline'])} | {format_moments(row['selected'])} | {row['relative_change']:+.2%} | {format_moments(row['paired_absolute_change'])} |")
     lines += ['',f"三任务等权测试F1：{original:.6f} → {current:.6f}，相对变化{current/original-1:+.2%}。", '',
               '标准差来自三个优化随机种子，不能解释为独立物理流场泛化的不确定性。选择只使用验证集；测试是此前已使用的benchmark。', '',
-              '| 任务/流场 | 本批原V8 | 选定方法 |', '|---|---:|---:|']
+              '| 任务/流场 | 原V8测试F1（三种子） | 选定方法测试F1（三种子） |', '|---|---:|---:|']
     for task in ('Task3','Task5'):
         datasets=sorted({r['dataset'] for r in flow if r['task']==task})
         for dataset in datasets:
