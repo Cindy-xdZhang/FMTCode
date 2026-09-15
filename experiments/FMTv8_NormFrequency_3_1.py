@@ -91,8 +91,14 @@ def feature_arrays(data,definition,task):
     geometry=data['geometry'] if task=='Task4C' else data['raw']
     for start in range(0,len(geometry),batch):
         sl=slice(start,start+batch)
-        extra={} if task!='Task4C' else dict(seeds=np.array(data['seeds'][sl]),counts=np.array(data['counts'][sl]))
-        result.append(encode(np.array(geometry[sl]),definition,**extra).numpy())
+        if task=='Task4C':
+            # The original 4.14 encoder selected neighbors on V100 in batches of 32.
+            # CPU distance rounding can change ties and therefore the six input lines.
+            g=torch.as_tensor(np.array(geometry[sl]),device='cuda')
+            extra=dict(seeds=torch.as_tensor(np.array(data['seeds'][sl]),device='cuda'),
+                       counts=torch.as_tensor(np.array(data['counts'][sl]),device='cuda'))
+        else:g=np.array(geometry[sl]);extra={}
+        result.append(encode(g,definition,**extra).cpu().numpy())
     return np.concatenate(result)
 
 
@@ -344,13 +350,33 @@ def preflight(spec,config):
     from unittest.mock import patch
     base,b4=parents(spec);base=copy.deepcopy(base);b4=copy.deepcopy(b4)
     base['training'].update(max_epochs=1,patience=1);b4['training'].update(epochs=1,patience=1)
-    fixtures={}
+    fixtures={};source_device_check=None
     for task,dataset in (('Task3',base['datasets'][0]),('Task4C','channel_tbl')):
         data,_=read_source(spec,task,dataset,'train');ids={c:np.flatnonzero(data['labels']==c) for c in (0,1)}
+        if task=='Task4C':
+            from FMT_Utils.Task4C_LinePooling_4_3 import line_fmt
+            parts=[];changed_sets=0
+            for flow in (0,1):
+                selected=np.flatnonzero(data['flow_index']==flow)[:32]
+                g=torch.as_tensor(data['geometry'][selected],device='cuda')
+                s=torch.as_tensor(data['seeds'][selected],device='cuda')
+                c=torch.as_tensor(data['counts'][selected].astype(np.int64),device='cuda')
+                frozen=line_fmt(g,s,c).cpu().numpy()
+                expected=np.concatenate((data['source'][selected],data['mask'][selected]),-1)
+                assert np.array_equal(frozen,expected),('Original V100 feature reproduction failed',float(np.max(np.abs(frozen-expected))))
+                neighbor_sets=[]
+                for device in ('cpu','cuda'):
+                    seeds=s.to(device);mask=torch.arange(27,device=device)[None]<c.to(device)[:,None]
+                    distance=torch.cdist(seeds,seeds);distance.masked_fill_(~mask[:,None,:],torch.inf)
+                    distance.diagonal(dim1=1,dim2=2).fill_(torch.inf)
+                    neighbor_sets.append(torch.argsort(distance,dim=-1,stable=True)[...,:6].sort(-1).values.cpu().numpy())
+                changed_sets+=int(((neighbor_sets[0]!=neighbor_sets[1]).any(-1)&(data['mask'][selected,...,0]>.5)).sum())
+                parts.append(dict(flow_index=flow,samples=32,frozen_v100_features_exact=True))
+            source_device_check=dict(parts=parts,cpu_changed_neighbor_sets=changed_sets,batch_size=32,selected_device='V100')
         n=64 if task=='Task3' else 32
         slices={'train':np.r_[ids[0][:n],ids[1][:n]],'validation':np.r_[ids[0][n:n+16],ids[1][n:n+16]]}
         fixtures[task]={role:{key:values[ix] for key,values in data.items()} for role,ix in slices.items()}
-    smoke=Path(spec['output'])/'engineering_smoke'
+    smoke=Path(spec['output'])/'engineering_smoke'/('attempt'+str(spec.get('execution_revision',1)))
     with patch(__name__+'.parents',return_value=(base,b4)),patch('experiments.FMTv8_Search_2_2.parents',return_value=(base,b4)):
         backbones=smoke/'temporary_backbones'
         train_backbones(spec,'Task3',base['datasets'][0],0,fixtures['Task3']['train'],fixtures['Task3']['validation'],backbones)
@@ -361,8 +387,8 @@ def preflight(spec,config):
             folder=smoke/'Task4C'/definition['id']
             task4_fit(spec,config,0,definition,'h0',fixtures['Task4C'],folder);audit_validation(folder)
     cleanup_weights(spec,smoke)
-    write(Path(spec['output'])/'preflight.json',dict(status='PASS',identity=identity(config),checks=checks,
-        frozen_p35_composition_exact=True,real_training_only_smoke=True,test_read=False))
+    write(Path(spec['output'])/f"preflight_r{spec.get('execution_revision',1)}.json",dict(status='PASS',identity=identity(config),checks=checks,
+        frozen_p35_composition_exact=True,real_training_only_smoke=True,source_device_check=source_device_check,test_read=False))
 
 
 def runtime(spec,config,phase,state,code=None):

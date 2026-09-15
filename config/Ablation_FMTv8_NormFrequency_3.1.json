@@ -19,7 +19,7 @@
     "cublas_workspace_config": ":4096:8"
   },
   "version": "Ablation_FMTv8_NormFrequency_3.1",
-  "output": "outputs/Ablation_FMTv8_NormFrequency_3.1",
+  "output": "/ibex/user/zhanx0o/FMT_V8NormFrequency_20260915/outputs/Ablation_FMTv8_NormFrequency_3.1",
   "p35_reference": "/ibex/user/zhanx0o/FMT_V8Search_Deterministic_20260915/outputs/Ablation_FMTv8_Search_2.2",
   "task4_preparation_hashes": {
     "channel": "d51706ac5fd8501a05b14cfeffc3715303352c1827e80262c29ba91caf4ef988",
@@ -194,5 +194,9 @@
       "frequencies": 16,
       "feature_dimensions": 381
     }
-  ]
+  ],
+  "execution_revision": 2,
+  "task4_encoder_device": "V100, batch32, identical to frozen 4.14 nearest-neighbor selection",
+  "prepared_cache_science_commit": "0d77e3e57957393d82008a5a0ce8befcf45134a2",
+  "revision_reason": "CPU distance rounding changed frozen Task4C neighbor sets; no candidate search began; retain all first-revision preflight and scheduling evidence"
 }
