@@ -104,11 +104,13 @@ def plate(root,out,summary,flow,scale,seed,source_root):
     xlabel,ylabel=('y','x') if transpose else ('x','y')
     width,height=extent[1]-extent[0],extent[3]-extent[2]
     transform=lambda a:a.T if transpose else a
-    plot_width_mm=72.;plot_height_mm=plot_width_mm*height/width
-    figure_height=6*plot_height_mm+61
+    plot_width_mm=180*(.965-.11)/(2+.24)
+    plot_height_mm=plot_width_mm*height/width
+    row_gap_mm=8.
+    figure_height=6*plot_height_mm+5*row_gap_mm+45
     fig,axes=plt.subplots(6,2,figsize=(180/25.4,figure_height/25.4))
     fig.subplots_adjust(left=.11,right=.965,bottom=30/figure_height,
-                        top=1-15/figure_height,wspace=.24,hspace=6/plot_height_mm)
+                        top=1-15/figure_height,wspace=.24,hspace=row_gap_mm/plot_height_mm)
     ftle_cmap=plt.get_cmap('viridis').copy();ftle_cmap.set_bad('#E5E5E5')
     error_cmap=plt.get_cmap('magma').copy();error_cmap.set_bad('#E5E5E5')
     vmin=min(float(truth[mask].min()),*(float(d['prediction'][mask].min()) for d in arrays.values()))
@@ -137,10 +139,12 @@ def plate(root,out,summary,flow,scale,seed,source_root):
             ax.set_title(title,fontsize=7,loc='left',pad=4)
             ax.set_xticks([extent[0],extent[1]]);ax.set_yticks([extent[2],extent[3]])
             ax.tick_params(labelsize=6,pad=1,length=2)
+            if i<5:ax.tick_params(labelbottom=False)
             if i==5:ax.set_xlabel(xlabel,labelpad=2)
             ax.set_ylabel(ylabel,labelpad=2,rotation=0,rotation_mode='anchor',va='center')
             panel_label(ax,chr(97+2*i+j))
-    fig.suptitle(f'{FLOW_NAMES[flow]} | {scale}× | first test slice | seed {seed}',fontsize=9,y=1-3/figure_height)
+    t0,t1=row['integration']['t0'],row['integration']['t1']
+    fig.suptitle(f'{FLOW_NAMES[flow]} | {scale}× | t = {t0:.3f} to {t1:.3f} | seed {seed}',fontsize=9,y=1-3/figure_height)
     cax1=fig.add_axes([.15,13/figure_height,.30,2.4/figure_height])
     cax2=fig.add_axes([.64,13/figure_height,.30,2.4/figure_height])
     for image,cax,label in zip(images,[cax1,cax2],['FTLE','Absolute FTLE error']):

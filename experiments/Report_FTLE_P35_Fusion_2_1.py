@@ -41,7 +41,10 @@ def final_report(root):
              arch+'_signed':'同结构保线身份傅里叶',arch+'_p35':'P35',selected:'选定P35融合'}
     text=['# FTLE P35 2.1：固定方案的测试结果','',
           f'统一方法为`{selected}`，由开发集选择并锁定。三种子为`{lock["seeds"]}`。',
+          'P35先对五线簇实际作傅里叶变换，再连接中心特征与四邻居逐特征均值、最大值。低FTLE只保留末端最大拉伸率，线簇表示则提供更多变形信息；傅里叶变换本身不创造新的观测。',
+          '选定连接方式：低FTLE与103维p35分别映射到48通道 → 局部残差卷积与有效区域全局均值/最大值 → 不同膨胀率卷积 → 像素重排 → 加双三次插值并保持已知格点。大部分卷积在低网格执行。',
           '评价使用训练和本轮候选选择未读过的时间块，完整积分窗与源帧支撑跨集合隔离；该test是1.1/1.2已使用的历史benchmark，不称全新的开发确认集。',
+          'ESPCN为Efficient Sub-Pixel Convolutional Neural Network（高效亚像素卷积神经网络）；U-Net为带跳接的编码器—解码器网络。PSNR为峰值信噪比，越大表示相对于固定训练值域的平方误差越小。',
           '', '| 方法 | 4× PSNR (dB) | 8× PSNR (dB) | 参数量 |', '|---|---:|---:|---:|']
     def get(flow,scale,name):
         return next(r for r in summary['summary'] if r['flow']==flow and r['scale']==scale and r['method']==name and r['split']=='test')
@@ -68,6 +71,21 @@ def final_report(root):
            '', '## 复现与成本','',
            f'最终科学commit：`{audit["provenance"]["commit"]}`。审计复算{audit["trainings"]}次训练、{audit["predictions_recomputed"]}份预测，全部PASS。没有模型文件。',
            '精确分割、预测、完整指标、每次最佳轮次/步骤、设备和配置哈希保留在运行记录中。实际设备上的训练成本及包含标准化/传输的验证推断时间见per_run.csv；特征编码与文件读取时间按进程记录，不计为网络纯推断时间。开发在CPU进行，最终评测在可用GPU进行；每个流场、倍率和种子内所有方法共用同一设备。']
+    text+=['', '| 方法 | 4×训练/推断 (s / ms每帧) | 8×训练/推断 (s / ms每帧) |', '|---|---:|---:|']
+    for name in names:
+        values=[get('macro',scale,name) for scale in (4,8)]
+        text.append('| '+display[name]+' | '+' | '.join(f'{r["training_seconds_mean"]:.2f} / {1000*r["inference_seconds_per_slice_mean"]:.2f}' for r in values)+' |')
+    devices={}
+    for file in (final/'runs').glob('*/*/result.json'):
+        device=read(file)['provenance']['device'];devices[device]=devices.get(device,0)+1
+    text+=['','实际GPU与训练次数：'+', '.join(f'{name}: {count}' for name,count in sorted(devices.items()))+'。',
+           '本表描述本次实际设备上的执行成本，不能与历史不同设备的耗时直接比较。几何预计算不包含在上述网络推断计时中。最终执行为保证对照一致，一次编码全部几何表示；该编码总耗时不能当作部署时仅计算p35的必要成本。']
+    text+=['','## 图与原始指标','',
+           '[配对增益图](figures/paired_gains.pdf)；[逐次指标](per_run.csv)；[均值与标准差](summary.csv)。',
+           '', '| 流场 | 4×首个测试切片 | 8×首个测试切片 |', '|---|---|---|']
+    for flow in flows:
+        text.append(f'| {flow} | [图](figures/{flow}_x4.pdf) | [图](figures/{flow}_x8.pdf) |')
+    text+=['','每幅图统一使用seed98211和首个测试切片，同时展示参考、评价区域、五方法预测及绝对误差。所有色标在同图方法间共享，未裁去误差异常值。']
     (final/'report.md').write_text('\n'.join(text)+'\n',encoding='utf-8')
 
 

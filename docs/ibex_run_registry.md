@@ -10652,3 +10652,77 @@ v9.15预检51907304失败于自适应平均池化CUDA反向确定性要求，47�
 
 51908979在V100 gpu609-09完成0:0：p35及32³/36³/48³的前向、反向、优化步骤、体素还原和两个池化的独立CPU参考梯度均PASS。正式数据构建仍未提交，等待单向/双向长度确认。
 <!-- /task4c-v915-v2 -->
+
+
+<!-- ftlep35-final-registry-2.1-begin -->
+## FTLE P35 fusion 2.1 — final accounting, 2026-09-15
+
+57 registered processes:44 completed,1 failed original numerical audit retained,12 cancelled before starting. All90 runtime events match accounting. Runtime auditor PASS denotes complete accounting, not that the failed audit succeeded.
+Configuration A: config/Other_FTLEP35Fusion_2.1.json, SHA256 5f544b05427afb01f42d94844463844ad2cecb24d6088455258e583a4ee4a88a.
+Configuration B: config/Other_FTLEP35Fusion_2.1_final.json, SHA256 334e2e0051896b9999723112bab8dc908ad4618a64f07d600a241d282bc806b4.
+Scientific commits:52ec9d8b9be9444a2b49da1b0c0995602562fd4f (development); fbd89e090a1ed23544326b8f59cedd4af6179a4b (CUDA verification); f0993a58fe744de94991341ee118594e832ba2ed (revised audit/final).
+All timestamps below are UTC; complete commands, resource adjustments and their rejected attempt are preserved in outputs/Other_FTLEP35Fusion_2.1. Final source, prediction and metric checks PASS, no checkpoint files.
+
+| Job | Phase | Submitted | Started | Ended | Node / actual device | State / exit | Commit / config |
+|---|---|---|---|---|---|---|---|
+| 51907435 | preflight | 2026-09-15T12:24:53 | 2026-09-15T12:24:56 | 2026-09-15T12:25:07 | cn511-12 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51907436_0 | prepare | 2026-09-15T12:24:53 | None | 2026-09-15T12:39:41 | None assigned / Never started | CANCELLED by 178058 / 0:0 | 52ec9d8b / A |
+| 51907436_1 | prepare | 2026-09-15T12:24:53 | None | 2026-09-15T12:39:41 | None assigned / Never started | CANCELLED by 178058 / 0:0 | 52ec9d8b / A |
+| 51907436_2 | prepare | 2026-09-15T12:24:53 | None | 2026-09-15T12:39:41 | None assigned / Never started | CANCELLED by 178058 / 0:0 | 52ec9d8b / A |
+| 51907436_3 | prepare | 2026-09-15T12:24:53 | None | 2026-09-15T12:39:41 | None assigned / Never started | CANCELLED by 178058 / 0:0 | 52ec9d8b / A |
+| 51907437 | audit-data | 2026-09-15T12:24:53 | 2026-09-15T12:40:02 | 2026-09-15T12:40:15 | cn604-08 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51907438_0 | search | 2026-09-15T12:24:53 | None | 2026-09-15T12:51:08 | None assigned / Never started | CANCELLED by 178058 / 0:0 | 52ec9d8b / A |
+| 51907438_1 | search | 2026-09-15T12:24:53 | None | 2026-09-15T12:51:08 | None assigned / Never started | CANCELLED by 178058 / 0:0 | 52ec9d8b / A |
+| 51907438_2 | search | 2026-09-15T12:24:53 | None | 2026-09-15T12:51:08 | None assigned / Never started | CANCELLED by 178058 / 0:0 | 52ec9d8b / A |
+| 51907438_3 | search | 2026-09-15T12:24:53 | None | 2026-09-15T12:51:08 | None assigned / Never started | CANCELLED by 178058 / 0:0 | 52ec9d8b / A |
+| 51907438_4 | search | 2026-09-15T12:24:53 | None | 2026-09-15T12:51:08 | None assigned / Never started | CANCELLED by 178058 / 0:0 | 52ec9d8b / A |
+| 51907438_5 | search | 2026-09-15T12:24:53 | None | 2026-09-15T12:51:08 | None assigned / Never started | CANCELLED by 178058 / 0:0 | 52ec9d8b / A |
+| 51907438_6 | search | 2026-09-15T12:24:53 | None | 2026-09-15T12:51:08 | None assigned / Never started | CANCELLED by 178058 / 0:0 | 52ec9d8b / A |
+| 51907438_7 | search | 2026-09-15T12:24:53 | None | 2026-09-15T12:51:08 | None assigned / Never started | CANCELLED by 178058 / 0:0 | 52ec9d8b / A |
+| 51907439 | select | 2026-09-15T12:24:53 | 2026-09-15T13:43:17 | 2026-09-15T13:43:27 | cn113-35-l / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51907440 | audit-results | 2026-09-15T12:24:53 | 2026-09-15T13:43:29 | 2026-09-15T13:43:39 | cn113-35-l / CPU | FAILED / 1:0 | 52ec9d8b / A |
+| 51907757_0 | prepare | 2026-09-15T12:39:40 | 2026-09-15T12:39:41 | 2026-09-15T12:40:00 | cn604-08 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51907757_1 | prepare | 2026-09-15T12:39:40 | 2026-09-15T12:39:41 | 2026-09-15T12:39:58 | cn604-04 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51907757_2 | prepare | 2026-09-15T12:39:40 | 2026-09-15T12:39:41 | 2026-09-15T12:39:53 | cn511-18 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51907757_3 | prepare | 2026-09-15T12:39:40 | 2026-09-15T12:39:41 | 2026-09-15T12:39:57 | cn511-10 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51908130_0 | search | 2026-09-15T12:51:08 | 2026-09-15T12:51:09 | 2026-09-15T13:14:37 | cn604-08 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51908130_1 | search | 2026-09-15T12:51:08 | 2026-09-15T12:51:09 | 2026-09-15T12:52:18 | cn604-08 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51908130_2 | search | 2026-09-15T12:51:08 | 2026-09-15T12:51:09 | 2026-09-15T13:10:56 | cn604-08 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51908130_3 | search | 2026-09-15T12:51:08 | 2026-09-15T12:51:09 | 2026-09-15T12:51:40 | cn604-08 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51908130_4 | search | 2026-09-15T12:51:08 | 2026-09-15T12:51:09 | 2026-09-15T13:43:15 | cn604-08 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51908130_5 | search | 2026-09-15T12:51:08 | 2026-09-15T12:51:09 | 2026-09-15T12:52:24 | cn604-06 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51908130_6 | search | 2026-09-15T12:51:08 | 2026-09-15T12:51:09 | 2026-09-15T12:52:04 | cn604-04 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51908130_7 | search | 2026-09-15T12:51:08 | 2026-09-15T12:51:09 | 2026-09-15T12:52:10 | cn604-04 / CPU | COMPLETED / 0:0 | 52ec9d8b / A |
+| 51908968 | cuda-verification | 2026-09-15T13:26:16 | 2026-09-15T13:26:24 | 2026-09-15T13:26:52 | gpu502-11 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | fbd89e09 / A |
+| 51909831 | audit-results-v2 | 2026-09-15T13:51:05 | 2026-09-15T13:51:08 | 2026-09-15T13:52:31 | cn604-18 / CPU | COMPLETED / 0:0 | f0993a58 / A |
+| 51909946 | preflight | 2026-09-15T13:54:07 | 2026-09-15T13:55:05 | 2026-09-15T13:55:14 | cn113-35-l / CPU | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_0 | train | 2026-09-15T13:54:07 | 2026-09-15T13:57:19 | 2026-09-15T13:58:23 | gpu502-22 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_1 | train | 2026-09-15T13:54:07 | 2026-09-15T13:57:19 | 2026-09-15T13:58:41 | dgpu501-22 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_2 | train | 2026-09-15T13:54:07 | 2026-09-15T13:57:19 | 2026-09-15T13:58:41 | dgpu501-22 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_3 | train | 2026-09-15T13:54:07 | 2026-09-15T13:57:19 | 2026-09-15T13:58:40 | dgpu501-18 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_4 | train | 2026-09-15T13:54:07 | 2026-09-15T13:57:19 | 2026-09-15T13:58:40 | dgpu501-18 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_5 | train | 2026-09-15T13:54:07 | 2026-09-15T13:57:19 | 2026-09-15T13:58:30 | dgpu501-10 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_6 | train | 2026-09-15T13:54:07 | 2026-09-15T13:57:19 | 2026-09-15T13:58:05 | dgpu501-10 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_7 | train | 2026-09-15T13:54:07 | 2026-09-15T13:57:19 | 2026-09-15T13:58:11 | dgpu501-02 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_8 | train | 2026-09-15T13:54:07 | 2026-09-15T13:59:33 | 2026-09-15T14:00:13 | gpu502-22 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_9 | train | 2026-09-15T13:54:07 | 2026-09-15T13:59:33 | 2026-09-15T14:00:13 | gpu502-11 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_10 | train | 2026-09-15T13:54:07 | 2026-09-15T13:59:33 | 2026-09-15T14:00:13 | gpu502-11 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_11 | train | 2026-09-15T13:54:07 | 2026-09-15T13:59:33 | 2026-09-15T14:00:24 | gpu502-06 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_12 | train | 2026-09-15T13:54:07 | 2026-09-15T13:59:33 | 2026-09-15T14:00:44 | gpu502-06 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_13 | train | 2026-09-15T13:54:07 | 2026-09-15T13:59:33 | 2026-09-15T14:00:52 | dgpu501-22 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_14 | train | 2026-09-15T13:54:07 | 2026-09-15T13:59:33 | 2026-09-15T14:00:49 | dgpu501-22 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_15 | train | 2026-09-15T13:54:07 | 2026-09-15T13:59:33 | 2026-09-15T14:00:43 | dgpu501-22 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_16 | train | 2026-09-15T13:54:07 | 2026-09-15T14:01:45 | 2026-09-15T14:02:29 | gpu502-22 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_17 | train | 2026-09-15T13:54:07 | 2026-09-15T14:01:45 | 2026-09-15T14:02:29 | gpu502-22 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_18 | train | 2026-09-15T13:54:07 | 2026-09-15T14:01:45 | 2026-09-15T14:02:27 | gpu502-11 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_19 | train | 2026-09-15T13:54:07 | 2026-09-15T14:01:45 | 2026-09-15T14:02:19 | gpu502-11 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_20 | train | 2026-09-15T13:54:07 | 2026-09-15T14:01:45 | 2026-09-15T14:02:24 | gpu502-06 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_21 | train | 2026-09-15T13:54:07 | 2026-09-15T14:01:45 | 2026-09-15T14:02:43 | gpu502-06 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_22 | train | 2026-09-15T13:54:07 | 2026-09-15T14:01:45 | 2026-09-15T14:03:02 | dgpu501-22 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909947_23 | train | 2026-09-15T13:54:07 | 2026-09-15T14:01:45 | 2026-09-15T14:02:59 | dgpu501-22 / NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 | f0993a58 / B |
+| 51909948 | merge | 2026-09-15T13:54:07 | 2026-09-15T14:03:58 | 2026-09-15T14:04:05 | cn604-18 / CPU | COMPLETED / 0:0 | f0993a58 / B |
+| 51909949 | audit | 2026-09-15T13:54:07 | 2026-09-15T14:06:11 | 2026-09-15T14:06:56 | cn604-15 / CPU | COMPLETED / 0:0 | f0993a58 / B |
+
+The original audit51907440 failed solely at its over-strict float32-derived normalization check;51909831 recomputed statistics using an independent float64 reference and propagated rounding bounds. All88 development fits and their selected method stayed unchanged. Final144 fits used one common GTX1080Ti device per paired flow/scale/seed. Method-level interpretation is recorded only in experiment_log.
+<!-- ftlep35-final-registry-2.1-end -->
+
