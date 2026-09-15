@@ -30,7 +30,9 @@ article{display:flex;flex-direction:column;min-width:0}.metrics{padding:15px 23p
 <label class="control">查看集合<select id="split"><option value="test">测试集</option><option value="train">训练集</option></select></label>
 <label class="control">分类模型<select id="model"></select></label>
 <label class="control">真实标注区域<select id="region"><option value="all">全部标注区域</option></select></label>
-<label class="control"><span class="row"><span>显示线簇</span><span id="countText"></span></span><input id="count" type="range" min="10" max="240" step="10" value="100"></label>
+<label class="control"><span class="row"><span>Hairpin 线簇数量</span><span id="hairpinCountText"></span></span><input id="hairpinCount" type="range" min="0" max="240" step="1" value="50"></label>
+<label class="control"><span class="row"><span>Non-hairpin 线簇数量</span><span id="nonhairpinCountText"></span></span><input id="nonhairpinCount" type="range" min="0" max="240" step="1" value="50"></label>
+<div class="muted">数量按当前模型的预测类别分别控制；上限为当前区域中已载入的该类线簇数。</div>
 <div class="section">
 <label class="check"><input id="hairpin" type="checkbox" checked>显示预测 Hairpin</label>
 <label class="check"><input id="nonhairpin" type="checkbox" checked>显示预测 Non-hairpin</label>
@@ -44,13 +46,14 @@ article{display:flex;flex-direction:column;min-width:0}.metrics{padding:15px 23p
 </aside><article>
 <div class="metrics"><div class="metric"><small id="metricLabel">完整流场测试集 F1</small><strong id="f1">—</strong></div><div class="metric"><small>当前显示 / 可查看</small><strong id="shown">—</strong></div><div class="metric"><small>该流场集合总量</small><strong id="population">—</strong></div><div class="metric note" id="modelNote"></div></div>
 <div id="plot" aria-label="按二分类着色的三维涡线簇与半透明真实标注曲面"></div>
-<footer>F1使用该流场的完整集合，阈值固定为0.5；展示样本仅按空间位置抽取，未依据标签或预测挑选。真实标签属于候选头区，线簇可延伸到标注曲面外。坐标与长宽比例保持物理尺度，z向上。</footer>
+<footer id="evidenceNote">F1使用该流场的完整集合，阈值固定为0.5；展示样本仅按空间位置抽取，未依据标签或预测挑选。真实标签属于候选头区，线簇可延伸到标注曲面外。坐标与长宽比例保持物理尺度，z向上。</footer>
 </article></main>
 <script>
 'use strict';
 const DATA=/*__PAYLOAD__*/;
 const $=id=>document.getElementById(id);
-const state={flow:'channel',split:'test',model:DATA.models[0].id,selected:null,focus:false,revision:0};
+if(DATA.evidence_note)$('evidenceNote').textContent=DATA.evidence_note;
+const state={flow:'channel',split:'test',model:DATA.models[0].id,selected:null,focus:false,revision:0,counts:{hairpin:Math.ceil(DATA.display_bundles/2),nonhairpin:Math.floor(DATA.display_bundles/2)}};
 function unpack(a){const binary=atob(a.data), bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);return a.dtype==='float32'?new Float32Array(bytes.buffer):new Int32Array(bytes.buffer);}
 function columns(p){const n=p.length/3,x=new Float32Array(n),y=new Float32Array(n),z=new Float32Array(n);for(let i=0;i<n;i++){x[i]=p[i*3];y[i]=p[i*3+1];z[i]=p[i*3+2];}return {x,y,z};}
 for(const [name,flow] of Object.entries(DATA.flows)){
@@ -60,7 +63,8 @@ for(const [name,flow] of Object.entries(DATA.flows)){
 }
 for(const model of DATA.models){const option=new Option(model.label,model.id);$('model').add(option);}
 if(DATA.pending.length)$('pending').textContent='尚未完成、暂未载入：'+DATA.pending.map(m=>m.label).join('；');
-$('count').value=DATA.display_bundles;
+$('hairpinCount').value=Math.ceil(DATA.display_bundles/2);
+$('nonhairpinCount').value=Math.floor(DATA.display_bundles/2);
 function current(){return DATA.flows[state.flow].splits[state.split];}
 function gtBounds(instance){const gt=DATA.flows[state.flow].gt;if(instance==='all')return gt.bounds.slice();const b=[Infinity,-Infinity,Infinity,-Infinity,Infinity,-Infinity];for(let f=0;f<gt.instanceIds.length;f++){if(gt.instanceIds[f]!==+instance)continue;for(let j=0;j<3;j++){let p=gt.triangles[f*3+j];for(let a=0;a<3;a++){const v=gt.xyz[['x','y','z'][a]][p];b[2*a]=Math.min(b[2*a],v);b[2*a+1]=Math.max(b[2*a+1],v);}}}return b;}
 function bundleBounds(indices){const split=current(),b=[Infinity,-Infinity,Infinity,-Infinity,Infinity,-Infinity];for(const idx of indices)for(let k=0;k<split.counts[idx]*32;k++)for(let a=0;a<3;a++){let v=split.xyz[idx*27*32*3+k*3+a];b[2*a]=Math.min(b[2*a],v);b[2*a+1]=Math.max(b[2*a+1],v);}return b;}
@@ -71,14 +75,19 @@ function meshTrace(region){const gt=DATA.flows[state.flow].gt,i=[],j=[],k=[];for
 function lineTrace(indices,positive){const s=current(),x=[],y=[],z=[];for(const id of indices){if((s.probabilities[state.model][id]>=.5)!==positive)continue;for(let line=0;line<s.counts[id];line++){for(let p=0;p<32;p++){const a=(id*27*32+line*32+p)*3;x.push(s.xyz[a]);y.push(s.xyz[a+1]);z.push(s.xyz[a+2]);}x.push(null);y.push(null);z.push(null);}}return {type:'scatter3d',mode:'lines',x,y,z,line:{color:positive?DATA.colors.hairpin:DATA.colors.non_hairpin,width:2.4},hoverinfo:'skip',showlegend:false,name:positive?'Predicted Hairpin':'Predicted Non-hairpin',connectgaps:false};}
 function centerTrace(indices){const s=current();return {type:'scatter3d',mode:'markers',x:indices.map(i=>s.center[i][0]),y:indices.map(i=>s.center[i][1]),z:indices.map(i=>s.center[i][2]),customdata:indices.map(i=>[i,s.row_ids[i],s.probabilities[state.model][i],s.labels[i]?'Hairpin':'Non-hairpin']),marker:{size:3,color:indices.map(i=>s.probabilities[state.model][i]>=.5?DATA.colors.hairpin:DATA.colors.non_hairpin),opacity:.9},hovertemplate:'线簇 %{customdata[1]}<br>P(Hairpin) = %{customdata[2]:.3f}<br>真实束标签：%{customdata[3]}<extra></extra>',showlegend:false,name:'Bundle centers'};}
 function groundPlane(bounds){const z=DATA.flows[state.flow].domain[4];return {type:'mesh3d',x:[bounds[0],bounds[1],bounds[1],bounds[0]],y:[bounds[2],bounds[2],bounds[3],bounds[3]],z:[z,z,z,z],i:[0,0],j:[1,2],k:[2,3],color:'#e3e8e0',opacity:.15,hoverinfo:'skip',showlegend:false,flatshading:true};}
-function selectedDetails(id){const s=current(),p=s.probabilities[state.model][id];state.selected=id;$('focus').disabled=false;$('detail').innerHTML='<strong>线簇 '+s.row_ids[id]+'</strong><br>预测：'+(p>=.5?'Hairpin':'Non-hairpin')+'<br>真实束标签：'+(s.labels[id]?'Hairpin':'Non-hairpin')+'<br><span class="value">P(Hairpin) = '+p.toFixed(4)+'</span><br>'+s.counts[id]+' 条有效线 · 尺度 '+s.scale_id[id];}
+function selectedDetails(id){const s=current(),p=s.probabilities[state.model][id];state.selected=id;$('focus').disabled=false;$('detail').innerHTML='<strong>线簇 '+s.row_ids[id]+'</strong><br>预测：'+(p>=.5?'Hairpin':'Non-hairpin')+'<br>真实束标签：'+(s.labels[id]?'Hairpin':'Non-hairpin')+'<br><span class="value">P(Hairpin) = '+p.toFixed(4)+'</span><br>'+s.counts[id]+' 条有效线 · 尺度 '+s.scale_id[id]+(s.owner_instance?'<br>附近实例：'+s.owner_instance[id]:'')+(s.mandatory_head&&s.mandatory_head[id]?'<br>必选 head 线束':'');}
 async function render(reset=false){
  const s=current(),model=DATA.models.find(m=>m.id===state.model),region=$('region').value;
- $('status').textContent='更新场景…';$('count').max=s.selected;$('countText').textContent=$('count').value+' 束';$('opacityText').textContent=$('opacity').value+'%';
+ $('status').textContent='更新场景…';$('opacityText').textContent=$('opacity').value+'%';
  let indices=Array.from({length:s.selected},(_,i)=>i),roi=null;
  if(region!=='all'){roi=pad(gtBounds(region),.25);indices=indices.filter(i=>s.center[i].every((v,a)=>v>=roi[a*2]&&v<=roi[a*2+1]));}
  if(state.focus&&state.selected!==null){roi=pad(bundleBounds([state.selected]),.45);indices=indices.filter(i=>s.center[i].every((v,a)=>v>=roi[a*2]&&v<=roi[a*2+1]));indices=[state.selected,...indices.filter(i=>i!==state.selected)];}
- indices=indices.slice(0,+$('count').value).filter(i=>s.probabilities[state.model][i]>=.5?$('hairpin').checked:$('nonhairpin').checked);
+ const positive=indices.filter(i=>s.probabilities[state.model][i]>=.5),negative=indices.filter(i=>s.probabilities[state.model][i]<.5);
+ for(const [name,available] of [['hairpin',positive.length],['nonhairpin',negative.length]]){
+  const control=$(name+'Count');control.max=available;control.value=Math.min(state.counts[name],available);
+  $(name+'CountText').textContent=($(name).checked?control.value:0)+' / '+available;
+ }
+ indices=selectClassIndices(indices,s.probabilities[state.model],$('hairpin').checked?+$('hairpinCount').value:0,$('nonhairpin').checked?+$('nonhairpinCount').value:0);
  let bounds=roi||gtBounds('all');if(!roi&&indices.length)bounds=mergeBounds(bounds,bundleBounds(indices));if(!roi)bounds[4]=DATA.flows[state.flow].domain[4];bounds=pad(bounds,.025);
  const traces=[meshTrace(region),lineTrace(indices,true),lineTrace(indices,false),centerTrace(indices),groundPlane(bounds)];
  const camera={eye:{x:.85,y:-1.65,z:.85},up:{x:0,y:0,z:1},projection:{type:'perspective'}};
@@ -93,12 +102,17 @@ async function render(reset=false){
  if(state.selected!==null)selectedDetails(state.selected);
 }
 function update(reset=false){render(reset).catch(e=>{$('status').classList.add('error');$('status').textContent='场景加载失败：'+e.message;console.error(e);});}
+function selectClassIndices(indices,probabilities,hairpinCount,nonhairpinCount){
+ const selected=[],used=[0,0],limits=[nonhairpinCount,hairpinCount];
+ for(const i of indices){const category=probabilities[i]>=.5?1:0;if(used[category]<limits[category]){selected.push(i);used[category]++;}}
+ return selected;
+}
 $('flow').onchange=()=>{state.flow=$('flow').value;state.selected=null;state.focus=false;state.revision++;$('focus').disabled=true;$('region').value='all';refreshRegions();update(true);};
 $('split').onchange=()=>{state.split=$('split').value;state.selected=null;state.focus=false;state.revision++;$('focus').disabled=true;update(true);};
 $('model').onchange=()=>{state.model=$('model').value;update();};
 $('region').onchange=()=>{state.focus=false;state.revision++;update(true);};
 for(const name of ['hairpin','nonhairpin','gt'])$(name).onchange=()=>update();
-$('count').oninput=()=>{$('countText').textContent=$('count').value+' 束';};$('count').onchange=()=>update();
+for(const name of ['hairpin','nonhairpin']){$(name+'Count').oninput=()=>{state.counts[name]=+$(name+'Count').value;$(name+'CountText').textContent=$(name+'Count').value+' / '+$(name+'Count').max;};$(name+'Count').onchange=()=>update();}
 $('opacity').oninput=()=>{$('opacityText').textContent=$('opacity').value+'%';if($('plot').data)Plotly.restyle('plot',{opacity:+$('opacity').value/100},[0]);};
 $('reset').onclick=()=>{state.focus=false;state.revision++;$('region').value='all';update(true);};
 $('focus').onclick=()=>{state.focus=true;state.revision++;update(true);};

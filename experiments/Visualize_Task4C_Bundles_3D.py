@@ -254,7 +254,7 @@ def build_viewer(package, input_root, output, make_previews):
     package=Path(package); output=Path(output); output.mkdir(parents=True, exist_ok=True)
     manifest=json.loads((package/'manifest.json').read_text(encoding='utf-8'))
     models=manifest['models']; payload=dict(models=models, pending=manifest['pending'], colors=COLORS,
-        threshold=.5, display_bundles=manifest['config']['display_bundles'], flows={})
+        threshold=.5, display_bundles=manifest['config']['display_bundles'], flows={}, evidence_note=manifest.get('evidence_note'))
     records=[]; surfaces={}; vtk_files=[]
     for flow in manifest['flows']:
         name=flow['name']; native=Path(input_root)/flow['flow']; gt_path=Path(input_root)/flow['gt']
@@ -272,6 +272,8 @@ def build_viewer(package, input_root, output, make_previews):
                 geometry=array_json(pack['geometry'],'<f4'),
                 **{k:pack[k].tolist() for k in ('counts','row_ids','labels','center','head_component','instance','scale_id','radius','neighbor_distance')},
                 probabilities={m['id']:pack['p_'+m['id']].tolist() for m in models})
+            for optional in ('owner_instance','mandatory_head'):
+                if optional in pack: entry['splits'][split][optional]=pack[optional].tolist()
             mesh=bundle_mesh(pack,models);vtk_file=output/f'{name}_{split}_bundles.vtp';save_vtp(mesh,vtk_file);vtk_files.append(vtk_file.name)
             if split=='test' and make_previews:
                 take=manifest['config']['display_bundles']; subset={k:v[:take] for k,v in pack.items()}
