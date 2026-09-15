@@ -1,0 +1,198 @@
+{
+  "task135_config": "config/mainExp_Task135_FMTv8_1.1.json",
+  "task4_config": "config/mainExp_Task4C_FMTv8_4.21.json",
+  "frozen_config_hashes": {
+    "config/mainExp_Task135_FMTv8_1.1.json": "c3e7ea9765bb7bafe9dad91645feb76480d26c0e0aa1b02c360a4c462c97b950",
+    "config/mainExp_Task4C_FMTv8_4.21.json": "896b4e1106a3463cad9ff4560a69a17e1b1233483d4821fa3f70a56235d4e447",
+    "config/mainExp_Task4C_PhysicalLength_4.14.json": "3909eaab4093c0cb85f9bbd400fcf81e9dc036c879df7b8b9f6f214b6a281e6d"
+  },
+  "task135_reference": "/ibex/user/zhanx0o/FMT_Task135_FMTv8_20260914/outputs/mainExp_Task135_FMTv8_1.1",
+  "task4_reference": "/ibex/user/zhanx0o/FMT_Task4C_FMTv8_20260914/outputs/mainExp_Task4C_FMTv8_4.21",
+  "task135_preflight_sha256": "7fd6b678b0ff58ff7eafac2f8751216135a5f40259710db482fbc1efbca2ab14",
+  "task4_encoding_sha256": "89b56f0cb151fcb6b6ed139ace0818760920dfc5048bd71f353d6e8f9ffbe141",
+  "screen_seed": 40,
+  "screen_task4_seed": 96611,
+  "execution": {
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "deterministic_algorithms": true,
+    "cublas_workspace_config": ":4096:8"
+  },
+  "version": "Ablation_FMTv8_NormFrequency_3.1",
+  "output": "outputs/Ablation_FMTv8_NormFrequency_3.1",
+  "p35_reference": "/ibex/user/zhanx0o/FMT_V8Search_Deterministic_20260915/outputs/Ablation_FMTv8_Search_2.2",
+  "task4_preparation_hashes": {
+    "channel": "d51706ac5fd8501a05b14cfeffc3715303352c1827e80262c29ba91caf4ef988",
+    "tbl": "08845d13c430dd7e618a7698aab0393c6cd7b3a60925253ee1cc72965e18e78e"
+  },
+  "maximum_concurrent_gpus": 12,
+  "neighbor_scale": 1.0,
+  "neighbor_weight": 1.0,
+  "selection": "Equal mean of Task3 ten-flow validation F1, Task5 ten-flow validation F1, Task4C pooled validation F1; ties by fewer dimensions then ID",
+  "scope": "Original train/validation only; same benchmark used for epoch, alpha, threshold and candidate selection; no test reads or additional final fits",
+  "raw_pathway": "Frozen h0 Raw input and training normalization; shared temporary Raw and Raw-wide backbones across twenty FMT combinations",
+  "capacity": "Task3/5 pad433 total142914; Task4 line layer width varies, parameters=58690+128*feature_dimensions",
+  "checkpoint_policy": "Temporary Ibex dependency weights; delete after audit; never download",
+  "candidates": [
+    {
+      "id": "n0_k02",
+      "geometry": "max_radius",
+      "features": "zscore",
+      "recipe": "n0",
+      "frequencies": 2,
+      "feature_dimensions": 45
+    },
+    {
+      "id": "n0_k04",
+      "geometry": "max_radius",
+      "features": "zscore",
+      "recipe": "n0",
+      "frequencies": 4,
+      "feature_dimensions": 93
+    },
+    {
+      "id": "n0_k06",
+      "geometry": "max_radius",
+      "features": "zscore",
+      "recipe": "n0",
+      "frequencies": 6,
+      "feature_dimensions": 141
+    },
+    {
+      "id": "n0_k10",
+      "geometry": "max_radius",
+      "features": "zscore",
+      "recipe": "n0",
+      "frequencies": 10,
+      "feature_dimensions": 237
+    },
+    {
+      "id": "n0_k16",
+      "geometry": "max_radius",
+      "features": "zscore",
+      "recipe": "n0",
+      "frequencies": 16,
+      "feature_dimensions": 381
+    },
+    {
+      "id": "n1_k02",
+      "geometry": "max_radius",
+      "features": "signed_log_zscore_clip8",
+      "recipe": "n1",
+      "frequencies": 2,
+      "feature_dimensions": 45
+    },
+    {
+      "id": "n1_k04",
+      "geometry": "max_radius",
+      "features": "signed_log_zscore_clip8",
+      "recipe": "n1",
+      "frequencies": 4,
+      "feature_dimensions": 93
+    },
+    {
+      "id": "n1_k06",
+      "geometry": "max_radius",
+      "features": "signed_log_zscore_clip8",
+      "recipe": "n1",
+      "frequencies": 6,
+      "feature_dimensions": 141
+    },
+    {
+      "id": "n1_k10",
+      "geometry": "max_radius",
+      "features": "signed_log_zscore_clip8",
+      "recipe": "n1",
+      "frequencies": 10,
+      "feature_dimensions": 237
+    },
+    {
+      "id": "n1_k16",
+      "geometry": "max_radius",
+      "features": "signed_log_zscore_clip8",
+      "recipe": "n1",
+      "frequencies": 16,
+      "feature_dimensions": 381
+    },
+    {
+      "id": "n2_k02",
+      "geometry": "rms_radius",
+      "features": "zscore",
+      "recipe": "n2",
+      "frequencies": 2,
+      "feature_dimensions": 45
+    },
+    {
+      "id": "n2_k04",
+      "geometry": "rms_radius",
+      "features": "zscore",
+      "recipe": "n2",
+      "frequencies": 4,
+      "feature_dimensions": 93
+    },
+    {
+      "id": "n2_k06",
+      "geometry": "rms_radius",
+      "features": "zscore",
+      "recipe": "n2",
+      "frequencies": 6,
+      "feature_dimensions": 141
+    },
+    {
+      "id": "n2_k10",
+      "geometry": "rms_radius",
+      "features": "zscore",
+      "recipe": "n2",
+      "frequencies": 10,
+      "feature_dimensions": 237
+    },
+    {
+      "id": "n2_k16",
+      "geometry": "rms_radius",
+      "features": "zscore",
+      "recipe": "n2",
+      "frequencies": 16,
+      "feature_dimensions": 381
+    },
+    {
+      "id": "n3_k02",
+      "geometry": "rms_radius",
+      "features": "signed_log_zscore_clip8",
+      "recipe": "n3",
+      "frequencies": 2,
+      "feature_dimensions": 45
+    },
+    {
+      "id": "n3_k04",
+      "geometry": "rms_radius",
+      "features": "signed_log_zscore_clip8",
+      "recipe": "n3",
+      "frequencies": 4,
+      "feature_dimensions": 93
+    },
+    {
+      "id": "n3_k06",
+      "geometry": "rms_radius",
+      "features": "signed_log_zscore_clip8",
+      "recipe": "n3",
+      "frequencies": 6,
+      "feature_dimensions": 141
+    },
+    {
+      "id": "n3_k10",
+      "geometry": "rms_radius",
+      "features": "signed_log_zscore_clip8",
+      "recipe": "n3",
+      "frequencies": 10,
+      "feature_dimensions": 237
+    },
+    {
+      "id": "n3_k16",
+      "geometry": "rms_radius",
+      "features": "signed_log_zscore_clip8",
+      "recipe": "n3",
+      "frequencies": 16,
+      "feature_dimensions": 381
+    }
+  ]
+}
