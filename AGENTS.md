@@ -1,5 +1,8 @@
 # FMT 项目研究协议
 
+2026-09-16追加用户要求的经典PointNet，版本 `Ablation_Task4C_PointNet_1.1`：沿用同193,000/3,000/10,000数据、三种子和优化规则。保留输入3×3及特征11×11两个T-Net、逐点BatchNorm/ReLU、全局max、分类MLP和官方0.001特征变换正交正则；缩小通道后的pointnet_small总76,749参数（FMT76,738），不称论文原始宽度版本。CPU顺序/填充/正则/梯度与容量核验通过；计划独立Ibex部署，不重跑或改变前三基线。协议docs/Task4C_pointnet_protocol_1.1.md。
+
+
 2026-09-16最新Task4-c新增三基线 `Ablation_Task4C_GeometricBaselines_1.1` 已部署Ibex：冻结BottomDensity1.2的193,000/3,000/10,000数据，切线+曲率池化MLP / 整束Point-NN固定点云特征MLP / 逐线BiLSTM池化MLP，总参数76,782/76,704/76,786，参照FMT76,738，各三种子96611–96613，训练及数据规则不改。科学commit d20c2458，修复Point-NN高频函数放大float32跨批误差，改内部float64后V100预检通过；首链失败及取消完整保留。现链51930208–51930213（15进程）已提交，原18文件哈希与GPU检查通过，32真实训练束三方法小拟合F1均1.0、批128反向正常；这是工程检查，不是正式测试成绩。全量编码/九次训练等待依赖调度，无新测试F1。协议docs/Task4C_geometric_baselines_protocol_1.1.md，启动证据outputs/Ablation_Task4C_GeometricBaselines_1.1/startup_evidence.json；不得修改旧数据或自动搜索。
 
 

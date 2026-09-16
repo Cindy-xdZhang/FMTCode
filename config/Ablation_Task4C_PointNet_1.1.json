@@ -1,0 +1,30 @@
+{
+  "version": "Ablation_Task4C_PointNet_1.1",
+  "user_version": "task4-c-classic-pointnet-small-1.1",
+  "execution_revision": "classic_two_tnets_parameter_matched_1.1",
+  "output": "outputs/Ablation_Task4C_PointNet_1.1",
+  "base_config": "config/Ablation_Task4C_BottomDensity_1.2.json",
+  "base_config_sha256": "c92b892ed1db9e6e01d64f4eea7792e616e5ab6f0b4a7436b3b456739be44363",
+  "source_output": "/ibex/user/zhanx0o/FMT_Task4C_BottomDensity_1p2_20260916/outputs/Ablation_Task4C_BottomDensity_1.2",
+  "source_scientific_commit": "a7643890d22c7faf63c1f716bb6222ba5271c5ff",
+  "dataset_policy": "reuse_all_source_geometry_seeds_metadata_without_sampling",
+  "methods": ["pointnet_small"],
+  "pointnet": {
+    "upstream_commit": "2618f72bc1a0fd21b074096e748016960d44ef55",
+    "input": "all_valid_bundle_xyz_points_without_line_or_sequence_identity",
+    "width": 11,
+    "global_width": 168,
+    "transform_hidden": [88, 44],
+    "classifier_hidden": [88, 39],
+    "input_transform": [3, 3],
+    "feature_transform": [11, 11],
+    "parameters": 76749,
+    "reference_fmt_parameters": 76738,
+    "feature_transform_regularization_weight": 0.001,
+    "regularization_reduction": "half_sum_over_batch_and_matrix_entries_as_official_tf_nn_l2_loss",
+    "normalization": "BatchNorm_valid_points_only_eps_0.001_momentum_0.1",
+    "activation": "ReLU",
+    "pooling": "max_only_over_valid_points",
+    "dropout": 0.15
+  }
+}
