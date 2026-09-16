@@ -1,0 +1,20 @@
+{
+  "version": "Ablation_Task4C_GeometricBaselines_1.1",
+  "user_version": "task4-c-three-geometric-baselines-1.1",
+  "execution_revision": "frozen_fivefold_data_three_geometry_baselines_1.1",
+  "output": "outputs/Ablation_Task4C_GeometricBaselines_1.1",
+  "base_config": "config/Ablation_Task4C_BottomDensity_1.2.json",
+  "base_config_sha256": "c92b892ed1db9e6e01d64f4eea7792e616e5ab6f0b4a7436b3b456739be44363",
+  "source_output": "/ibex/user/zhanx0o/FMT_Task4C_BottomDensity_1p2_20260916/outputs/Ablation_Task4C_BottomDensity_1.2",
+  "source_scientific_commit": "a7643890d22c7faf63c1f716bb6222ba5271c5ff",
+  "dataset_policy": "reuse_all_source_geometry_seeds_metadata_without_sampling",
+  "methods": ["baseline0", "baseline1", "baseline2"],
+  "baseline_definitions": {
+    "baseline0": {"inputs": "unit_tangent_xyz_and_unsigned_circumcircle_curvature", "pooling": "valid_point_mean_and_max_concatenated", "dimensions": 8, "mlp": [8, 256, 228, 64, 2], "parameters": 76782},
+    "baseline1": {"inputs": "all_valid_bundle_xyz_points_without_line_or_sequence_identity", "encoder": "PointNN_fixed_adaptation", "upstream_commit": "a85bfc365258a2c65a5f6ac289537b4d7a7cec0f", "stages": 4, "initial_width": 72, "neighbors": 90, "alpha": 100, "beta": 1000, "dimensions": 1152, "mlp": [1152, 62, 76, 2], "parameters": 76704},
+    "baseline2": {"inputs": "normalized_xyz_sequence_per_line", "encoder": "shared_single_layer_bidirectional_LSTM", "hidden_per_direction": 81, "line_pooling": "masked_mean_and_max_concatenated", "mlp": [324, 64, 2], "encoder_parameters": 55728, "parameters": 76786}
+  },
+  "fixed_feature_normalization": "combined_training_rows_only_per_feature_zscore_std_below_1e-8_replaced_by_one",
+  "pointnn_encoding_batch_size": 4,
+  "reference_fmt_parameters": 76738
+}
