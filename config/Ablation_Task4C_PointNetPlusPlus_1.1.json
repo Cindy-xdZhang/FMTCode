@@ -1,0 +1,62 @@
+{
+  "version": "Ablation_Task4C_PointNetPlusPlus_1.1",
+  "user_version": "task4-c-pointnetplusplus-ssg-small-1.1",
+  "execution_revision": "official_ssg_small_frozen_hierarchy_1.1",
+  "output": "outputs/Ablation_Task4C_PointNetPlusPlus_1.1",
+  "base_config": "config/Ablation_Task4C_BottomDensity_1.2.json",
+  "base_config_sha256": "c92b892ed1db9e6e01d64f4eea7792e616e5ab6f0b4a7436b3b456739be44363",
+  "source_output": "/ibex/user/zhanx0o/FMT_Task4C_BottomDensity_1p2_20260916/outputs/Ablation_Task4C_BottomDensity_1.2",
+  "source_scientific_commit": "a7643890d22c7faf63c1f716bb6222ba5271c5ff",
+  "dataset_policy": "reuse_all_source_geometry_seeds_metadata_without_sampling",
+  "methods": [
+    "pointnetplusplus_ssg_small"
+  ],
+  "pointnetplusplus": {
+    "upstream_commit": "42926632a3c33461aebfbee2d829098b30a23aaa",
+    "variant": "single_scale_grouping",
+    "input": "all_valid_bundle_xyz_points_without_line_or_sequence_identity",
+    "centers": [
+      512,
+      128
+    ],
+    "radii": [
+      0.2,
+      0.4
+    ],
+    "neighbors": [
+      32,
+      64
+    ],
+    "mlps": [
+      [
+        16,
+        16,
+        32
+      ],
+      [
+        32,
+        32,
+        64
+      ],
+      [
+        64,
+        128,
+        256
+      ]
+    ],
+    "classifier_hidden": [
+      80,
+      45
+    ],
+    "parameters": 76723,
+    "reference_fmt_parameters": 76738,
+    "normalization": "BatchNorm_valid_centers_only_eps_0.001_momentum_0.1",
+    "activation": "ReLU",
+    "pooling": "max_only",
+    "dropout": 0.15,
+    "sampling": "deterministic_fps_canonical_xyz_start_cap_to_valid_points",
+    "grouping": "first_points_in_strict_radius_repeat_first_hit_when_underfull",
+    "hierarchy_dtype": "float64_geometry_uint16_index_cache",
+    "encoding_batch_size": 64
+  }
+}
