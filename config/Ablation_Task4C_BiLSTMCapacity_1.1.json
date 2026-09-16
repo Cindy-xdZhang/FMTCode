@@ -1,0 +1,28 @@
+{
+  "version": "Ablation_Task4C_BiLSTMCapacity_1.1",
+  "user_version": "task4-c-bilstm-mlp-total-56753-parameters-1.1",
+  "execution_revision": "shrink_original_bilstm71_mlp47_total56753_1.1",
+  "output": "outputs/Ablation_Task4C_BiLSTMCapacity_1.1",
+  "base_config": "config/Ablation_Task4C_BottomDensity_1.2.json",
+  "base_config_sha256": "c92b892ed1db9e6e01d64f4eea7792e616e5ab6f0b4a7436b3b456739be44363",
+  "source_output": "/ibex/user/zhanx0o/FMT_Task4C_BottomDensity_1p2_20260916/outputs/Ablation_Task4C_BottomDensity_1.2",
+  "source_scientific_commit": "a7643890d22c7faf63c1f716bb6222ba5271c5ff",
+  "dataset_policy": "reuse_all_source_geometry_seeds_metadata_without_sampling",
+  "methods": ["baseline2"],
+  "bilstm": {
+    "user_corrected_total_parameter_target": 56786,
+    "layers": 1,
+    "input_channels": 3,
+    "hidden_per_direction": 71,
+    "line_pooling": "masked_mean_and_max_concatenated",
+    "mlp": [284,47,2],
+    "recurrent_parameters": 43168,
+    "classifier_parameters": 13585,
+    "total_parameters": 56753,
+    "dropout": 0.15,
+    "reference_hidden_per_direction": 81,
+    "reference_mlp": [324,64,2],
+    "reference_total_parameters": 76786,
+    "reference_scientific_commit": "d20c2458d3672558997ade7697dd810bc832c00b"
+  }
+}

@@ -4161,3 +4161,10 @@ PointNet++1.1 V100 preflight51946834 and source-data audit51946835 PASS. GPU gre
 结论限于当前共享实例的局部测试：FPS6相对原最近6条均值增加0.004611（0.4611个百分点），最近3+FPS3减少0.001625；只有三个优化种子，尚不能称为稳定或显著的形状信息改善。保留原最近6条为冻结参考，不按这次测试替换主方法。双向长短期记忆网络0.919499高于原FMT0.888404及本次两种FMT邻居方案；PointNet0.889407与原FMT均值接近。切线/曲率与Point-NN式固定编码器均连接并训练了MLP，低分不能解释为缺少分类头，也不外推为所有几何编码器无效。Point-NN是有明确数值/分组适配的特征基线，不是论文完整分类器的复现。没有按测试追加调参。
 
 科学commit和配置、主表、证据路径见paper_tables_tasks_3d对应节；每个版本outputs下final_verified_evidence.json包含逐种子结果、科学提交、完整运行事件与核验范围。原始训练/验证预测留在Ibex，未下载模型。PointNet++独立继续。
+
+
+## Task4-c smaller BiLSTM capacity 1.1 — 2026-09-16
+
+User clarified that the rerun must shrink the total BiLSTM plus MLP to approximately56,786 parameters; the earlier5.6M value was a typo. No large-model run was submitted. `Ablation_Task4C_BiLSTMCapacity_1.1` uses one per-line bidirectional layer with hidden71 and the original masked mean/max pooling, followed by MLP284→47→2: recurrent43,168 + classifier13,585 = **56,753** total,33 below the target. Widths chosen by arithmetic, not validation or test search.
+
+Original76,786-parameter baseline (hidden81/head64), code and0.919499±0.010500 testF1 remain frozen. Reuse BottomDensity1.2 full193000/3000/10000 physical files and exact original training function code object, overriding only model factory and identity. Seeds96611–96613, V100 and all optimizer/selection settings unchanged. CPU parameter, padding, permutation, sequence-order and gradient checks PASS; forward AST differs only in feature width162→142. Protocol/config/code: Task4C_bilstm_capacity_protocol_1.1, Ablation_Task4C_BiLSTMCapacity_1.1, Task4C_BiLSTMCapacity_1_1. No new performance before deployment; no other model or data changes.
