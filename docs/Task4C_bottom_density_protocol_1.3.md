@@ -17,3 +17,5 @@
 配置 `config/Ablation_Task4C_BottomDensity_1.3.json` 固定继承1.2，只覆盖版本、输出、来源和两种分辨率。入口 `experiments/Task4C_BottomDensity_1_3.py`；Slurm入口 `ibex_bash/task4c_bottom_density_1p3.sh`。复用原网络、体素化、训练、指标和预测复算代码；1.2源码和成绩冻结。
 
 CPU/V100预检核对8³/12³体素独立参考、稀疏往返、网络前后向和参数量。依赖链：预检1进程→数据复用/哈希检查1进程→两流场体素缓存2进程→六次训练→汇总1进程，共11进程。失败自动阻止依赖项。六次训练均保存train/validation/test逐样本预测，汇总复算18份预测，记录参数量、训练时间、合并及分流场F1。Ibex编号登记于运行表，方法结论只写入实验日志。
+
+科学commit `12a0ffa7fbc6f530c3bc3ce1248cbc8fc028e132` 已公开推送；Ibex51927009–51927013共11进程已提交，含六次训练。CPU/V100模型/体素检查和原18个数据文件哈希核对通过，数据数量193,000/3,000/10,000不变；六次训练等待编码结束。当前暂无新F1，启动证据为outputs/Ablation_Task4C_BottomDensity_1.3/startup_evidence.json。
