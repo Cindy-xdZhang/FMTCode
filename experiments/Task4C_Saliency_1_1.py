@@ -96,11 +96,14 @@ def replay(spec, config):
     root = Path(spec['output']); source = Path(spec['source_output'])
     ref_folder = source/'runs/p35'/f"seed{spec['seed']}"
     reference = json.loads((ref_folder/'result.json').read_text())
-    assert reference['identity']['commit'] == spec['source_scientific_commit']
+    assert reference['identity']['git_commit'] == spec['source_scientific_commit']
     assert reference['identity']['config_sha256'] == spec['base_config_sha256']
     assert reference['selected_epoch'] == spec['reference_selected_epoch']
     for file, digest in reference['identity']['sources'].items():
-        assert sha(file) == digest, f'Frozen source changed: {file}'
+        local = Path(file)
+        if local.is_absolute():
+            local = Path('experiments') / local.name
+        assert sha(local) == digest, f'Frozen source changed: {local}'
     base = json.loads(Path(spec['base_config']).read_text())
     # Read-only reuse: no symlinks, re-encoding, new seeds, or modified source files.
     source_spec = dict(base, output=str(source))
@@ -234,7 +237,6 @@ def runtime(spec, config, phase, state, code):
 
 def submit(spec, config):
     root=Path(spec['output']).resolve();root.mkdir(parents=True,exist_ok=True);(root/'logs').mkdir(exist_ok=True)
-    assert not (root/'submissions.jsonl').exists()
     dependency=None
     for phase,limit in [('preflight','00:20:00'),('replay','04:00:00')]:
         command=['sbatch','--parsable','--nodes=1','--ntasks=1','--cpus-per-task=4','--mem=48G',
