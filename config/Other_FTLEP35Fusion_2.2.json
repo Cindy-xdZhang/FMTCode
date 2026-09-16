@@ -1,0 +1,11 @@
+{
+  "version": "Other_FTLEP35Fusion_2.2",
+  "output": "outputs/Other_FTLEP35Fusion_2.2",
+  "development_config": "config/Other_FTLEP35Fusion_2.1.json",
+  "previous_final": "/ibex/user/zhanx0o/FMT_FTLEP35_Final_20260915/outputs/Other_FTLEP35Fusion_2.1/final",
+  "scales": [2],
+  "report_scales": [2, 4, 8],
+  "seeds": [98211, 98212, 98213],
+  "expected_device": "NVIDIA GeForce GTX 1080 Ti",
+  "policy": "Extend the frozen 2.1 six-method comparison to x2 without new method search. Reuse audited x4/x8 results. Preserve historical train/validation/test roles and common masks. Fit all six methods per flow/seed before loading test. No checkpoint files."
+}
