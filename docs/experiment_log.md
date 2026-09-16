@@ -4141,3 +4141,6 @@ User authorizes adding PointNet++ and submitting to Ibex. Version `Ablation_Task
 
 
 PointNet++1.1 deployment: scientific commit `f3d98dd347c3d426b815753167d3b923c467bda6`; Ibex jobs51946834–51946839 cover9 processes. Config SHA256 `67f8f5e2806a446717eff08f4f9a809f44d40bf2677f805abb993d4187a9ae65`; submissions at2026-09-16 12:55:16–17UTC. CPU preflight passed; GPU preflight pending priority and downstream jobs pending dependencies when checked. All three seeds96611–96613 are queued. No PointNet++ results yet. Submission evidence saved in `outputs/Ablation_Task4C_PointNetPlusPlus_1.1/submissions.jsonl`; complete job records in ibex_run_registry.
+
+
+PointNet++1.1 V100 preflight51946834 and source-data audit51946835 PASS. GPU greedy/grouping, padding/permutation and backward checks passed on Tesla V100-SXM2-32GB; all18 frozen physical files match. The real32-bundle pilot51946836 is pending priority, with both encoders and three trainings waiting on dependencies. Formal metrics remain unavailable. Evidence: `outputs/Ablation_Task4C_PointNetPlusPlus_1.1/preflight_cuda.json` and `data_audit.json`.

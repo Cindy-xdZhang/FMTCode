@@ -11447,3 +11447,6 @@ Scientific commit `f3d98dd347c3d426b815753167d3b923c467bda6`; configuration `con
 | 51946839 | Independent prediction/metadata/F1 merge and viewer package | CPU | 51946838 |
 
 Initial status: submitted; CPU preflight passed. Actual runtime start/end, hostname and GPU are written in output `runtime.jsonl`; no new F1 yet. No changes or cancellations to earlier experimental chains. No weight files are saved.
+
+
+PointNet++1.1 actual startup update: preflight51946834 PASS, gpu214-02 / Tesla V100-SXM2-32GB, runtime2026-09-16 12:57:34.574821–12:57:42.912405UTC, exit0. Reuse51946835 PASS, cn604-18 / CPU, runtime12:57:49.976624–12:57:54.536817UTC, exit0. All18 source physical hashes match; counts193000/3000/10000. Local preflight_cuda.json/data_audit.json downloaded; no weight files. Pilot/encoding/training are downstream dependencies; no performance yet.
