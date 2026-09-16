@@ -11402,3 +11402,29 @@ GPU预检51932378、原数据复用51932379、真实训练预检51932380均完�
 |51932379|None|reuse|ENDED|2026-09-16T10:46:05.547507+00:00|cn604-09||0|
 |51932380|None|pilot|STARTED|2026-09-16T10:47:52.595570+00:00|gpu210-18|Tesla V100-SXM2-32GB|None|
 |51932380|None|pilot|ENDED|2026-09-16T10:48:03.537753+00:00|gpu210-18|Tesla V100-SXM2-32GB|0|
+
+
+## Task4-c neighbor selection 1.1 — submitted 2026-09-16
+
+Scientific commit `686ef144783cc9755f81ee152e4dd122a6a41a38`; config `config/Ablation_Task4C_NeighborSelection_1.1.json`, SHA256 `c08c787460c3d113de34adf7b6ef7f8e3efc7fa351dbab6faf7bab0642c585e1`. Root `/ibex/user/zhanx0o/FMT_Task4C_NeighborSelection_1p1_20260916`; output `outputs/Ablation_Task4C_NeighborSelection_1.1`. Frozen BottomDensity1.2 physical files and original p35 trainer; FPS6 and nearest3+FPS3, three seeds each. Existing nearest6 results reused only after exact cache checks.
+
+Submitted 2026-09-16 11:43:42–43 UTC (14:43:42–43 Saudi time). Each stage requires successful completion of the preceding stage. Twelve processes total; every actual start, node/device and termination event is written to `runtime.jsonl` by the launcher. Status at registration: submitted, not yet a completed performance comparison.
+
+| Job | Phase | Configuration / task | Expected device |
+|---|---|---|---|
+| 51936278 | preflight | Independent selection and original-FMT reproduction checks | V100 |
+| 51936279 | reuse | 18 physical-file hashes and full-cache seed-stencil audit | CPU |
+| 51936280 | pilot | Channel/TBL first32 training bundles, exact nearest6 cache check | V100 |
+| 51936281_0 | encode | Channel; both new selections, all splits | V100 |
+| 51936281_1 | encode | TBL; both new selections, all splits | V100 |
+| 51936282_0 | train | fps6, seed96611 | V100 |
+| 51936282_1 | train | fps6, seed96612 | V100 |
+| 51936282_2 | train | fps6, seed96613 | V100 |
+| 51936282_3 | train | nearest3_fps3, seed96611 | V100 |
+| 51936282_4 | train | nearest3_fps3, seed96612 | V100 |
+| 51936282_5 | train | nearest3_fps3, seed96613 | V100 |
+| 51936283 | merge | Independent predictions/metadata checks, reference comparison | CPU |
+
+Deployment note: an initial Git fetch with abbreviated commit `686ef144` failed before any Slurm submission; retry used the full same commit hash in the same initialized directory. No duplicate jobs or experimental runs arose from that fetch failure. Local CPU preflight passed before deployment; no weight files are created.
+
+Initial status checked after submission: preflight51936278 COMPLETED on gpu208-14 (Tesla V100-SXM2-32GB), Slurm start/end 2026-09-16 14:43:55/14:44:05 Saudi; runtime UTC 11:43:59.657309–11:44:04.883117, exit0. Reuse51936279 COMPLETED on cn604-18 (CPU), Slurm start/end 14:44:07/14:44:18 Saudi; runtime UTC 11:44:11.335006–11:44:17.384396, exit0. All18 physical hashes match. Every valid seed in all206000 bundles belongs to its original 3x3x3 stencil; counts10–27. Pilot51936280 is pending GPU priority; downstream encoding/training/merge await dependencies. No formal FPS performance yet.
