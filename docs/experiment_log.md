@@ -4097,3 +4097,11 @@ p35四场均值47.527190±0.045904 dB，相对ESPCN +5.072425、U-Net +11.779160
 
 结果：`outputs/Other_FTLEP35Fusion_2.2/report.md`（总表及四流场PSNR/RMSE/SSIM）、`combined.csv/json`、`per_run.csv`、`interpolation.json`、`audit.json`、`combined_audit.json`、`runtime_audit_development.json`、`collection.json`。已核验825个归档文件（824条内容清单＋清单自身），压缩包SHA256 `c33e3855d9ba47dbfbf38a66fb6c87a0eb23d719d16efd506d273bec37f001b5`；不含路径线缓存或模型权重。当前请求完成，不自动追加调参。
 <!-- ftlep35-scales-results-2.2-end -->
+
+
+<a id="task4c-geometric-baselines-submitted-20260916"></a>
+### 三基线1.1已通过真实数据预检并提交
+
+科学commit `d20c2458d3672558997ade7697dd810bc832c00b`、配置SHA256 `a5a76bcff394803c038c6b23299ab987ab117b69f456f6653fd96baf3a2e6989` 已公开推送。修复后Ibex51930208/09/10/11/12/13共15进程；原18份几何/种子/metadata哈希逐一相同，193,000/3,000/10,000不变。GPU解析检查通过，真实训练32束（每流场每类8束）按固定100步小拟合三方法训练F1均1.0，损失依次从0.719945/0.682698/0.696485降至0.003025/0.001376/0.012959；批128反向传播通过。小拟合仅验证框架，不作为正式性能结果。两流场全量固定特征编码与九次正式训练已在依赖队列，当前尚无新测试F1。
+
+所有参数选择预先固定且与参考总参数相差不足0.1%，无测试集选择或新增数据规则。方法结论待正式三种子测试，不从小拟合推断泛化；FMT对照复用同数据1.2的0.888404±0.011497，不使用历史0.72数据作为本次配对对照。启动证据outputs/Ablation_Task4C_GeometricBaselines_1.1/startup_evidence.json；临时GPU数值诊断代码已删除。
