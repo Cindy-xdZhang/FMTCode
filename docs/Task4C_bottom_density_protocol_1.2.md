@@ -42,3 +42,5 @@ Conv3D只运行16³、24³：同样的占据率＋三维切向四通道体素输
 CPU模型及体素核验已通过。科学commit、Ibex编号及实测数据核验记录在 `docs/ibex_run_registry.md`；方法结论只在 `docs/experiment_log.md` 记录。目前没有新F1结果。
 
 科学commit `a7643890d22c7faf63c1f716bb6222ba5271c5ff` 已公开推送；Ibex51920910–51920917共19进程已提交。V100检查、Channel6,636/TBL9,717采样组合的真实pilot及容量检查通过，正式154,400束新增训练数据生成已启动。暂未取得完整新数据核验和新F1；不将已提交训练写成完成。原始启动证据为outputs/Ablation_Task4C_BottomDensity_1.2/startup_evidence.json。
+
+2026-09-16最终完成：193,000/3,000/10,000及全部来源前缀/评价文件/新中心/五倍比例核验通过；九次训练和27预测、19进程38事件独立核对通过，无模型文件。科学commita7643890，最终时间03:44:38 UTC；成绩和方法结论见experiment_log的task4c-bottom-density-fivefold-final-20260916，表见paper_tables_tasks_3d。旧启动快照保留，本条为最终状态。
