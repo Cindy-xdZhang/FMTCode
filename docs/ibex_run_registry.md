@@ -11559,3 +11559,29 @@ Scientific commit `2b92207b7f115328f8fe1ca2aca8d22f5d274e41`; config `config/Abl
 | 51959154 | 51959154 | merge | 2026-09-16T16:04:31.959329+00:00 | 2026-09-16T16:06:08.740907+00:00 | cn113-35-l | CPU | 0 |
 
 PointNet++ snapshot at 2026-09-16 19:44:39 Saudi: 51946838_0/1/2 running at epochs 68/68/69 on gpu609-07/gpu609-05/gpu214-06; merge 51946839 pending dependency. Best validation F1 0.914474/0.919337/0.906077; these are not test results. No intervention or new submission.
+
+
+<!-- task4c-fps-augmentation-search-submitted-20260916 -->
+## Task4-c FPS augmentation search 1.1: full dependent submission
+
+Scientific commit `9d05abc571bc7c45e5da8a8f9f3ee55db367d467`; config `config/Ablation_Task4C_FPSAugmentSearch_1.1.json`, SHA256 `4f5b741fc131a28ee27b7dd6588426d7202579e0a527fd7b8d86d32adda10675`. Remote checkout `/ibex/user/zhanx0o/FMT_Task4C_FPSAugmentSearch_1p1_20260916`. Submitted 2026-09-16 19:12:15–19:12:16 UTC (22:12 Saudi).
+
+| Job IDs | Phase | Processes | Expected device | Configuration mapping | Dependency |
+|---|---|---:|---|---|---|
+| 51974951 | preflight | 1 | V100 | preflight | none |
+| 51974952 | reuse | 1 | CPU | reuse | 51974951 |
+| 51974953 | pilot | 1 | V100 | pilot | 51974952 |
+| 51974954[0–263] | screen | 264 | V100 | index = candidate c000–c263; seed96611 | 51974953 |
+| 51974955 | shortlist | 1 | CPU | shortlist | 51974954 |
+| 51974956[0–35] | refine | 36 | V100 | index // 3 = shortlist rank0–11; index % 3 = seeds96612/96613/96711 | 51974955 |
+| 51974957 | select | 1 | CPU | select | 51974956 |
+| 51974958[0–5] | final | 6 | V100 | indices0–2 selected recipe;3–5 original FPS control; seeds96721–96723 | 51974957 |
+| 51974959 | merge | 1 | CPU | merge | 51974958 |
+
+All312 processes registered by the explicit array mapping above. Candidate definitions are the deterministic Cartesian product in the frozen config/runner and are saved as candidates.json before sbatch. CPU preflight PASS; initial fresh scheduler snapshot: preflight waiting for GPU, all dependent jobs pending. Screening/refinement permit24 simultaneous V100 GPUs; final permits6. No new F1 yet. All raw submissions are retained in outputs/Ablation_Task4C_FPSAugmentSearch_1.1/submissions.jsonl; method conclusions remain in experiment_log.
+
+2026-09-16 19:15UTC update: preflight51974951 completed on gpu214-14/Tesla V100-SXM2-32GB (22:13:57–22:14:11Saudi); reuse51974952 completed on cn604-18 (22:14:14–22:14:24Saudi). All18 source hashes verified; counts unchanged. Pilot51974953 waiting for GPU, screening dependent.
+- {"job": "51974951", "phase": "preflight", "state": "STARTED", "time_utc": "2026-09-16T19:14:02.103297+00:00", "node": "gpu214-14", "gpu": "Tesla V100-SXM2-32GB", "exit_code": null, "commit": "9d05abc571bc7c45e5da8a8f9f3ee55db367d467"}
+- {"job": "51974951", "phase": "preflight", "state": "ENDED", "time_utc": "2026-09-16T19:14:10.846369+00:00", "node": "gpu214-14", "gpu": "Tesla V100-SXM2-32GB", "exit_code": 0, "commit": "9d05abc571bc7c45e5da8a8f9f3ee55db367d467"}
+- {"job": "51974952", "phase": "reuse", "state": "STARTED", "time_utc": "2026-09-16T19:14:19.418288+00:00", "node": "cn604-18", "gpu": null, "exit_code": null, "commit": "9d05abc571bc7c45e5da8a8f9f3ee55db367d467"}
+- {"job": "51974952", "phase": "reuse", "state": "ENDED", "time_utc": "2026-09-16T19:14:24.436078+00:00", "node": "cn604-18", "gpu": null, "exit_code": 0, "commit": "9d05abc571bc7c45e5da8a8f9f3ee55db367d467"}
