@@ -4208,3 +4208,35 @@ Only widths changed: bidirectional hidden 81→71, MLP hidden 64→47. Recurrent
 The smaller model uses 26.09% fewer parameters and has a 0.012183 lower mean test F1 (1.2183 percentage points) in this paired three-seed experiment. It remains above the frozen FMT reference 0.888404 ± 0.011497, which has 76,738 parameters. This is a measured comparison on the already used shared-instance benchmark, not a claim of statistically established superiority or independent-instance generalization. Preserve original results; no automatic test-based tuning. Training time includes per-epoch validation and excludes queueing, preprocessing and final prediction.
 
 All three test prediction hashes, 10,000-row coverage, source labels/instance IDs and threshold-0.5 F1 independently verified. Mean/sample standard deviation and validation-selected epoch independently recomputed. All seven processes/14 runtime events have matching scientific commit/config and exit code 0. Reuse audit confirms all 18 physical file hashes unchanged. Local evidence: `outputs/Ablation_Task4C_BiLSTMCapacity_1.1/final_verified_evidence.json`; remote results: `/ibex/user/zhanx0o/FMT_Task4C_BiLSTMCapacity_1p1_20260916/outputs/Ablation_Task4C_BiLSTMCapacity_1.1`. No checkpoint downloaded.
+
+<!-- fmt-feature-contrast-1.1-2026-09-16 -->
+## Other_FMT_FeatureContrast_1.1：Cylinder特征差异与多页查看器（2026-09-16）
+
+用户要求解释FMT二类聚类里中心/外围轨线的特征区别，并与既有Hairpin显著性工具放到一个HTML入口的不同页。此次为直接特征分析，不做IVD指标、不训练模型、不提交Ibex。
+
+- 输入：用户现有Cylinder3D / halfcylinderRe160交互积分数据，2160个有效七线×32点primitive，t=7.700000286–11.399996758。特征bundle SHA256 `aae5948ac2b7b83e446bb0f99104584034749964e31fcbfa9122830bfadf4618`；几何 `eaa618bec5f24a30e1ae57b746810572735055ca58d4a422560b85371d282efc`。不是旧Task2弃用VAE结果。
+- 方法：当前p35/n0_k06 141维；中心23＋方向72＋邻居均值23＋邻居数值最大值23，邻居倍率1、完整样本逐维标准化。完整141维上KMeans K2，seed7068、n_init20、max_iter300、tol1e-8；8次迭代，簇A1508/簇B652。投影仅用于显示，所有统计用全部2160个样本。
+- 证据：`outputs/Other_FMT_AnalysisWorkbench_1.1/features/analysis_summary.json`、`feature_ranking.csv`、`analysis_arrays.npz`、`independent_audit.json`；配置`config/Other_FMT_FeatureContrast_1.1.json`；编码/解释`FMT_Utils/FeatureContrast_1_1.py`，构建/独立核验`experiments/Build_FMT_FeatureContrast_1_1.py`与`Audit_FMT_FeatureContrast_1_1.py`。版本细节与使用说明见`docs/FMT_feature_contrast_protocol_1.1.md`。
+
+### 当前实例的描述性观察
+
+三维图中簇B（橙色）主要分布在中部较弯曲轨线，簇A（蓝色）主要分布在外围较直轨线；这是这一组几何的可视观察，未用标签验证，不能直接当作涡识别准确率。
+
+两簇标准化中心平方距离的逐维分解：
+
+|数组维度|特征|簇A原值均值|簇B原值均值|标准化均值差B−A|距离占比|
+|---:|---|---:|---:|---:|---:|
+|4|中心步进k1虚部范数|0.06005767|0.28390471|1.645995|2.423027%|
+|3|中心步进k1实部范数|0.02980633|0.22577882|1.623055|2.355958%|
+|13|中心步进k4虚部范数|0.01115330|0.04835683|1.590416|2.262156%|
+|29|单位切向t_x的k0实部|5.61346612|5.27634699|−1.586269|2.250376%|
+|16|中心步进k5虚部范数|0.00853930|0.03632683|1.581971|2.238198%|
+
+四组的距离占比为中心23.682625%、方向32.327737%、邻居均值20.895762%、邻居最大值23.093876%；每维平均δ²依次1.151333/0.502044/1.015849/1.122711。方向组总占比较高也受72维宽度影响；不能由总和宣称其每维差异最大。这一实例的差异分布在多维，最强单维仅占约2.42%。k1中心步进分量反映整个采样窗尺度的步进变化；t_x直流量正比于平均单位切向x分量。这与图中弯曲/较直轨线的差别相容，但不孤立证明某一种物理机制或因果特征重要性，傅里叶相位与边界也会影响分量。
+
+### 工程与数值验证
+
+重新编码与原float32特征逐元素完全相同，标准化值完全相同。另用独立NumPy公式核验全部141维，与PyTorch float64最大差3.93019e-13；原float32与float64的近退化余弦/三重积最高差9.13846e-5，保留原值和误差报告。最初跨FFT后端统一5e-6容差失败后定位到低幅度向量比值，改用双精度公式核对；没有改变聚类输入。全2160样本逐维距离分解最大误差6.25278e-13；24个文件哈希、全部几何块与浏览器原值/标准化值/ID完全相同，15个理论零槽位通过。
+
+浏览器已核验统一两页、选择状态保留、特征/数值/着色/簇切换、数量控制、排名点击、原始与归一化七线、热图选择及特征组汇总。首版全局变量`top`冲突已修复；一次拾取时浏览器卡住后移除拾取回调内空间图重绘，最终播种点ID4050及热图ID2917的联动验证通过。既有Hairpin页复用400束与原独立审计，不新增训练。单样本分量仅解释固定簇中心的距离；整个轨线特征着色不冒充局部形状归因。当前请求完成。
+<!-- fmt-feature-contrast-1.1-2026-09-16-end -->

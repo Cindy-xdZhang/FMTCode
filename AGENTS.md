@@ -211,3 +211,7 @@ Task4-b 当前阈值以2026-09-06用户最新指定为准：**Channel IVD>5.785�
 
 <!-- task4c-bilstm-small-final-20260916 -->
 2026-09-16完成`Ablation_Task4C_BiLSTMCapacity_1.1`：用户修正预算约56,786后，仅把原BiLSTM单向hidden81→71、MLP hidden64→47；总参数56,753（递归43,168+MLP13,585）。冻结193000/3000/10000数据、训练函数与三种子，测试F1为0.907316±0.008391，平均训练69.755分钟；原76,786参数0.919499±0.010500保持。科学commit2b92207b，七进程/14事件及三份测试预测独立核验通过，结果/结论见experiment_log同标记。19:44沙特时间PointNet++三种子仍运行在68/68/69轮，尚无测试结果，不自动追加调参。
+
+<!-- fmt-feature-contrast-complete-1.1 -->
+2026-09-16完成用户要求`Other_FMT_FeatureContrast_1.1`：2160个现有Cylinder3D直接p35/n0_k06 primitive，t7.7–11.4，完整141维标准化后KMeans K2；提供逐维中心差异、完整向量、分布、热图、样本距离分解及真实轨线联动。统一HTML入口`outputs/Other_FMT_AnalysisWorkbench_1.1/index.html`另页复用400束Hairpin显著性。原编码/标准化精确复现、独立141维公式与全部浏览器数组/几何核验通过，页面交互通过。无IVD标签/质量指标、新训练或Ibex作业；描述性结论只在experiment_log。协议docs/FMT_feature_contrast_protocol_1.1.md；启动start_fmt_analysis.ps1。当前请求完成。
+<!-- fmt-feature-contrast-complete-1.1-end -->

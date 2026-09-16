@@ -1,0 +1,13 @@
+{
+  "version": "Other_FMT_FeatureContrast_1.1",
+  "feature_bundle": "C:/Users/xingdi/sources/FLowlineClusteringVisualAnalysis/outputs/feature_library/cfb59ca602ed2b21fce4a746/feature_bundle.npz",
+  "output": "outputs/Other_FMT_AnalysisWorkbench_1.1",
+  "method": "p35_n0_k06",
+  "clusters": 2,
+  "seed": 7068,
+  "n_init": 20,
+  "max_iter": 300,
+  "tol": 1e-8,
+  "geometry_chunk_size": 128,
+  "saliency_viewer": "outputs/Other_Task4C_Saliency_1.1/viewer/index.html"
+}
