@@ -1,5 +1,8 @@
 # FMT 项目研究协议
 
+2026-09-16 PointNet基线1.1已部署：科学commit b4c8a80c，Ibex51932378–51932382共七进程，pointnet_small三个种子96611–96613。保留两个T-Net、BatchNorm/ReLU、max和官方正交正则，小宽度76,749参数（FMT76,738）。CPU/V100、原18份数据文件哈希及32真实训练束小拟合全部通过，小拟合F1=1.0、loss0.695694→0.014498、批128反向正常；仅为工程检查。正式三种子已进入GPU队列，无新测试F1。193,000/3,000/10,000数据和优化/选择规则固定，原三几何基线继续；协议docs/Task4C_pointnet_protocol_1.1.md，证据outputs/Ablation_Task4C_PointNet_1.1/startup_evidence.json。
+
+
 2026-09-16追加用户要求的经典PointNet，版本 `Ablation_Task4C_PointNet_1.1`：沿用同193,000/3,000/10,000数据、三种子和优化规则。保留输入3×3及特征11×11两个T-Net、逐点BatchNorm/ReLU、全局max、分类MLP和官方0.001特征变换正交正则；缩小通道后的pointnet_small总76,749参数（FMT76,738），不称论文原始宽度版本。CPU顺序/填充/正则/梯度与容量核验通过；计划独立Ibex部署，不重跑或改变前三基线。协议docs/Task4C_pointnet_protocol_1.1.md。
 
 
