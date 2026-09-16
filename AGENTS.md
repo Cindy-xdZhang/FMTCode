@@ -203,3 +203,7 @@ Task4-b 当前阈值以2026-09-06用户最新指定为准：**Channel IVD>5.785�
 
 
 2026-09-16小BiLSTM+MLP容量1.1已部署Ibex：科学commit2b92207b；51959150预检、51959151数据核验、51959152真实32束pilot、51959153[0–2]三种子训练、51959154独立汇总，共7进程。总56,753参数（43,168+13,585）；CPU预检通过，初次检查GPU预检Priority等待、训练依赖等待，尚无新F1。
+
+<!-- task4c-saliency-completed-1.1 -->
+2026-09-16完成用户要求的`Other_Task4C_Saliency_1.1`：固定BottomDensity1.2 FMT p35/n0_k06 seed96611，原训练函数回放至预先选定epoch56；所有56轮及206,000预测数组与原运行完全一致。Channel/TBL各200个预测Hairpin束，共7,244线/231,808点，逐点梯度、SmoothGrad及50,708次局部拉直干预已生成。三维查看器支持画廊/单束、贡献着色、片段叠加和标签不一致筛选，真实浏览器核验通过。科学df325fbf；四Slurm进程/八事件（含一次训练前字段错误）完整保留，无权重。协议docs/Task4C_saliency_protocol_1.1.md；独立审计outputs/Other_Task4C_Saliency_1.1/independent_audit.json；解释边界见experiment_log。当前请求完成，不启动其他消融。
+<!-- task4c-saliency-completed-1.1-end -->

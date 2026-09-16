@@ -4171,3 +4171,17 @@ Original76,786-parameter baseline (hidden81/head64), code and0.919499±0.010500 
 
 
 BiLSTMCapacity1.1 submission: scientific commit `2b92207b7f115328f8fe1ca2aca8d22f5d274e41`; configSHA256 `5aab378dcb9715ea5a5106ea43f12c242bcaccac8a4f6bf9a287e28fbfd9aa04`; Ibex51959150–51959154, seven processes, submitted2026-09-16 14:31:10UTC. Small model total56,753 includes recurrent43,168 and MLP13,585. Initial check: GPU preflight waiting priority, remaining stages dependency-pending. Three seeds96611–96613 will use the frozen dataset and training function. CPU checks passed; no formal smaller-model F1 yet. Submission evidence saved in `outputs/Ablation_Task4C_BiLSTMCapacity_1.1/submissions.jsonl`; all jobs registered.
+
+<!-- task4c-saliency-1.1-2026-09-16 -->
+## Other_Task4C_Saliency_1.1 — 2026-09-16
+
+用户要求在开展结构消融之前，为当前 FMT 的 predicted-hairpin line bundles 实现局部形状贡献可视化。固定 BottomDensity1.2 / p35/n0_k06 / seed96611，141维、76,738参数；原三种子均值0.888404±0.011497不变。该种子原test F1为0.878796480272495，不能把单种子解释页面标成三种子网络。科学实现df325fbf；协议docs/Task4C_saliency_protocol_1.1.md。
+
+权重未保留，因此原训练函数在原V100上按原初始化、193,000训练束及原验证调度回放到预先记录的最佳epoch56，内存生成解释后退出。原运行共106轮；本次只恢复已选权重，没有重新选择epoch。独立核验所有56轮损失、验证指标、学习率及排列哈希完全一致；193,000训练、3,000验证、10,000测试的所有预测数组完全一致。首次运行因旧identity使用git_commit字段而在训练前失败，已纠正并保留。四Slurm进程/八事件全部登记，无模型文件。
+
+Channel/TBL各200束，按预测>=0.5后的空间位置选择，不用GT或热图选例。共7,244线、231,808点；标签一致/不一致分别为Channel149/51、TBL135/65，此展示子集不代表总体分类率。每点计算分类logit差对坐标的梯度模，以及16次、噪声标准差0.002半径单位的SmoothGrad（先平均梯度向量，再取模）。全链包含几何归一化、冻结FMT、训练集标准化和分类网络；邻居索引固定在原32束编码批次对应的种子图上。另进行50,708次单线局部端点弦替换，记录原分数减干预分数及概率变化；点着色是覆盖该点的干预窗口平均值，窗口精确值另列。
+
+**解释边界：** 梯度模是局部敏感度，不提供支持/抑制的符号，也不是因果证据。拉直差值的正负回答特定形状干预下原片段是否支持hairpin；该操作同时改变长度、切向及可能的整束归一化，不能称纯曲率因果效应。重叠窗口不可相加为整体分数。随机化网络权重的16例诊断中，原始梯度模排序相关系数约0.0253–0.6053；不把此诊断称通用解释有效性认证。热图本身不证明人工标签错误或网络已经定位物理hairpin头部。
+
+审计：outputs/Other_Task4C_Saliency_1.1/independent_audit.json；所有导出几何/物理坐标/标签/选例与原数据逐项核对，点显示均值独立重算。可微几何前向与原缓存分类概率最大差2.861023e-6，历史全量预测完全一致。样例Channel#4099原p=0.973210，线19的点4–12替换后p约0.7808；只是该干预的具体读数，不改标签。查看器viewer/index.html已用真实数据验证两流场、画廊、单束、热图切换、标签不一致筛选、翻页和片段叠加；JSON原数据另存，PNG按钮沿用Plotly导出，未自动确认文件落盘。当前请求完成；不自动启动先前讨论的消融或额外训练。
+<!-- task4c-saliency-1.1-2026-09-16-end -->

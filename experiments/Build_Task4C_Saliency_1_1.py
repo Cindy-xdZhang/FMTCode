@@ -67,7 +67,11 @@ def build(package,output,plotly_source=None):
         target=output/'data'/f"{r['id']}.js"
         target.write_text('window.registerSaliency('+json.dumps(r['id'])+','+
             json.dumps(data,separators=(',',':'),allow_nan=False)+');\n',encoding='utf-8')
-        files[str(target.relative_to(output))]=sha(target);records.append(r);valid_points+=n*32
+        files[str(target.relative_to(output))]=sha(target)
+        exported=output/'data'/f"{r['id']}.json"
+        write_json(exported,dict(record=r,model=manifest['model'],geometry_and_saliency=data))
+        files[str(exported.relative_to(output))]=sha(exported)
+        records.append(r);valid_points+=n*32
     payload=dict(records=records,model=manifest['model'],
         color_limits={k:max(float(np.quantile(np.abs(np.concatenate(v)),.98)),1e-12) for k,v in all_values.items()},
         methods=dict(gradient='norm(d(hairpin_logit-nonhairpin_logit)/d(normalized_geometry))',
