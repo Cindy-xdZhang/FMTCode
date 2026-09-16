@@ -207,3 +207,7 @@ Task4-b 当前阈值以2026-09-06用户最新指定为准：**Channel IVD>5.785�
 <!-- task4c-saliency-completed-1.1 -->
 2026-09-16完成用户要求的`Other_Task4C_Saliency_1.1`：固定BottomDensity1.2 FMT p35/n0_k06 seed96611，原训练函数回放至预先选定epoch56；所有56轮及206,000预测数组与原运行完全一致。Channel/TBL各200个预测Hairpin束，共7,244线/231,808点，逐点梯度、SmoothGrad及50,708次局部拉直干预已生成。三维查看器支持画廊/单束、贡献着色、片段叠加和标签不一致筛选，真实浏览器核验通过。科学df325fbf；四Slurm进程/八事件（含一次训练前字段错误）完整保留，无权重。协议docs/Task4C_saliency_protocol_1.1.md；独立审计outputs/Other_Task4C_Saliency_1.1/independent_audit.json；解释边界见experiment_log。当前请求完成，不启动其他消融。
 <!-- task4c-saliency-completed-1.1-end -->
+
+
+<!-- task4c-bilstm-small-final-20260916 -->
+2026-09-16完成`Ablation_Task4C_BiLSTMCapacity_1.1`：用户修正预算约56,786后，仅把原BiLSTM单向hidden81→71、MLP hidden64→47；总参数56,753（递归43,168+MLP13,585）。冻结193000/3000/10000数据、训练函数与三种子，测试F1为0.907316±0.008391，平均训练69.755分钟；原76,786参数0.919499±0.010500保持。科学commit2b92207b，七进程/14事件及三份测试预测独立核验通过，结果/结论见experiment_log同标记。19:44沙特时间PointNet++三种子仍运行在68/68/69轮，尚无测试结果，不自动追加调参。

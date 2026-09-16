@@ -4185,3 +4185,26 @@ Channel/TBL各200束，按预测>=0.5后的空间位置选择，不用GT或热�
 
 审计：outputs/Other_Task4C_Saliency_1.1/independent_audit.json；所有导出几何/物理坐标/标签/选例与原数据逐项核对，点显示均值独立重算。可微几何前向与原缓存分类概率最大差2.861023e-6，历史全量预测完全一致。样例Channel#4099原p=0.973210，线19的点4–12替换后p约0.7808；只是该干预的具体读数，不改标签。查看器viewer/index.html已用真实数据验证两流场、画廊、单束、热图切换、标签不一致筛选、翻页和片段叠加；JSON原数据另存，PNG按钮沿用Plotly导出，未自动确认文件落盘。当前请求完成；不自动启动先前讨论的消融或额外训练。
 <!-- task4c-saliency-1.1-2026-09-16-end -->
+
+
+<!-- task4c-bilstm-small-final-20260916 -->
+## Task4-c smaller BiLSTM + MLP completed — 2026-09-16
+
+`Ablation_Task4C_BiLSTMCapacity_1.1` finished all three seeds 96611–96613. Scientific commit `2b92207b7f115328f8fe1ca2aca8d22f5d274e41`; config `config/Ablation_Task4C_BiLSTMCapacity_1.1.json`, SHA256 `5aab378dcb9715ea5a5106ea43f12c242bcaccac8a4f6bf9a287e28fbfd9aa04`. Protocol: `docs/Task4C_bilstm_capacity_protocol_1.1.md`; model/runner: `FMT_Utils/Task4C_BiLSTMCapacity_1_1.py` / `experiments/Task4C_BiLSTMCapacity_1_1.py`.
+
+Only widths changed: bidirectional hidden 81→71, MLP hidden 64→47. Recurrent 43,168 + MLP 13,585 = 56,753 total, satisfying the corrected approximately 56,786 request. The frozen 193,000/3,000/10,000 data, source labels, training function, optimizer/selection rules and V100 device family remain unchanged.
+
+| Model | Total parameters | Test F1 mean ± sample standard deviation | Mean training minutes |
+|---|---:|---:|---:|
+| Original BiLSTM + MLP | 76,786 | 0.919499 ± 0.010500 | 83.194 |
+| Smaller BiLSTM + MLP | 56,753 | 0.907316 ± 0.008391 | 69.755 |
+
+| Seed | Epochs | Selected epoch | Test F1 combined | Channel | TBL | Training minutes |
+|---|---:|---:|---:|---:|---:|---:|
+| 96611 | 148 | 98 | 0.909194 | 0.913043 | 0.903453 | 66.485 |
+| 96612 | 162 | 112 | 0.898146 | 0.915045 | 0.872675 | 74.374 |
+| 96613 | 152 | 102 | 0.914610 | 0.926168 | 0.896751 | 68.405 |
+
+The smaller model uses 26.09% fewer parameters and has a 0.012183 lower mean test F1 (1.2183 percentage points) in this paired three-seed experiment. It remains above the frozen FMT reference 0.888404 ± 0.011497, which has 76,738 parameters. This is a measured comparison on the already used shared-instance benchmark, not a claim of statistically established superiority or independent-instance generalization. Preserve original results; no automatic test-based tuning. Training time includes per-epoch validation and excludes queueing, preprocessing and final prediction.
+
+All three test prediction hashes, 10,000-row coverage, source labels/instance IDs and threshold-0.5 F1 independently verified. Mean/sample standard deviation and validation-selected epoch independently recomputed. All seven processes/14 runtime events have matching scientific commit/config and exit code 0. Reuse audit confirms all 18 physical file hashes unchanged. Local evidence: `outputs/Ablation_Task4C_BiLSTMCapacity_1.1/final_verified_evidence.json`; remote results: `/ibex/user/zhanx0o/FMT_Task4C_BiLSTMCapacity_1p1_20260916/outputs/Ablation_Task4C_BiLSTMCapacity_1.1`. No checkpoint downloaded.

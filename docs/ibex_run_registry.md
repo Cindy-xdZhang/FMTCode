@@ -11541,3 +11541,21 @@ CPU preflight and forward-AST comparison passed before submission. No new perfor
 - {"job": "51962085", "phase": "replay", "state": "STARTED", "time": "2026-09-16T16:00:35.514196+00:00", "host": "gpu609-09", "gpu": "Tesla V100-SXM2-32GB", "exit_code": null, "commit": "df325fbf2da8827a01eef9cd6701b14ea72fe70a"}
 - {"job": "51962085", "phase": "replay", "state": "ENDED", "time": "2026-09-16T16:14:51.547720+00:00", "host": "gpu609-09", "gpu": "Tesla V100-SXM2-32GB", "exit_code": 0, "commit": "df325fbf2da8827a01eef9cd6701b14ea72fe70a"}
 <!-- task4c-saliency-completed-1.1-end -->
+
+
+<!-- task4c-bilstm-small-final-20260916 -->
+## Small BiLSTM capacity 1.1 final status — 2026-09-16
+
+Scientific commit `2b92207b7f115328f8fe1ca2aca8d22f5d274e41`; config `config/Ablation_Task4C_BiLSTMCapacity_1.1.json`, SHA256 `5aab378dcb9715ea5a5106ea43f12c242bcaccac8a4f6bf9a287e28fbfd9aa04`. All seven submitted processes completed successfully; final merge finished 2026-09-16 19:06:09 Saudi (UTC+03). Three-seed test F1 0.907316 ± 0.008391, total 56,753 parameters, mean training 69.755 minutes. All three test prediction hashes, 10,000-row coverage, source labels/instance IDs and threshold-0.5 F1 independently verified. Mean/sample standard deviation and validation-selected epoch independently recomputed. All seven processes/14 runtime events have matching scientific commit/config and exit code 0. Reuse audit confirms all 18 physical file hashes unchanged. Local evidence: `outputs/Ablation_Task4C_BiLSTMCapacity_1.1/final_verified_evidence.json`; remote results: `/ibex/user/zhanx0o/FMT_Task4C_BiLSTMCapacity_1p1_20260916/outputs/Ablation_Task4C_BiLSTMCapacity_1.1`. No checkpoint downloaded.
+
+| Slurm array/task | Actual job ID | Phase | Runtime start UTC | Runtime end UTC | Node | Device | Exit |
+|---|---|---|---|---|---|---|---:|
+| 51959150 | 51959150 | preflight | 2026-09-16T14:32:45.458206+00:00 | 2026-09-16T14:32:53.377080+00:00 | gpu208-18 | Tesla V100-SXM2-32GB | 0 |
+| 51959151 | 51959151 | reuse | 2026-09-16T14:33:38.263455+00:00 | 2026-09-16T14:33:46.583174+00:00 | cn604-18 | CPU | 0 |
+| 51959152 | 51959152 | pilot | 2026-09-16T14:35:03.135292+00:00 | 2026-09-16T14:35:14.261717+00:00 | gpu212-02 | Tesla V100-SXM2-32GB | 0 |
+| 51959153_0 | 51959782 | train | 2026-09-16T14:41:51.547729+00:00 | 2026-09-16T15:48:45.546718+00:00 | gpu609-09 | Tesla V100-SXM2-32GB | 0 |
+| 51959153_1 | 51959783 | train | 2026-09-16T14:41:51.670525+00:00 | 2026-09-16T15:56:39.328111+00:00 | gpu609-02 | Tesla V100-SXM2-32GB | 0 |
+| 51959153_2 | 51959153 | train | 2026-09-16T14:55:24.788002+00:00 | 2026-09-16T16:04:14.511494+00:00 | gpu214-18 | Tesla V100-SXM2-32GB | 0 |
+| 51959154 | 51959154 | merge | 2026-09-16T16:04:31.959329+00:00 | 2026-09-16T16:06:08.740907+00:00 | cn113-35-l | CPU | 0 |
+
+PointNet++ snapshot at 2026-09-16 19:44:39 Saudi: 51946838_0/1/2 running at epochs 68/68/69 on gpu609-07/gpu609-05/gpu214-06; merge 51946839 pending dependency. Best validation F1 0.914474/0.919337/0.906077; these are not test results. No intervention or new submission.

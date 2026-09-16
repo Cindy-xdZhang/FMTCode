@@ -1116,3 +1116,22 @@ Task4-c随输入宽度改变第一层参数；其余网络和h0训练保持。�
 | PointNet（缩小宽度） | 96613 | 121 | 71 | 0.890358 |
 
 科学commit：几何基线d20c2458，PointNet b4c8a80c，FMT邻居选择686ef144，冻结参考a7643890。相应版本为Ablation_Task4C_GeometricBaselines_1.1、Ablation_Task4C_PointNet_1.1、Ablation_Task4C_NeighborSelection_1.1。18份测试预测的哈希、完整行覆盖、源标签与F1及均值/标准差独立核对；验证选择轮次与history一致；34进程/68条事件均正常完成。各版本outputs下final_verified_evidence.json保留逐种子记录与原始远程目录。各方案其余训练/验证预测保留在Ibex，远程merge已完成。PointNet++三种子仍在运行，不纳入已完成结果。方法结论见experiment_log同标记。
+
+
+<!-- task4c-bilstm-small-final-20260916 -->
+## Task4-c reduced BiLSTM capacity — Ablation_Task4C_BiLSTMCapacity_1.1
+
+Frozen BottomDensity 1.2 data: 193,000 training / 3,000 validation / 10,000 test; V100, seeds 96611–96613. BiLSTM means bidirectional long short-term memory network; MLP means multilayer perceptron classifier. Total includes both modules. Times include per-epoch validation, excluding queueing and final prediction.
+
+| Model | Total parameters | Test F1 mean ± sample standard deviation | Mean training minutes |
+|---|---:|---:|---:|
+| Original BiLSTM + MLP | 76,786 | 0.919499 ± 0.010500 | 83.194 |
+| Smaller BiLSTM + MLP | 56,753 | 0.907316 ± 0.008391 | 69.755 |
+
+| Seed | Epochs | Selected epoch | Test F1 combined | Channel | TBL | Training minutes |
+|---|---:|---:|---:|---:|---:|---:|
+| 96611 | 148 | 98 | 0.909194 | 0.913043 | 0.903453 | 66.485 |
+| 96612 | 162 | 112 | 0.898146 | 0.915045 | 0.872675 | 74.374 |
+| 96613 | 152 | 102 | 0.914610 | 0.926168 | 0.896751 | 68.405 |
+
+Scientific commit `2b92207b7f115328f8fe1ca2aca8d22f5d274e41`; config `config/Ablation_Task4C_BiLSTMCapacity_1.1.json`, SHA256 `5aab378dcb9715ea5a5106ea43f12c242bcaccac8a4f6bf9a287e28fbfd9aa04`. Original reference commit `d20c2458d3672558997ade7697dd810bc832c00b`. Smaller model: recurrent 43,168 + MLP 13,585 = 56,753. Three test predictions and seven processes/14 runtime events verified; evidence in `outputs/Ablation_Task4C_BiLSTMCapacity_1.1/final_verified_evidence.json`. Method conclusions are in experiment_log under the same marker.
