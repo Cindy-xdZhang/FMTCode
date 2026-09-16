@@ -1,0 +1,21 @@
+{
+  "version": "Other_Task4C_Saliency_1.1",
+  "output": "outputs/Other_Task4C_Saliency_1.1",
+  "base_config": "config/Ablation_Task4C_BottomDensity_1.2.json",
+  "base_config_sha256": "c92b892ed1db9e6e01d64f4eea7792e616e5ab6f0b4a7436b3b456739be44363",
+  "source_output": "/ibex/user/zhanx0o/FMT_Task4C_BottomDensity_1p2_20260916/outputs/Ablation_Task4C_BottomDensity_1.2",
+  "source_scientific_commit": "a7643890d22c7faf63c1f716bb6222ba5271c5ff",
+  "seed": 96611,
+  "reference_selected_epoch": 56,
+  "split": "test",
+  "examples_per_flow": 200,
+  "selection_seed": 91641,
+  "selection": "spatially_diverse_among_all_reference_predicted_hairpin_without_using_ground_truth",
+  "threshold": 0.5,
+  "smooth_samples": 16,
+  "noise_sigma_normalized_radius": 0.002,
+  "patch_intervals": [[0,8],[4,12],[8,16],[12,20],[16,24],[20,28],[24,31]],
+  "patch_operation": "one_line_endpoint_chord_replacement_keep_point_count_and_frozen_seed_neighbors_recompute_geometry_normalization",
+  "score": "hairpin_logit_minus_nonhairpin_logit",
+  "checkpoint_policy": "memory_only_replay_to_previously_selected_epoch_no_weight_files"
+}
