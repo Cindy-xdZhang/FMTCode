@@ -1,7 +1,7 @@
 {
   "version": "Ablation_Task4C_GeometricBaselines_1.1",
   "user_version": "task4-c-three-geometric-baselines-1.1",
-  "execution_revision": "frozen_fivefold_data_three_geometry_baselines_1.1",
+  "execution_revision": "frozen_fivefold_data_three_geometry_baselines_1.1_float64_pointnn",
   "output": "outputs/Ablation_Task4C_GeometricBaselines_1.1",
   "base_config": "config/Ablation_Task4C_BottomDensity_1.2.json",
   "base_config_sha256": "c92b892ed1db9e6e01d64f4eea7792e616e5ab6f0b4a7436b3b456739be44363",
@@ -16,5 +16,6 @@
   },
   "fixed_feature_normalization": "combined_training_rows_only_per_feature_zscore_std_below_1e-8_replaced_by_one",
   "pointnn_encoding_batch_size": 4,
+  "pointnn_internal_dtype": "float64_with_float32_output",
   "reference_fmt_parameters": 76738
 }

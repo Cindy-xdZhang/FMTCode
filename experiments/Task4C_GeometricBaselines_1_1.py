@@ -30,6 +30,7 @@ def load_spec(config):
     spec = source.load_spec(definition['base_config'])
     spec.update(definition)
     assert spec['methods'] == list(PARAMETERS)
+    assert spec['pointnn_internal_dtype'] == 'float64_with_float32_output'
     assert spec['dataset_policy'] == 'reuse_all_source_geometry_seeds_metadata_without_sampling'
     for method, n in PARAMETERS.items():
         assert spec['baseline_definitions'][method]['parameters'] == n
@@ -174,6 +175,9 @@ def preflight(spec, config, device):
     assert torch.equal(a, encoder(p[:, perm]))
     assert torch.allclose(a[:1], encoder(p[:1]), atol=2e-5, rtol=2e-5)
     assert not list(encoder.parameters()) and torch.isfinite(a).all()
+    for size in (320, 864):
+        cloud = torch.rand((4, size, 3), device=device)
+        assert torch.allclose(encoder(cloud)[:1], encoder(cloud[:1]), atol=2e-5, rtol=2e-5)
     parameter_counts = {}
     for method in spec['methods']:
         model = make_model(method, .15).to(device)

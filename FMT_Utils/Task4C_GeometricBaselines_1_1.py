@@ -69,7 +69,9 @@ class PointNNEncoder(nn.Module):
     """Fixed four-stage whole-cloud Point-NN; all valid points, zero learned parameters."""
     @torch.no_grad()
     def forward(self, points):
-        x = canonical_points(points)
+        # High-frequency phases amplify float32 reduction differences across batch shapes.
+        # Float64 internal arithmetic is validated on V100; the cache remains float32.
+        x = canonical_points(points.double())
         features = position_embedding(x, 72)
         for _ in range(4):
             anchors = farthest_points(x, x.shape[1]//2)
@@ -90,7 +92,7 @@ class PointNNEncoder(nn.Module):
             # Equivalent to the original untrained BatchNorm in evaluation mode + GELU.
             features = F.gelu(pooled/math.sqrt(1.+1e-5))
             x = centers
-        return features.max(1).values+features.mean(1)
+        return (features.max(1).values+features.mean(1)).float()
 
 
 def mlp(widths, dropout):
