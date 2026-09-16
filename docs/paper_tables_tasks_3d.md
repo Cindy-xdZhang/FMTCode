@@ -1054,3 +1054,26 @@ Task4-c随输入宽度改变第一层参数；其余网络和h0训练保持。�
 
 九次训练、27份预测的哈希、标签及实例ID、完整行覆盖、F1/precision/recall/accuracy/average precision和混淆矩阵独立复算通过；验证选轮次与selection.lock一致。19进程/38事件及Slurm状态全部核对，退出码均0，无pt/pth/ckpt文件。完整证据：outputs/Ablation_Task4C_BottomDensity_1.2/final_verified_evidence.json。
 方法结论及比较边界见experiment_log的task4c-bottom-density-fivefold-final-20260916；协议docs/Task4C_bottom_density_protocol_1.2.md。
+
+
+<!-- task4c-fivefold-conv8-conv12-final-20260916 -->
+## Task4-c五倍数据追加8³/12³卷积：Ablation_Task4C_BottomDensity_1.3
+
+科学commit `12a0ffa7fbc6f530c3bc3ce1248cbc8fc028e132`，配置SHA256 `fa5ba536d8ac8e7f7060da93e38fcccdf7f120c339adb51cdca0505b9c33cb4e`。完整复用1.2的193,000训练/3,000验证/10,000测试；18个源数据文件哈希再次核对相同，只改变体素分辨率。两网络均72,192参数，V100，三种子96611–96613，固定阈值0.5，原训练与选轮次规则保持。
+
+|方法|参数量|训练F1均值|验证F1均值|测试F1均值 ± 标准差|Channel测试F1|TBL测试F1|平均训练分钟|
+|---|---|---|---|---|---|---|---|
+|Conv3D 8³|72,192|0.998285|0.846165|0.855112 ± 0.002812|0.894205|0.797922|38.134|
+|Conv3D 12³|72,192|0.999901|0.886857|0.896707 ± 0.003988|0.924214|0.855686|54.009|
+
+三种子样本标准差；平均训练时间包含每轮验证，不含编码和最终推理。
+
+|方法|96611|96612|96613|
+|---|---|---|---|
+|Conv3D 8³|0.852065|0.857606|0.855664|
+|Conv3D 12³|0.899664|0.898286|0.892171|
+
+相同数据参考见上节1.2：FMT0.888404±0.011497，Conv16 0.913490±0.001233，Conv24 0.933198±0.006292；均直接复用原已核验运行，不属于本轮六次新训练。
+
+六次训练、18份预测文件的哈希、标签/实例ID、完整行覆盖、F1/precision/recall/accuracy/average precision及混淆矩阵独立复算通过；验证选轮次与selection.lock一致。11进程/22条运行事件和Slurm状态全部核对，退出码均0，无pt/pth/ckpt文件。证据：outputs/Ablation_Task4C_BottomDensity_1.3/final_verified_evidence.json。
+方法结论见experiment_log的task4c-fivefold-conv8-conv12-final-20260916；协议docs/Task4C_bottom_density_protocol_1.3.md。
