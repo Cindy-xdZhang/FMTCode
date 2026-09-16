@@ -4144,3 +4144,20 @@ PointNet++1.1 deployment: scientific commit `f3d98dd347c3d426b815753167d3b923c46
 
 
 PointNet++1.1 V100 preflight51946834 and source-data audit51946835 PASS. GPU greedy/grouping, padding/permutation and backward checks passed on Tesla V100-SXM2-32GB; all18 frozen physical files match. The real32-bundle pilot51946836 is pending priority, with both encoders and three trainings waiting on dependencies. Formal metrics remain unavailable. Evidence: `outputs/Ablation_Task4C_PointNetPlusPlus_1.1/preflight_cuda.json` and `data_audit.json`.
+
+
+<!-- task4c-geometry-pointnet-fps-final-20260916 -->
+## Task4-c completed geometry, PointNet and neighbor comparisons — 2026-09-16
+
+同一193000/3000/10000数据上的三组实验全部完成，18次训练、18份测试预测独立复算及34进程/68事件核对通过。正式三种子结果如下；旧单种子0.894722为FPS seed96613，完整FPS均值现在为0.893015，变化是补齐另外两种子而非改写旧结果。
+
+- FMT：FPS6: 76738参数；test F1 0.893015458 ± 0.004408264；平均训练32.221分钟。
+- FMT：最近3条＋FPS3: 76738参数；test F1 0.886779154 ± 0.006196054；平均训练34.351分钟。
+- 切线／曲率＋MLP: 76782参数；test F1 0.580051077 ± 0.001726307；平均训练15.031分钟。
+- Point-NN式固定编码器＋MLP: 76704参数；test F1 0.303573214 ± 0.020438307；平均训练5.995分钟。
+- 双向长短期记忆网络＋MLP: 76786参数；test F1 0.919499358 ± 0.010500329；平均训练83.194分钟。
+- PointNet（缩小宽度）: 76749参数；test F1 0.889407031 ± 0.006154592；平均训练128.553分钟。
+
+结论限于当前共享实例的局部测试：FPS6相对原最近6条均值增加0.004611（0.4611个百分点），最近3+FPS3减少0.001625；只有三个优化种子，尚不能称为稳定或显著的形状信息改善。保留原最近6条为冻结参考，不按这次测试替换主方法。双向长短期记忆网络0.919499高于原FMT0.888404及本次两种FMT邻居方案；PointNet0.889407与原FMT均值接近。切线/曲率与Point-NN式固定编码器均连接并训练了MLP，低分不能解释为缺少分类头，也不外推为所有几何编码器无效。Point-NN是有明确数值/分组适配的特征基线，不是论文完整分类器的复现。没有按测试追加调参。
+
+科学commit和配置、主表、证据路径见paper_tables_tasks_3d对应节；每个版本outputs下final_verified_evidence.json包含逐种子结果、科学提交、完整运行事件与核验范围。原始训练/验证预测留在Ibex，未下载模型。PointNet++独立继续。
