@@ -11504,3 +11504,22 @@ GeometricBaselines1.1的15进程/30事件、PointNet1.1的7进程/14事件、Nei
 | 51946838_2 | RUNNING | 01:04:48 | 2026-09-16T16:10:46 | Unknown | gpu214-06 |
 
 PointNet++真实32束100步pilot通过，训练F1=1、CE0.693256→0.007730；批128前后向正常、峰值4.06GB、固定分组批次独立。两个全量分组缓存于16:09完成；51946838_0/1/2均16:10:46启动，分别gpu609-07/gpu609-05/gpu214-06。17:15检查均完成20轮，每轮185–188秒，最后日志年龄90–145秒符合当前轮耗时，不是卡住；最早停止仍取决于50轮未改善规则，训练上限500轮不变。
+
+
+## Task4-c smaller BiLSTM plus MLP 1.1 — submitted 2026-09-16
+
+User corrected total parameter target to approximately56,786, explicitly shrinking rather than enlarging. Scientific commit `2b92207b7f115328f8fe1ca2aca8d22f5d274e41`; config `config/Ablation_Task4C_BiLSTMCapacity_1.1.json`, SHA256 `5aab378dcb9715ea5a5106ea43f12c242bcaccac8a4f6bf9a287e28fbfd9aa04`. Actual total56,753=43,168 recurrent+13,585 MLP; hidden71/head47. Reuse original193000/3000/10000 bundles and exact original trainer; preserve old76,786-parameter results. Remote root `/ibex/user/zhanx0o/FMT_Task4C_BiLSTMCapacity_1p1_20260916`, output `outputs/Ablation_Task4C_BiLSTMCapacity_1.1`.
+
+Submitted2026-09-16 14:31:10UTC (17:31:10Saudi), seven processes. Each phase depends on successful preceding checks. Actual start/end, node and GPU are written by `runtime.jsonl`.
+
+| Job | Task | Seed | Expected device | Dependency |
+|---|---|---:|---|---|
+| 51959150 | Parameter count, sequence/padding and gradient preflight | — | V100 | None |
+| 51959151 | All18 physical-file hashes; read-only data reuse | — | CPU | 51959150 |
+| 51959152 | Train-only32-bundle fit and full batch128 gradient check | — | V100 | 51959151 |
+| 51959153_0 | Smaller BiLSTM+MLP formal training | 96611 | V100 | 51959152 |
+| 51959153_1 | Smaller BiLSTM+MLP formal training | 96612 | V100 | 51959152 |
+| 51959153_2 | Smaller BiLSTM+MLP formal training | 96613 | V100 | 51959152 |
+| 51959154 | Independent saved-prediction/metadata/F1 merge | — | CPU | 51959153 |
+
+CPU preflight and forward-AST comparison passed before submission. No new performance yet; no saved weight files. Earlier PointNet++ and other experimental records are unchanged.
