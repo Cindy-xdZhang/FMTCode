@@ -4005,3 +4005,9 @@ PSNR为峰值信噪比，范围由训练真值固定；每种子先平均三张�
 九次训练、27份预测的哈希、标签及实例ID、完整行覆盖、F1/precision/recall/accuracy/average precision和混淆矩阵独立复算通过；验证选轮次与selection.lock一致。19进程/38事件及Slurm状态全部核对，退出码均0，无pt/pth/ckpt文件。完整证据：outputs/Ablation_Task4C_BottomDensity_1.2/final_verified_evidence.json。
 
 截至2026-09-16 03:44:38 UTC（沙特06:44:38）全部结束，当前请求完成，不自动追加调参。查看器数据包由merge生成；本地交互页面尚未重新生成。
+
+
+<a id="task4c-fivefold-conv8-conv12-20260916"></a>
+## 2026-09-16：五倍数据追加8³/12³ Conv3D（1.3）
+
+用户要求测试8³/12³ Conv3D。新版本Ablation_Task4C_BottomDensity_1.3，直接复用科学commita7643890的1.2数据193,000/3,000/10,000；全部geometry/seeds/metadata按原哈希核验后只读复用，不重新采样。两分辨率相同72,192参数、原V100训练器和三种子96611–96613，只增加六次训练。1.2的FMT0.888404、Conv16 0.913490、Conv24 0.933198保留作相同数据参考，不重跑或改写；1.1旧8³因训练集不同不代替本轮8³。CPU前后向、两分辨率独立体素参考/稀疏往返和参数检查通过；当前尚无新F1。配置、入口和完整冻结规则见docs/Task4C_bottom_density_protocol_1.3.md。
