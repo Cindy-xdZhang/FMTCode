@@ -4123,3 +4123,10 @@ CPU通过初始化/训练后点顺序不变、推理批次独立、训练与推�
 科学commit `b4c8a80c8a187e52a2c25c82b9ba4c1dba4eb819` 已公开推送；配置SHA256 `d4fba7fcab4113e911d74bfcd1b1f48688ae145b99e66ce14f4e7a82fa1e1f51`。Ibex51932378–51932382共七进程，包含三次正式训练，独立目录FMT_Task4C_PointNet_1p1_20260916。V100预检通过，193,000/3,000/10,000原18份数据文件哈希相同；32真实训练束100步小拟合F1=1.0，CE从0.695694降至0.014498，批128完整反向传播通过。该检查只读训练子集，不是正式测试指标。
 
 三个正式种子已解除依赖等待GPU，当前无新测试F1，不预判与FMT或Point-NN的性能关系。归档证据outputs/Ablation_Task4C_PointNet_1.1/startup_evidence.json含预检、数据核验、pilot、运行事件和Slurm状态。原有三基线继续执行，没有重跑或改动其模型和数据。
+
+
+## Task4-c neighbor selection 1.1 — 2026-09-16
+
+User requests an explanation and FPS comparisons. Source audit identifies two different stages: the 3x3x3 physical seed stencil retains every cleaned valid line (10–27), whereas p35 makes each valid line an anchor and selects six nearest seed neighbors. Train/validation/test share both routines; bottom-biased training expansion changes spatial sampling density, not neighbor-selection logic. Distant valid lines remain as anchors, but per-token distant relationships can be absent. No FPS advantage is presumed.
+
+Version `Ablation_Task4C_NeighborSelection_1.1` freezes all physical files from BottomDensity1.2 (193000/3000/10000), integration, labels, splits, normalization, six frequencies and the 76738-parameter model. FPS6 and nearest3+FPS3 each use seeds96611–96613; frozen nearest6 p35 reference is 0.888404±0.011497 and requires exact source-cache reproduction before reuse. CPU independent greedy/masking/frozen-feature/backward checks passed; AST comparison confirms the trainer differs only in model/normalizer dispatch. No new performance yet. Protocol: `docs/Task4C_neighbor_selection_protocol_1.1.md`; GPU submission and all job states will be registered.

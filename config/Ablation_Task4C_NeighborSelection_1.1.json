@@ -1,0 +1,25 @@
+{
+  "version": "Ablation_Task4C_NeighborSelection_1.1",
+  "user_version": "task4-c-fmt-nearest-fps-neighbors-1.1",
+  "execution_revision": "frozen_bundle_six_seed_neighbors_1.1",
+  "output": "outputs/Ablation_Task4C_NeighborSelection_1.1",
+  "base_config": "config/Ablation_Task4C_BottomDensity_1.2.json",
+  "base_config_sha256": "c92b892ed1db9e6e01d64f4eea7792e616e5ab6f0b4a7436b3b456739be44363",
+  "source_output": "/ibex/user/zhanx0o/FMT_Task4C_BottomDensity_1p2_20260916/outputs/Ablation_Task4C_BottomDensity_1.2",
+  "source_scientific_commit": "a7643890d22c7faf63c1f716bb6222ba5271c5ff",
+  "dataset_policy": "reuse_all_source_geometry_seeds_metadata_without_sampling",
+  "methods": ["fps6", "nearest3_fps3"],
+  "nearest_reference": "reuse_frozen_p35_three_seed_predictions_after_exact_token_check",
+  "selection": {
+    "candidate_pool": "all_other_valid_lines_in_the_same_frozen_bundle",
+    "distance": "torch_cdist_on_frozen_normalized_seed_xyz_same_as_original_p35",
+    "fps_initial_set": "anchor_line_then_optional_three_nearest_neighbors",
+    "fps_greedy": "maximize_minimum_distance_to_all_selected_seeds_including_anchor",
+    "ties": "first_cached_line_index",
+    "neighbors": 6,
+    "same_for_train_validation_test": true
+  },
+  "model_parameters": {"p35": 76738},
+  "encoding_batch_size": 32,
+  "data_offset_audit_tolerance": 0.001
+}

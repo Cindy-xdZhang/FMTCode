@@ -179,3 +179,6 @@ Task4-b 当前阈值以2026-09-06用户最新指定为准：**Channel IVD>5.785�
 <!-- ftlep35-scales-final-2.2-begin -->
 2026-09-16完成`Other_FTLEP35Fusion_2.2`：固定2.1六方案补2×四场三种子，共72训练/432预测，4/8×复用原144训练；新增bilinear/bicubic三倍率144预测。科学commit64378a05，相同GTX1080Ti、原五线/时间块/共同mask/训练规则，无重新选方案。p35测试PSNR2/4/8×为47.527190/39.630193/33.157295；2×相对同网络仅低FTLE+1.119368、Raw+0.295512dB；DoubleGyre2×全选step0双三次，8×仍无优于仅低FTLE的平均PSNR增益（物理RMSE排名不同，不混用指标）。120行总表、24进程48事件及全部预测独立核验PASS，无模型文件。完整表outputs/Other_FTLEP35Fusion_2.2/report.md和paper_tables_ftle_2d；结论见experiment_log同名条目。当前请求完成，不自动追加调参，其他任务独立继续。
 <!-- ftlep35-scales-final-2.2-end -->
+
+
+2026-09-16用户要求核对Task4-c播种至线簇及训练/测试选邻居规则，并测试FPS。新增`Ablation_Task4C_NeighborSelection_1.1`：冻结BottomDensity1.2的193000/3000/10000束；每条有效线作anchor，比较最近6条（复用三种子原p35）、FPS6、最近3条+FPS3。两新方法各三种子，141维/76738参数及原训练不变。物理生成保留全部10–27条有效线；最近邻只用于FMT内部。CPU预检及训练循环AST核对通过，正式GPU核验/训练待提交；协议`docs/Task4C_neighbor_selection_protocol_1.1.md`。其他基线继续，不自动重采样或修改标签/积分。
