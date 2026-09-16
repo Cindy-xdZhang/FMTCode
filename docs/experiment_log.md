@@ -3977,3 +3977,5 @@ PSNR为峰值信噪比，范围由训练真值固定；每种子先平均三张�
 用户新增授权 `Ablation_Task4C_BottomDensity_1.2`。唯一数据变化是在1.1训练采样分布下新增154,400个实际积分的线簇，总193,000训练；旧训练前缀及3,000验证/10,000测试保留。每个来源样本的头区、标签、实例、尺度、完整/下半区池各增加四束新中心，保持已有底部Hairpin偏置。积分、标签、空间块和评价距离规则冻结。只运行p35/n0_k06和Conv16³/24³各三种子，参数76,738/72,192，V100，原训练配置不变。每轮仍遍历全训练集，因此计算预算随样本数增加，不称等计算量比较。
 
 配置与实现：config/Ablation_Task4C_BottomDensity_1.2.json、FMT_Utils/Task4C_BottomDensity_1_2.py、experiments/Task4C_BottomDensity_1_2.py；完整规则见docs/Task4C_bottom_density_protocol_1.2.md。CPU模型前后向、参数、体素独立参考/稀疏往返、标准化和确定性池化检查通过。Ibex须先完成每候选头区×尺度×采样池真实pilot及数据核验，之后才训练。当前尚无新F1，不推断五倍训练一定改善FMT，旧1.1结论不改写。
+
+科学commit `a7643890d22c7faf63c1f716bb6222ba5271c5ff` 已公开推送；Ibex51920910–51920917共19进程已提交。V100检查、Channel6,636/TBL9,717采样组合的真实pilot及容量检查通过，正式154,400束新增训练数据生成已启动。暂未取得完整新数据核验和新F1；不将已提交训练写成完成。原始启动证据为outputs/Ablation_Task4C_BottomDensity_1.2/startup_evidence.json。
