@@ -11428,3 +11428,22 @@ Submitted 2026-09-16 11:43:42–43 UTC (14:43:42–43 Saudi time). Each stage re
 Deployment note: an initial Git fetch with abbreviated commit `686ef144` failed before any Slurm submission; retry used the full same commit hash in the same initialized directory. No duplicate jobs or experimental runs arose from that fetch failure. Local CPU preflight passed before deployment; no weight files are created.
 
 Initial status checked after submission: preflight51936278 COMPLETED on gpu208-14 (Tesla V100-SXM2-32GB), Slurm start/end 2026-09-16 14:43:55/14:44:05 Saudi; runtime UTC 11:43:59.657309–11:44:04.883117, exit0. Reuse51936279 COMPLETED on cn604-18 (CPU), Slurm start/end 14:44:07/14:44:18 Saudi; runtime UTC 11:44:11.335006–11:44:17.384396, exit0. All18 physical hashes match. Every valid seed in all206000 bundles belongs to its original 3x3x3 stencil; counts10–27. Pilot51936280 is pending GPU priority; downstream encoding/training/merge await dependencies. No formal FPS performance yet.
+
+
+## PointNet++ SSG Task4-c 1.1 — submitted 2026-09-16
+
+Scientific commit `f3d98dd347c3d426b815753167d3b923c467bda6`; configuration `config/Ablation_Task4C_PointNetPlusPlus_1.1.json`, SHA256 `67f8f5e2806a446717eff08f4f9a809f44d40bf2677f805abb993d4187a9ae65`. Remote root `/ibex/user/zhanx0o/FMT_Task4C_PointNetPlusPlus_1p1_20260916`, output `outputs/Ablation_Task4C_PointNetPlusPlus_1.1`. Official SSG topology with reduced widths, 76723 parameters, frozen BottomDensity1.2 physical files and trainer. All submissions at2026-09-16 12:55:16–17UTC (15:55:16–17Saudi). Nine processes; afterok dependencies ensure preflight/data/pilot failures block formal training.
+
+| Job | Phase / task | Expected device | Dependency |
+|---|---|---|---|
+| 51946834 | CPU-validated selection and network checks repeated on GPU | V100 | None |
+| 51946835 | Verify all18 physical hashes; read-only dataset reuse | CPU | 51946834 |
+| 51946836 | Train-only32 real bundles, cache independence, batch128 gradient/memory check | V100 | 51946835 |
+| 51946837_0 | Channel fixed FPS and ball-query index cache, all splits | V100 | 51946836 |
+| 51946837_1 | TBL fixed FPS and ball-query index cache, all splits | V100 | 51946836 |
+| 51946838_0 | PointNet++ SSG small, seed96611 | V100 | 51946837 |
+| 51946838_1 | PointNet++ SSG small, seed96612 | V100 | 51946837 |
+| 51946838_2 | PointNet++ SSG small, seed96613 | V100 | 51946837 |
+| 51946839 | Independent prediction/metadata/F1 merge and viewer package | CPU | 51946838 |
+
+Initial status: submitted; CPU preflight passed. Actual runtime start/end, hostname and GPU are written in output `runtime.jsonl`; no new F1 yet. No changes or cancellations to earlier experimental chains. No weight files are saved.

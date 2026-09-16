@@ -188,3 +188,6 @@ Task4-b 当前阈值以2026-09-06用户最新指定为准：**Channel IVD>5.785�
 
 
 2026-09-16用户要求追加PointNet++并部署Ibex。新增`Ablation_Task4C_PointNetPlusPlus_1.1`，冻结BottomDensity1.2全部193000/3000/10000束与训练设置；官方SSG拓扑512/128/global、半径0.2/0.4、32/64邻点，缩小通道，总76723参数（比FMT少15）。固定几何FPS/球形分组索引提前缓存，网络全部层学习，三个种子96611–96613。CPU独立FPS/ball-query、排列/补零、梯度及训练循环AST核验通过；正式V100预检/真实32束pilot后编码与训练。协议`docs/Task4C_pointnetplusplus_protocol_1.1.md`，其余实验保持。
+
+
+2026-09-16 PointNet++1.1已部署并提交：科学commitf3d98dd3；51946834预检、51946835数据复用、51946836真实pilot、51946837[0–1]分组缓存、51946838[0–2]三种子训练、51946839独立汇总，共9进程。当前GPU预检Priority等待，后续Dependency等待；CPU验证通过，尚无正式F1。
