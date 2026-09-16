@@ -4240,3 +4240,11 @@ All three test prediction hashes, 10,000-row coverage, source labels/instance ID
 
 浏览器已核验统一两页、选择状态保留、特征/数值/着色/簇切换、数量控制、排名点击、原始与归一化七线、热图选择及特征组汇总。首版全局变量`top`冲突已修复；一次拾取时浏览器卡住后移除拾取回调内空间图重绘，最终播种点ID4050及热图ID2917的联动验证通过。既有Hairpin页复用400束与原独立审计，不新增训练。单样本分量仅解释固定簇中心的距离；整个轨线特征着色不冒充局部形状归因。当前请求完成。
 <!-- fmt-feature-contrast-1.1-2026-09-16-end -->
+
+
+<!-- task4c-fps-augmentation-search-start-20260916 -->
+## Task4-c FPS augmentation and Fourier architecture search — 1.1
+
+User authorizes a new search after the pre-FPS 59-configuration study. Preserve all BottomDensity1.2 physical data and old results. Default ranking uses Task4-c validation top five (p13/p10/p14/p17/p21), plus p35 control. Five new Fourier-input architectures have217986–992386 parameters; larger capacity is explicitly authorized and reported separately. Existing polyline resampling gives32/48 uniform/curvature-index sequences; online tangent sliding preserves endpoints, and proper common rotations use±15°/Haar SO(3), alone or combined. Six-bin DFT remains before every learned network; no raw geometry bypass or new kinematic features.
+
+264 one-seed screening fits → top12 with three full-budget validation seeds → one locked recipe and paired original-FPS control with three new final seeds.306 fits/312 Slurm processes, maximum24 V100 jobs concurrently. No test during search/refinement. Target approximately0.93; frozenConv24=.933198 and BiLSTM=.919499 are preserved references, not selection inputs. No guarantee of reaching the target. Protocol/config/model/runner/launcher use Task4C_FPSAugmentSearch_1_1 and docs/Task4C_fps_augmentation_search_protocol_1.1.md. CPU geometry, exact frozen-p35/FPS features, independent uniform interpolation, proper rotations, padding/line/batch behavior and gradients passed. Formal GPU pilot/submission pending; no new performance conclusion.

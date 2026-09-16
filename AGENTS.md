@@ -215,3 +215,7 @@ Task4-b 当前阈值以2026-09-06用户最新指定为准：**Channel IVD>5.785�
 <!-- fmt-feature-contrast-complete-1.1 -->
 2026-09-16完成用户要求`Other_FMT_FeatureContrast_1.1`：2160个现有Cylinder3D直接p35/n0_k06 primitive，t7.7–11.4，完整141维标准化后KMeans K2；提供逐维中心差异、完整向量、分布、热图、样本距离分解及真实轨线联动。统一HTML入口`outputs/Other_FMT_AnalysisWorkbench_1.1/index.html`另页复用400束Hairpin显著性。原编码/标准化精确复现、独立141维公式与全部浏览器数组/几何核验通过，页面交互通过。无IVD标签/质量指标、新训练或Ibex作业；描述性结论只在experiment_log。协议docs/FMT_feature_contrast_protocol_1.1.md；启动start_fmt_analysis.ps1。当前请求完成。
 <!-- fmt-feature-contrast-complete-1.1-end -->
+
+
+<!-- task4c-fps-augmentation-search-start-20260916 -->
+2026-09-16用户新增授权`Ablation_Task4C_FPSAugmentSearch_1.1`：在冻结BottomDensity1.2的193000/3000/10000线簇上，FPS6下比较旧Task4-c验证前五p13/p10/p14/p17/p21，额外p35对照，以及五种保留真实傅里叶的新网络。32/48点×均匀/曲率采样×无增强/切向抖动/小角度旋转/全SO(3)旋转及两种组合，共264候选；前12各三种子完整验证，锁定一方案后与原FPS控制各三种子测试，共306拟合、312进程，最多24个V100并行。只对现有折线重采样；标签、中心、积分、划分不变。目标约0.93，须高于0.933198才超过冻结Conv24。CPU精确特征/几何/梯度核验通过，尚未提交。协议docs/Task4C_fps_augmentation_search_protocol_1.1.md。此授权只覆盖本轮预定搜索，旧结果不改。
