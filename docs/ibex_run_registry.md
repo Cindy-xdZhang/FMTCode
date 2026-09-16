@@ -11300,3 +11300,55 @@ V100预检51911059完成，n0_k06标准化对照、三分辨率体素重建、�
 2026-09-16首次GPU预检51930114在gpu214-06运行9秒后失败（退出1）：Point-NN单精度同束在批次1/2输出不满足2e-5数值容差。其余14个依赖进程51930115/51930118/51930119[0–1]/51930120[0–8]/51930121均在运行前自动取消；没有正式训练或测试。保留提交及失败记录，不修改旧结果。工程诊断51930141，预期V100，原科学commit dda355f1，父配置同上，临时脚本SHA256 `df08d4a9eaaba3c0bbfa77b3fd9e4a0f3067cd430460ae214006c7a2456e9ff7`，测试随机64/320/864点云在float32/float64的批次误差；无标签、无模型选择，结束后删除临时脚本并保留输出。
 
 工程诊断51930141已完成，gpu214-06 / Tesla V100-SXM2-32GB，2026-09-16 09:55:28–09:55:34 UTC，退出0。float64内部计算的64/320/864点云跨批特征逐位相同；据此做数值修正并保持原2e-5预检容差。临时诊断脚本在证据归档后删除，不用于正式训练。
+
+<!-- ftlep35-scales-submission-2.2 -->
+## Other_FTLEP35Fusion_2.2 — 2026-09-16 2×补测与三倍率插值
+
+科学commit `64378a0554416a84cb1c5f907425edc613b1c940`；config `config/Other_FTLEP35Fusion_2.2.json`，SHA256 `5ee322ef61486da07409e3a21eb0c9a7f03914d6f42f9b651211a5bd967163a7`。独立目录 `/ibex/user/zhanx0o/FMT_FTLEP35_Scales_20260916`。共24进程，含72次新增训练；4×/8×复用旧结果。
+
+| Job ID | 阶段 | 进程数 | 提交UTC | 预期设备 |
+|---|---|---:|---|---|
+| 51929949 | preflight | 1 | 09/16/2026 09:47:54 | NVIDIA GeForce GTX 1080 Ti |
+| 51929950 | prepare | 4 | 09/16/2026 09:47:54 | CPU |
+| 51929951 | audit-data | 1 | 09/16/2026 09:47:54 | CPU |
+| 51929952 | train | 12 | 09/16/2026 09:47:54 | NVIDIA GeForce GTX 1080 Ti |
+| 51929953 | merge | 1 | 09/16/2026 09:47:54 | CPU |
+| 51929954 | audit | 1 | 09/16/2026 09:47:54 | CPU |
+| 51929955 | interpolate | 1 | 09/16/2026 09:47:54 | CPU |
+| 51929956 | combine | 1 | 09/16/2026 09:47:54 | CPU |
+| 51929957 | audit-combined | 1 | 09/16/2026 09:47:54 | CPU |
+| 51929958 | report | 1 | 09/16/2026 09:47:54 | CPU |
+<!-- ftlep35-scales-submission-2.2-end -->
+
+<!-- ftlep35-scales-final-registry-2.2-begin -->
+## Other_FTLEP35Fusion_2.2 全部24进程完成
+
+同上科学commit64378a05和配置SHA；独立Slurm/48条runtime事件核验PASS。所有训练实际设备均NVIDIA GeForce GTX 1080 Ti，无失败、取消或checkpoint。432份学习预测＋144份插值预测全部独立复算通过；结论见experiment_log的ftle-p35-scales-2-2-2026-09-16。
+
+| Job ID | 阶段 | 开始UTC | 结束UTC | 节点 | 实际设备 | 状态/退出码 |
+|---|---|---|---|---|---|---|
+| 51929949 | preflight | 2026-09-16T09:49:00 | 2026-09-16T09:49:16 | gpu502-11 | NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 |
+| 51929950_0 | prepare | 2026-09-16T09:49:18 | 2026-09-16T09:49:55 | cn604-03 | CPU | COMPLETED / 0:0 |
+| 51929950_1 | prepare | 2026-09-16T09:49:18 | 2026-09-16T09:50:05 | cn604-02 | CPU | COMPLETED / 0:0 |
+| 51929950_2 | prepare | 2026-09-16T09:49:18 | 2026-09-16T09:49:49 | cn604-02 | CPU | COMPLETED / 0:0 |
+| 51929950_3 | prepare | 2026-09-16T09:49:18 | 2026-09-16T09:49:54 | cn511-15 | CPU | COMPLETED / 0:0 |
+| 51929951 | audit-data | 2026-09-16T09:50:06 | 2026-09-16T09:50:36 | cn604-11 | CPU | COMPLETED / 0:0 |
+| 51929952_0 | train | 2026-09-16T09:51:10 | 2026-09-16T09:52:24 | gpu502-11 | NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 |
+| 51929952_1 | train | 2026-09-16T09:51:10 | 2026-09-16T09:52:24 | gpu502-11 | NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 |
+| 51929952_2 | train | 2026-09-16T09:51:10 | 2026-09-16T09:52:35 | gpu502-01 | NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 |
+| 51929952_3 | train | 2026-09-16T09:51:10 | 2026-09-16T09:52:20 | gpu502-01 | NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 |
+| 51929952_4 | train | 2026-09-16T09:51:10 | 2026-09-16T09:52:21 | gpu502-01 | NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 |
+| 51929952_5 | train | 2026-09-16T09:51:10 | 2026-09-16T09:52:22 | gpu502-01 | NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 |
+| 51929952_6 | train | 2026-09-16T09:51:10 | 2026-09-16T09:52:56 | gpu502-01 | NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 |
+| 51929952_7 | train | 2026-09-16T09:51:10 | 2026-09-16T09:53:11 | dgpu609-22 | NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 |
+| 51929952_8 | train | 2026-09-16T09:53:19 | 2026-09-16T09:54:55 | gpu502-11 | NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 |
+| 51929952_9 | train | 2026-09-16T09:53:19 | 2026-09-16T09:54:01 | gpu502-11 | NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 |
+| 51929952_10 | train | 2026-09-16T09:53:19 | 2026-09-16T09:53:56 | gpu502-01 | NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 |
+| 51929952_11 | train | 2026-09-16T09:53:19 | 2026-09-16T09:54:00 | gpu502-01 | NVIDIA GeForce GTX 1080 Ti | COMPLETED / 0:0 |
+| 51929953 | merge | 2026-09-16T09:54:57 | 2026-09-16T09:55:03 | cn511-08 | CPU | COMPLETED / 0:0 |
+| 51929954 | audit | 2026-09-16T09:55:04 | 2026-09-16T09:55:55 | cn511-08 | CPU | COMPLETED / 0:0 |
+| 51929955 | interpolate | 2026-09-16T09:55:57 | 2026-09-16T09:56:19 | cn604-17 | CPU | COMPLETED / 0:0 |
+| 51929956 | combine | 2026-09-16T09:56:22 | 2026-09-16T09:56:26 | cn604-17 | CPU | COMPLETED / 0:0 |
+| 51929957 | audit-combined | 2026-09-16T09:56:27 | 2026-09-16T09:56:45 | cn604-17 | CPU | COMPLETED / 0:0 |
+| 51929958 | report | 2026-09-16T09:56:46 | 2026-09-16T09:56:50 | cn604-17 | CPU | COMPLETED / 0:0 |
+<!-- ftlep35-scales-final-registry-2.2-end -->

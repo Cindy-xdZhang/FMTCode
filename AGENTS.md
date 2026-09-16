@@ -162,3 +162,11 @@ Task4-b 当前阈值以2026-09-06用户最新指定为准：**Channel IVD>5.785�
 <!-- ftlep35-final-state-2.1-end -->
 
 2026-09-16新增用户授权 `Ablation_Task4C_GeometricBaselines_1.1`：在冻结BottomDensity1.2的193,000/3,000/10,000线簇上追加三种基线，各种子96611–96613。baseline0切线/曲率后mean+max再MLP，76,782参数；baseline1整束点云固定Point-NN特征后MLP，76,704参数；baseline2逐线BiLSTM后线间mean+max与MLP，76,786参数（递归55,728）。与当前FMT76,738参数匹配，数据、标签、长度、空间块和训练器不改。CPU解析曲率、点云顺序/批次独立性、padding、BiLSTM序列性和梯度核验通过；正式提交前无新测试F1。协议docs/Task4C_geometric_baselines_protocol_1.1.md。此授权不恢复Task6等已暂停方向。
+
+<!-- ftlep35-scales-2.2-submitted -->
+2026-09-16用户要求补测各方案2×及bilinear/bicubic的2/4/8×，新增Other_FTLEP35Fusion_2.2。固定2.1六方案/四流场/三种子，共72次新增训练，4/8×复用已核验144次结果。科学commit64378a05，Ibex51929949–51929958共24进程已提交；相同GTX1080Ti，原数据/时间隔离/训练/选轮不变，无新方法搜索、无checkpoint。协议docs/FTLE_p35_scales_protocol_2.2.md，结果待核验。
+<!-- ftlep35-scales-2.2-submitted-end -->
+
+<!-- ftlep35-scales-final-2.2-begin -->
+2026-09-16完成`Other_FTLEP35Fusion_2.2`：固定2.1六方案补2×四场三种子，共72训练/432预测，4/8×复用原144训练；新增bilinear/bicubic三倍率144预测。科学commit64378a05，相同GTX1080Ti、原五线/时间块/共同mask/训练规则，无重新选方案。p35测试PSNR2/4/8×为47.527190/39.630193/33.157295；2×相对同网络仅低FTLE+1.119368、Raw+0.295512dB；DoubleGyre2×全选step0双三次，8×仍无优于仅低FTLE的平均PSNR增益（物理RMSE排名不同，不混用指标）。120行总表、24进程48事件及全部预测独立核验PASS，无模型文件。完整表outputs/Other_FTLEP35Fusion_2.2/report.md和paper_tables_ftle_2d；结论见experiment_log同名条目。当前请求完成，不自动追加调参，其他任务独立继续。
+<!-- ftlep35-scales-final-2.2-end -->
