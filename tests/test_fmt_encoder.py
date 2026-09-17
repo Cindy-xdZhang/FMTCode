@@ -51,7 +51,7 @@ def test_fmt_forward_shapes():
     xyz = torch.randn(B, N, 3)
     x = xyz.permute(0, 2, 1).contiguous()
 
-    for head, name in [(None, "none"), ("dft", "dft")]:
+    for head, name in [(None, "none")]:
         enc = FMT(PathlineLtimesteps=L, num_stages=2, embed_dim=24,
                   alpha=1000, beta=19, temporal_head=head)
         enc.eval()
@@ -60,7 +60,7 @@ def test_fmt_forward_shapes():
         assert out.shape == (B, enc.out_dim) == (B, 24 * 2 ** 2), \
             f"temporal_head={name}: got {tuple(out.shape)}"
         assert torch.isfinite(out).all()
-    print("ok: FMT forward shapes (temporal_head None / dft)")
+    print("ok: FMT forward shapes (explicit temporal_head=None)")
 
 
 if __name__ == "__main__":

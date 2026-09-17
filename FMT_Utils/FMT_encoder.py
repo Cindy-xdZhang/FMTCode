@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from FMT_Utils.FMTNoConvolution_1_1 import reject_retired_fmt
 
 
 def group_same_timestep(xyz: torch.Tensor, x: torch.Tensor, LSteps: int):
@@ -143,46 +144,14 @@ class LGA(nn.Module):
 
 
 class TemporalDFT(nn.Module):
+    """Retired learned spectral convolution; keep the name to reject old callers.
+
+    Historical implementation: Git 5ab735c0. Multiplication by learned Fourier
+    coefficients followed by irfft is a circular temporal convolution.
     """
-    沿时间维 L 做离散傅里叶变换 (DFT) 的可学习时序模块：
-      x --rfft--> X(f) --(learnable complex filter)--> Y(f) --irfft--> y
-    设计目标：把“轨迹是有序序列”的归纳偏置放到 encoder 的 temporal head 里，
-    避免把 N=K*L 当成无序点云直接做全局池化。
-    注意：本模块含可学习参数（复数滤波权重 + BatchNorm），启用它的 FMT 不是无参数编码器。
-    """
-    def __init__(self, channels: int, L: int, dropout: float = 0.0, residual: bool = True):
+    def __init__(self, *args, **kwargs):
         super().__init__()
-        self.channels = int(channels)
-        self.L = int(L)
-        self.residual = bool(residual)
-        # rfft 的频点数
-        self.F = self.L // 2 + 1
-
-        # 逐通道、逐频点的复数权重：Y = X * W
-        self.weight_real = nn.Parameter(torch.ones(self.channels, self.F))
-        self.weight_imag = nn.Parameter(torch.zeros(self.channels, self.F))
-
-        self.dropout = nn.Dropout(float(dropout)) if dropout and dropout > 0 else nn.Identity()
-        # BN1d 支持 [B, C, L]
-        self.norm = nn.BatchNorm1d(self.channels)
-        self.act = nn.GELU()
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        x: [B, C, L]
-        return: [B, C, L]
-        """
-        assert x.dim() == 3, f"TemporalDFT expects [B,C,L], got {tuple(x.shape)}"
-        B, C, L = x.shape
-        assert C == self.channels, f"channels mismatch: expect {self.channels}, got {C}"
-        assert L == self.L, f"L mismatch: expect {self.L}, got {L}"
-
-        X = torch.fft.rfft(x, dim=-1, norm='ortho')  # [B, C, F], complex
-        W = torch.complex(self.weight_real, self.weight_imag).unsqueeze(0)  # [1, C, F]
-        Y = X * W
-        y = torch.fft.irfft(Y, n=self.L, dim=-1, norm='ortho')  # [B, C, L], real
-        y = self.dropout(self.act(self.norm(y)))
-        return (x + y) if self.residual else y
+        reject_retired_fmt('TemporalDFT learned circular convolution')
 
 
 class FMT(nn.Module):
@@ -197,8 +166,8 @@ class FMT(nn.Module):
 
     Pipeline per stage: same-timestep cross-line grouping -> LGA (normalize + PosE_Geo
     weighting) -> max+mean pooling (+ BatchNorm+GELU).
-    temporal_head="dft" appends the learnable TemporalDFT head; temporal_head=None
-    falls back to global max+mean pooling (the Task1 clustering configuration).
+    temporal_head="dft" is retired and raises; temporal_head=None explicitly
+    selects global max+mean pooling (the historical Task1 configuration).
 
     NOTE: Pooling contains BatchNorm (learnable affine + running stats), so this
     encoder is NOT strictly parameter-free; behavior differs between train/eval

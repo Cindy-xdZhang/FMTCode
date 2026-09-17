@@ -1,5 +1,15 @@
 # FMT 完整实验记录
 
+<!-- fmt-architecture-audit-20260917 -->
+## Verify_FMTArchitectureAudit_1.1 — 2026-09-17
+
+用户要求从底层几何到完整网络全面核查。起点5ab735c0，本地4851条源版本/573配置路径、两ZIP及全部本地可达Git，Ibex198部署目录71744文件记录；远端503份仅换行差异、7份早期客观性源码差异已另存。完整报告`FMT_architecture_audit_2026-09-17_zh.md`，573项配置索引`FMT_experiment_architecture_catalog_2026-09-17.md`，全部证据`outputs/Verify_FMTArchitectureAudit_1.1/`。静态配置存在不算运行完成；本次没有重新训练或复算所有旧F1。
+
+纠正：此前“p35不轮换/c156轮换”缺少任务限定；旧Task3/5 p35固定中心且完整模型含3层Conv1d，Task4-c p35和c156均逐有效线轮换中心且FMT分支无ConvNd。ASAP相机固定中心，之后的c156仍轮换七中心。p35只定义局部池化，不能代表完整网络。模块构造及真实特征调用计数验证这些区别。新发现TemporalDFT的学习频域滤波等价循环卷积、fps_graph含EdgeConv式图消息传递；按现有禁令删除实现并拒绝旧入口，历史结构在Git保留，不自动替换模型。
+
+上一条单中心核验只提交预检52008644，导入缺少FLowUtils而FAILED/1:0；正式21次拟合未提交，无新F1，按当前审计要求暂停。不将旧含卷积/多中心排名重命名为新条件下的冠军。
+<!-- fmt-architecture-audit-20260917-end -->
+
 <!-- fmt-no-convolution-20260917 -->
 ## 2026-09-17 用户最高优先级：FMT禁止空间卷积
 

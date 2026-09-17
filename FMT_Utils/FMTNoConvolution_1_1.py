@@ -15,7 +15,8 @@ class ForbiddenFMTConvolutionError(ValueError):
 def reject_retired_fmt(name):
     raise ForbiddenFMTConvolutionError(
         f'{name} was removed by the user on 2026-09-17: FMT must not use '
-        f'Conv1d/2d/3d, transposed convolution, or a convolutional Raw branch. '
+        f'Conv1d/2d/3d, transposed/spectral convolution, EdgeConv-style spatial '
+        f'message passing, or a convolutional Raw branch. '
         f'Historical results are withdrawn from active FMT evidence. See {POLICY}'
     )
 

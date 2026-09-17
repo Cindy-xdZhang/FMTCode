@@ -73,6 +73,19 @@ def test_p35_spatial_fusion_removed():
         FusionSR(2)
 
 
+def test_spectral_and_graph_convolution_entries_are_rejected():
+    from FMT_Utils.FMT_encoder import TemporalDFT, FMT
+    with pytest.raises(ForbiddenFMTConvolutionError, match='circular convolution'):
+        TemporalDFT(channels=24, L=32)
+    # Old default and explicitly requested spectral head both fail, never
+    # silently substitute a different pooling operation for an old experiment.
+    for kwargs in ({}, {'temporal_head': 'dft'}):
+        with pytest.raises(ForbiddenFMTConvolutionError):
+            FMT(32, 1, 24, 1000, 19, **kwargs)
+    with pytest.raises(ForbiddenFMTConvolutionError, match='EdgeConv'):
+        FourierClassifier('p35', 'fps_graph', 'h0')
+
+
 def test_model_zoo_retired_classes_have_no_implementation():
     # Avoid importing unrelated legacy point-cloud extensions.
     source = (ROOT/'FMT_Utils/model_zoo.py').read_text(encoding='utf-8')

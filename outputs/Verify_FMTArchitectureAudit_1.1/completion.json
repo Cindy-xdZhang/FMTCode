@@ -1,0 +1,15 @@
+{
+  "version": "Verify_FMTArchitectureAudit_1.1",
+  "source_head": "5ab735c0412ad19fb7539e6ccada416a3262ac3c",
+  "status": "architecture_review_completed_with_explicit_scope",
+  "tests": 24,
+  "failures": 0,
+  "models": 15,
+  "center_checks": 5,
+  "remote_distinct_sources_reviewed": 7,
+  "formal_training_submitted": false,
+  "prior_preflight_job": "52008644",
+  "prior_preflight_status": "FAILED 1:0; ModuleNotFoundError FLowUtils",
+  "experiment_status": "paused_for_user_requested_architecture_audit",
+  "historical_metrics_recomputed": false
+}

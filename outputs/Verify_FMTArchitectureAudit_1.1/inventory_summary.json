@@ -1,0 +1,18 @@
+{
+  "head": "5ab735c0412ad19fb7539e6ccada416a3262ac3c",
+  "sources": 4851,
+  "unique_contents": 3379,
+  "source_origins": {
+    "archive:retired-diagnostics-20260913.zip": 88,
+    "archive:retired-validation-20260905.zip": 997,
+    "git_history": 2641,
+    "working_tree": 1125
+  },
+  "configurations": 993,
+  "distinct_config_paths": 573,
+  "convolution_occurrences": 232,
+  "unique_conv_source_contents": 46,
+  "parse_errors": 0,
+  "output_directories": 510,
+  "limitation": "AST hits do not establish executed branches. All local reachable Git source versions are inventoried; remote-only/uncommitted historical copies cannot be certified from this inventory."
+}

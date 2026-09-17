@@ -1,5 +1,15 @@
 # Ibex 总实验运行表
 
+<!-- fmt-architecture-audit-20260917 -->
+## 2026-09-17 单中心预检失败并按用户新要求转全面审计
+
+| 实验 | 作业 | 阶段 | 运行状态与主要结果 |
+|---|---|---|---|
+| Verify_FMT_SingleCenter_Task354C_1.1 | 52008644 | preflight | FAILED / 1:0；科学提交5ab735c0；2026-09-17 19:20:24–19:20:31（Ibex显示时间）；导入缺少FLowUtils，未进入正式训练。原计划21次拟合未提交。用户要求全面结构审计后暂停，不自动恢复。 |
+
+此次架构审计仅读取Ibex源码/状态，不提交GPU实验；查询时队列为空。完整报告见`FMT_architecture_audit_2026-09-17_zh.md`。
+<!-- fmt-architecture-audit-20260917-end -->
+
 <!-- fmt-convolution-withdrawal-notice-20260917 -->
 > **2026-09-17撤销通知：** 本文旧Raw卷积＋FMT/残差及二维FMT卷积方案已撤销，不能重跑或用作当前FMT主表、附录、“最佳方法”证据。历史数值仅供核对。无卷积的固定特征和全连接分支另行保留；以 [FMT禁止空间卷积协议](FMT_no_spatial_convolution_protocol_1.1.md) 为准。
 <!-- fmt-convolution-withdrawal-notice-20260917-end -->

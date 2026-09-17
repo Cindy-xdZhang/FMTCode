@@ -1,5 +1,9 @@
 # 3D Tasks 当前有效性能表
 
+<!-- fmt-architecture-audit-20260917 -->
+**2026-09-17中心策略审计：** Task4-c p35/h0/n0_k06与c156的历史成绩均使用多中心编码；直接fmt_c156/asap_fmt也使用七中心。它们的无ConvNd结论不代表单中心。旧Task3/5 p35/nTDO固定中心但含Raw Conv1d，已撤销。此表保留的历史多中心成绩不能用于回答用户最新“单中心且无卷积的统一FMT谁最好”。fps_graph图邻域分支另按禁令撤销；不改变c156的原始结构/数值。完整结构与逐配置清单见`FMT_architecture_audit_2026-09-17_zh.md`。
+<!-- fmt-architecture-audit-20260917-end -->
+
 2026-09-17用户裁定：所有含卷积的FMT完整方案退出当前结果表，包括沿轨迹轴的一维卷积Raw＋FMT及残差融合。旧主表、共同搜索均值、相关消融和排名不再作为当前FMT证据；没有把旧成绩改成无卷积成绩。
 
 规则见 [FMT禁止空间卷积协议](FMT_no_spatial_convolution_protocol_1.1.md)。[撤销前完整表](archive/retired_fmt_convolution_20260917/paper_tables_tasks_3d.md)仅供核对错误历史。Task2仍按2.1协议只做直接特征交互可视化。

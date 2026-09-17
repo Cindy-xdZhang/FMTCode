@@ -1,0 +1,67 @@
+[
+  {
+    "path": "FMT_Utils/Task12Data_3D.py",
+    "sha256": "1c1ef03cc6cc3e67bd8f36ed57999c34607a3979d14db96315e5df12826df8b6",
+    "roots": [
+      "/home/zhanx0o/FMT_ObjectivityMechanism_20260909",
+      "/home/zhanx0o/FMT_ObjectivityMechanism_20260909_1p2",
+      "/home/zhanx0o/FMT_ObjectivityMechanism_20260909_1p3"
+    ],
+    "local_snapshot": "outputs\\Verify_FMTArchitectureAudit_1.1\\remote_only\\1c1ef03cc6cc3e67bd8f36ed57999c34607a3979d14db96315e5df12826df8b6\\FMT_Utils\\Task12Data_3D.py",
+    "review": "Compared full source and unified diff with current version. Changes are recipe scale/cache consistency/default version/logging; no new center loop or convolution. Task classifier remains inherited."
+  },
+  {
+    "path": "FMT_Utils/ObjectivityMechanism_3D.py",
+    "sha256": "998d049b6ab06541bc653bebaca1e762048b9f764316c7c45d4860ecaf8ea4d4",
+    "roots": [
+      "/home/zhanx0o/FMT_ObjectivityMechanism_20260909"
+    ],
+    "local_snapshot": "outputs\\Verify_FMTArchitectureAudit_1.1\\remote_only\\998d049b6ab06541bc653bebaca1e762048b9f764316c7c45d4860ecaf8ea4d4\\FMT_Utils\\ObjectivityMechanism_3D.py",
+    "review": "Compared full source and unified diff with current version. Changes are recipe scale/cache consistency/default version/logging; no new center loop or convolution. Task classifier remains inherited."
+  },
+  {
+    "path": "experiments/Verify_FMTObjectivityMechanism_1_1.py",
+    "sha256": "9709faccc7311f8faaa007106ffac8c0f743e93742f6afda576967399c1bde2e",
+    "roots": [
+      "/home/zhanx0o/FMT_ObjectivityMechanism_20260909"
+    ],
+    "local_snapshot": "outputs\\Verify_FMTArchitectureAudit_1.1\\remote_only\\9709faccc7311f8faaa007106ffac8c0f743e93742f6afda576967399c1bde2e\\experiments\\Verify_FMTObjectivityMechanism_1_1.py",
+    "review": "Compared full source and unified diff with current version. Changes are recipe scale/cache consistency/default version/logging; no new center loop or convolution. Task classifier remains inherited."
+  },
+  {
+    "path": "experiments/Submit_FMTObjectivityMechanism_1_1.py",
+    "sha256": "34f8006030a9aef81620072ea70d8cf422db9dd4b9d5b3997ffd931bd67f4a35",
+    "roots": [
+      "/home/zhanx0o/FMT_ObjectivityMechanism_20260909"
+    ],
+    "local_snapshot": "outputs\\Verify_FMTArchitectureAudit_1.1\\remote_only\\34f8006030a9aef81620072ea70d8cf422db9dd4b9d5b3997ffd931bd67f4a35\\experiments\\Submit_FMTObjectivityMechanism_1_1.py",
+    "review": "Compared full source and unified diff with current version. Changes are recipe scale/cache consistency/default version/logging; no new center loop or convolution. Task classifier remains inherited."
+  },
+  {
+    "path": "FMT_Utils/ObjectivityMechanism_3D.py",
+    "sha256": "85384034791d66506859322197a835f4f39970e20ce84dda66abb4f6eda32cc2",
+    "roots": [
+      "/home/zhanx0o/FMT_ObjectivityMechanism_20260909_1p2"
+    ],
+    "local_snapshot": "outputs\\Verify_FMTArchitectureAudit_1.1\\remote_only\\85384034791d66506859322197a835f4f39970e20ce84dda66abb4f6eda32cc2\\FMT_Utils\\ObjectivityMechanism_3D.py",
+    "review": "Compared full source and unified diff with current version. Changes are recipe scale/cache consistency/default version/logging; no new center loop or convolution. Task classifier remains inherited."
+  },
+  {
+    "path": "experiments/Verify_FMTObjectivityMechanism_1_1.py",
+    "sha256": "17fe963c168e7807ae17e8e67c9e6af5b56c537f3044cbf52505b0cfd41326b7",
+    "roots": [
+      "/home/zhanx0o/FMT_ObjectivityMechanism_20260909_1p2"
+    ],
+    "local_snapshot": "outputs\\Verify_FMTArchitectureAudit_1.1\\remote_only\\17fe963c168e7807ae17e8e67c9e6af5b56c537f3044cbf52505b0cfd41326b7\\experiments\\Verify_FMTObjectivityMechanism_1_1.py",
+    "review": "Compared full source and unified diff with current version. Changes are recipe scale/cache consistency/default version/logging; no new center loop or convolution. Task classifier remains inherited."
+  },
+  {
+    "path": "experiments/Submit_FMTObjectivityMechanism_1_1.py",
+    "sha256": "aaaa699760b334b44e014f8617111976446c25dbb3c024bc5e315f2b15f53a28",
+    "roots": [
+      "/home/zhanx0o/FMT_ObjectivityMechanism_20260909_1p2"
+    ],
+    "local_snapshot": "outputs\\Verify_FMTArchitectureAudit_1.1\\remote_only\\aaaa699760b334b44e014f8617111976446c25dbb3c024bc5e315f2b15f53a28\\experiments\\Submit_FMTObjectivityMechanism_1_1.py",
+    "review": "Compared full source and unified diff with current version. Changes are recipe scale/cache consistency/default version/logging; no new center loop or convolution. Task classifier remains inherited."
+  }
+]

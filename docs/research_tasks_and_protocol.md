@@ -1,5 +1,9 @@
 # FMT 研究任务与统一协议
 
+<!-- fmt-architecture-audit-20260917 -->
+2026-09-17全面架构审计取代此前继续部署：旧Task3/5的nTDO、p35固定中心但完整路径有3层Conv1d；Task4-c p35/h0/n0与c156都逐有效线轮换中心、FMT分支无ConvNd；ASAP相机固定中心但后接c156七中心。禁止用p35简称推断完整方法。TemporalDFT可学习循环卷积和fps_graph的EdgeConv式图邻域入口已依既有禁令撤销；历史数值/源码保留。每个方案必须登记中心次数/邻居/DFT信号/归一化/两级池化/完整网络及旁路。完整清单见`FMT_architecture_audit_2026-09-17_zh.md`及`FMT_experiment_architecture_catalog_2026-09-17.md`。单中心预检52008644因部署缺少FLowUtils而FAILED/1:0，21次正式训练未提交，无新F1；按用户当前审计要求暂停，不自动恢复。
+<!-- fmt-architecture-audit-20260917-end -->
+
 <!-- fmt-single-center-20260917 -->
 2026-09-17 用户新增统一FMT比较条件：完整路径无卷积、一个primitive始终固定一个中心，不允许c156式轮换中心。输入点数和后续MLP可因任务不同；傅里叶几何描述和邻居池化配方须统一。历史Task3/5共同搜索含卷积、Task4-c p35/h0/n0逐线轮换中心，不能证明新条件下的统一最佳。当前仅优先核验p35/n0_k06：141维、六频率、邻居逐特征均值＋数值最大值；Task3/5固定原中心，Task4-c一次选离原播种中心最近的有效线，其余全部有效线池化，每束只输出一个向量。只用seed40，共21次正式拟合，MLP78,530参数；保留原Task3/5数据及最新Task4-c196,960/3,000/11,320数据。版本`Verify_FMT_SingleCenter_Task354C_1.1`，协议`docs/FMT_single_center_verification_protocol_1.1.md`。这是新条件下的单种子候选核验，不是旧成绩复现；未比较允许的多个候选前不能称最好。无回复时采用上述已告知默认，不扩展搜索；截至立项无新F1。
 <!-- fmt-single-center-20260917-end -->

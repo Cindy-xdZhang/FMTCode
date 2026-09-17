@@ -216,9 +216,8 @@ class FourierClassifier(nn.Module):
                 self.blocks = nn.ModuleList([AttentionBlock(), AttentionBlock()])
                 output_width = 384
         elif architecture == 'fps_graph':
-            self.line = mlp(width, 128)
-            self.edges = nn.ModuleList([nn.Sequential(mlp(256, 128), mlp(128, 128)) for _ in range(2)])
-            output_width = 256
+            from FMT_Utils.FMTNoConvolution_1_1 import reject_retired_fmt
+            reject_retired_fmt('fps_graph EdgeConv-style spatial message passing')
         elif architecture == 'block_branches':
             self.branches = nn.ModuleList([nn.Sequential(mlp(d, 96), Residual(96, .15)) for d in (23, 72, 46)])
             self.line = nn.Sequential(mlp(288, 256), Residual(256, .15))
@@ -240,13 +239,8 @@ class FourierClassifier(nn.Module):
             for block in self.blocks:
                 x = block(x, mask)
         elif self.architecture == 'fps_graph':
-            if neighbors is None:
-                raise ValueError('FPS graph requires frozen neighbor indices')
-            batch = torch.arange(len(x), device=x.device)[:, None, None]
-            for edge in self.edges:
-                other = x[batch, neighbors]
-                anchor = x[:, :, None, :].expand_as(other)
-                x = (x+edge(torch.cat((anchor, other-anchor), -1)).amax(-2))*mask[..., None]
+            from FMT_Utils.FMTNoConvolution_1_1 import reject_retired_fmt
+            reject_retired_fmt('fps_graph EdgeConv-style spatial message passing')
         summary = pooled(x, mask)
         if self.architecture == 'attention_pool':
             weights = self.scores(x).masked_fill(~mask[..., None], -torch.inf).softmax(1)

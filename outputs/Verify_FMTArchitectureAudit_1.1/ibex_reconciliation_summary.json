@@ -1,0 +1,9 @@
+{
+  "remote_roots": 198,
+  "remote_file_records": 71744,
+  "initial_unmatched_contents": 510,
+  "statuses": {
+    "line_endings_only": 503,
+    "different_content_requires_review": 7
+  }
+}

@@ -1,0 +1,264 @@
+{
+  "status": "PASS",
+  "no_training": true,
+  "no_weights_written": true,
+  "models": [
+    {
+      "name": "historical_Task35_raw_fmt",
+      "parameters": 107329,
+      "convolution": [
+        [
+          "geometry.line_encoder.network.0",
+          "Conv1d",
+          [
+            5
+          ]
+        ],
+        [
+          "geometry.line_encoder.network.3",
+          "Conv1d",
+          [
+            5
+          ]
+        ],
+        [
+          "geometry.line_encoder.network.6",
+          "Conv1d",
+          [
+            3
+          ]
+        ]
+      ],
+      "linear_layers": 4,
+      "historical_source": "52f6284c",
+      "network": "PathlineBinaryClassifier3D(\n  (geometry): PathlineGeometryEncoder3D(\n    (line_encoder): TemporalLineEncoder3D(\n      (network): Sequential(\n        (0): Conv1d(3, 32, kernel_size=(5,), stride=(1,), padding=(2,))\n        (1): GroupNorm(4, 32, eps=1e-05, affine=True, bias=True)\n        (2): GELU(approximate='none')\n        (3): Conv1d(32, 64, kernel_size=(5,), stride=(1,), padding=(2,))\n        (4): GroupNorm(8, 64, eps=1e-05, affine=True, bias=True)\n        (5): GELU(approximate='none')\n        (6): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(1,))\n        (7): GroupNorm(8, 64, eps=1e-05, affine=True, bias=True)\n        (8): GELU(approximate='none')\n      )\n    )\n    (projection): Sequential(\n      (0): Linear(in_features=384, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n    )\n  )\n  (auxiliary): Sequential(\n    (0): Linear(in_features=141, out_features=64, bias=True)\n    (1): LayerNorm((64,), eps=1e-05, elementwise_affine=True, bias=True)\n    (2): GELU(approximate='none')\n  )\n  (head): Sequential(\n    (0): Linear(in_features=192, out_features=128, bias=True)\n    (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n    (2): GELU(approximate='none')\n    (3): Linear(in_features=128, out_features=1, bias=True)\n  )\n)"
+    },
+    {
+      "name": "historical_Task35_residual_geometry_fmt",
+      "parameters": 142914,
+      "convolution": [
+        [
+          "raw_model.geometry.line_encoder.network.0",
+          "Conv1d",
+          [
+            5
+          ]
+        ],
+        [
+          "raw_model.geometry.line_encoder.network.3",
+          "Conv1d",
+          [
+            5
+          ]
+        ],
+        [
+          "raw_model.geometry.line_encoder.network.6",
+          "Conv1d",
+          [
+            3
+          ]
+        ]
+      ],
+      "linear_layers": 6,
+      "historical_source": "52f6284c",
+      "network": "PathlineFMTResidualClassifier3D(\n  (raw_model): PathlineBinaryClassifier3D(\n    (geometry): PathlineGeometryEncoder3D(\n      (line_encoder): TemporalLineEncoder3D(\n        (network): Sequential(\n          (0): Conv1d(3, 32, kernel_size=(5,), stride=(1,), padding=(2,))\n          (1): GroupNorm(4, 32, eps=1e-05, affine=True, bias=True)\n          (2): GELU(approximate='none')\n          (3): Conv1d(32, 64, kernel_size=(5,), stride=(1,), padding=(2,))\n          (4): GroupNorm(8, 64, eps=1e-05, affine=True, bias=True)\n          (5): GELU(approximate='none')\n          (6): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(1,))\n          (7): GroupNorm(8, 64, eps=1e-05, affine=True, bias=True)\n          (8): GELU(approximate='none')\n        )\n      )\n      (projection): Sequential(\n        (0): Linear(in_features=384, out_features=128, bias=True)\n        (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n        (2): GELU(approximate='none')\n      )\n    )\n    (head): Sequential(\n      (0): Linear(in_features=128, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Linear(in_features=128, out_features=1, bias=True)\n    )\n  )\n  (fmt_encoder): Sequential(\n    (0): Linear(in_features=433, out_features=64, bias=True)\n    (1): LayerNorm((64,), eps=1e-05, elementwise_affine=True, bias=True)\n    (2): GELU(approximate='none')\n  )\n  (auxiliary_post_normalizer): _FixedAuxiliaryNormalization()\n  (auxiliary_dropout): Dropout(p=0.0, inplace=False)\n  (auxiliary_noise): _TrainingGaussianNoise()\n  (residual_head): Sequential(\n    (0): Linear(in_features=192, out_features=128, bias=True)\n    (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n    (2): GELU(approximate='none')\n    (3): Linear(in_features=128, out_features=1, bias=True)\n  )\n)"
+    },
+    {
+      "name": "historical_Task35_residual_fmt_only",
+      "parameters": 126530,
+      "convolution": [
+        [
+          "raw_model.geometry.line_encoder.network.0",
+          "Conv1d",
+          [
+            5
+          ]
+        ],
+        [
+          "raw_model.geometry.line_encoder.network.3",
+          "Conv1d",
+          [
+            5
+          ]
+        ],
+        [
+          "raw_model.geometry.line_encoder.network.6",
+          "Conv1d",
+          [
+            3
+          ]
+        ]
+      ],
+      "linear_layers": 6,
+      "historical_source": "52f6284c",
+      "network": "PathlineFMTResidualClassifier3D(\n  (raw_model): PathlineBinaryClassifier3D(\n    (geometry): PathlineGeometryEncoder3D(\n      (line_encoder): TemporalLineEncoder3D(\n        (network): Sequential(\n          (0): Conv1d(3, 32, kernel_size=(5,), stride=(1,), padding=(2,))\n          (1): GroupNorm(4, 32, eps=1e-05, affine=True, bias=True)\n          (2): GELU(approximate='none')\n          (3): Conv1d(32, 64, kernel_size=(5,), stride=(1,), padding=(2,))\n          (4): GroupNorm(8, 64, eps=1e-05, affine=True, bias=True)\n          (5): GELU(approximate='none')\n          (6): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(1,))\n          (7): GroupNorm(8, 64, eps=1e-05, affine=True, bias=True)\n          (8): GELU(approximate='none')\n        )\n      )\n      (projection): Sequential(\n        (0): Linear(in_features=384, out_features=128, bias=True)\n        (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n        (2): GELU(approximate='none')\n      )\n    )\n    (head): Sequential(\n      (0): Linear(in_features=128, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Linear(in_features=128, out_features=1, bias=True)\n    )\n  )\n  (fmt_encoder): Sequential(\n    (0): Linear(in_features=433, out_features=64, bias=True)\n    (1): LayerNorm((64,), eps=1e-05, elementwise_affine=True, bias=True)\n    (2): GELU(approximate='none')\n  )\n  (auxiliary_post_normalizer): _FixedAuxiliaryNormalization()\n  (auxiliary_dropout): Dropout(p=0.0, inplace=False)\n  (auxiliary_noise): _TrainingGaussianNoise()\n  (residual_head): Sequential(\n    (0): Linear(in_features=64, out_features=128, bias=True)\n    (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n    (2): GELU(approximate='none')\n    (3): Linear(in_features=128, out_features=1, bias=True)\n  )\n)"
+    },
+    {
+      "name": "historical_Task35_residual_dual",
+      "parameters": 151619,
+      "convolution": [
+        [
+          "raw_model.geometry.line_encoder.network.0",
+          "Conv1d",
+          [
+            5
+          ]
+        ],
+        [
+          "raw_model.geometry.line_encoder.network.3",
+          "Conv1d",
+          [
+            5
+          ]
+        ],
+        [
+          "raw_model.geometry.line_encoder.network.6",
+          "Conv1d",
+          [
+            3
+          ]
+        ]
+      ],
+      "linear_layers": 8,
+      "historical_source": "52f6284c",
+      "network": "PathlineFMTResidualClassifier3D(\n  (raw_model): PathlineBinaryClassifier3D(\n    (geometry): PathlineGeometryEncoder3D(\n      (line_encoder): TemporalLineEncoder3D(\n        (network): Sequential(\n          (0): Conv1d(3, 32, kernel_size=(5,), stride=(1,), padding=(2,))\n          (1): GroupNorm(4, 32, eps=1e-05, affine=True, bias=True)\n          (2): GELU(approximate='none')\n          (3): Conv1d(32, 64, kernel_size=(5,), stride=(1,), padding=(2,))\n          (4): GroupNorm(8, 64, eps=1e-05, affine=True, bias=True)\n          (5): GELU(approximate='none')\n          (6): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(1,))\n          (7): GroupNorm(8, 64, eps=1e-05, affine=True, bias=True)\n          (8): GELU(approximate='none')\n        )\n      )\n      (projection): Sequential(\n        (0): Linear(in_features=384, out_features=128, bias=True)\n        (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n        (2): GELU(approximate='none')\n      )\n    )\n    (head): Sequential(\n      (0): Linear(in_features=128, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Linear(in_features=128, out_features=1, bias=True)\n    )\n  )\n  (fmt_encoder): Sequential(\n    (0): Linear(in_features=433, out_features=64, bias=True)\n    (1): LayerNorm((64,), eps=1e-05, elementwise_affine=True, bias=True)\n    (2): GELU(approximate='none')\n  )\n  (auxiliary_post_normalizer): _FixedAuxiliaryNormalization()\n  (auxiliary_dropout): Dropout(p=0.0, inplace=False)\n  (auxiliary_noise): _TrainingGaussianNoise()\n  (residual_head): Sequential(\n    (0): Linear(in_features=192, out_features=128, bias=True)\n    (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n    (2): GELU(approximate='none')\n    (3): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (fmt_only_head): Sequential(\n    (0): Linear(in_features=64, out_features=128, bias=True)\n    (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n    (2): GELU(approximate='none')\n    (3): Linear(in_features=128, out_features=1, bias=True)\n  )\n)"
+    },
+    {
+      "name": "Task4c_p35_original",
+      "parameters": 76738,
+      "convolution": [],
+      "linear_layers": 5,
+      "historical_source": "5ab735c0",
+      "network": "FourierClassifier(\n  (network): EncoderLinePooling(\n    (line): Sequential(\n      (0): Linear(in_features=141, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n      (4): Linear(in_features=128, out_features=128, bias=True)\n      (5): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (6): GELU(approximate='none')\n    )\n    (head): Sequential(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n      (4): Linear(in_features=128, out_features=64, bias=True)\n      (5): GELU(approximate='none')\n      (6): Linear(in_features=64, out_features=2, bias=True)\n    )\n  )\n)"
+    },
+    {
+      "name": "Task4c_p35_wide_residual",
+      "parameters": 992386,
+      "convolution": [],
+      "linear_layers": 10,
+      "historical_source": "5ab735c0",
+      "network": "FourierClassifier(\n  (line): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=141, out_features=256, bias=True)\n      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=256, out_features=512, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=512, out_features=256, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n    (2): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=256, out_features=512, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=512, out_features=256, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n    (3): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=256, out_features=512, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=512, out_features=256, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n  )\n  (head): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=512, out_features=256, bias=True)\n      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Sequential(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (2): Linear(in_features=128, out_features=2, bias=True)\n  )\n)"
+    },
+    {
+      "name": "Task4c_p35_attention_pool",
+      "parameters": 517766,
+      "convolution": [],
+      "linear_layers": 8,
+      "historical_source": "5ab735c0",
+      "network": "FourierClassifier(\n  (line): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=141, out_features=192, bias=True)\n      (1): LayerNorm((192,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((192,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=192, out_features=384, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=384, out_features=192, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n  )\n  (scores): Sequential(\n    (0): Linear(in_features=192, out_features=64, bias=True)\n    (1): Tanh()\n    (2): Linear(in_features=64, out_features=4, bias=True)\n  )\n  (head): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=1152, out_features=256, bias=True)\n      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Sequential(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (2): Linear(in_features=128, out_features=2, bias=True)\n  )\n)"
+    },
+    {
+      "name": "Task4c_p35_set_attention",
+      "parameters": 902594,
+      "convolution": [],
+      "linear_layers": 14,
+      "historical_source": "5ab735c0",
+      "network": "FourierClassifier(\n  (line): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=141, out_features=192, bias=True)\n      (1): LayerNorm((192,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((192,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=192, out_features=384, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=384, out_features=192, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n  )\n  (blocks): ModuleList(\n    (0-1): 2 x AttentionBlock(\n      (norm): LayerNorm((192,), eps=1e-05, elementwise_affine=True, bias=True)\n      (qkv): Linear(in_features=192, out_features=576, bias=True)\n      (output): Linear(in_features=192, out_features=192, bias=True)\n      (drop): Dropout(p=0.15, inplace=False)\n      (ffn): Residual(\n        (layers): Sequential(\n          (0): LayerNorm((192,), eps=1e-05, elementwise_affine=True, bias=True)\n          (1): Linear(in_features=192, out_features=384, bias=True)\n          (2): GELU(approximate='none')\n          (3): Dropout(p=0.15, inplace=False)\n          (4): Linear(in_features=384, out_features=192, bias=True)\n          (5): Dropout(p=0.15, inplace=False)\n        )\n      )\n    )\n  )\n  (head): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=384, out_features=256, bias=True)\n      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Sequential(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (2): Linear(in_features=128, out_features=2, bias=True)\n  )\n)"
+    },
+    {
+      "name": "Task4c_p35_fps_graph",
+      "parameters": 217986,
+      "convolution": [],
+      "linear_layers": 8,
+      "historical_source": "5ab735c0",
+      "network": "FourierClassifier(\n  (line): Sequential(\n    (0): Linear(in_features=141, out_features=128, bias=True)\n    (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n    (2): GELU(approximate='none')\n    (3): Dropout(p=0.15, inplace=False)\n  )\n  (edges): ModuleList(\n    (0-1): 2 x Sequential(\n      (0): Sequential(\n        (0): Linear(in_features=256, out_features=128, bias=True)\n        (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n      )\n      (1): Sequential(\n        (0): Linear(in_features=128, out_features=128, bias=True)\n        (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n      )\n    )\n  )\n  (head): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=256, out_features=256, bias=True)\n      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Sequential(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (2): Linear(in_features=128, out_features=2, bias=True)\n  )\n)"
+    },
+    {
+      "name": "Task4c_p35_block_branches",
+      "parameters": 629602,
+      "convolution": [],
+      "linear_layers": 15,
+      "historical_source": "5ab735c0",
+      "network": "FourierClassifier(\n  (branches): ModuleList(\n    (0): Sequential(\n      (0): Sequential(\n        (0): Linear(in_features=23, out_features=96, bias=True)\n        (1): LayerNorm((96,), eps=1e-05, elementwise_affine=True, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n      )\n      (1): Residual(\n        (layers): Sequential(\n          (0): LayerNorm((96,), eps=1e-05, elementwise_affine=True, bias=True)\n          (1): Linear(in_features=96, out_features=192, bias=True)\n          (2): GELU(approximate='none')\n          (3): Dropout(p=0.15, inplace=False)\n          (4): Linear(in_features=192, out_features=96, bias=True)\n          (5): Dropout(p=0.15, inplace=False)\n        )\n      )\n    )\n    (1): Sequential(\n      (0): Sequential(\n        (0): Linear(in_features=72, out_features=96, bias=True)\n        (1): LayerNorm((96,), eps=1e-05, elementwise_affine=True, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n      )\n      (1): Residual(\n        (layers): Sequential(\n          (0): LayerNorm((96,), eps=1e-05, elementwise_affine=True, bias=True)\n          (1): Linear(in_features=96, out_features=192, bias=True)\n          (2): GELU(approximate='none')\n          (3): Dropout(p=0.15, inplace=False)\n          (4): Linear(in_features=192, out_features=96, bias=True)\n          (5): Dropout(p=0.15, inplace=False)\n        )\n      )\n    )\n    (2): Sequential(\n      (0): Sequential(\n        (0): Linear(in_features=46, out_features=96, bias=True)\n        (1): LayerNorm((96,), eps=1e-05, elementwise_affine=True, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n      )\n      (1): Residual(\n        (layers): Sequential(\n          (0): LayerNorm((96,), eps=1e-05, elementwise_affine=True, bias=True)\n          (1): Linear(in_features=96, out_features=192, bias=True)\n          (2): GELU(approximate='none')\n          (3): Dropout(p=0.15, inplace=False)\n          (4): Linear(in_features=192, out_features=96, bias=True)\n          (5): Dropout(p=0.15, inplace=False)\n        )\n      )\n    )\n  )\n  (line): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=288, out_features=256, bias=True)\n      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=256, out_features=512, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=512, out_features=256, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n  )\n  (head): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=512, out_features=256, bias=True)\n      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Sequential(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (2): Linear(in_features=128, out_features=2, bias=True)\n  )\n)"
+    },
+    {
+      "name": "direct_Task35_raw_c156",
+      "parameters": 993154,
+      "convolution": [],
+      "linear_layers": 10,
+      "historical_source": null,
+      "network": "FourierClassifier(\n  (line): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=144, out_features=256, bias=True)\n      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=256, out_features=512, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=512, out_features=256, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n    (2): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=256, out_features=512, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=512, out_features=256, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n    (3): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=256, out_features=512, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=512, out_features=256, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n  )\n  (head): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=512, out_features=256, bias=True)\n      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Sequential(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (2): Linear(in_features=128, out_features=2, bias=True)\n  )\n)"
+    },
+    {
+      "name": "direct_Task35_fmt_c156",
+      "parameters": 992386,
+      "convolution": [],
+      "linear_layers": 10,
+      "historical_source": null,
+      "network": "FourierClassifier(\n  (line): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=141, out_features=256, bias=True)\n      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=256, out_features=512, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=512, out_features=256, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n    (2): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=256, out_features=512, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=512, out_features=256, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n    (3): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=256, out_features=512, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=512, out_features=256, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n  )\n  (head): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=512, out_features=256, bias=True)\n      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Sequential(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (2): Linear(in_features=128, out_features=2, bias=True)\n  )\n)"
+    },
+    {
+      "name": "direct_Task35_asap_fmt",
+      "parameters": 992386,
+      "convolution": [],
+      "linear_layers": 10,
+      "historical_source": null,
+      "network": "FourierClassifier(\n  (line): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=141, out_features=256, bias=True)\n      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=256, out_features=512, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=512, out_features=256, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n    (2): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=256, out_features=512, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=512, out_features=256, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n    (3): Residual(\n      (layers): Sequential(\n        (0): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n        (1): Linear(in_features=256, out_features=512, bias=True)\n        (2): GELU(approximate='none')\n        (3): Dropout(p=0.15, inplace=False)\n        (4): Linear(in_features=512, out_features=256, bias=True)\n        (5): Dropout(p=0.15, inplace=False)\n      )\n    )\n  )\n  (head): Sequential(\n    (0): Sequential(\n      (0): Linear(in_features=512, out_features=256, bias=True)\n      (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (1): Sequential(\n      (0): Linear(in_features=256, out_features=128, bias=True)\n      (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n      (2): GELU(approximate='none')\n      (3): Dropout(p=0.15, inplace=False)\n    )\n    (2): Linear(in_features=128, out_features=2, bias=True)\n  )\n)"
+    },
+    {
+      "name": "Task4b_fmt_only",
+      "parameters": 19588,
+      "convolution": [],
+      "linear_layers": 3,
+      "historical_source": null,
+      "network": "PathlineMulticlassClassifier3D(\n  (auxiliary): Sequential(\n    (0): Linear(in_features=161, out_features=64, bias=True)\n    (1): LayerNorm((64,), eps=1e-05, elementwise_affine=True, bias=True)\n    (2): GELU(approximate='none')\n  )\n  (head): Sequential(\n    (0): Linear(in_features=64, out_features=128, bias=True)\n    (1): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n    (2): GELU(approximate='none')\n    (3): Dropout(p=0.1, inplace=False)\n    (4): Linear(in_features=128, out_features=4, bias=True)\n  )\n)"
+    },
+    {
+      "name": "new_single_center_not_trained",
+      "parameters": 78530,
+      "convolution": [],
+      "linear_layers": 4,
+      "historical_source": null,
+      "network": "SingleCenterMLP(\n  (network): Sequential(\n    (0): Linear(in_features=141, out_features=256, bias=True)\n    (1): LayerNorm((256,), eps=1e-05, elementwise_affine=True, bias=True)\n    (2): GELU(approximate='none')\n    (3): Dropout(p=0.15, inplace=False)\n    (4): Linear(in_features=256, out_features=128, bias=True)\n    (5): LayerNorm((128,), eps=1e-05, elementwise_affine=True, bias=True)\n    (6): GELU(approximate='none')\n    (7): Dropout(p=0.15, inplace=False)\n    (8): Linear(in_features=128, out_features=64, bias=True)\n    (9): LayerNorm((64,), eps=1e-05, elementwise_affine=True, bias=True)\n    (10): GELU(approximate='none')\n    (11): Dropout(p=0.15, inplace=False)\n    (12): Linear(in_features=64, out_features=2, bias=True)\n  )\n)"
+    }
+  ],
+  "center_traces": [
+    {
+      "name": "Task35_n0_fixed_input_adapter",
+      "center_evaluations": 2,
+      "result_shape": [
+        2,
+        141
+      ]
+    },
+    {
+      "name": "Task4c_n0_each_valid_line_adapter",
+      "center_evaluations": 18,
+      "result_shape": [
+        2,
+        10,
+        141
+      ]
+    },
+    {
+      "name": "Task4c_c156_FPS_each_valid_line",
+      "center_evaluations": 18,
+      "result_shape": [
+        2,
+        10,
+        142
+      ]
+    },
+    {
+      "name": "Task35_fmt_c156_all7_centers",
+      "center_evaluations": 14,
+      "result_shape": [
+        2,
+        7,
+        142
+      ]
+    },
+    {
+      "name": "Task35_asap_fmt_camera_then_all7_centers",
+      "center_evaluations": 14,
+      "result_shape": [
+        2,
+        7,
+        142
+      ]
+    }
+  ],
+  "temporal_dft_circular_convolution_max_error": 8.881784197001252e-16,
+  "historical_classifier_sha256": "33bffc400070f0c7d0ba32be2437aa1569940cab9b18fcd3b12b024af47267b0",
+  "scope": "Module constructors and synthetic feature calls. These checks do not certify any historical run completed or used a particular branch."
+}
