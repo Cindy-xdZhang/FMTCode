@@ -12357,3 +12357,65 @@ Scientific commits9d05abc571bc7c45e5da8a8f9f3ee55db367d467 (source) and21cf1fb75
 51946838_0/1/2分别为种子96611/96612/96613，验证选中epoch89/60/57，测试F1为0.914793/0.909695/0.903207；均值0.909232±0.005807，总参数76,723，平均训练367.316分钟。方法判断见experiment_log同标记。
 
 独立复算9份训练/验证/测试预测的哈希、完整行覆盖、源标签与实例编号、F1/precision/recall/accuracy/average precision及混淆矩阵，核对验证选择轮次、三种子均值和样本标准差；18个源数据文件哈希相同，9进程/18条运行事件与Slurm全部完成、exit0。未保留或下载checkpoint。证据：`outputs/Ablation_Task4C_PointNetPlusPlus_1.1/final_verified_evidence.json`；原始结果：`/ibex/user/zhanx0o/FMT_Task4C_PointNetPlusPlus_1p1_20260916/outputs/Ablation_Task4C_PointNetPlusPlus_1.1/`。
+
+<!-- asap-fmt-task35-1.1-start-20260917 -->
+## 2026-09-17：mainExp_ASAPFMT_Task35_1.1
+
+科学commit `9bff223580cbda917a4d8e473dc66181b592bc16`；独立目录 `/ibex/user/zhanx0o/FMT_ASAP_Task35_20260917`；配置 `config/mainExp_ASAPFMT_Task35_1.1.json`，Git/Ibex SHA256 `c9b262a442cb0ab2c458a1702841c32d9f0e4a16f1d6adbf02d147c623d845ff`。2026-09-17 12:22:46 UTC提交。本地与远端完整HEAD相同；公开push完成。
+
+| 调度ID | 阶段 | 进程数 | 前置依赖 | 预期设备 |
+|---|---|---:|---|---|
+| 52001610 | 数学检查、32真实训练样本小拟合、批512反向 | 1 | 本地五组数学/CPU检查通过 | V100 |
+| 52001611[0–19] | 20任务/流场训练与验证数据核验、相机/特征编码 | 20 | 52001610成功 | CPU，最多10并发 |
+| 52001612[0–59] | 每进程同任务/流场/种子的三个方法；180次拟合 | 60 | 52001611全部成功 | V100，最多12并发 |
+| 52001613 | 450预测、源标签、阈值/epoch独立复算及汇总 | 1 | 52001612全部成功 | CPU |
+
+三个方法为raw_c156、fmt_c156、asap_fmt；2任务×10流场×种子40/41/42。相邻时刻刚体最小二乘相机及初始物质朝向；原32同步时刻上求相机，之后复用c156的48点弧长重采样、p35和加宽残差MLP。原训练/验证/测试文件与IVD p95标签不改。Task3/5原100轮/20早停/验证AP选轮和验证F1选阈值固定；不搜索。正式训练三个模型全部锁定后才加载测试；Task3模型直接迁移到Task5测试，不新增训练。参数992386/992386，坐标对照993154。仅进程内存权重，不写checkpoint。
+
+82进程各4CPU、12GiB；训练2h上限，其他阶段40min。完整提交命令、时间和源码哈希在 `outputs/mainExp_ASAPFMT_Task35_1.1/submissions.json`。失败/取消继续登记，不重写此首链。当前无正式分类结果；状态待预检和正式运行完成。
+<!-- asap-fmt-task35-1.1-start-20260917-end -->
+
+<!-- asap-fmt-task35-r2-20260917 -->
+### ASAPFMT 1.1：数值修复执行 r2
+
+首链52001610完成；52001611_4/14因Tangaroa纯刚体样本的单位切线放大浮点残差失败，其余18项完成；52001612全部60项及52001613在启动前取消。没有正式拟合或测试读取。失败日志与首链身份保留。
+
+修复科学commit `6870898574a493cd132f602e2e48bb032e21c3e9`，配置SHA256 `bb5895b6f1f048ae07e0da6c7043f1df0dbbadc90bad2ab7480446da01843d1a`；只消除≤1e-12个半径的整条静止线数值运动。原c156源码、数据和预算不改。2026-09-17 12:30:30 UTC重新提交，输出独立 `outputs/mainExp_ASAPFMT_Task35_1.1/execution_r2`。
+
+| 调度ID | 阶段 | 进程数 | 依赖 |
+|---|---|---:|---|
+| 52001727 | V100预检 | 1 | 本地单元测试与Tangaroa训练样本检查 |
+| 52001728[0–19] | 全部训练/验证编码 | 20 | 52001727 |
+| 52001729[0–59] | 原定180次拟合 | 60 | 52001728 |
+| 52001730 | 预测/源标签复算汇总 | 1 | 52001729 |
+
+CPU/GPU、时限、内存、并发与首链相同。完整提交证据 `execution_r2/submissions.json`；尚未填写最终成绩。
+<!-- asap-fmt-task35-r2-20260917-end -->
+
+<!-- asap-fmt-task35-quota-resume-20260917 -->
+### ASAPFMT r2：个人存储配额恢复
+
+52001727通过，52001728的0–17完成，18/19因个人 `/ibex/user/zhanx0o` 配额用满而失败（exit1，错误流也无法写入）；16虽调度COMPLETED但缺少ENDED事件。52001729全部60项及52001730在正式训练前自动取消。
+
+删除的仅首个失败执行生成的108个特征数组，共5,456,512,872 bytes；全部原始数据、样本ID、标签、配置、manifest与日志保留。空间释放延迟后生效。临时区尝试因没有个人写权限而未迁移，没有接触他人目录。清理清单与原数组SHA256见 `first_execution_derived_cache_cleanup.json`。
+
+科学commit仍 `68708985`、配置SHA256仍 `bb5895b6f1f048ae07e0da6c7043f1df0dbbadc90bad2ab7480446da01843d1a`。将r2受影响16/18/19三个缓存目录移至 `quota_partial_cache`保留，在原目录提交52001828[16,18,19]重新准备，52001829[0–59]执行原定180次训练，52001830汇总。其余17份成功缓存复用且训练前校验全部哈希。设备与预算不变；完整命令和时间见 `execution_r2/quota_resume_submissions.json`。该存储故障不是方法性能结论。
+<!-- asap-fmt-task35-quota-resume-20260917-end -->
+
+<!-- asap-fmt-task35-extra-checks-20260917 -->
+ASAPFMT调度时限调整：52001829前12个完成进程44–104秒。在保持全部科学训练设置时，将当时47个PENDING作业的TimeLimit由2h降至20min，47项scontrol返回0；正在运行和已完成项不修改。此为资源预留上限调整，没有减少100轮/20早停预算。完整原调度快照、时间与逐项命令见 `outputs/mainExp_ASAPFMT_Task35_1.1/execution_r2/pending_walltime_adjustment.json`。
+
+ASAPFMT额外数值核验52002617：正式训练52001829全部成功后，只对20组任务/流场各32个训练样本检查三方法CPU缓存、CPU重新编码和V100编码（60项），不读取测试数据、不训练模型。单V100、4CPU/12GiB、10分钟上限；`experiments/Verify_ASAPFMT_Device_1_1.py`，代码SHA256和起止时间由结果文件记录。该单GPU检查在主训练后运行，主训练并发上限仍12；不改变主流水82个必要成功进程和180次拟合预算。
+<!-- asap-fmt-task35-extra-checks-20260917-end -->
+
+<!-- asap-fmt-task35-complete-20260917 -->
+### ASAPFMT最终核验
+
+52001829[0–59]全部COMPLETED，180次拟合完成；52001830汇总COMPLETED（47秒）。82个必要主流水成功进程及82对生命周期事件核对通过，167条r2事件中3条配额故障缺失ENDED记录没有补造。原执行及取消编号保留于前文。
+
+额外数值检查52002617因标准化CPU/GPU差异超过原容差失败；52003015在完整测量途中因CPU缓存重算超过原容差失败；52003114完成60项完整测量，原容差及失败标记保留，没有将其整体标为PASS。Raw/ASAP通过，fmt_c156有5组设备标准化差异及3组CPU批量重算差异超差，详见结果文件。
+
+独立预测/源文件审计PASS，UTC 2026-09-17T13:31:14.182730+00:00，耗时31.834秒；范围明确不包含跨设备严格容差的整体通过。450预测、2340逐尺度行、364源文件，未保存模型文件。审计器SHA256 7d46eff720598ffe909cb015fda44c035ced04c244c03711edea997f7dde3ba0。完整调度状态见 `execution_r2/scheduler_audit.psv`。结果包24,040,286 bytes、1277文件，SHA256 `666942377dcd940e85f48419eb51d297177fb7566b71662904e1d30fb18489b9`，本地下载哈希相同。
+
+协议 `docs/ASAPFMT_Task35_protocol_1.1.md`；完整表 `docs/ASAPFMT_Task35_results_1.1.md`；逐样本预测、每种子/逐尺度CSV、独立审计及环境信息在 `outputs/mainExp_ASAPFMT_Task35_1.1/execution_r2`。科学commit `6870898574a493cd132f602e2e48bb032e21c3e9`；原首链commit `9bff2235` 及失败记录保留。
+<!-- asap-fmt-task35-complete-20260917-end -->

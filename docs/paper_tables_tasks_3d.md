@@ -1209,3 +1209,21 @@ Source and per-seed evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/indep
 
 科学commit `f3d98dd347c3d426b815753167d3b923c467bda6`；配置 `config/Ablation_Task4C_PointNetPlusPlus_1.1.json`，SHA256 `67f8f5e2806a446717eff08f4f9a809f44d40bf2677f805abb993d4187a9ae65`。 独立复算9份训练/验证/测试预测的哈希、完整行覆盖、源标签与实例编号、F1/precision/recall/accuracy/average precision及混淆矩阵，核对验证选择轮次、三种子均值和样本标准差；18个源数据文件哈希相同，9进程/18条运行事件与Slurm全部完成、exit0。未保留或下载checkpoint。证据：`outputs/Ablation_Task4C_PointNetPlusPlus_1.1/final_verified_evidence.json`；原始结果：`/ibex/user/zhanx0o/FMT_Task4C_PointNetPlusPlus_1p1_20260916/outputs/Ablation_Task4C_PointNetPlusPlus_1.1/`。
 方法判断见experiment_log同标记，统一交接见 `docs/Task4C_handoff.md`。
+
+<!-- asap-fmt-task35-complete-20260917 -->
+## mainExp_ASAPFMT_Task35_1.1：直接特征分类与尺度迁移
+
+十个原3D流场等权平均，种子40/41/42的均值与样本标准差。ASAP相对同网络c156在Task3/Task5分别下降0.049203/0.048735（相对−7.06%/−7.38%），但Task3直接迁移Task5提高0.048384（相对+8.57%），三个种子的迁移F1均提高。迁移AP分别为c156 0.663326、ASAP 0.663517，基本相同；这里的改善指沿用Task3阈值的F1。各自训练时两个任务各有3/10流场提高，不能概括为所有流场都下降。此结论限于本轮固定实现和复用的历史benchmark，不把原测试说成开发过程从未接触的新独立测试。
+
+| 方法 | Task3 F1 | Task5 F1 | Task3→Task5 F1 |
+|---|---:|---:|---:|
+| raw_c156 | 0.690739 ± 0.006029 | 0.649568 ± 0.002922 | 0.497006 ± 0.013842 |
+| fmt_c156 | 0.697036 ± 0.002583 | 0.660677 ± 0.005584 | 0.564249 ± 0.033787 |
+| asap_fmt | 0.647833 ± 0.002671 | 0.611942 ± 0.001824 | 0.612633 ± 0.002490 |
+
+180次正式拟合、450份预测、2,340行逐尺度指标与364份原始数据/标签文件SHA256独立复算通过。82个必要主流水成功进程、82对完整生命周期事件；3条配额故障缺失ENDED记录单列保留。模型仅留进程内存，没有保存模型文件。训练/验证/测试标签和尺度不改，所有测试评价均在该次三模型与阈值锁定后执行。没有根据结果追加方法搜索。
+
+20组换观察者检查通过，坐标误差/半径最大5.7903e-14，特征误差最大4.7684e-7；CPU相机批256耗时中位数0.0844ms/primitive。额外60项数值测量中，Raw和ASAP全部通过原容差；原fmt_c156有5组CPU/GPU标准化特征超差和3组CPU批量重算超差，最大分别0.009689/0.000331。所有方法未标准化特征均通过原容差。原严格检查52002617/52003015失败保留，52003114完整测量且容差未放宽；不把整体数值检查写成全部通过。当前分数对应CPU训练编码/GPU测试编码，未再进行统一设备编码评价，不能声称分数完全不受数值差异影响。
+
+协议 `docs/ASAPFMT_Task35_protocol_1.1.md`；完整表 `docs/ASAPFMT_Task35_results_1.1.md`；逐样本预测、每种子/逐尺度CSV、独立审计及环境信息在 `outputs/mainExp_ASAPFMT_Task35_1.1/execution_r2`。科学commit `6870898574a493cd132f602e2e48bb032e21c3e9`；原首链commit `9bff2235` 及失败记录保留。
+<!-- asap-fmt-task35-complete-20260917-end -->
