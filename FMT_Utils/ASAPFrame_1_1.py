@@ -63,8 +63,13 @@ def asap_frame(geometry, times, *, return_details=False):
     for k in range(x.shape[2]-1):
         rotations[:, k+1] = increments[:, k] @ rotations[:, k]
     observed = np.einsum('bnki,bkij->bnkj', r, rotations)
-    # Values below arithmetic resolution relative to each primitive are zero.
-    # In particular the center stays exactly zero, without numerical tangent noise.
+    # A mathematically stationary line can retain SVD roundoff. Downstream unit
+    # tangents divide such noise by 1e-12. Resolve motion below 1e-12 radii as
+    # stationary before that nonlinear operation; use a Euclidean criterion.
+    motion_size = np.linalg.norm(observed-observed[:, :, :1], axis=-1).max(axis=-1)
+    stationary = motion_size <= 1e-12*radius[:, None]
+    observed = np.where(stationary[:, :, None, None], observed[:, :, :1], observed)
+    # The camera center is stationary by construction.
     observed[:, 0] = 0.
     if not return_details:
         return observed

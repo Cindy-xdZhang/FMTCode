@@ -30,6 +30,9 @@ class ASAPTests(unittest.TestCase):
         np.testing.assert_array_equal(y[:, 0], 0)
         self.assertLess(np.max(d['speed_rms']), 1e-12)
         np.testing.assert_allclose(np.linalg.det(d['rotation']), 1., atol=3e-14)
+        # Zero physical motion must not become arbitrary unit-tangent features.
+        np.testing.assert_allclose(encode(x, t, 'asap_fmt').numpy(),
+            encode(transformed_observer(x), t, 'asap_fmt').numpy(), atol=2e-5, rtol=2e-5)
 
     def test_distances_residual_and_continuous_limit(self):
         errors=[]
