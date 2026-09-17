@@ -1,0 +1,42 @@
+{
+  "version": "Verify_FMT_SingleCenter_Task354C_1.1",
+  "output": "outputs/Verify_FMT_SingleCenter_Task354C_1.1",
+  "parent_task35": "config/mainExp_Task135_FMTv8_1.1.json",
+  "parent_task4": "config/Verify_Task4C_P35GTHead_1.1.json",
+  "candidate": "p35_n0_k06_single_center",
+  "seed": 40,
+  "frequencies": 6,
+  "feature_dimensions": 141,
+  "normalization": "all_valid_points_centroid_max_radius_then_training_only_feature_zscore",
+  "arithmetic": "float64_geometry_and_fft_float32_output",
+  "neighbor_scale": 1.0,
+  "neighbor_weight": 1.0,
+  "neighbors": "all_valid_except_fixed_center",
+  "pooling": ["featurewise_arithmetic_mean", "featurewise_numeric_maximum"],
+  "center_task35": "original_slot0",
+  "center_task4c": "nearest_valid_seed_to_original_center_once_cpu_float64_stable_ties",
+  "points": 32,
+  "architecture": "141_256_128_64_2_Linear_LayerNorm_GELU_Dropout",
+  "parameters": 78530,
+  "dropout": 0.15,
+  "encode_batch": 256,
+  "training": {
+    "task35": {"batch_size": 512, "learning_rate": 0.001, "weight_decay": 0.0001, "epochs": 100, "patience": 20, "min_delta": 0.0001,
+      "loss": "training_class_weighted_binary_cross_entropy", "selection": "validation_average_precision", "threshold": "maximum_validation_F1", "scheduler": "none"},
+    "task4c": {"batch_size": 128, "learning_rate": 0.001, "weight_decay": 0.0001, "epochs": 500, "patience": 50,
+      "loss": "cross_entropy", "selection": "validation_F1_then_average_precision", "threshold": 0.5,
+      "scheduler": "validation_loss_plateau_patience15_factor0.5_minlr1e-6", "gradient_clip": 5.0}
+  },
+  "execution": {"gpu": "V100", "max_parallel_gpus": 4, "formal_fits": 21, "model_weights": "memory_only"},
+  "evaluation": {
+    "candidate_fixed_before_test": true,
+    "test_loaded_after_selection_lock": true,
+    "ranking": "none_one_candidate_only",
+    "task35_aggregation": "equal_mean_over_original_ten_flows",
+    "task4c_aggregation": "combined_11320_test_bundles",
+    "cross_task_aggregation": "equal_mean_over_three_task_F1_values",
+    "claim": "single_seed_candidate_verification_not_historical_score_reproduction_or_proven_best",
+    "source_roles_unchanged": true,
+    "new_data_or_labels": false
+  }
+}
