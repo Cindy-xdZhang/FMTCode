@@ -261,3 +261,7 @@ Task4-b 当前阈值以2026-09-06用户最新指定为准：**Channel IVD>5.785�
 <!-- task4c-gt-head-coverage-r2-20260917 -->
 2026-09-17 GT头部覆盖1.1首链已保留失败：52000820_0/1完成全部740/580组后，在旧数组末批拼接时失败；未改源数据，未训练。四个待运行依赖52000821–52000824取消。修复截断末批并通过独立513/708/804行拼接检查，科学commitc3952a7b；独立r2目录 `/ibex/user/zhanx0o/FMT_Task4C_GTHeadCoverage_20260917_r2`，新链52000893[0–1]、52000894、52000895、52000896、52000897共6进程已提交。采样、c156和配额不改；全量审计及训练尚待完成。
 <!-- task4c-gt-head-coverage-r2-20260917-end -->
+
+<!-- task4c-gt-head-training-retry-20260917 -->
+2026-09-17 GT头部覆盖1.1已完成正式数据及V100工程检查：196960/3000/11320，132个GT各10新增测试＋30新增训练，原前缀/验证文件相同。科学commitc3952a7b；数据证据outputs/Verify_Task4C_GTHeadCoverage_1.1/formal_data_audit.json。首次正式训练52000896在第91轮无错误栈退出1，CPU20:00.904、墙钟20:26，缺少ENDED事件；根因未确证，不称训练完成。失败历史保留failed_runs/52000896，原导出52000897取消。同科学代码/数据/c156/seed96721重试52001957，后接导出52001958；V100、3h、16GiB，排除原gpu213-18，增加进程限制/故障日志，未改学习设置。工作台1.5代码和逐GT表已准备，旧真实4.14诊断交互通过，但新c156结果尚无，原1.4页面未替换。一次性本地收尾进程跟踪重试，成功后独立核验并构建，状态outputs/mainExp_Task4C_GTHeadCoverage_1.1/local_delivery_status.json；新页面交互仍需正式结果后核对。协议docs/Task4C_GT_head_coverage_protocol_1.1.md及docs/FMT_analysis_workbench_protocol_1.5.md。
+<!-- task4c-gt-head-training-retry-20260917-end -->

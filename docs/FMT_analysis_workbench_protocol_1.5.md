@@ -34,10 +34,10 @@
 
 - 正式数据审计：`experiments/Task4C_GTHeadCoverage_1_1.py` 的 `audit` 阶段。
 - 逐样本结果导出：`experiments/Export_Task4C_GTHeadCoverage_1_1.py`。
-- 独立结果复算：`experiments/Audit_Task4C_GTHeadResults_1_1.py`。读取真实预测、元数据和运行记录，检查每行标签/实例/概率、F1及混淆计数、每GT10/30配额、验证选轮、6进程12事件。科学源码按Git blob哈希核对，避免Windows换行符造成伪差异。
+- 独立结果复算：`experiments/Audit_Task4C_GTHeadResults_1_1.py`。读取真实预测、元数据和运行记录，检查每行标签/实例/概率、F1及混淆计数、每GT10/30配额、验证选轮和调度记录。重试后r2为6个成功进程及1个失败进程，共13个真实事件；失败训练缺失的结束事件明确保留。科学源码按Git blob哈希核对，避免Windows换行符造成伪差异。
 - 结果查看器：`experiments/Build_Task4C_GTHeadViewer_1_1.py`、`experiments/templates/task4c_gt_coverage_1_1.js`。生产构建要求每个GT在测试和训练展示中都有头部束，否则失败。
 - 三页整合：`experiments/Build_FMT_AnalysisWorkbench_1_5.py`。只有覆盖核验完成才更新1.4入口，保留原入口为`index_1.4.html`。
-- 一次性后续构建：`experiments/Finish_Task4C_GTHeadWorkbench_1_1.py`，只等候已提交的52000897，不提交训练、不修改科学数据。成功后下载结果、独立复算、生成查看器并更新入口；失败留状态文件，不伪造结果。
+- 一次性后续构建：`experiments/Finish_Task4C_GTHeadWorkbench_1_1.py`，读取`retry_submission.json`等候已提交的52001958；原52000897已取消。不提交训练、不修改科学数据。成功后下载结果、独立复算、生成查看器并更新入口；失败留状态文件，不伪造结果。
 
 已用真实旧4.14数据验证逐GT统计、缺样本提示、GT按钮、切换Channel/TBL以及显示数量0/1时覆盖与显示计数分离。该诊断页完整保留旧数据缺口，不作为新c156结果。新数据完成后的浏览器检查单独记录，不能把代码检查或旧数据诊断称为新结果交互核验。
 
