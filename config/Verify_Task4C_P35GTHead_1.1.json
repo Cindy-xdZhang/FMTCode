@@ -1,6 +1,6 @@
 {
   "version": "Verify_Task4C_P35GTHead_1.1",
-  "output": "outputs/Verify_Task4C_P35GTHead_1.1",
+  "output": "outputs/Verify_Task4C_P35GTHead_1.1/execution_r2",
   "source_output": "/ibex/user/zhanx0o/FMT_Task4C_GTHeadCoverage_20260917_r2/outputs/mainExp_Task4C_GTHeadCoverage_1.1",
   "source_audit_sha256": "a114e2c70bc8f93319c0db3ea081eb09b639dab80b067c032c773ef38ea020d7",
   "source_scientific_commit": "c3952a7b8cafa10a50d73703da65c36279713368",
@@ -115,5 +115,6 @@
     "patience": 50
   },
   "checkpoint_policy": "memory_only_no_weight_files",
-  "c156_reference_prediction_sha256": "062ec5fe69deffbf930e6c3e5494814fd0eccb40108ec5289aba4108ce6c524c"
+  "c156_reference_prediction_sha256": "062ec5fe69deffbf930e6c3e5494814fd0eccb40108ec5289aba4108ce6c524c",
+  "execution_revision": "r2_conditional_neighbor_numeric_check"
 }

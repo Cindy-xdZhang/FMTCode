@@ -88,6 +88,21 @@ def encode_batch(geometry, seeds, counts):
     return torch.cat((features, original[..., -1:]), -1)
 
 
+@torch.no_grad()
+def fixed_neighbor_reference(geometry, counts, ids):
+    """CPU reference conditional on the same material neighbors, for numeric QA only."""
+    from FMT_Utils.DFT_FMT_3D import pathline_dft_features_3d
+    from FMT_Utils.FMT_P35_NormFrequency_3_1 import direction_spectrum
+    mask = torch.arange(27, device=geometry.device)[None] < counts[:, None]
+    bi, li = mask.nonzero(as_tuple=True)
+    primitive = geometry[bi[:, None], ids[bi, li]]
+    base = pathline_dft_features_3d(primitive, num_freq=6, neighbor_scale=100., neighbor_weight=.5,
+                                  neighbor_pool='sort', mode='gram', include_chirality=True, return_numpy=False)
+    values = torch.cat((base[:, :23], direction_spectrum(primitive[:, 0], 6),
+                        frozen.method.pool_neighbors(base[:, 23:], POOL)), -1)
+    return values
+
+
 class Dataset:
     """Stream the fixed geometry into tokens, avoiding any resampling or copying of source files."""
     def __init__(self, spec, role, candidate, device='cuda', limit=None):
@@ -186,14 +201,39 @@ def gpu_check(spec, config):
     torch.nn.functional.cross_entropy(model(x.repeat(4, 1, 1)), d.targets.repeat(4)).backward()
     for parameter in model.parameters():
         assert parameter.grad is not None and torch.isfinite(parameter.grad).all()
-    # Train/test use the same V100 encoder; CPU is only an independent numeric check.
+    # Native float32 nearest-neighbor ties may resolve differently on CPU and GPU.
+    # Keep that full-pipeline discrepancy visible; compare arithmetic on fixed IDs.
     cpu = Dataset(spec, 'train', spec['candidate'], device='cpu', limit=32); cpu.encode(spec['candidate'], batch=8)
     a, b = cpu.clean.numpy(), d.clean.cpu().numpy()
-    assert np.allclose(a, b, atol=2e-4, rtol=2e-4), float(np.max(np.abs(a-b)))
+    gpu_small = Dataset(spec, 'train', spec['candidate'], limit=32); gpu_small.encode(spec['candidate'], batch=8)
+    assert torch.equal(gpu_small.clean, d.clean), 'V100 encoding changed with batch size'
+    from FMT_Utils.Task4C_Encoders_4_15 import local_indices
+    conditional_errors, changed_sets, radius_errors = [], 0, []
+    for folder, selected, counts in d.parts:
+        g = torch.tensor(np.array(np.load(folder/'geometry.npy', mmap_mode='r')[selected]))
+        s = torch.tensor(np.array(np.load(folder/'seeds.npy', mmap_mode='r')[selected]))
+        c = torch.tensor(counts)
+        gpu_ids, _ = local_indices(g.cuda(), s.cuda(), c.cuda())
+        cpu_ids, mask = local_indices(g, s, c)
+        different = (cpu_ids[..., 1:].sort(-1).values != gpu_ids.cpu()[..., 1:].sort(-1).values).any(-1) & mask
+        changed_sets += int(different.sum())
+        distances = torch.cdist(s.double(), s.double())
+        for bi, li in different.nonzero().tolist():
+            radius_errors.append(float(abs(distances[bi, li, cpu_ids[bi, li, 1:]].max()
+                                            - distances[bi, li, gpu_ids[bi, li, 1:].cpu()].max())))
+        reference = fixed_neighbor_reference(g, c, gpu_ids.cpu()).numpy()
+        actual = fixed_neighbor_reference(g.cuda(), c.cuda(), gpu_ids).cpu().numpy()
+        assert np.allclose(reference, actual, atol=2e-4, rtol=2e-4)
+        conditional_errors.append(float(np.max(np.abs(reference-actual))))
     write(Path(spec['output'])/'gpu_check.json', dict(complete=True, identity=identity(config),
           samples=32, parameters=76738, gpu=torch.cuda.get_device_name(), pilot_f1=score['f1'],
           initial_loss=losses[0], final_loss=losses[-1], batch128_backward=True,
-          cpu_gpu_log_features_max_error=float(np.max(np.abs(a-b))), scientific_metric=False))
+          cpu_gpu_full_pipeline_allclose=bool(np.allclose(a, b, atol=2e-4, rtol=2e-4)),
+          cpu_gpu_log_features_max_error=float(np.max(np.abs(a-b))),
+          cpu_gpu_different_neighbor_sets=changed_sets,
+          max_selected_radius_difference_float64=max(radius_errors, default=0.),
+          fixed_neighbor_cpu_gpu_max_error=max(conditional_errors),
+          fixed_neighbor_cpu_gpu_pass=True, v100_batch_exact=True, scientific_metric=False))
 
 
 def runtime(spec, config, phase, state, exit_code):
