@@ -1,0 +1,161 @@
+{
+  "input_root": "/ibex/user/zhanx0o/FMT_Task4B_VelocityCurl_4p1_20260906/repo/inputs",
+  "flows": [
+    {
+      "name": "channel",
+      "flow": "channel_flow/channel.vtk",
+      "gt": "channel_flow/channel_GTs.vtk",
+      "lambda2_threshold": -13.395,
+      "flow_sha256": "c1e3c18d0e67b6eb33ea41cd49c3a4c55216838a0f4a42f778ef00aaba3d4564",
+      "gt_sha256": "b9fdd93a1d2861781f824f28c80e46e06ebd3e5dcb58f0529010d7514e8fac09"
+    },
+    {
+      "name": "tbl",
+      "flow": "tbl_flow/tbl.vtk",
+      "gt": "tbl_flow/tbl_GTs.vtk",
+      "lambda2_threshold": -0.0272,
+      "flow_sha256": "cc82db1d3ca4e1964ec19dcd30df5a82c3c5635c16b8e0182f01fa57bf0d65bb",
+      "gt_sha256": "4fcd5efcfe13e10765095afec377b104d72c7092a646d39531f9bfbfc05c419e"
+    }
+  ],
+  "labels": {
+    "positive_minimum_single_instance_fraction": 0.5,
+    "negative": "no_head_cell_center_in_GT",
+    "ambiguous_partial_overlap": "exclude",
+    "source": "whole_head_center_GT_membership_including_instance_zero_not_paper_human_bundle_labels"
+  },
+  "bundles": {
+    "minimum_head_cells": 10,
+    "minimum_valid_lines": 10,
+    "points_per_line": 32,
+    "maximum_lines": 27,
+    "integration_domain": "full_native_vorticity_in_disjoint_partition_lambda2_and_oyf_for_seeds_only"
+  },
+  "sampling": {
+    "seed": 96601,
+    "per_flow_counts": {
+      "train": 13500,
+      "validation": 1500,
+      "test": 5000
+    },
+    "minimum_class_count": 16,
+    "maximum_center_rounds": 500,
+    "trace_batch_primitives": 64,
+    "neighbor_grid_scales": [
+      0.25,
+      0.5,
+      1.0
+    ],
+    "selection": "head_cycling_within_prespecified_local_spatial_cell_blocks"
+  },
+  "local_split": {
+    "blocks_per_head": 5,
+    "block_roles": [
+      "train",
+      "train",
+      "train",
+      "validation",
+      "test"
+    ],
+    "block_axis": "first_principal_axis_of_whole_head_cell_centers",
+    "evaluation_min_distance_to_any_train_over_local_grid_scale": 1.0,
+    "evaluation_max_distance_to_same_head_train_over_local_grid_scale": 4.0,
+    "test_min_distance_to_validation_over_local_grid_scale": 0.5,
+    "shared_heads_instances_and_native_support": true,
+    "scale_tuples_identical_across_splits": true
+  },
+  "integration": {
+    "channel": [
+      {
+        "ds": 0.001,
+        "maxiteration": 80
+      },
+      {
+        "ds": 0.002,
+        "maxiteration": 50
+      },
+      {
+        "ds": 0.004,
+        "maxiteration": 30
+      }
+    ],
+    "tbl": [
+      {
+        "ds": 0.025,
+        "maxiteration": 160
+      },
+      {
+        "ds": 0.05,
+        "maxiteration": 100
+      },
+      {
+        "ds": 0.04,
+        "maxiteration": 150
+      }
+    ],
+    "step_units": "physical_length",
+    "rk45_step_policy": "initial_minimum_maximum_equal_ds",
+    "vtk_maximum_number_of_steps": "maxiteration_with_output_capped_at_maxiteration_segments",
+    "maximum_propagation": "ds_times_maxiteration_per_direction",
+    "vtk_internal_propagation_guard_steps": 0.001,
+    "minimum_actual_half_arc_fraction": 0.95,
+    "maximum_actual_half_arc_fraction": 1.002,
+    "maximum_error_over_ds": 0.0001
+  },
+  "version": "mainExp_Task4C_GTHeadCoverage_1.1",
+  "output": "outputs/mainExp_Task4C_GTHeadCoverage_1.1",
+  "source_config": "config/Ablation_Task4C_BottomDensity_1.2.json",
+  "source_config_sha256": "c92b892ed1db9e6e01d64f4eea7792e616e5ab6f0b4a7436b3b456739be44363",
+  "source_output": "/ibex/user/zhanx0o/FMT_Task4C_BottomDensity_1p2_20260916/outputs/Ablation_Task4C_BottomDensity_1.2",
+  "source_scientific_commit": "a7643890d22c7faf63c1f716bb6222ba5271c5ff",
+  "expected_counts": {
+    "train": 196960,
+    "validation": 3000,
+    "test": 11320
+  },
+  "original_counts": {
+    "train": 193000,
+    "validation": 3000,
+    "test": 10000
+  },
+  "head_coverage": {
+    "instances": {
+      "channel": 74,
+      "tbl": 58
+    },
+    "test_bundles_per_instance": 10,
+    "train_bundles_per_test": 3,
+    "seed": 97001,
+    "maximum_geometry_rounds": 512,
+    "label_rule": "added_center_in_annotated_GT_head_user_confirmed",
+    "use_predictions_for_sampling": false,
+    "old_labels_unchanged": true
+  },
+  "candidate": {
+    "id": "c156",
+    "pool": "p35",
+    "profile": "h0",
+    "architecture": "wide_residual",
+    "points": 48,
+    "sampling": "uniform",
+    "augmentation": "none",
+    "parameters": 992386
+  },
+  "training": {
+    "batch_size": 128,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "dropout": 0.15,
+    "lr_patience": 15,
+    "threshold": 0.5
+  },
+  "final": {
+    "seeds": [
+      96721
+    ],
+    "epochs": 500,
+    "patience": 50
+  },
+  "checkpoint_policy": "memory_only_no_weight_files",
+  "result_scope": "single_seed_fixed_model_coverage_visualization_not_hyperparameter_search"
+}
