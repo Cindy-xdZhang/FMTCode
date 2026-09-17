@@ -21,7 +21,7 @@ window.installGTCoverage=function(){
  const oldRender=render;
  render=async function(reset=false){await oldRender(reset);refreshRegions();const rows=counts(),covered=rows.filter(r=>r.available>0).length,shown=rows.filter(r=>r.shown>0).length;
    $('coverageSummary').textContent=`${state.split==='test'?'测试':'训练展示'}头部覆盖：${covered} / ${rows.length} 个GT实例；当前视图显示 ${shown} 个`;
-   $('coverageExplanation').textContent=covered===rows.length?'每个GT都有真实头部线束。下表的正确识别与漏检按全部可用头部束统计，不受显示数量影响；数量设为0或关闭类别会隐藏线束。':'有GT缺少符合头部条件的样本。这是数据覆盖缺口，不是模型把它判为Non-hairpin；缺样本实例在下表明确列出。';
+   $('coverageExplanation').textContent=(covered===rows.length?'每个GT都有真实头部线束。下表的正确识别与漏检按全部可用头部束统计，不受显示数量影响；数量设为0或关闭类别会隐藏线束。':'有GT缺少符合头部条件的样本。这是数据覆盖缺口，不是模型把它判为Non-hairpin；缺样本实例在下表明确列出。')+' GT可能重叠；新增束经体单元包含检查后计入其指定播种GT，每束只计一次。';
    $('coverageRows').replaceChildren();
    for(const r of rows.sort((a,b)=>(a.available>0)-(b.available>0)||a.id-b.id)){
      const tr=document.createElement('tr');if(!r.available)tr.className='missing';const first=document.createElement('td'),button=document.createElement('button');button.textContent='GT '+r.id;

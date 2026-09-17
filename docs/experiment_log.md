@@ -4400,3 +4400,34 @@ Evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/{status_latest,independen
 <!-- task4c-gt-head-training-retry-20260917 -->
 2026-09-17 GT头部覆盖1.1已完成正式数据及V100工程检查：196960/3000/11320，132个GT各10新增测试＋30新增训练，原前缀/验证文件相同。科学commitc3952a7b；数据证据outputs/Verify_Task4C_GTHeadCoverage_1.1/formal_data_audit.json。首次正式训练52000896在第91轮无错误栈退出1，CPU20:00.904、墙钟20:26，缺少ENDED事件；根因未确证，不称训练完成。失败历史保留failed_runs/52000896，原导出52000897取消。同科学代码/数据/c156/seed96721重试52001957，后接导出52001958；V100、3h、16GiB，排除原gpu213-18，增加进程限制/故障日志，未改学习设置。工作台1.5代码和逐GT表已准备，旧真实4.14诊断交互通过，但新c156结果尚无，原1.4页面未替换。一次性本地收尾进程跟踪重试，成功后独立核验并构建，状态outputs/mainExp_Task4C_GTHeadCoverage_1.1/local_delivery_status.json；新页面交互仍需正式结果后核对。协议docs/Task4C_GT_head_coverage_protocol_1.1.md及docs/FMT_analysis_workbench_protocol_1.5.md。
 <!-- task4c-gt-head-training-retry-20260917-end -->
+
+<!-- task4c-gt-head-coverage-final-20260917 -->
+2026-09-17 `mainExp_Task4C_GTHeadCoverage_1.1` 已完成；取代此前“训练中/等待浏览器检查”的状态。科学commit `c3952a7b`，固定c156/seed96721、992,386参数，196,960训练/3,000验证/11,320测试；132个GT每个新增30训练＋10测试，旧数据前缀和验证保持。113轮训练、验证选择63轮、25.712分钟；验证F1=0.921547，新完整测试F1=0.912008，同一个新模型在原10,000束子集F1=0.922946。新增正类头部1,320束识别1,071束、漏检249束，召回81.14%；132个GT均至少识别3/10束。这是单种子、共享GT实例的局部评估，不改写历史c156三种子结果。
+
+重试训练52001957与导出52001958均COMPLETED/0:0；前91轮训练排列及验证F1与失败52000896完全一致。原退出根因仍未确证：stderr无栈、CPU20:00.904、只有STARTED。新运行实际CPU限制为unlimited，累计CPU25:47.310；换节点并禁用资源限制继承后一遍完成，不能据此单独证明旧CPU限制就是原因。失败证据、缺失的结束事件及取消任务保留。独立审计通过：r2七个实际进程/13事件、全部预测与原数据哈希、选择轮次和GT配额。
+
+工作台1.5已上线，旧1.4入口跳转1.5并保留旧HTML。第三页测试全部11,320束，训练展示新增3,960束；每个GT均可查看正确识别与漏检。最终交互检查发现全局GT体单元查询在重叠区域可能返回另一有效GT，已逐个GT独立验证全部5,280新增中心的实际包含关系，再按其播种GT计数；每束只计一次，不改标签/训练/预测。构建强制每GT10/30配额，控件脚本带内容哈希以避免旧缓存。第一、二页内容继承1.4，形状解释仍是原p35模型。
+
+证据：`outputs/mainExp_Task4C_GTHeadCoverage_1.1/{independent_results_audit,browser_checks,local_delivery_status}.json`，查看器 `outputs/Other_Task4C_GTHeadCoverage_1.1/viewer/head_coverage_manifest.json`；协议 `docs/Task4C_GT_head_coverage_protocol_1.1.md`、`docs/FMT_analysis_workbench_protocol_1.5.md`。入口 `http://127.0.0.1:8767/Other_FMT_AnalysisWorkbench_1.5/index.html#results`。当前请求完成，不自动新增训练或调参。
+
+## GT头部全覆盖c156单种子结果 — mainExp_Task4C_GTHeadCoverage_1.1
+
+固定科学commit `c3952a7b`、seed96721、992,386参数、阈值0.5；训练196,960束，验证3,000束。训练113轮、选择63轮、25.712分钟，验证F1=0.921547。下列两种测试范围来自**同一次训练和同一份预测**，不可混为一个指标。属于交互可视化的单种子运行，不替换旧c156三种子均值。
+
+| 评价范围 | 样本数 | 合并F1 | Channel F1 | TBL F1 |
+|---|---:|---:|---:|---:|
+| 扩充后的完整测试 | 11,320 | 0.912008 | 0.917098 | 0.904781 |
+| 其中原测试子集 | 10,000 | 0.922946 | 0.930647 | 0.911175 |
+
+完整测试TP/FP/FN/TN=2700/134/387/8099，precision=0.952717，recall=0.874636。原子集TP/FP/FN/TN=1629/134/138/8099。完整训练F1=0.999988，只有2个FN、0个FP；训练页面仅展示新增头部子集，不能把3,960束展示数量当完整训练规模。
+
+| 新增正类头部子集 | GT数 | 新增训练 | 新增测试 | 正确识别 / 漏检 | 召回率 |
+|---|---:|---:|---:|---:|---:|
+| Channel | 74 | 2,220 | 740 | 600 / 140 | 0.810811 |
+| TBL | 58 | 1,740 | 580 | 471 / 109 | 0.812069 |
+| 合计 | 132 | 3,960 | 1,320 | 1,071 / 249 | 0.811364 |
+
+每个GT新增30训练＋10测试；全部132个GT的新增测试至少识别3/10束，24个GT识别10/10。数据全覆盖不等于分类100%正确。新增子集只有正类，主报召回率；新旧标签规则与类别比例不同，整体F1变化不能直接归为模型性能提升。每GT附近都有训练样本，结果只说明共享实例的局部分类。
+
+来源：`outputs/mainExp_Task4C_GTHeadCoverage_1.1/independent_results_audit.json`，包含逐GT正确数、原子集复算及训练代价；`final/c156/seed96721/result.json`，SHA256 `6c8b06da225a6ccf12e815fbc8cb56d6da8acdfd061b84f7416521c545d7d726`。
+<!-- task4c-gt-head-coverage-final-20260917-end -->

@@ -1209,3 +1209,26 @@ Source and per-seed evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/indep
 
 科学commit `f3d98dd347c3d426b815753167d3b923c467bda6`；配置 `config/Ablation_Task4C_PointNetPlusPlus_1.1.json`，SHA256 `67f8f5e2806a446717eff08f4f9a809f44d40bf2677f805abb993d4187a9ae65`。 独立复算9份训练/验证/测试预测的哈希、完整行覆盖、源标签与实例编号、F1/precision/recall/accuracy/average precision及混淆矩阵，核对验证选择轮次、三种子均值和样本标准差；18个源数据文件哈希相同，9进程/18条运行事件与Slurm全部完成、exit0。未保留或下载checkpoint。证据：`outputs/Ablation_Task4C_PointNetPlusPlus_1.1/final_verified_evidence.json`；原始结果：`/ibex/user/zhanx0o/FMT_Task4C_PointNetPlusPlus_1p1_20260916/outputs/Ablation_Task4C_PointNetPlusPlus_1.1/`。
 方法判断见experiment_log同标记，统一交接见 `docs/Task4C_handoff.md`。
+
+<!-- task4c-gt-head-coverage-final-20260917 -->
+## GT头部全覆盖c156单种子结果 — mainExp_Task4C_GTHeadCoverage_1.1
+
+固定科学commit `c3952a7b`、seed96721、992,386参数、阈值0.5；训练196,960束，验证3,000束。训练113轮、选择63轮、25.712分钟，验证F1=0.921547。下列两种测试范围来自**同一次训练和同一份预测**，不可混为一个指标。属于交互可视化的单种子运行，不替换旧c156三种子均值。
+
+| 评价范围 | 样本数 | 合并F1 | Channel F1 | TBL F1 |
+|---|---:|---:|---:|---:|
+| 扩充后的完整测试 | 11,320 | 0.912008 | 0.917098 | 0.904781 |
+| 其中原测试子集 | 10,000 | 0.922946 | 0.930647 | 0.911175 |
+
+完整测试TP/FP/FN/TN=2700/134/387/8099，precision=0.952717，recall=0.874636。原子集TP/FP/FN/TN=1629/134/138/8099。完整训练F1=0.999988，只有2个FN、0个FP；训练页面仅展示新增头部子集，不能把3,960束展示数量当完整训练规模。
+
+| 新增正类头部子集 | GT数 | 新增训练 | 新增测试 | 正确识别 / 漏检 | 召回率 |
+|---|---:|---:|---:|---:|---:|
+| Channel | 74 | 2,220 | 740 | 600 / 140 | 0.810811 |
+| TBL | 58 | 1,740 | 580 | 471 / 109 | 0.812069 |
+| 合计 | 132 | 3,960 | 1,320 | 1,071 / 249 | 0.811364 |
+
+每个GT新增30训练＋10测试；全部132个GT的新增测试至少识别3/10束，24个GT识别10/10。数据全覆盖不等于分类100%正确。新增子集只有正类，主报召回率；新旧标签规则与类别比例不同，整体F1变化不能直接归为模型性能提升。每GT附近都有训练样本，结果只说明共享实例的局部分类。
+
+来源：`outputs/mainExp_Task4C_GTHeadCoverage_1.1/independent_results_audit.json`，包含逐GT正确数、原子集复算及训练代价；`final/c156/seed96721/result.json`，SHA256 `6c8b06da225a6ccf12e815fbc8cb56d6da8acdfd061b84f7416521c545d7d726`。
+<!-- task4c-gt-head-coverage-final-20260917-end -->
