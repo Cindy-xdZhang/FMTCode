@@ -23,3 +23,9 @@ The original refinement array is capped at12 future concurrent GPUs. The additio
 Preparation independently checks all264 source validation predictions, exact complete ranking and top20 membership, old source-code hashes, original data file hashes and source identity before constructing references. Result verification accepts old identity only for the36 explicitly reused refinement fits, and current identity for new fits. New selection/merge verify every required prediction, source label and instance ID, full row coverage, metrics and selected epoch.
 
 Implementation: `experiments/Task4C_FPSAugmentSearch_1_2.py`, `config/Ablation_Task4C_FPSAugmentSearch_1.2.json`, `ibex_bash/task4c_fps_augment_search_1p2.sh`. No1.1 implementation/config edit. Experimental conclusions remain in `docs/experiment_log.md`; all job IDs and events go to `docs/ibex_run_registry.md`.
+
+
+<!-- task4c-fpsaug-final-20260917 -->
+## Completion and configuration identity
+
+Completed2026-09-17 11:47:29Saudi. Source1.1 scientific commit9d05abc571bc7c45e5da8a8f9f3ee55db367d467; new1.2 scientific commit21cf1fb75b556741ae7a6da8bd0f08104c1a0db5. The actual Git/Ibex LF config SHA256 is14a849f54553e51b16b5aec5e33fe2f274f2fe9e456b254854e32a7834883c78. Earlier deployment prose used the local Windows CRLF hash e908650742e5eedaa7f08d17ffe035c67407d7e661c43bb2604c53d947024974; canonical LF bytes and parsed JSON are exactly identical. This is a recorded hash-format correction, with no scientific revision. Independent final audit verifies330 fits,336 prediction files and337 executed processes;8 superseded unstarted processes remain cancelled records. Results are in experiment_log and paper_tables_tasks_3d; no further search follows automatically.

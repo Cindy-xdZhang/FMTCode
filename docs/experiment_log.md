@@ -4288,3 +4288,35 @@ Version1.2 calls the original training bytecode; only bookkeeping, candidate dis
 Top20 extension1.2 deployed at2026-09-17 04:43:26UTC, scientific commit `21cf1fb75b556741ae7a6da8bd0f08104c1a0db5`, checkout `/ibex/user/zhanx0o/FMT_Task4C_FPSAugmentSearch_1p2_20260917`. Jobs51984022prepare,51984023[0–23]extra refinement,51984024selection,51984025[0–5]final,51984026merge:33 processes. Preparation completed07:43:29–07:43:45Saudi oncn604-11,exit0: all264 prior validation predictions, full ranking/top20, original source-code and18 physical file hashes passed. Data counts remain193000/3000/10000. First12 candidates reference the original36 fits with original scientific identity; all20 will receive the same three refinement seeds. No new performance conclusion yet; extra24 remain GPU-priority-pending in the07:45 snapshot.
 
 After successful preparation, old selection51974957, final51974958[0–5] and merge51974959 were confirmed cancelled before execution at07:44:31Saudi. These8 intentionally superseded processes are not training failures; their records remain. Original refinement51974956 continues. New selection has AND dependencies on51974956 and51984023; new final depends on the20-candidate selection. Scheduling caps old12 future jobs/new10 jobs while14 old jobs remain active, total<=24 without preemption. No source configs or training implementations changed. Evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/{submission_snapshot,startup_snapshot,deployment_verified,startup_final}.json; complete audits also reside in the Ibex output.
+
+
+<!-- task4c-fpsaug-final-20260917 -->
+## Task4-c FPS augmentation search 1.1/1.2: completed final results
+
+All264 single-seed screening,60 full-budget refinement and6 final fits completed. The top20 expansion retains c156 as the validation-selected recipe: p35 Fourier input, wide residual network,48 uniform-arclength points,no tangent jitter or rotation;992,386 learned parameters. Its refinement validation F1 is0.933609494 +/- 0.008154769. Final fresh seeds96721–96723 produce test F1=0.923741007/0.919592299/0.917835671, mean0.920389659 +/- 0.003032340, training33.013min per run. This is below the0.93 target and the frozen Conv24 mean0.933197860 by0.012808201 (1.28 percentage points). It is close to the original BiLSTM0.919499358; the0.000890301 mean difference does not establish a statistically reliable advantage. Final selection used validation only and was locked before any final test inference.
+
+The fresh paired original-FPS control is0.882973680 +/- 0.010458147, so the selected recipe gains0.037415979 (3.74 percentage points) on these same three seeds. This does not overwrite historical original FPS0.893015458 +/- 0.004408264 (different seeds96611–96613) or nearest-neighbor FMT0.888404277 +/- 0.011497456. The selected network has about12.93 times the original FMT parameters and13.75 times Conv24; do not attribute the gain solely to Fourier encoding, augmentation or resampling, or call this a parameter-matched comparison. The selected no-augmentation recipe does not show augmentation universally fails; nearby augmented candidates have similar validation means. The single-seed screening leader c211 was0.945823928 but its three-seed validation mean is0.927939506, rank11. Screening, refinement validation and final test refer to different roles/seeds; no old score is overwritten.
+
+|Method|Total trainable parameters|Test F1, mean +/- sample SD|Channel F1|TBL F1|Mean training minutes|
+|---|---:|---:|---:|---:|---:|
+|Selected c156, p35 + wide residual,48 uniform,no augmentation|992,386|0.920390 +/- 0.003032|0.926951|0.910338|33.013|
+|Original p35/FPS control,32 uniform,no augmentation; fresh paired seeds|76,738|0.882974 +/- 0.010458|0.895789|0.863900|14.410|
+|Frozen Conv3D24, original BottomDensity1.2 seeds|72,192|0.933198 +/- 0.006292|0.946640|0.912903|141.377|
+|Frozen BiLSTM + MLP, original geometric-baseline seeds|76,786|0.919499 +/- 0.010500|See original table|See original table|83.194|
+
+|Method|Seed|Test F1|Channel F1|TBL F1|Selected / completed epochs|Training minutes|
+|---|---:|---:|---:|---:|---:|---:|
+|c156|96721|0.923741007|0.931001890|0.912435614|100 / 150|34.079|
+|c156|96722|0.919592299|0.925233645|0.910919540|73 / 123|27.634|
+|c156|96723|0.917835671|0.924618321|0.907659270|110 / 160|37.327|
+|fps_reference|96721|0.876996358|0.902439024|0.839248434|71 / 121|14.839|
+|fps_reference|96722|0.876875177|0.881244109|0.870304748|50 / 100|12.074|
+|fps_reference|96723|0.895049505|0.903682720|0.882145378|80 / 130|16.316|
+
+All20 refinement candidates were evaluated on validation. Only the selected candidate and original control received final tests, following the stated top20 interpretation; this is not a table of20 test results. Complete20-candidate ranking is appended to paper_tables_tasks_3d.
+
+Scientific commits: source1.1 `9d05abc571bc7c45e5da8a8f9f3ee55db367d467`; extension/final1.2 `21cf1fb75b556741ae7a6da8bd0f08104c1a0db5`. Independent audit passed330 fit histories,336 prediction files with source labels/instance IDs/full row coverage and independently recomputed metrics,42 source-file hashes, complete selection ordering,337 executed Slurm processes/674 STARTED+ENDED events, and absence of checkpoints. The8 previously superseded pending processes remain recorded as cancelled, not failed fits. Source/final configs and data did not change. Merge ended2026-09-17 08:47:29UTC (11:47:29Saudi); fresh audit09:45UTC. No automatic further search is authorized by completion.
+
+Configuration-hash record correction: previous1.2 documentation quoted `e908650742e5eedaa7f08d17ffe035c67407d7e661c43bb2604c53d947024974`, the Windows CRLF working-file hash. The actual committed and deployed Linux LF config is `14a849f54553e51b16b5aec5e33fe2f274f2fe9e456b254854e32a7834883c78`; all30 new training results have this actual identity. The first independent final-audit attempt rejected the old documented byte hash. Direct Git comparison then verified exact equality after CRLF-to-LF normalization and identical parsed JSON, and the strict audit passed against the deployed bytes. This corrects metadata documentation, not scientific settings or metrics; previous entries are preserved.
+
+Evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/{status_latest,independent_final_audit}.json locally; full histories, predictions, selection.lock.json, summary.json and runtime.jsonl remain in the source and extension Ibex output directories. Temporary standalone audit script is removed after preserving this report; the official runner retains its production result checks.

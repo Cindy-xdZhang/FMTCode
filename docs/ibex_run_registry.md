@@ -12216,3 +12216,122 @@ Preparation51984022 completed07:43:29–07:43:45Saudi oncn604-11,exit0; full sou
 |---|---|---|---|---|---|---|
 | 51984022 / None | prepare | STARTED | 2026-09-17T04:43:36.416770+00:00 | cn604-11 | CPU | None |
 | 51984022 / None | prepare | ENDED | 2026-09-17T04:43:44.865347+00:00 | cn604-11 | CPU | 0 |
+
+
+<!-- task4c-fpsaug-final-20260917 -->
+Both FPS search versions finished. Source1.1 has304 successful processes/608 events; extension1.2 has33 successful processes/66 events. Total337 executed processes, all exit0;8 old unstarted selection/final/merge processes cancelled by the user-authorized extension remain preserved, for345 submitted processes total. All330 fits and336 predictions independently checked. Final merge51984026 ended2026-09-17 08:47:29UTC (11:47:29Saudi). No active jobs or failed fits. Final recipe c156 and paired original-control outcomes are in experiment_log/paper_tables_tasks_3d at this marker; no new search submitted.
+
+Scientific commits9d05abc571bc7c45e5da8a8f9f3ee55db367d467 (source) and21cf1fb75b556741ae7a6da8bd0f08104c1a0db5 (extension). Actual extension config SHA25614a849f54553e51b16b5aec5e33fe2f274f2fe9e456b254854e32a7834883c78; earlier e908650742e5eedaa7f08d17ffe035c67407d7e661c43bb2604c53d947024974 is the byte-different Windows CRLF file with identical settings. All runtime identities use actual deployed LF bytes. Evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/independent_final_audit.json and status_latest.json. Newly observed runtime events (UTC) follow; prior events are retained above.
+
+| Process / array | Phase | State | UTC | Node | GPU | Exit |
+|---|---|---|---|---|---|---|
+| 51982187 / 1 | refine | ENDED | 2026-09-17T04:46:25.272777+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | 0 |
+| 51982186 / 0 | refine | ENDED | 2026-09-17T04:48:46.716816+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | 0 |
+| 51982212 / 12 | refine | ENDED | 2026-09-17T04:54:06.059324+00:00 | gpu213-06 | Tesla V100-SXM2-32GB | 0 |
+| 51984863 / 20 | refine | STARTED | 2026-09-17T04:55:42.960500+00:00 | gpu213-06 | Tesla V100-SXM2-32GB | None |
+| 51982188 / 2 | refine | ENDED | 2026-09-17T04:55:59.199040+00:00 | gpu214-18 | Tesla V100-SXM2-32GB | 0 |
+| 51982195 / 9 | refine | ENDED | 2026-09-17T04:57:33.571545+00:00 | gpu211-18 | Tesla V100-SXM2-32GB | 0 |
+| 51984965 / 22 | refine | STARTED | 2026-09-17T04:57:57.870049+00:00 | gpu211-18 | Tesla V100-SXM2-32GB | None |
+| 51984964 / 21 | refine | STARTED | 2026-09-17T04:57:59.087755+00:00 | gpu214-18 | Tesla V100-SXM2-32GB | None |
+| 51982558 / 17 | refine | ENDED | 2026-09-17T05:00:52.711427+00:00 | gpu213-18 | Tesla V100-SXM2-32GB | 0 |
+| 51985073 / 23 | refine | STARTED | 2026-09-17T05:01:56.810323+00:00 | gpu213-18 | Tesla V100-SXM2-32GB | None |
+| 51982196 / 10 | refine | ENDED | 2026-09-17T05:08:33.052368+00:00 | gpu210-02 | Tesla V100-SXM2-32GB | 0 |
+| 51982536 / 16 | refine | ENDED | 2026-09-17T05:09:09.370258+00:00 | gpu213-10 | Tesla V100-SXM2-32GB | 0 |
+| 51985106 / 25 | refine | STARTED | 2026-09-17T05:10:23.521862+00:00 | gpu210-02 | Tesla V100-SXM2-32GB | None |
+| 51985105 / 24 | refine | STARTED | 2026-09-17T05:10:23.690429+00:00 | gpu213-10 | Tesla V100-SXM2-32GB | None |
+| 51982439 / 15 | refine | ENDED | 2026-09-17T05:11:36.936217+00:00 | gpu213-10 | Tesla V100-SXM2-32GB | 0 |
+| 51985283 / 26 | refine | STARTED | 2026-09-17T05:12:19.909780+00:00 | gpu609-09 | Tesla V100-SXM2-32GB | None |
+| 51982211 / 11 | refine | ENDED | 2026-09-17T05:18:33.114500+00:00 | gpu213-06 | Tesla V100-SXM2-32GB | 0 |
+| 51985362 / 27 | refine | STARTED | 2026-09-17T05:20:38.151006+00:00 | gpu213-06 | Tesla V100-SXM2-32GB | None |
+| 51982248 / 13 | refine | ENDED | 2026-09-17T05:24:37.199916+00:00 | gpu214-10 | Tesla V100-SXM2-32GB | 0 |
+| 51985477 / 28 | refine | STARTED | 2026-09-17T05:24:47.529746+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | None |
+| 51982683 / 18 | refine | ENDED | 2026-09-17T05:24:53.298541+00:00 | gpu214-02 | Tesla V100-SXM2-32GB | 0 |
+| 51982316 / 14 | refine | ENDED | 2026-09-17T05:26:34.170538+00:00 | gpu211-18 | Tesla V100-SXM2-32GB | 0 |
+| 51985497 / 30 | refine | STARTED | 2026-09-17T05:26:51.038812+00:00 | gpu211-18 | Tesla V100-SXM2-32GB | None |
+| 51985496 / 29 | refine | STARTED | 2026-09-17T05:26:52.196167+00:00 | gpu214-02 | Tesla V100-SXM2-32GB | None |
+| 51982684 / 19 | refine | ENDED | 2026-09-17T05:28:23.144149+00:00 | gpu212-10 | Tesla V100-SXM2-32GB | 0 |
+| 51985515 / 31 | refine | STARTED | 2026-09-17T05:28:55.843398+00:00 | gpu212-10 | Tesla V100-SXM2-32GB | None |
+| 51985362 / 27 | refine | ENDED | 2026-09-17T05:44:36.312853+00:00 | gpu213-06 | Tesla V100-SXM2-32GB | 0 |
+| 51985882 / 32 | refine | STARTED | 2026-09-17T05:45:34.043742+00:00 | gpu609-02 | Tesla V100-SXM2-32GB | None |
+| 51984964 / 21 | refine | ENDED | 2026-09-17T05:46:41.068523+00:00 | gpu214-18 | Tesla V100-SXM2-32GB | 0 |
+| 51985926 / 33 | refine | STARTED | 2026-09-17T05:47:37.660715+00:00 | gpu214-18 | Tesla V100-SXM2-32GB | None |
+| 51985105 / 24 | refine | ENDED | 2026-09-17T05:51:23.368209+00:00 | gpu213-10 | Tesla V100-SXM2-32GB | 0 |
+| 51986019 / 34 | refine | STARTED | 2026-09-17T05:51:48.387367+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | None |
+| 51985496 / 29 | refine | ENDED | 2026-09-17T05:56:26.009975+00:00 | gpu214-02 | Tesla V100-SXM2-32GB | 0 |
+| 51974956 / 35 | refine | STARTED | 2026-09-17T05:58:01.263481+00:00 | gpu214-02 | Tesla V100-SXM2-32GB | None |
+| 51985283 / 26 | refine | ENDED | 2026-09-17T06:00:15.526959+00:00 | gpu609-09 | Tesla V100-SXM2-32GB | 0 |
+| 51985106 / 25 | refine | ENDED | 2026-09-17T06:00:33.751981+00:00 | gpu210-02 | Tesla V100-SXM2-32GB | 0 |
+| 51984863 / 20 | refine | ENDED | 2026-09-17T06:02:09.227484+00:00 | gpu213-06 | Tesla V100-SXM2-32GB | 0 |
+| 51984965 / 22 | refine | ENDED | 2026-09-17T06:04:37.379539+00:00 | gpu211-18 | Tesla V100-SXM2-32GB | 0 |
+| 51985477 / 28 | refine | ENDED | 2026-09-17T06:08:48.911829+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | 0 |
+| 51985073 / 23 | refine | ENDED | 2026-09-17T06:09:33.746823+00:00 | gpu213-18 | Tesla V100-SXM2-32GB | 0 |
+| 51985515 / 31 | refine | ENDED | 2026-09-17T06:14:40.422057+00:00 | gpu212-10 | Tesla V100-SXM2-32GB | 0 |
+| 51985882 / 32 | refine | ENDED | 2026-09-17T06:19:51.185334+00:00 | gpu609-02 | Tesla V100-SXM2-32GB | 0 |
+| 51985497 / 30 | refine | ENDED | 2026-09-17T06:30:15.692883+00:00 | gpu211-18 | Tesla V100-SXM2-32GB | 0 |
+| 51985926 / 33 | refine | ENDED | 2026-09-17T06:56:46.408858+00:00 | gpu214-18 | Tesla V100-SXM2-32GB | 0 |
+| 51986019 / 34 | refine | ENDED | 2026-09-17T07:06:40.248262+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | 0 |
+| 51974956 / 35 | refine | ENDED | 2026-09-17T07:22:50.880221+00:00 | gpu214-02 | Tesla V100-SXM2-32GB | 0 |
+| 51984261 / 0 | refine | STARTED | 2026-09-17T04:47:25.594580+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | None |
+| 51984393 / 1 | refine | STARTED | 2026-09-17T04:49:29.503995+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | None |
+| 51985284 / 2 | refine | STARTED | 2026-09-17T05:12:19.156786+00:00 | gpu213-10 | Tesla V100-SXM2-32GB | None |
+| 51985345 / 3 | refine | STARTED | 2026-09-17T05:16:28.910863+00:00 | gpu212-10 | Tesla V100-SXM2-32GB | None |
+| 51985353 / 6 | refine | STARTED | 2026-09-17T05:18:33.539191+00:00 | gpu214-06 | Tesla V100-SXM2-32GB | None |
+| 51985352 / 5 | refine | STARTED | 2026-09-17T05:18:33.539212+00:00 | gpu214-06 | Tesla V100-SXM2-32GB | None |
+| 51985351 / 4 | refine | STARTED | 2026-09-17T05:18:33.871577+00:00 | gpu609-09 | Tesla V100-SXM2-32GB | None |
+| 51985367 / 7 | refine | STARTED | 2026-09-17T05:22:43.002955+00:00 | gpu609-08 | Tesla V100-SXM2-32GB | None |
+| 51985478 / 8 | refine | STARTED | 2026-09-17T05:24:46.326327+00:00 | gpu214-10 | Tesla V100-SXM2-32GB | None |
+| 51985516 / 9 | refine | STARTED | 2026-09-17T05:28:55.843756+00:00 | gpu212-10 | Tesla V100-SXM2-32GB | None |
+| 51984261 / 0 | refine | ENDED | 2026-09-17T05:43:00.961776+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | 0 |
+| 51985784 / 10 | refine | STARTED | 2026-09-17T05:43:28.015840+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | None |
+| 51984393 / 1 | refine | ENDED | 2026-09-17T05:49:48.069967+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | 0 |
+| 51986020 / 11 | refine | STARTED | 2026-09-17T05:51:47.250083+00:00 | gpu213-10 | Tesla V100-SXM2-32GB | None |
+| 51985284 / 2 | refine | ENDED | 2026-09-17T05:57:14.861260+00:00 | gpu213-10 | Tesla V100-SXM2-32GB | 0 |
+| 51986094 / 12 | refine | STARTED | 2026-09-17T05:58:00.696089+00:00 | gpu213-10 | Tesla V100-SXM2-32GB | None |
+| 51985367 / 7 | refine | ENDED | 2026-09-17T05:58:43.072803+00:00 | gpu609-08 | Tesla V100-SXM2-32GB | 0 |
+| 51985345 / 3 | refine | ENDED | 2026-09-17T05:58:57.084129+00:00 | gpu212-10 | Tesla V100-SXM2-32GB | 0 |
+| 51986132 / 13 | refine | STARTED | 2026-09-17T06:00:05.555496+00:00 | gpu609-08 | Tesla V100-SXM2-32GB | None |
+| 51986133 / 14 | refine | STARTED | 2026-09-17T06:00:05.611282+00:00 | gpu212-18 | Tesla V100-SXM2-32GB | None |
+| 51985351 / 4 | refine | ENDED | 2026-09-17T06:05:44.117133+00:00 | gpu609-09 | Tesla V100-SXM2-32GB | 0 |
+| 51986206 / 15 | refine | STARTED | 2026-09-17T06:06:19.003030+00:00 | gpu609-09 | Tesla V100-SXM2-32GB | None |
+| 51985353 / 6 | refine | ENDED | 2026-09-17T06:07:25.809966+00:00 | gpu214-06 | Tesla V100-SXM2-32GB | 0 |
+| 51985516 / 9 | refine | ENDED | 2026-09-17T06:07:33.216166+00:00 | gpu212-10 | Tesla V100-SXM2-32GB | 0 |
+| 51986226 / 17 | refine | STARTED | 2026-09-17T06:08:23.978366+00:00 | gpu214-06 | Tesla V100-SXM2-32GB | None |
+| 51986225 / 16 | refine | STARTED | 2026-09-17T06:08:24.878223+00:00 | gpu609-09 | Tesla V100-SXM2-32GB | None |
+| 51985352 / 5 | refine | ENDED | 2026-09-17T06:15:59.977548+00:00 | gpu214-06 | Tesla V100-SXM2-32GB | 0 |
+| 51986326 / 18 | refine | STARTED | 2026-09-17T06:16:42.811461+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | None |
+| 51985478 / 8 | refine | ENDED | 2026-09-17T06:25:34.848792+00:00 | gpu214-10 | Tesla V100-SXM2-32GB | 0 |
+| 51986436 / 19 | refine | STARTED | 2026-09-17T06:27:05.769934+00:00 | gpu609-04 | Tesla V100-SXM2-32GB | None |
+| 51986020 / 11 | refine | ENDED | 2026-09-17T06:37:11.022059+00:00 | gpu213-10 | Tesla V100-SXM2-32GB | 0 |
+| 51986819 / 20 | refine | STARTED | 2026-09-17T06:37:25.875489+00:00 | gpu609-02 | Tesla V100-SXM2-32GB | None |
+| 51986094 / 12 | refine | ENDED | 2026-09-17T06:41:46.650798+00:00 | gpu213-10 | Tesla V100-SXM2-32GB | 0 |
+| 51987197 / 21 | refine | STARTED | 2026-09-17T06:43:37.562307+00:00 | gpu609-08 | Tesla V100-SXM2-32GB | None |
+| 51986206 / 15 | refine | ENDED | 2026-09-17T06:48:37.963485+00:00 | gpu609-09 | Tesla V100-SXM2-32GB | 0 |
+| 51987557 / 22 | refine | STARTED | 2026-09-17T06:49:48.475488+00:00 | gpu609-09 | Tesla V100-SXM2-32GB | None |
+| 51985784 / 10 | refine | ENDED | 2026-09-17T06:53:56.308215+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | 0 |
+| 51984023 / 23 | refine | STARTED | 2026-09-17T06:55:59.590294+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | None |
+| 51986132 / 13 | refine | ENDED | 2026-09-17T06:58:17.161568+00:00 | gpu609-08 | Tesla V100-SXM2-32GB | 0 |
+| 51986326 / 18 | refine | ENDED | 2026-09-17T07:10:50.242056+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | 0 |
+| 51986133 / 14 | refine | ENDED | 2026-09-17T07:11:40.997580+00:00 | gpu212-18 | Tesla V100-SXM2-32GB | 0 |
+| 51987197 / 21 | refine | ENDED | 2026-09-17T07:21:18.695907+00:00 | gpu609-08 | Tesla V100-SXM2-32GB | 0 |
+| 51986436 / 19 | refine | ENDED | 2026-09-17T07:38:45.792432+00:00 | gpu609-04 | Tesla V100-SXM2-32GB | 0 |
+| 51987557 / 22 | refine | ENDED | 2026-09-17T07:41:03.701008+00:00 | gpu609-09 | Tesla V100-SXM2-32GB | 0 |
+| 51986225 / 16 | refine | ENDED | 2026-09-17T07:44:59.775348+00:00 | gpu609-09 | Tesla V100-SXM2-32GB | 0 |
+| 51986819 / 20 | refine | ENDED | 2026-09-17T07:47:43.310357+00:00 | gpu609-02 | Tesla V100-SXM2-32GB | 0 |
+| 51986226 / 17 | refine | ENDED | 2026-09-17T07:48:06.578200+00:00 | gpu214-06 | Tesla V100-SXM2-32GB | 0 |
+| 51984023 / 23 | refine | ENDED | 2026-09-17T08:06:59.710854+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | 0 |
+| 51984024 / None | select | STARTED | 2026-09-17T08:07:13.110519+00:00 | cn604-14 | CPU | None |
+| 51984024 / None | select | ENDED | 2026-09-17T08:07:21.311795+00:00 | cn604-14 | CPU | 0 |
+| 51993245 / 3 | final | STARTED | 2026-09-17T08:09:17.333338+00:00 | gpu214-06 | Tesla V100-SXM2-32GB | None |
+| 51993244 / 2 | final | STARTED | 2026-09-17T08:09:17.656661+00:00 | gpu609-02 | Tesla V100-SXM2-32GB | None |
+| 51993246 / 4 | final | STARTED | 2026-09-17T08:09:17.867011+00:00 | gpu213-10 | Tesla V100-SXM2-32GB | None |
+| 51984025 / 5 | final | STARTED | 2026-09-17T08:09:17.867333+00:00 | gpu212-10 | Tesla V100-SXM2-32GB | None |
+| 51993243 / 1 | final | STARTED | 2026-09-17T08:09:17.990805+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | None |
+| 51993242 / 0 | final | STARTED | 2026-09-17T08:09:18.146412+00:00 | gpu609-07 | Tesla V100-SXM2-32GB | None |
+| 51993246 / 4 | final | ENDED | 2026-09-17T08:21:44.106864+00:00 | gpu213-10 | Tesla V100-SXM2-32GB | 0 |
+| 51993245 / 3 | final | ENDED | 2026-09-17T08:24:27.975202+00:00 | gpu214-06 | Tesla V100-SXM2-32GB | 0 |
+| 51984025 / 5 | final | ENDED | 2026-09-17T08:25:57.367996+00:00 | gpu212-10 | Tesla V100-SXM2-32GB | 0 |
+| 51993243 / 1 | final | ENDED | 2026-09-17T08:37:17.956243+00:00 | gpu609-05 | Tesla V100-SXM2-32GB | 0 |
+| 51993242 / 0 | final | ENDED | 2026-09-17T08:43:44.722921+00:00 | gpu609-07 | Tesla V100-SXM2-32GB | 0 |
+| 51993244 / 2 | final | ENDED | 2026-09-17T08:46:59.795777+00:00 | gpu609-02 | Tesla V100-SXM2-32GB | 0 |
+| 51984026 / None | merge | STARTED | 2026-09-17T08:47:18.975971+00:00 | cn604-09 | CPU | None |
+| 51984026 / None | merge | ENDED | 2026-09-17T08:47:29.580102+00:00 | cn604-09 | CPU | 0 |

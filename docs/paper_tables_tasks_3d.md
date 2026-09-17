@@ -1135,3 +1135,58 @@ Frozen BottomDensity 1.2 data: 193,000 training / 3,000 validation / 10,000 test
 | 96613 | 152 | 102 | 0.914610 | 0.926168 | 0.896751 | 68.405 |
 
 Scientific commit `2b92207b7f115328f8fe1ca2aca8d22f5d274e41`; config `config/Ablation_Task4C_BiLSTMCapacity_1.1.json`, SHA256 `5aab378dcb9715ea5a5106ea43f12c242bcaccac8a4f6bf9a287e28fbfd9aa04`. Original reference commit `d20c2458d3672558997ade7697dd810bc832c00b`. Smaller model: recurrent 43,168 + MLP 13,585 = 56,753. Three test predictions and seven processes/14 runtime events verified; evidence in `outputs/Ablation_Task4C_BiLSTMCapacity_1.1/final_verified_evidence.json`. Method conclusions are in experiment_log under the same marker.
+
+
+<!-- task4c-fpsaug-final-20260917 -->
+## Task4-c FPS augmentation search: top20 refinement and final evaluation (2026-09-17)
+
+Versions Ablation_Task4C_FPSAugmentSearch_1.1/1.2; scientific commits9d05abc5/21cf1fb7. Frozen193,000 train/3,000 validation/10,000 test bundles. All candidates retain six-frequency Fourier encoding and FPS neighbors. Means and sample standard deviations use three seeds. Method conclusions and hash-record correction are in experiment_log at the matching marker; audit passed336 prediction files and337 executed processes. These are different-budget/different-capacity configurations as defined by the protocol; frozen reference methods retain their original seeds.
+
+### Final test: selected recipe and paired original control
+
+|Method|Total trainable parameters|Test F1, mean +/- sample SD|Channel F1|TBL F1|Mean training minutes|
+|---|---:|---:|---:|---:|---:|
+|Selected c156, p35 + wide residual,48 uniform,no augmentation|992,386|0.920390 +/- 0.003032|0.926951|0.910338|33.013|
+|Original p35/FPS control,32 uniform,no augmentation; fresh paired seeds|76,738|0.882974 +/- 0.010458|0.895789|0.863900|14.410|
+|Frozen Conv3D24, original BottomDensity1.2 seeds|72,192|0.933198 +/- 0.006292|0.946640|0.912903|141.377|
+|Frozen BiLSTM + MLP, original geometric-baseline seeds|76,786|0.919499 +/- 0.010500|See original table|See original table|83.194|
+
+|Method|Seed|Test F1|Channel F1|TBL F1|Selected / completed epochs|Training minutes|
+|---|---:|---:|---:|---:|---:|---:|
+|c156|96721|0.923741007|0.931001890|0.912435614|100 / 150|34.079|
+|c156|96722|0.919592299|0.925233645|0.910919540|73 / 123|27.634|
+|c156|96723|0.917835671|0.924618321|0.907659270|110 / 160|37.327|
+|fps_reference|96721|0.876996358|0.902439024|0.839248434|71 / 121|14.839|
+|fps_reference|96722|0.876875177|0.881244109|0.870304748|50 / 100|12.074|
+|fps_reference|96723|0.895049505|0.903682720|0.882145378|80 / 130|16.316|
+
+Final seeds96721–96723. Frozen Conv/BiLSTM references use their original seeds96611–96613. No test result was used to select c156. Historical original FPS test0.893015 +/- 0.004408 remains unchanged; the new0.882974 is its fresh-seed control result.
+
+### All20 three-seed refinement results (validation, not test)
+
+Seeds96612/96613/96711, maximum500 epochs, early stopping50; ranking uses mean validation F1, then mean Average Precision, then ID. Every candidate below uses p35/h0. Uniform means uniform arclength; curvature means the frozen curvature-importance resampling. Jitter moves only interior points along the line; rotate15 applies a common random rotation within +/-15 degrees.
+
+|Rank|ID|Architecture|Points|Sampling|Augmentation|Validation F1, mean +/- sample SD|Parameters|Mean training minutes|
+|---:|---|---|---:|---|---|---:|---:|---:|
+|1|c156|wide_residual|48|uniform|none|0.933609 +/- 0.008155|992,386|31.983|
+|2|c212|set_attention|48|curvature|rotate15|0.932046 +/- 0.003881|902,594|84.832|
+|3|c202|set_attention|32|curvature|jitter_rotate15|0.932027 +/- 0.002783|902,594|81.918|
+|4|c154|wide_residual|32|curvature|jitter_rotate15|0.931608 +/- 0.006574|992,386|54.645|
+|5|c157|wide_residual|48|uniform|jitter|0.931436 +/- 0.002632|992,386|47.332|
+|6|c164|wide_residual|48|curvature|rotate15|0.931320 +/- 0.006542|992,386|48.557|
+|7|c148|wide_residual|32|uniform|jitter_rotate15|0.929975 +/- 0.005336|992,386|60.509|
+|8|c163|wide_residual|48|curvature|jitter|0.929098 +/- 0.005277|992,386|52.824|
+|9|c144|wide_residual|32|uniform|none|0.928979 +/- 0.008092|992,386|32.210|
+|10|c200|set_attention|32|curvature|rotate15|0.928257 +/- 0.005573|902,594|64.791|
+|11|c211|set_attention|48|curvature|jitter|0.927940 +/- 0.007556|902,594|69.103|
+|12|c214|set_attention|48|curvature|jitter_rotate15|0.926025 +/- 0.004563|902,594|75.792|
+|13|c241|block_branches|32|uniform|jitter|0.925827 +/- 0.007977|629,602|67.217|
+|14|c210|set_attention|48|curvature|none|0.924508 +/- 0.001990|902,594|46.036|
+|15|c187|attention_pool|48|curvature|jitter|0.920413 +/- 0.006887|517,766|57.371|
+|16|c192|set_attention|32|uniform|none|0.919871 +/- 0.008171|902,594|51.186|
+|17|c253|block_branches|48|uniform|jitter|0.919041 +/- 0.006671|629,602|78.966|
+|18|c198|set_attention|32|curvature|none|0.918285 +/- 0.007931|902,594|48.214|
+|19|c180|attention_pool|48|uniform|none|0.917947 +/- 0.009306|517,766|27.645|
+|20|c146|wide_residual|32|uniform|rotate15|0.916364 +/- 0.001699|992,386|53.135|
+
+Source and per-seed evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/independent_final_audit.json.
