@@ -33,6 +33,11 @@ def decorate(output,package,input_root,require_complete=True):
     style='\n#coveragePanel{padding:10px 23px;background:#eef5f2;border-top:1px solid #dce8e2;font-size:12px}#coveragePanel p{margin:4px 0}#coveragePanel summary{cursor:pointer}.coverage-scroll{max-height:220px;overflow:auto}#coveragePanel table{width:100%;border-collapse:collapse;text-align:right}#coveragePanel th,#coveragePanel td{padding:4px 10px;border-bottom:1px solid #d8e2dd}#coveragePanel .missing{background:#fff0e6}#coveragePanel button{padding:3px 8px}\n'
     html=html.replace('</style>',style+'</style>',1)
     html=html.replace('</head>','<script src="gt_coverage.js"></script></head>',1)
+    html=html.replace('<input id="analysis" type="checkbox">','<input id="analysis" type="checkbox" checked>')
+    old_details="+(s.owner_instance?'<br>附近实例：'+s.owner_instance[id]:'')"
+    assert old_details in html
+    html=html.replace(old_details,"+(s.center_gt_instance?.[id]>=0?'<br>中心所在GT实例：'+s.center_gt_instance[id]:'')+(s.owner_instance?.[id]>=0?'<br>标签来源实例：'+s.owner_instance[id]:'')")
+    html=html.replace('<br>必选 head 线束','<br>本次新增的GT头部线束')
     if require_complete:
         html=html.replace('<option value="train">训练集</option>','<option value="train">新增头部训练束</option>')
     path.write_text(html,encoding='utf8')
