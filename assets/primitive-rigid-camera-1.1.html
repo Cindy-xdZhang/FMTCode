@@ -1,0 +1,181 @@
+<div id="primitive-rigid-camera-11">
+  <h2>跟随 primitive 的最优刚体相机</h2>
+  <div class="viz-controls">
+    <label class="form-label">解析七线样例
+      <select class="form-select" data-role="scene">
+        <option value="deform">平移＋旋转＋拉伸与剪切</option>
+        <option value="rigid">平移＋旋转</option>
+        <option value="translation">纯平移</option>
+      </select>
+    </label>
+    <label class="form-check"><input class="form-check-input" data-role="observer" type="checkbox"><span class="form-check-label">叠加时变刚体观察者，再求相机</span></label>
+  </div>
+  <div class="viz-row prc-time">
+    <button type="button" class="btn" data-role="play">播放</button>
+    <label class="form-label prc-timeline">物理时间 <span data-role="time" class="tabular-nums">2.67</span> / 4.00（任意单位）
+      <input class="form-range" data-role="slider" type="range" min="0" max="120" step="1" value="80" aria-label="物理时间">
+    </label>
+  </div>
+  <div class="prc-panels">
+    <section><h3>原坐标</h3><canvas data-panel="positions" role="img" aria-label="原坐标下的七条物质粒子轨线，当前粒子与相机朝向"></canvas><div class="text-small" data-role="lab-detail"></div></section>
+    <section><h3>仅跟随中心</h3><canvas data-panel="centered" role="img" aria-label="去除中心平移后的七条轨线"></canvas><div class="text-small">邻居运动速度 <span class="tabular-nums" data-role="center-speed"></span></div></section>
+    <section><h3>跟随中心＋最优旋转</h3><canvas data-panel="observed" role="img" aria-label="去除拟合刚体运动后的七条轨线，保留非刚体形变"></canvas><div class="text-small">剩余运动速度 <span class="tabular-nums" data-role="residual-speed"></span></div></section>
+  </div>
+  <div class="viz-row prc-options">
+    <label class="form-check"><input class="form-check-input" data-role="full-path" type="checkbox" checked><span class="form-check-label">显示完整轨线</span></label>
+    <label class="form-check"><input class="form-check-input" data-role="initial" type="checkbox" checked><span class="form-check-label">初始形状虚线</span></label>
+    <label class="form-label">观察方向 <select class="form-select" data-role="view"><option value="spatial">三维</option><option value="xy">XY 平面</option><option value="xz">XZ 平面</option><option value="yz">YZ 平面</option></select></label>
+    <span class="text-small">拖动旋转三个视图 · 同一空间比例</span>
+  </div>
+  <div class="viz-row prc-legend" aria-label="粒子图例">
+    <span>◆ 中心／相机</span><span class="prc-swatch" style="--particle:var(--viz-series-1)">● +x</span><span class="prc-swatch" style="--particle:var(--viz-series-2)">● −x</span><span class="prc-swatch" style="--particle:var(--viz-series-3)">● +y</span><span class="prc-swatch" style="--particle:var(--viz-series-4)">● −y</span><span class="prc-swatch" style="--particle:var(--viz-series-5)">● +z</span><span class="prc-swatch" style="--particle:var(--viz-series-6)">● −z</span>
+  </div>
+  <div class="text-small" data-role="comparison" aria-live="polite"></div>
+  <div class="sr-only" data-role="description">七条解析物质轨线，以相同物理时间采样。最小二乘拟合相机角速度，最小化去掉中心平移后的粒子运动速度。颜色表示粒子身份，实线为轨迹，圆点为当前粒子，虚线为初始形状。全部数值采用任意单位。</div>
+</div>
+<style>
+#primitive-rigid-camera-11 {width:100%;color:var(--foreground)}
+#primitive-rigid-camera-11 .prc-panels {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-block:12px}
+#primitive-rigid-camera-11 section {min-width:0}
+#primitive-rigid-camera-11 section h3 {margin-block:8px}
+#primitive-rigid-camera-11 canvas {display:block;width:100%;height:280px;border:1px solid var(--border);touch-action:none;cursor:grab;box-sizing:border-box}
+#primitive-rigid-camera-11 canvas:active {cursor:grabbing}
+#primitive-rigid-camera-11 .prc-time {margin-top:12px}
+#primitive-rigid-camera-11 .prc-timeline {flex:1;min-width:190px}
+#primitive-rigid-camera-11 .prc-options {margin-top:16px}
+#primitive-rigid-camera-11 .prc-legend {margin-block:10px}
+#primitive-rigid-camera-11 .prc-swatch {color:var(--particle)}
+@media(max-width:680px){#primitive-rigid-camera-11 .prc-panels{grid-template-columns:1fr}#primitive-rigid-camera-11 canvas{height:270px}}
+</style>
+<script>
+(() => {
+  const root = document.getElementById('primitive-rigid-camera-11');
+  const DATA = /*__PRIMITIVE_DATA__*/null;
+  if (!DATA) { root.querySelector('[data-role="comparison"]').textContent = '尚未生成样例数据'; return; }
+  const get = name => root.querySelector(`[data-role="${name}"]`);
+  const canvases = [...root.querySelectorAll('canvas')];
+  let frame = 80, yaw = -.58, pitch = .42, playing = false, last = 0, drag = null;
+  let theme, panels, scaleRadius;
+  const add = (a,b) => a.map((v,i)=>v+b[i]);
+  const sub = (a,b) => a.map((v,i)=>v-b[i]);
+  const mul = (a,s) => a.map(v=>v*s);
+  const norm = a => Math.hypot(...a);
+  const currentScene = () => DATA.scenes[get('scene').value];
+  const current = () => currentScene()[get('observer').checked ? 'changed' : 'base'];
+  function resolveColor(token) {
+    const probe = document.createElement('span'); probe.style.color = `var(${token})`;
+    probe.style.display = 'none'; root.appendChild(probe);
+    const color = getComputedStyle(probe).color; probe.remove(); return color;
+  }
+  function readTheme() {
+    theme = {fg:resolveColor('--foreground'), muted:resolveColor('--muted-foreground'), border:resolveColor('--border'),
+      series:Array.from({length:6},(_,i)=>resolveColor(`--viz-series-${i+1}`)), font:getComputedStyle(root).fontFamily};
+  }
+  function bounds(points) {
+    const lo=[Infinity,Infinity,Infinity], hi=[-Infinity,-Infinity,-Infinity];
+    for (const p of points) for(let a=0;a<3;a++){lo[a]=Math.min(lo[a],p[a]);hi[a]=Math.max(hi[a],p[a]);}
+    const center=lo.map((v,a)=>(v+hi[a])/2);
+    return {center,radius:Math.max(...points.map(p=>norm(sub(p,center))))};
+  }
+  function updateBounds() {
+    const d=current();
+    panels=canvases.map(canvas=>({canvas,key:canvas.dataset.panel,...bounds(d[canvas.dataset.panel].flat())}));
+    // Both observer states contribute, so toggling cannot hide a changed scale.
+    scaleRadius=Math.max(...['base','changed'].flatMap(state=>['positions','centered','observed'].map(key=>bounds(currentScene()[state][key].flat()).radius)))*1.14;
+  }
+  function rotate(p) {
+    const a=Math.cos(yaw),b=Math.sin(yaw),c=Math.cos(pitch),d=Math.sin(pitch);
+    const x=a*p[0]+b*p[2], z=-b*p[0]+a*p[2];
+    return [x,c*p[1]-d*z,d*p[1]+c*z];
+  }
+  function draw(panel) {
+    const {canvas,key,center}=panel, d=current(), traces=d[key];
+    const rect=canvas.getBoundingClientRect(), width=rect.width, height=rect.height;
+    if (!width || !height) return;
+    const ratio=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=Math.round(width*ratio);canvas.height=Math.round(height*ratio);
+    const ctx=canvas.getContext('2d');ctx.scale(ratio,ratio);
+    ctx.clearRect(0,0,width,height);ctx.lineCap='round';ctx.lineJoin='round';ctx.font=`12px ${theme.font}`;
+    const scale=(Math.min(width-24,height-52))/(2*scaleRadius);
+    const project=p=>{const v=rotate(sub(p,center));return [width/2+scale*v[0],height/2-8-scale*v[1],v[2]];};
+    function line(points,color,lineWidth=1,alpha=1,dash=[]) {
+      if(points.length<2)return;ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=lineWidth;ctx.globalAlpha=alpha;ctx.setLineDash(dash);
+      points.forEach((p,i)=>{const v=project(p);if(i)ctx.lineTo(v[0],v[1]);else ctx.moveTo(v[0],v[1]);});ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+    }
+    if(get('initial').checked){
+      for(let i=1;i<7;i++)line([traces[0][0],traces[0][i]],theme.muted,1,.5,[4,4]);
+    }
+    // A short triad follows the recovered camera, independent of the display orbit.
+    if(key==='positions'){
+      const c=d.positions[frame][0], R=d.rotation[frame];
+      for(let a=0;a<3;a++){
+        const endpoint=add(c,mul(R.map(row=>row[a]),.35));line([c,endpoint],theme.fg,1.2,.7);
+        const p=project(endpoint);ctx.fillStyle=theme.fg;ctx.fillText(['a','b','c'][a],p[0]+3,p[1]-3);
+      }
+    }
+    for(let i=0;i<7;i++){
+      const color=i===0?theme.fg:theme.series[i-1];
+      if(get('full-path').checked) line(traces.map(t=>t[i]),color,1,.23);
+      line(traces.slice(0,frame+1).map(t=>t[i]),color,i===0?2:2.2,.9);
+      if(i>0)line([traces[frame][0],traces[frame][i]],color,1,.4);
+    }
+    const markers=traces[frame].map((point,i)=>({p:project(point),i})).sort((a,b)=>a.p[2]-b.p[2]);
+    for(const {p,i} of markers){
+      ctx.fillStyle=i===0?theme.fg:theme.series[i-1];ctx.beginPath();
+      if(i===0){ctx.moveTo(p[0],p[1]-5);ctx.lineTo(p[0]+5,p[1]);ctx.lineTo(p[0],p[1]+5);ctx.lineTo(p[0]-5,p[1]);ctx.closePath();}
+      else ctx.arc(p[0],p[1],4.3,0,2*Math.PI);ctx.fill();
+    }
+    // Display-view axes and length reference have physical units independent of orbit.
+    const origin=[29,height-35];
+    for(let a=0;a<3;a++){
+      const unit=[0,0,0];unit[a]=1;const v=rotate(unit);
+      ctx.strokeStyle=theme.muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(...origin);ctx.lineTo(origin[0]+19*v[0],origin[1]-19*v[1]);ctx.stroke();
+      ctx.fillStyle=theme.fg;ctx.fillText(['x','y','z'][a],origin[0]+25*v[0]-3,origin[1]-25*v[1]+4);
+    }
+    const bar=Math.min(1,Math.pow(2,Math.floor(Math.log2((width*.26)/scale))));
+    const bx=width-14-scale*bar,by=height-20;
+    ctx.strokeStyle=theme.fg;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(width-14,by);ctx.stroke();
+    ctx.fillStyle=theme.fg;ctx.textAlign='right';ctx.fillText(`${bar} 长度单位`,width-14,by-6);ctx.textAlign='left';
+  }
+  const num=v=>v<1e-8?'≈ 0':v.toFixed(3);
+  function updateDetails(announce=false) {
+    const d=current();get('time').textContent=DATA.times[frame].toFixed(2);
+    get('center-speed').textContent=`${num(d.centered_speed[frame])} 长度/时间`;
+    get('residual-speed').textContent=`${num(d.observed_speed[frame])} 长度/时间`;
+    get('lab-detail').textContent=get('observer').checked?'已叠加观察者；小三轴为重新求得的相机':'小三轴为最小二乘求得的相机朝向';
+    if(announce){
+      get('comparison').textContent=`解析七条轨线 · 六邻居等权 · 速度为均方根 · 换观察者后跨时间距离最大差 ${currentScene().distance_error.toExponential(2)} 长度单位`;
+    }
+    root.dataset.frame=String(frame);root.dataset.scene=get('scene').value;
+    root.dataset.observer=get('observer').checked?'changed':'base';
+  }
+  function redraw(announce=false){panels.forEach(draw);updateDetails(announce);}
+  function stop(){playing=false;get('play').textContent='播放';}
+  get('scene').addEventListener('change',()=>{stop();updateBounds();redraw(true);});
+  get('observer').addEventListener('change',()=>{updateBounds();redraw(true);});
+  get('slider').addEventListener('input',()=>{stop();frame=Number(get('slider').value);redraw();});
+  for(const name of ['full-path','initial'])get(name).addEventListener('change',()=>redraw());
+  get('view').addEventListener('change',()=>{
+    const angles={spatial:[-.58,.42],xy:[0,0],xz:[0,Math.PI/2],yz:[-Math.PI/2,0]};
+    [yaw,pitch]=angles[get('view').value];redraw();
+  });
+  function tick(now){
+    if(!playing)return;
+    if(now-last>=1000/25){frame++;last=now;if(frame>=120){frame=120;stop();}get('slider').value=frame;redraw();}
+    if(playing)requestAnimationFrame(tick);
+  }
+  get('play').addEventListener('click',()=>{
+    if(playing){stop();return;}if(frame>=120){frame=0;get('slider').value=0;redraw();}
+    playing=true;last=performance.now();get('play').textContent='暂停';requestAnimationFrame(tick);
+  });
+  for(const canvas of canvases){
+    canvas.addEventListener('pointerdown',event=>{stop();drag={x:event.clientX,y:event.clientY};canvas.setPointerCapture(event.pointerId);});
+    canvas.addEventListener('pointermove',event=>{if(!drag)return;yaw+=(event.clientX-drag.x)*.012;pitch=Math.max(-1.55,Math.min(1.55,pitch+(event.clientY-drag.y)*.012));drag={x:event.clientX,y:event.clientY};get('view').value='spatial';redraw();});
+    canvas.addEventListener('pointerup',()=>{drag=null;});canvas.addEventListener('pointercancel',()=>{drag=null;});
+  }
+  readTheme();updateBounds();redraw(true);
+  new ResizeObserver(()=>redraw()).observe(root);
+  new MutationObserver(()=>{readTheme();redraw();}).observe(document.documentElement,{attributes:true,attributeFilter:['class','style','data-theme']});
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{readTheme();redraw();});
+})();
+</script>

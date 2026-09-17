@@ -1,0 +1,37 @@
+{
+  "version": "mainExp_ASAPFMT_Task35_1.1",
+  "output": "outputs/mainExp_ASAPFMT_Task35_1.1",
+  "parent_config": "config/mainExp_Task135_FMTv8_1.1.json",
+  "tasks": ["Task3", "Task5"],
+  "arms": ["raw_c156", "fmt_c156", "asap_fmt"],
+  "seeds": [40, 41, 42],
+  "camera": "consecutive_proper_rotation_least_squares_center0_material_initial_basis",
+  "camera_precision": "float64",
+  "resampling": "after_camera_fit_per_line_uniform_arclength_48_from_frozen32",
+  "feature": "c156_p35_n0_k06_seven_anchors_six_other_lines",
+  "architecture": "c156_wide_residual_unmodified_992386_parameters",
+  "raw_control": "normalized_48xyz_per_line_144D_same_network_993154_parameters",
+  "training": {
+    "batch_size": 512,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "max_epochs": 100,
+    "patience": 20,
+    "min_delta": 0.0001,
+    "loss": "BCEWithLogitsLoss(logit1-logit0), training negative/positive ratio",
+    "selection": "validation average precision, original Task3/5 rule",
+    "threshold": "maximum validation F1 after selected epoch",
+    "scheduler": "none, original Task3/5 rule",
+    "augmentation": "none, c156"
+  },
+  "evaluation": {
+    "reused_benchmark": true,
+    "no_test_selection": true,
+    "keep_original_ivd_p95_labels": true,
+    "task5_keep_18_6_9_scale_tuples": true,
+    "fixed_task3_to_task5_transfer": true,
+    "checkpoint": "memory_only_never_download",
+    "report": "all seeds, per flow and task macro mean/sample standard deviation, paired differences"
+  },
+  "execution": {"gpu": "V100", "max_parallel_gpus": 12, "prepare_parallel_cpus": 10, "encode_batch": 256}
+}
