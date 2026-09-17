@@ -1,5 +1,9 @@
 # FMT 研究任务与统一协议
 
+<!-- fmt-single-center-resume-20260917 -->
+2026-09-17用户要求恢复部署统一FMT核验，版本Verify_FMT_SingleCenter_Task354C_1.2。遵守最新已确认原中心共同子集：Task4-c196,042/2,993/11,288，六份原行号/中心索引哈希固定于ad0ffc85已运行实验，不用邻居替代；Task3/5十流场原数据不变。p35/n0_k06固定单中心、其余全部有效邻居、141维、无卷积和Raw旁路，MLP78,530参数，seed40，21次拟合、最多4张V100。训练代码和预算不变；1.1预检因漏部署FLowUtils失败且未正式训练，本版补齐依赖后预检再提交。与另一轮原p35/h0、c156四臂任务分开，不重复那四次训练。协议docs/FMT_single_center_verification_protocol_1.2.md。本条恢复此次核验，取代下文审计暂停状态，不恢复其他任务或扩展搜索。
+<!-- fmt-single-center-resume-20260917-end -->
+
 <!-- fmt-architecture-audit-20260917 -->
 2026-09-17全面架构审计取代此前继续部署：旧Task3/5的nTDO、p35固定中心但完整路径有3层Conv1d；Task4-c p35/h0/n0与c156都逐有效线轮换中心、FMT分支无ConvNd；ASAP相机固定中心但后接c156七中心。禁止用p35简称推断完整方法。TemporalDFT可学习循环卷积和fps_graph的EdgeConv式图邻域入口已依既有禁令撤销；历史数值/源码保留。每个方案必须登记中心次数/邻居/DFT信号/归一化/两级池化/完整网络及旁路。完整清单见`FMT_architecture_audit_2026-09-17_zh.md`及`FMT_experiment_architecture_catalog_2026-09-17.md`。单中心预检52008644因部署缺少FLowUtils而FAILED/1:0，21次正式训练未提交，无新F1；按用户当前审计要求暂停，不自动恢复。
 <!-- fmt-architecture-audit-20260917-end -->

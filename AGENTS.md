@@ -1,5 +1,9 @@
 # FMT 项目研究协议
 
+<!-- fmt-single-center-resume-20260917 -->
+2026-09-17用户要求恢复部署统一FMT核验，版本Verify_FMT_SingleCenter_Task354C_1.2。遵守最新已确认原中心共同子集：Task4-c196,042/2,993/11,288，六份原行号/中心索引哈希固定于ad0ffc85已运行实验，不用邻居替代；Task3/5十流场原数据不变。p35/n0_k06固定单中心、其余全部有效邻居、141维、无卷积和Raw旁路，MLP78,530参数，seed40，21次拟合、最多4张V100。训练代码和预算不变；1.1预检因漏部署FLowUtils失败且未正式训练，本版补齐依赖后预检再提交。与另一轮原p35/h0、c156四臂任务分开，不重复那四次训练。协议docs/FMT_single_center_verification_protocol_1.2.md。本条恢复此次核验，取代下文审计暂停状态，不恢复其他任务或扩展搜索。
+<!-- fmt-single-center-resume-20260917-end -->
+
 <!-- fmt-architecture-audit-20260917 -->
 2026-09-17用户要求先全面审查整个代码库的中心轮换/卷积，暂停上一条单中心部署。审计`Verify_FMTArchitectureAudit_1.1`：本地当前/全部可达Git/两ZIP共4851条源码版本、573配置路径；Ibex198部署目录71744文件记录已比较，503份只换行不同、7份早期客观性修改单列。结论必须按完整调用链表达：旧Task3/5 p35/nTDO固定中心但Raw骨干含3层Conv1d；Task4-c p35/h0/n0与c156都逐有效线轮换中心、FMT分支无ConvNd；asap相机固定原中心，但后接c156仍七中心。p35只定义局部池化，h0只继承训练/网络配置，不能由简称推断完整结构。另发现并撤销TemporalDFT可学习循环卷积及fps_graph的EdgeConv式图邻域入口；历史实现保留在Git，不自动改成其他网络。普通p35/c156网络不改，不能因此把多中心结果称单中心。所有新报告须明确中心策略和次数、邻居选择、DFT输入/归一化/池化、完整网络及旁路/图运算。审计`docs/FMT_architecture_audit_2026-09-17_zh.md`，逐配置索引`docs/FMT_experiment_architecture_catalog_2026-09-17.md`。仅单中心预检52008644已提交，因部署缺少FLowUtils而FAILED/1:0；正式21次训练未提交、无新F1，当前不恢复实验。此条优先于下文旧推进/最佳结论。
 <!-- fmt-architecture-audit-20260917-end -->

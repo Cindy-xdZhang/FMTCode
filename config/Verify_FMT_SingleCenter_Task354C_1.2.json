@@ -1,0 +1,115 @@
+{
+  "version": "Verify_FMT_SingleCenter_Task354C_1.2",
+  "output": "outputs/Verify_FMT_SingleCenter_Task354C_1.2",
+  "parent_task35": "config/mainExp_Task135_FMTv8_1.1.json",
+  "parent_task4": "config/Verify_Task4C_P35GTHead_1.1.json",
+  "candidate": "p35_n0_k06_single_center",
+  "seed": 40,
+  "frequencies": 6,
+  "feature_dimensions": 141,
+  "normalization": "all_valid_points_centroid_max_radius_then_training_only_feature_zscore",
+  "arithmetic": "float64_geometry_and_fft_float32_output",
+  "neighbor_scale": 1.0,
+  "neighbor_weight": 1.0,
+  "neighbors": "all_valid_except_fixed_center",
+  "pooling": [
+    "featurewise_arithmetic_mean",
+    "featurewise_numeric_maximum"
+  ],
+  "center_task35": "original_slot0",
+  "center_task4c": "original_center_present_only_user_authorized_common_subset_no_substitution",
+  "points": 32,
+  "architecture": "141_256_128_64_2_Linear_LayerNorm_GELU_Dropout",
+  "parameters": 78530,
+  "dropout": 0.15,
+  "encode_batch": 256,
+  "training": {
+    "task35": {
+      "batch_size": 512,
+      "learning_rate": 0.001,
+      "weight_decay": 0.0001,
+      "epochs": 100,
+      "patience": 20,
+      "min_delta": 0.0001,
+      "loss": "training_class_weighted_binary_cross_entropy",
+      "selection": "validation_average_precision",
+      "threshold": "maximum_validation_F1",
+      "scheduler": "none"
+    },
+    "task4c": {
+      "batch_size": 128,
+      "learning_rate": 0.001,
+      "weight_decay": 0.0001,
+      "epochs": 500,
+      "patience": 50,
+      "loss": "cross_entropy",
+      "selection": "validation_F1_then_average_precision",
+      "threshold": 0.5,
+      "scheduler": "validation_loss_plateau_patience15_factor0.5_minlr1e-6",
+      "gradient_clip": 5.0
+    }
+  },
+  "execution": {
+    "gpu": "V100",
+    "max_parallel_gpus": 4,
+    "formal_fits": 21,
+    "model_weights": "memory_only"
+  },
+  "evaluation": {
+    "candidate_fixed_before_test": true,
+    "test_loaded_after_selection_lock": true,
+    "ranking": "none_one_candidate_only",
+    "task35_aggregation": "equal_mean_over_original_ten_flows",
+    "task4c_aggregation": "combined_11288_original_center_present_test_bundles",
+    "cross_task_aggregation": "equal_mean_over_three_task_F1_values",
+    "claim": "single_seed_candidate_verification_not_historical_score_reproduction_or_proven_best",
+    "source_roles_unchanged": true,
+    "new_data_or_labels": false
+  },
+  "task4c_subset": {
+    "root": "/ibex/user/zhanx0o/FMT_Task4C_OriginalCenter_20260917/outputs/Ablation_Task4C_OriginalCenter_1.1",
+    "source_scientific_commit": "ad0ffc85",
+    "counts": {
+      "train": 196042,
+      "validation": 2993,
+      "test": 11288
+    },
+    "files": {
+      "channel": {
+        "train": {
+          "sha256": "763b25e02b29ba0ef32ba6bdb5fbf119932c35e930a9be4601b0bc8b944aff3d",
+          "retained": 100308,
+          "excluded": 412
+        },
+        "validation": {
+          "sha256": "564720ce7215194298b8856fbba5f1d8ccd05d07e06c61c87686dc804a7790f3",
+          "retained": 1499,
+          "excluded": 1
+        },
+        "test": {
+          "sha256": "58dfa4532fd97ddbd05772ef1af1ac1e582e98b0280994fa8da1419e7a7a38ec",
+          "retained": 5726,
+          "excluded": 14
+        }
+      },
+      "tbl": {
+        "train": {
+          "sha256": "1eda7b489bb9f69f99d48ea7b8b4cf8ba3f0753a4099d5692d9859a37f2c7bdc",
+          "retained": 95734,
+          "excluded": 506
+        },
+        "validation": {
+          "sha256": "1ea69d2b31c08a1651757384866e00d2f2b105b0e92c33409c2892ee8ba915eb",
+          "retained": 1494,
+          "excluded": 6
+        },
+        "test": {
+          "sha256": "5e57daac58756f1b1b5db8acdefccc2fbca8c0b2375aa385285cd0875d5b1b44",
+          "retained": 5562,
+          "excluded": 18
+        }
+      }
+    },
+    "selection": "geometry_only_original_center_present_no_labels_no_predictions"
+  }
+}
