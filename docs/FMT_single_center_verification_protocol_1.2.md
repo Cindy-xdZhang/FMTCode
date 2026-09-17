@@ -11,3 +11,6 @@
 训练前顺序为：导入检查→V100预检、18源文件及六子集哈希/几何核对、三任务各32真实训练样本工程拟合→21次正式训练→独立预测和选择轮次复算。测试读取仍在各拟合的selection.lock之后；不落盘模型权重。
 
 实现：`experiments/FMT_SingleCenter_Task354C_1_2.py`，配置`config/Verify_FMT_SingleCenter_Task354C_1.2.json`，启动`ibex_bash/fmt_single_center_task354c_1p2.sh`，新增契约检查`tests/test_fmt_single_center_subset_1_2.py`；编码器/网络保持`FMT_Utils/FMT_SingleCenter_1_1.py`。输出`outputs/Verify_FMT_SingleCenter_Task354C_1.2/`。此恢复条目取代1.1的暂停状态，不授权其他搜索或额外种子。
+
+
+部署记录：科学提交61d34fde，预检52012261、训练数组52012308[0–20]%4、审计52012309已提交，共23进程。当前预检等待V100可用节点，训练/审计等待成功依赖；尚无GPU预检通过或正式F1。8项本地测试及14份源码哈希与科学提交核验通过。依赖链使预检通过后自动启动，任何预检失败都阻止正式训练。

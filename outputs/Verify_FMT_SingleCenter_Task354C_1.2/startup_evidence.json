@@ -1,0 +1,42 @@
+{
+  "scientific_commit": "61d34fdef315d8641496c7a87f3ff204fa0246a4",
+  "jobs": {
+    "preflight": "52012261",
+    "train": "52012308",
+    "audit": "52012309"
+  },
+  "formal_fits": 21,
+  "seed": 40,
+  "max_parallel_gpus": 4,
+  "source_code_hashes_verified_against_git": [
+    "FMT_Utils/FMT_SingleCenter_1_1.py",
+    "FMT_Utils/FMT_P35_NormFrequency_3_1.py",
+    "FMT_Utils/DFT_FMT_3D.py",
+    "FMT_Utils/FMTNoConvolution_1_1.py",
+    "FMT_Utils/GeometricControls_3D.py",
+    "experiments/Run_Task1235_AngleFeatures_1_1.py",
+    "experiments/Run_Task135_GeometricControls.py",
+    "experiments/FMT_SingleCenter_Task354C_1_2.py",
+    "tests/test_fmt_single_center_1_1.py",
+    "tests/test_fmt_single_center_subset_1_2.py",
+    "config/mainExp_Task135_FMTv8_1.1.json",
+    "config/Verify_Task4C_P35GTHead_1.1.json",
+    "ibex_bash/fmt_single_center_task354c_1p2.sh",
+    "config/Verify_FMT_SingleCenter_Task354C_1.2.json"
+  ],
+  "local_tests_passed": 8,
+  "preflight_status": "PENDING: ReqNodeNotAvail, May be reserved for other job",
+  "training_status": "PENDING: afterok preflight",
+  "audit_status": "PENDING: afterok training array",
+  "formal_training_started": false,
+  "gpu_preflight_passed": false,
+  "no_new_F1": true,
+  "prior_failed_job": "52008644",
+  "dependency_assertion": "all training tasks require preflight status PASS and matching full identity",
+  "task4c_counts": {
+    "train": 196042,
+    "validation": 2993,
+    "test": 11288
+  },
+  "task4c_original_centers_only": true
+}

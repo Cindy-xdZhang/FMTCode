@@ -1,5 +1,39 @@
 # Ibex 总实验运行表
 
+<!-- fmt-single-center-1p2-deploy-20260917 -->
+## Verify_FMT_SingleCenter_Task354C_1.2 — 恢复部署
+
+科学提交61d34fde；独立目录`/ibex/user/zhanx0o/FMT_SingleCenter_20260917`。原52008644失败保留。Task3/5原数据、Task4-c用户已确认的196042/2993/11288原中心共同子集；141维、78530参数、seed40。8项本地测试通过，远端依赖导入及源码哈希核验通过。正式训练按afterok依赖提交，预检未通过不能开始；每个训练入口另核对PASS与科学代码/config身份。
+
+| JobID | 阶段 | 提交UTC | 状态 |
+|---|---|---|---|
+| 52012261 | V100预检 | 2026-09-17T18:07:26Z | PENDING：ReqNodeNotAvail；尚无GPU预检通过或正式成绩 |
+| 52012308_0 | Task3 / channel / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_1 | Task3 / cylinder3d / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_2 | Task3 / halfcylinderRe640 / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_3 | Task3 / halfcylinderRe6400 / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_4 | Task3 / tangaroa / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_5 | Task3 / deltaWing_resampled / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_6 | Task3 / deltaWing_LBM / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_7 | Task3 / f22raptor / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_8 | Task3 / boeing747 / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_9 | Task3 / smokeBuoyancy / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_10 | Task5 / channel / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_11 | Task5 / cylinder3d / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_12 | Task5 / halfcylinderRe640 / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_13 | Task5 / halfcylinderRe6400 / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_14 | Task5 / tangaroa / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_15 | Task5 / deltaWing_resampled / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_16 | Task5 / deltaWing_LBM / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_17 | Task5 / f22raptor / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_18 | Task5 / boeing747 / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_19 | Task5 / smokeBuoyancy / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012308_20 | Task4c / channel_tbl / seed40 | 2026-09-17T18:09:02Z | PENDING：afterok:52012261；最多4卡并发 |
+| 52012309 | CPU独立复算汇总 | 2026-09-17T18:09:02Z | PENDING：afterok:52012308全部成功 |
+
+共23个进程（1预检+21训练+1审计），运行后逐进程保存STARTED/ENDED。当前为提交完成，不称训练已经开始。完整命令、数组映射和源码核验位于`outputs/Verify_FMT_SingleCenter_Task354C_1.2/{preflight_submission,formal_submission,startup_evidence}.json`。
+<!-- fmt-single-center-1p2-deploy-20260917-end -->
+
 <!-- fmt-architecture-audit-20260917 -->
 ## 2026-09-17 单中心预检失败并按用户新要求转全面审计
 
