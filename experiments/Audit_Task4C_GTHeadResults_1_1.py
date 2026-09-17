@@ -74,6 +74,7 @@ def audit(root, config, catalog):
     assert norm['train_only'] and np.isfinite(norm['mean']).all()
     assert np.isfinite(norm['std']).all() and np.all(np.asarray(norm['std']) > 0)
     reports, heads = {}, {}
+    original_test_labels, original_test_probability = [], []
     gt = read(catalog)['flows']
     for role in ('train', 'validation', 'test'):
         file = run/(role+'_predictions.npz')
@@ -126,6 +127,8 @@ def audit(root, config, catalog):
                 assert np.array_equal(ids, rows)
                 old_n = len(rows)-int(added.sum())
                 assert np.array_equal(added, rows >= old_n)
+                original_test_labels.append(m['labels'][:old_n])
+                original_test_probability.append(probability[:old_n])
                 heads[name] = dict(old_test=score(m['labels'][:old_n], probability[:old_n]),
                     added=int(added.sum()), correct=int(np.sum(probability[added] >= .5)),
                     missed=int(np.sum(probability[added] < .5)),
@@ -144,8 +147,10 @@ def audit(root, config, catalog):
         assert [r['state'] for r in events] == ['STARTED', 'ENDED']
         assert events[-1]['exit_code'] == 0
     output = dict(complete=True, identity=identity, seed=96721, parameters=992386,
+        audit_implementation=dict(git_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(), source_sha256=sha(__file__)),
         selected_epoch=best['epoch'], epochs=len(history), training_seconds=result['training_seconds'],
         metrics=reports, head_coverage=heads, runtime_processes=len(processes), runtime_events=len(runtime),
+        original_test_combined=score(np.concatenate(original_test_labels), np.concatenate(original_test_probability)),
         source_result_sha256=sha(run/'result.json'), single_seed=True)
     path = root/'independent_results_audit.json'
     path.write_text(json.dumps(output, indent=2)+'\n', encoding='utf8')
