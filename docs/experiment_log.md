@@ -4338,3 +4338,17 @@ Evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/{status_latest,independen
 
 证据：原显著性manifest SHA256 `c730cfbb14d2b7c1cd85e9c8e3c5f176f319a9d3241414bf63230c62441eea31`；冻结特征数组 SHA256 `f7c0b729333390e93c040f5e7acaa6ca6ab916e8e9138ba56c59524082f1316c`。400束50,708干预逐项复核、829生成文件哈希、五项回归检查通过；最大概率公式误差8.83e-8。复核报告、界面记录位于`outputs/Other_FMT_AnalysisWorkbench_1.2/independent_audit.json`和`browser_checks.json`。本轮没有训练、新分数或Ibex任务。1.1工作台原HTML存为`index_1.1.html`，活动入口重定向至1.2；因此原build记录中入口HTML的哈希应对照归档文件，不能对照重定向文件。
 <!-- fmt-analysis-workbench-1.2-2026-09-17-end -->
+
+
+<!-- task4c-pointnetplusplus-final-20260917 -->
+## Task4-c PointNet++最终结果与交接更新 — 2026-09-17
+
+此前记录为2026-09-16 19:44三种子仍在运行；本次读取Ibex确认全部完成，汇总于09-16 23:28:01沙特时间结束。状态变化来自运行自然结束，未修改代码、配置、数据或追加训练。版本 `Ablation_Task4C_PointNetPlusPlus_1.1`，科学commit `f3d98dd347c3d426b815753167d3b923c467bda6`；配置 `config/Ablation_Task4C_PointNetPlusPlus_1.1.json`，SHA256 `67f8f5e2806a446717eff08f4f9a809f44d40bf2677f805abb993d4187a9ae65`。
+
+固定BottomDensity1.2的193,000训练/3,000验证/10,000测试，三种子96611–96613、阈值0.5、V100。缩小宽度的PointNet++单尺度分组（SSG）共76,723参数，合并测试F1 **0.909232±0.005807**，Channel/TBL均值0.947252/0.852028，平均训练367.316分钟（含逐轮验证、不含最终推理）。标准差为三种子样本标准差。
+
+在相同数据和旧三种子比较中，其平均F1高于原FMT最近6邻居0.888404、FPS6的0.893015和PointNet的0.889407，低于BiLSTM的0.919499与Conv24的0.933198；这只是当前实现的均值比较，不声称统计显著或代表原论文完整宽度模型。它的训练开销较高。c156为不同参数预算和新种子，不能据此称为与PointNet++等参数配对实验。
+
+独立复算9份训练/验证/测试预测的哈希、完整行覆盖、源标签与实例编号、F1/precision/recall/accuracy/average precision及混淆矩阵，核对验证选择轮次、三种子均值和样本标准差；18个源数据文件哈希相同，9进程/18条运行事件与Slurm全部完成、exit0。未保留或下载checkpoint。证据：`outputs/Ablation_Task4C_PointNetPlusPlus_1.1/final_verified_evidence.json`；原始结果：`/ibex/user/zhanx0o/FMT_Task4C_PointNetPlusPlus_1p1_20260916/outputs/Ablation_Task4C_PointNetPlusPlus_1.1/`。
+
+用户要求的最新专门交接已更新至 `docs/Task4C_handoff.md`：当前数据构建及划分、原始VTK PointData/CellData与实例0语义、冻结缓存读取、c156和所有同数据基线、可视化版本说明。VTK读取示例在Channel/TBL原始数据运行通过；缓存示例在Ibex冻结数据运行通过。旧v9.15_v2手册中的“正在构建”状态被当前手册取代，历史数据/协议不改写。

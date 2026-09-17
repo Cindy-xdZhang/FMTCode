@@ -1190,3 +1190,22 @@ Seeds96612/96613/96711, maximum500 epochs, early stopping50; ranking uses mean v
 |20|c146|wide_residual|32|uniform|rotate15|0.916364 +/- 0.001699|992,386|53.135|
 
 Source and per-seed evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/independent_final_audit.json.
+
+
+<!-- task4c-pointnetplusplus-final-20260917 -->
+## Task4-c PointNet++ SSG最终测试 — Ablation_Task4C_PointNetPlusPlus_1.1
+
+固定BottomDensity1.2数据193,000/3,000/10,000；V100、种子96611–96613、Hairpin概率阈值0.5。均值与样本标准差在三次合并10,000束测试F1上计算；训练分钟包含逐轮验证，不含编码、排队及最终推理。此前“仍在运行”仅是09-16的历史状态，现已完成。
+
+| 方法 | 总可训练参数 | 测试F1均值±样本标准差 | Channel均值 | TBL均值 | 平均训练分钟 |
+|---|---:|---:|---:|---:|---:|
+| PointNet++ SSG，缩小宽度 | 76,723 | 0.909232±0.005807 | 0.947252 | 0.852028 | 367.316 |
+
+| 种子 | 训练轮数 | 验证选中轮数 | 验证F1 | 测试F1 | Channel测试F1 | TBL测试F1 | 训练分钟 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 96611 | 139 | 89 | 0.922234 | 0.914793 | 0.951107 | 0.859930 | 432.035 |
+| 96612 | 110 | 60 | 0.919337 | 0.909695 | 0.949861 | 0.850275 | 342.239 |
+| 96613 | 107 | 57 | 0.906077 | 0.903207 | 0.940789 | 0.845878 | 327.673 |
+
+科学commit `f3d98dd347c3d426b815753167d3b923c467bda6`；配置 `config/Ablation_Task4C_PointNetPlusPlus_1.1.json`，SHA256 `67f8f5e2806a446717eff08f4f9a809f44d40bf2677f805abb993d4187a9ae65`。 独立复算9份训练/验证/测试预测的哈希、完整行覆盖、源标签与实例编号、F1/precision/recall/accuracy/average precision及混淆矩阵，核对验证选择轮次、三种子均值和样本标准差；18个源数据文件哈希相同，9进程/18条运行事件与Slurm全部完成、exit0。未保留或下载checkpoint。证据：`outputs/Ablation_Task4C_PointNetPlusPlus_1.1/final_verified_evidence.json`；原始结果：`/ibex/user/zhanx0o/FMT_Task4C_PointNetPlusPlus_1p1_20260916/outputs/Ablation_Task4C_PointNetPlusPlus_1.1/`。
+方法判断见experiment_log同标记，统一交接见 `docs/Task4C_handoff.md`。

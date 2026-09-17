@@ -12335,3 +12335,25 @@ Scientific commits9d05abc571bc7c45e5da8a8f9f3ee55db367d467 (source) and21cf1fb75
 | 51993244 / 2 | final | ENDED | 2026-09-17T08:46:59.795777+00:00 | gpu609-02 | Tesla V100-SXM2-32GB | 0 |
 | 51984026 / None | merge | STARTED | 2026-09-17T08:47:18.975971+00:00 | cn604-09 | CPU | None |
 | 51984026 / None | merge | ENDED | 2026-09-17T08:47:29.580102+00:00 | cn604-09 | CPU | 0 |
+
+
+<!-- task4c-pointnetplusplus-final-20260917 -->
+## PointNet++ Task4-c 1.1 — 全部完成，2026-09-17核对
+
+科学commit `f3d98dd347c3d426b815753167d3b923c467bda6`；配置 `config/Ablation_Task4C_PointNetPlusPlus_1.1.json`，SHA256 `67f8f5e2806a446717eff08f4f9a809f44d40bf2677f805abb993d4187a9ae65`。 既有51946834–51946839共9进程，未新增任务或训练。实际运行设备：GPU阶段Tesla V100-SXM2-32GB，reuse/merge为CPU。以下Slurm时间为沙特时间UTC+03；精确UTC事件和实际array进程号完整保存在证据runtime。
+
+| 作业 | 节点 | 开始时间 | 结束时间 | 总时长 | 状态 / 退出码 |
+|---|---|---|---|---|---|
+| 51946834 | gpu214-02 | 2026-09-16T15:57:30 | 2026-09-16T15:57:43 | 00:00:13 | COMPLETED / 0:0 |
+| 51946835 | cn604-18 | 2026-09-16T15:57:46 | 2026-09-16T15:57:54 | 00:00:08 | COMPLETED / 0:0 |
+| 51946836 | gpu214-02 | 2026-09-16T15:59:43 | 2026-09-16T16:00:00 | 00:00:17 | COMPLETED / 0:0 |
+| 51946839 | cn113-35-l | 2026-09-16T23:25:25 | 2026-09-16T23:28:01 | 00:02:36 | COMPLETED / 0:0 |
+| 51946837_0 | gpu214-06 | 2026-09-16T16:01:56 | 2026-09-16T16:09:30 | 00:07:34 | COMPLETED / 0:0 |
+| 51946837_1 | gpu214-02 | 2026-09-16T16:01:56 | 2026-09-16T16:09:21 | 00:07:25 | COMPLETED / 0:0 |
+| 51946838_0 | gpu609-07 | 2026-09-16T16:10:46 | 2026-09-16T23:25:23 | 07:14:37 | COMPLETED / 0:0 |
+| 51946838_1 | gpu609-05 | 2026-09-16T16:10:46 | 2026-09-16T21:55:35 | 05:44:49 | COMPLETED / 0:0 |
+| 51946838_2 | gpu214-06 | 2026-09-16T16:10:46 | 2026-09-16T21:40:58 | 05:30:12 | COMPLETED / 0:0 |
+
+51946838_0/1/2分别为种子96611/96612/96613，验证选中epoch89/60/57，测试F1为0.914793/0.909695/0.903207；均值0.909232±0.005807，总参数76,723，平均训练367.316分钟。方法判断见experiment_log同标记。
+
+独立复算9份训练/验证/测试预测的哈希、完整行覆盖、源标签与实例编号、F1/precision/recall/accuracy/average precision及混淆矩阵，核对验证选择轮次、三种子均值和样本标准差；18个源数据文件哈希相同，9进程/18条运行事件与Slurm全部完成、exit0。未保留或下载checkpoint。证据：`outputs/Ablation_Task4C_PointNetPlusPlus_1.1/final_verified_evidence.json`；原始结果：`/ibex/user/zhanx0o/FMT_Task4C_PointNetPlusPlus_1p1_20260916/outputs/Ablation_Task4C_PointNetPlusPlus_1.1/`。
