@@ -4258,3 +4258,27 @@ At2026-09-16 19:15UTC, V100 preflight51974951 and data reuse51974952 completed. 
 
 <!-- task4c-fpsaug-progress-20260917-0128 -->
 Task4-c FPS augmentation1.1 intermediate status,2026-09-17 01:28Saudi:135 completed screening validation predictions independently checked for SHA256, full3,000-row coverage, source labels/instances, fixed0.5 F1 and validation-selected epoch. Best completed is c046: p10/original,48points,curvature sampling,tangent jitter+±15-degree rotation,71,490parameters; validation F1=0.909492274 (epoch70/80). Running c144 (p35/wide residual,32uniform,noaugmentation,992,386parameters) reached validation F1=0.921052632 at epoch49 in the01:27 snapshot. These are single-seed screening/ongoing validation values, not final tests or evidence of exceeding Conv3D. The larger architecture families have only begun, so do not infer the final search ranking or a causal augmentation advantage. No test loaded; original recipes/data/results unchanged. Evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.1/progress_verified_20260917_0130.json; scientific9d05abc5.
+
+
+<!-- task4c-fpsaug-progress-20260917-0735 -->
+### Task4-c FPS augmentation search 1.1: screening complete, refinement ongoing
+
+Snapshot 2026-09-17 07:34:42 Saudi (04:34:42 UTC), scientific commit `9d05abc571bc7c45e5da8a8f9f3ee55db367d467`. All264 screening fits completed; the top12 enter36 full-budget refinement fits. At this snapshot6 refinement fits completed,14 were running and16 were priority-pending. Global selection and six final evaluations remain dependency-pending; no final test results exist.
+
+| Stage | Candidate and recipe | Parameters | Validation F1 | Training minutes |
+|---|---|---:|---:|---:|
+| Single-seed screening best | c211, p35 + set attention,48 curvature-sampled points,tangent jitter |902594|0.945823928|41.6355|
+| Completed three-seed refinement | c156, p35 + wide residual,48 uniform-arclength points,no augmentation |992386|0.933609494 +/- 0.008154769|31.9827 mean|
+| Completed three-seed refinement | c180, p35 + attention pooling,48 uniform-arclength points,no augmentation |517766|0.917947042 +/- 0.009305986|27.6446 mean|
+
+Refinement seeds96612/96613/96711: c156 F1=0.940000000/0.936403509/0.924424973; c180=0.927789934/0.916759156/0.909292035. Standard deviations use ddof=1. These are validation results; they neither establish the final winner nor establish superiority over frozen Conv3D or BiLSTM test scores. Larger learned networks were explicitly authorized and are not parameter-matched to those baselines. No causal claim about augmentation is made from selecting these configurations.
+
+Independent verification passed for all270 completed prediction files: SHA256,3000-row validation coverage, source labels and instance IDs, classification metrics including average precision, selected epoch,193000 training rows per epoch and full264 ranking/top12 ordering. All ended runtime events have exit0. Evidence: `outputs/Ablation_Task4C_FPSAugmentSearch_1.1/progress_verified_20260917_0735.json` locally and in the experiment output on Ibex. Running config, data and historical metrics remain unchanged.
+
+
+<!-- task4c-fpsaug-top20-extension-20260917 -->
+### Task4-c FPS augmentation search 1.2: user expands refinement to top20
+
+User requests the top20 after the initial264 screen. Preserve all original results and reuse the top12's36 completed/running/pending refinement fits; add ranks13–20 (c146,c164,c198,c192,c187,c253,c200,c163), each seeds96612/96613/96711 with unchanged500-epoch/patience50 full budget. Total60 refinement fits; select only by aggregate validation, then six fresh final fits for the selected recipe and original FPS control. This is the communicated default interpretation of top20 testing; no final-test sweep or test-based reranking is implied.
+
+Version1.2 calls the original training bytecode; only bookkeeping, candidate dispatch and old/new identity verification differ. Source1.1 scientific9d05abc571bc7c45e5da8a8f9f3ee55db367d467 and config SHA2564f5b741fc131a28ee27b7dd6588426d7202579e0a527fd7b8d86d32adda10675 remain frozen. New config SHA256e908650742e5eedaa7f08d17ffe035c67407d7e661c43bb2604c53d947024974. CPU checks passed for exact top20, unchanged scientific settings, extra24 index/seed coverage, reused/current result identities, dual-array selection dependency and combined24-GPU cap. Local first checks encountered Windows CRLF and unavailable fcntl; the fixture verifies committed LF and mocks the Linux append lock. Production retains strict byte hashes and real locking; there was no model or training failure. Evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/engineering_cpu.json. Ibex preparation will verify all264 predictions and frozen source/data hashes. No new performance conclusion. Protocol: docs/Task4C_fps_augmentation_search_protocol_1.2.md.
