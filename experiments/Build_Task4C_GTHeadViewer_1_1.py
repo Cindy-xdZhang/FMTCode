@@ -6,7 +6,7 @@ import shutil
 import numpy as np
 
 
-def decorate(output,package,input_root):
+def decorate(output,package,input_root,require_complete=True):
     from FMT_Utils.Task4C_HairpinBinary_2_1 import read_dataset,sample_gt
     from FMT_Utils.Task4C_GTHeadCoverage_1_1 import sha
     output=Path(output);path=output/'index.html';html=path.read_text(encoding='utf8')
@@ -21,9 +21,9 @@ def decorate(output,package,input_root):
             s['center_gt_instance']=ids.tolist()
             mask=(np.asarray(s['labels'])==1)&np.asarray(s['center_is_head'],dtype=bool)
             totals={str(i):int(np.sum(mask&(ids==i))) for i in payload['flows'][name]['gt']['instances']}
-            assert all(totals.values()),f'Incomplete {name}/{role} GT head coverage'
+            if require_complete:assert all(totals.values()),f'Incomplete {name}/{role} GT head coverage'
             census[name][role]=totals
-    payload['viewer_version']='GT头部覆盖 1.1';payload['pending']=[]
+    payload['viewer_version']='GT头部覆盖 1.1' if require_complete else '旧4.14覆盖诊断';payload['pending']=[]
     html=html[:start]+json.dumps(payload,ensure_ascii=False,separators=(',',':')).replace('</','<\/')+html[start+length:]
     assert html.count('refreshRegions();render(true).then(')==1
     html=html.replace('refreshRegions();render(true).then(','installGTCoverage();refreshRegions();render(true).then(')
@@ -33,10 +33,12 @@ def decorate(output,package,input_root):
     style='\n#coveragePanel{padding:10px 23px;background:#eef5f2;border-top:1px solid #dce8e2;font-size:12px}#coveragePanel p{margin:4px 0}#coveragePanel summary{cursor:pointer}.coverage-scroll{max-height:220px;overflow:auto}#coveragePanel table{width:100%;border-collapse:collapse;text-align:right}#coveragePanel th,#coveragePanel td{padding:4px 10px;border-bottom:1px solid #d8e2dd}#coveragePanel .missing{background:#fff0e6}#coveragePanel button{padding:3px 8px}\n'
     html=html.replace('</style>',style+'</style>',1)
     html=html.replace('</head>','<script src="gt_coverage.js"></script></head>',1)
-    html=html.replace('<option value="train">训练集</option>','<option value="train">新增头部训练束</option>')
+    if require_complete:
+        html=html.replace('<option value="train">训练集</option>','<option value="train">新增头部训练束</option>')
     path.write_text(html,encoding='utf8')
     shutil.copyfile('experiments/templates/task4c_gt_coverage_1_1.js',output/'gt_coverage.js')
-    record=dict(complete=True,html_sha256=sha(path),coverage=census,source_manifest_sha256=sha(Path(package)/'manifest.json'))
+    complete=all(v>0 for flow in census.values() for role in flow.values() for v in role.values())
+    record=dict(complete=complete,html_sha256=sha(path),coverage=census,source_manifest_sha256=sha(Path(package)/'manifest.json'))
     (output/'head_coverage_manifest.json').write_text(json.dumps(record,indent=2)+'\n',encoding='utf8')
     build=json.loads((output/'viewer_manifest.json').read_text())
     build['base_template_html_sha256']=build['html_sha256'];build['html_sha256']=sha(path)
