@@ -4320,3 +4320,21 @@ Scientific commits: source1.1 `9d05abc571bc7c45e5da8a8f9f3ee55db367d467`; extens
 Configuration-hash record correction: previous1.2 documentation quoted `e908650742e5eedaa7f08d17ffe035c67407d7e661c43bb2604c53d947024974`, the Windows CRLF working-file hash. The actual committed and deployed Linux LF config is `14a849f54553e51b16b5aec5e33fe2f274f2fe9e456b254854e32a7834883c78`; all30 new training results have this actual identity. The first independent final-audit attempt rejected the old documented byte hash. Direct Git comparison then verified exact equality after CRLF-to-LF normalization and identical parsed JSON, and the strict audit passed against the deployed bytes. This corrects metadata documentation, not scientific settings or metrics; previous entries are preserved.
 
 Evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/{status_latest,independent_final_audit}.json locally; full histories, predictions, selection.lock.json, summary.json and runtime.jsonl remain in the source and extension Ibex output directories. Temporary standalone audit script is removed after preserving this report; the official runner retains its production result checks.
+
+<!-- fmt-analysis-workbench-1.2-2026-09-17 -->
+## Other_FMT_AnalysisWorkbench_1.2：正类支持显示纠正与特征步骤图（2026-09-17）
+
+用户要求解释每个特征在FMT中的来源，并检查为什么曲线显著性图看不出对Hairpin正类的支持。沿用1.1数据，不改变模型、任何干预分数、标签、特征值或KMeans分组。实现/校验协议：`docs/FMT_analysis_workbench_protocol_1.2.md`。
+
+**旧解释 → 当前解释 → 纠正原因。** 旧页面默认展示的“最强形状片段”按|Δ|选择，不能当作“最支持Hairpin”。400束中110束（Channel62，TBL48）默认选中负Δ窗口。旧逐点图把重叠窗口的正负Δ平均，覆盖正窗口的点仍可能被染为零/负；这不是独立的逐点贡献。现在默认从Δ>0中选最大值，直接高亮精确原窗口，保留全部有符号热图供点击。不重新解释或改写模型性能。
+
+原计算m=logit(Hairpin)−logit(Non-hairpin)、Δ=m(原束)−m(拉直束)的正负方向正确，没有证据说明分类目标写反。梯度范数只表示无符号敏感度，不能作为支持正类的证据。新页面明确区分这些量。紫色线是同一窗口两个端点间的直线，中间点以线性插值替换；它是非物理诊断几何，不是实际积分轨线，默认关闭。
+
+用户正在看的`channel_00687`说明了旧默认排序问题：旧最强绝对值窗口为线3点16–24，Δ=-3.04394，原概率0.989757，拉直后0.999507；它原本抑制Hairpin。新最强正支持为线4点24–31，Δ=+1.71228，拉直后概率0.945762，下降0.0439955。窗口/线编号均从0开始。此例仅说明相对于这次局部拉直的支持，不证明头部/腿部必有统一模式。
+
+全部400束都有正窗口。以每束“至少被一个正窗口覆盖的内部点”为分母，旧平均颜色非正的点比例，Channel/TBL逐束平均为0.1937395681/0.1574482371；这是重叠平均导致的显示抵消统计，不是分类指标。局部拉直会同时改变弧长、切向及可能的全束归一化，也不是孤立曲率因果效应；各窗口相互重叠，Δ不能相加。
+
+特征页为每个141维p35分量显示七线几何、质心/最大半径归一化、三个输入分支、DFT长度及归一化、频率k、实/虚范数或方向分量或余弦/三重积、邻居均值/数值最大值、数组槽位及当前样本数值。所有这些分量均已过DFT；同频实/虚向量余弦不等于物理邻居夹角。示例已检查索引1/5/19/29/99/122及样本联动。
+
+证据：原显著性manifest SHA256 `c730cfbb14d2b7c1cd85e9c8e3c5f176f319a9d3241414bf63230c62441eea31`；冻结特征数组 SHA256 `f7c0b729333390e93c040f5e7acaa6ca6ab916e8e9138ba56c59524082f1316c`。400束50,708干预逐项复核、829生成文件哈希、五项回归检查通过；最大概率公式误差8.83e-8。复核报告、界面记录位于`outputs/Other_FMT_AnalysisWorkbench_1.2/independent_audit.json`和`browser_checks.json`。本轮没有训练、新分数或Ibex任务。1.1工作台原HTML存为`index_1.1.html`，活动入口重定向至1.2；因此原build记录中入口HTML的哈希应对照归档文件，不能对照重定向文件。
+<!-- fmt-analysis-workbench-1.2-2026-09-17-end -->
