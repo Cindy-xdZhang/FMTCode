@@ -4364,3 +4364,15 @@ Evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/{status_latest,independen
 
 1.3从1.2继承的827份文件哈希一致，包括400束所有几何/干预/梯度与特征数据；五模式解释、隐藏/恢复控件在真实浏览器检查。代码与检查记录见docs/FMT_analysis_workbench_protocol_1.3.md和outputs/Other_FMT_AnalysisWorkbench_1.3/{build_manifest,browser_checks}.json。仍解释原p35 seed96611，不是c156，不启动新训练。旧1.2入口归档后转向1.3，交接文档同步追加。
 <!-- fmt-color-explanation-1.3-2026-09-17-end -->
+
+<!-- fmt-whole-curve-results-1.4-2026-09-17 -->
+## 2026-09-17：分析工作台1.4全线段着色与分类结果页
+
+用户要求对每条线的全部片段按拉直影响着色，并合并已有Hairpin结果查看器。版本 `Other_FMT_AnalysisWorkbench_1.4`，协议 `FMT_analysis_workbench_protocol_1.4.md`；代码为 `experiments/Build_FMT_AnalysisWorkbench_1_4.py` 及四个1.4模板/辅助文件。
+
+全段模式取原七窗口中四个首尾相接的实测窗口0–8、8–16、16–24、24–31，各段保留原有符号的Hairpin得分下降Δ。红支持、蓝抑制、深浅表示绝对影响；当前显示束共享对称最大绝对值色标，不截断或平均。相比原单段模式，本版本只扩大同时显示的覆盖范围，没有新增干预数据；不把窗口效应解释为逐点因果贡献，不能由颜色推断头部或腿部的一般规律。旧七窗口仍可逐段查看。
+
+全部400束7,244线的28,976显示片段通过坐标/概率/分数、每31条边恰好覆盖一次、段间断开和源数据不变检查；缺失与重复窗口被拒绝。827继承文件和294分类查看器依赖哈希相同。真实浏览器核验44片段小线束、四列热图、TBL四束同色标、模式切换、第三页流场/模型/TP-TN-FP-FN以及三页状态保留通过，证据在 `outputs/Other_FMT_AnalysisWorkbench_1.4/{segment_audit,browser_checks,integrity_check}.json`。
+
+第三页复用2026-09-15导出的旧4.14数据37,000束及FMT414/Conv32/Conv36 seed96611预测，不是BottomDensity1.2解释模型或c156。没有重新训练、计算预测或改写历史性能。新入口为1.4，原1.3入口归档并跳转；本次用户请求完成。
+<!-- fmt-whole-curve-results-1.4-2026-09-17-end -->

@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FMT · 特征、形状与分类结果</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,"Microsoft YaHei",sans-serif;background:#f5f7fa;height:100vh;display:flex;flex-direction:column}header{min-height:62px;display:flex;align-items:center;padding:10px 22px;gap:28px;background:#142637;color:white;flex-shrink:0}strong{font-size:17px}nav{display:flex;gap:8px}nav a{color:#c6d8e9;text-decoration:none;font-size:14px;padding:10px 18px;border-radius:7px;white-space:nowrap}nav a[aria-current=page]{background:#d7f0ec;color:#123b36}.workspace{flex:1;min-height:0}iframe{border:0;width:100%;height:100%;display:block}#resultsPanel{height:100%;display:flex;flex-direction:column}#resultsPanel iframe{flex:1;min-height:0}.source-note{padding:10px 22px;border-bottom:1px solid #d9e4e9;background:#edf4f6;font-size:12px;color:#395a6a;line-height:1.6}iframe[hidden],#resultsPanel[hidden]{display:none}@media(max-width:760px){header{gap:7px;padding:8px;flex-wrap:wrap}strong{font-size:13px}nav{gap:2px}nav a{padding:8px;font-size:12px}.source-note{padding:7px 12px}}
+</style></head><body>
+<header><strong>FMT / 几何与特征分析</strong><nav aria-label="分析页面"><a href="#features" id="nav-features">两簇特征差异</a><a href="#saliency" id="nav-saliency">Hairpin 形状解释</a><a href="#results" id="nav-results">Hairpin 分类结果</a></nav></header>
+<div class="workspace">
+<iframe id="features" title="FMT 两簇特征差异" data-src="features/index.html" hidden></iframe>
+<iframe id="saliency" title="Hairpin 全部线段形状影响" data-src="saliency/index.html" hidden></iframe>
+<section id="resultsPanel" hidden><div class="source-note"><strong style="font-size:13px">已有分类结果 · 4.14数据</strong>　2026-09-15导出的37,000束，seed96611；可选FMT 4.14、小Conv3D 32³/36³，含人工标注曲面与误分类着色。这里的模型及数据与“形状解释”页不同，也不是c156；内页待载入状态是导出时的记录。</div><iframe id="results" title="Hairpin 分类结果与真实标注曲面" data-src="__RESULTS_URL__" hidden></iframe></section>
+</div>
+<script>
+function route(){const key=location.hash.slice(1),active=['features','saliency','results'].includes(key)?key:'features';document.getElementById('resultsPanel').hidden=active!=='results';for(const id of ['features','saliency','results']){const frame=document.getElementById(id);frame.hidden=id!==active;document.getElementById('nav-'+id).setAttribute('aria-current',id===active?'page':'false');if(id===active&&!frame.getAttribute('src'))frame.src=frame.dataset.src;}}
+window.addEventListener('hashchange',route);route();
+</script></body></html>
