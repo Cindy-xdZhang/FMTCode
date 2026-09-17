@@ -1,5 +1,7 @@
 """Versioned development of five-line Fourier fusion for FTLE super-resolution."""
 from __future__ import annotations
+
+from FMT_Utils.FMTNoConvolution_1_1 import reject_retired_fmt, assert_no_fmt_convolution
 import argparse
 import itertools
 import os
@@ -285,6 +287,7 @@ def runtime(spec,config,phase,state,code=None):
 
 
 def submit(spec,config):
+    reject_retired_fmt("Retired P35 convolutional FTLE fusion")
     root=Path(spec['output']);(root/'slurm').mkdir(parents=True,exist_ok=True)
     jobs=[]
     def dispatch(phase,count,dependency=None,gpu=False):
@@ -310,6 +313,7 @@ def submit(spec,config):
 
 
 def main():
+    reject_retired_fmt("Retired P35 convolutional FTLE fusion")
     parser=argparse.ArgumentParser();parser.add_argument('phase')
     parser.add_argument('--config',default='config/Other_FTLEP35Fusion_2.1.json')
     parser.add_argument('--index',type=int,default=0);parser.add_argument('--device',default='cuda' if torch.cuda.is_available() else 'cpu')

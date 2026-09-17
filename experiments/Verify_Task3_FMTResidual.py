@@ -1428,6 +1428,8 @@ def _build_scheduler(training: dict, optimizer):
 
 
 def _train_one(spec, dataset, seed, splits, stats, device, output_dir):
+    from FMT_Utils.FMTNoConvolution_1_1 import reject_retired_fmt
+    reject_retired_fmt('Legacy Task3/5 convolutional residual experiment')
     _set_seed(seed)
     gate_kind, gate_temperature, gate_floor = _residual_gate_parameters(
         spec["model"]

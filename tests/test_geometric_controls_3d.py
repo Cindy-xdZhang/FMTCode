@@ -143,11 +143,9 @@ class GeometricControlsTests(unittest.TestCase):
                               'max_epochs':1,'patience':1,'min_delta':.0001},
                   'raw_checkpoint_dir':str(directory),'raw_wide_parameter_count':148225,
                   'auxiliary_source':'fmt'}
-            result=_train_one(spec,'synthetic',40,(tr,va,None),stats,torch.device('cpu'),directory)
-            self.assertNotIn('test_f1',result)
-            model,state=load_residual(result['checkpoint'],268,'cpu')
-            self.assertEqual(state['best_epoch'],1)
-            self.assertGreater(sum(p.numel() for p in model.parameters()),0)
+            from FMT_Utils.FMTNoConvolution_1_1 import ForbiddenFMTConvolutionError
+            with self.assertRaises(ForbiddenFMTConvolutionError):
+                _train_one(spec,'synthetic',40,(tr,va,None),stats,torch.device('cpu'),directory)
 
 
 if __name__=='__main__': unittest.main()

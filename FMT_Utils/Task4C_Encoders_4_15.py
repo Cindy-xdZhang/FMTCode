@@ -1,6 +1,8 @@
 """Pure seven-line encoders with the frozen Task4-c local-neighbor rule."""
 from __future__ import annotations
 
+from FMT_Utils.FMTNoConvolution_1_1 import reject_retired_fmt, assert_no_fmt_convolution
+
 import torch
 from torch import nn
 
@@ -57,6 +59,7 @@ class EncoderLinePooling(LearnedLinePooling):
     def __init__(self, width, dropout):
         super().__init__(dropout)
         self.line[0] = nn.Linear(width, 128)
+        assert_no_fmt_convolution(self)
 
 
 def make_model(encoder, dropout):

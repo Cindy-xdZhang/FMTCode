@@ -1,3 +1,5 @@
+
+from FMT_Utils.FMTNoConvolution_1_1 import reject_retired_fmt, assert_no_fmt_convolution
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -73,6 +75,7 @@ class PointWiseFMT_Regressor(nn.Module):
         self.encoder = EncNPNew(self.pointsPerPrimitive, num_stages, embed_dim, k_neighbors, alpha, beta)
         self.decoderInputDim=embed_dim * (2 ** (num_stages - 0))
         self.decoder = Decoder(in_dim=self.decoderInputDim)
+        assert_no_fmt_convolution(self)
 
     def forward(self, pts: torch.Tensor):
         B,CrossSize,LstepsPerline,Dim=pts.shape
@@ -107,114 +110,10 @@ class PointWiseMLP_Regressor(nn.Module):
 
 
 class FTLEUpsamplingFMT_Unet(nn.Module):
-    """
-    Encode each grid cell's cross-primitive (5 pathlines, L points, Dim=3) into a 32-D feature via EncNPNew,
-    concatenate with low-resolution FTLE and coordinate channels (X_norm, Y_norm) to form (32 + 1) channels,
-    then upsample to high-resolution FTLE with a UNet.
-
-    Inputs:
-      - lowResFTLE:      [B, X, Y]
-      - lowResPathlines: [B, X*Y, 5, L, 3]
-    Output:
-      - pred:            [B, X*UP, Y*UP]
-    """
-    def __init__(self, cfg, lowResX: int, lowResY: int, upscale: int = 4,
-                 embed_dim: int = 36):
+    """Removed: convolutional FMT is prohibited by project policy."""
+    def __init__(self, *args, **kwargs):
         super().__init__()
-        self.lowResX = int(lowResX)
-        self.lowResY = int(lowResY)
-        self.upscale = int(upscale)
-        self.embed_dim = int(embed_dim)  # target feature dimension (prefer multiples of 6)
-
-        # EncNPNew encodes cross-primitive: points_N3 [B, N, 3], points_3N [B, 3, N]
-        # Output dim ≈ embed_dim * (2**stages). To keep 32-D, enforce stages=0.
-        stages = int(getattr(cfg.pnn, 'stages', 0)) if hasattr(cfg, 'pnn') else 0
-        k = int(getattr(cfg.pnn, 'k', 6)) if hasattr(cfg, 'pnn') else 6
-        alpha = float(getattr(cfg.pnn, 'alpha', 1000)) if hasattr(cfg, 'pnn') else 1000.0
-        beta = float(getattr(cfg.pnn, 'beta', 100)) if hasattr(cfg, 'pnn') else 100.0
-        nerbors = int(getattr(cfg.pcds, 'num_cross_points_per_seeding', 5)) if hasattr(cfg, 'pcds') else 5
-        LstepsPerline = int(getattr(cfg.pcds, 'sampled_points_per_line', 4)) if hasattr(cfg, 'pcds') else 4
-        self.cross_neighborsize = nerbors
-        self.pointsPerPrimitive = LstepsPerline * nerbors
-        # Enforce stages=0 to keep feature dimension fixed
-        self.encoder = EncNPNew(self.pointsPerPrimitive, 0, self.embed_dim, k, alpha, beta)
-
-        in_channels = self.embed_dim + 3  # self.embed_dim + (FTLE 1ch + XY 2ch)
-        base_ch = in_channels
-        self.inc = DoubleConv(in_channels, base_ch)
-        self.down1 = Down(base_ch, base_ch * 2)
-        self.down2 = Down(base_ch * 2, base_ch * 4)
-        self.up1 = Up(base_ch * 4, base_ch * 2)
-        self.up2 = Up(base_ch * 2, base_ch)
-        self.out_low = nn.Conv2d(base_ch, base_ch, kernel_size=1)
-
-        n_up = max(0, int(round(math.log2(max(1, self.upscale)))))
-        self.up_blocks = nn.ModuleList()
-        in_ch = base_ch
-        for i in range(n_up):
-            out_ch = base_ch if i < n_up - 1 else base_ch // 2
-            self.up_blocks.append(
-                nn.Sequential(
-                    nn.ConvTranspose2d(in_ch, out_ch, kernel_size=2, stride=2),
-                    nn.ReLU(inplace=True),
-                    nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1, bias=False),
-                    nn.BatchNorm2d(out_ch),
-                    nn.ReLU(inplace=True),
-                )
-            )
-            in_ch = out_ch
-        self.out_high = nn.Conv2d(in_ch, 1, kernel_size=1)
-
-
-        
-        self.cache_coordGrid=None
-
-    def construct_cache_coordGrid(self,B: int,lowResX: int,lowResY: int):
-        yy = torch.linspace(0, 1, steps=lowResX)
-        xx = torch.linspace(0, 1, steps=lowResY)
-        Y_grid, X_grid = torch.meshgrid(yy, xx, indexing='ij')  # [X,Y]
-        coord = torch.stack([X_grid, Y_grid], dim=0).unsqueeze(0).repeat(B, 1, 1, 1)  # [B,2,X,Y]
-        self.cache_coordGrid=coord
-
-    def forward(self, lowResFTLE: torch.Tensor, lowResPathlines: torch.Tensor) -> torch.Tensor:
-        B, X, Y = lowResFTLE.shape
-        _, N, nerbors, L, Dim = lowResPathlines.shape
-        assert N == X * Y, "lowResPathlines second dim must be X*Y"
-        assert nerbors == self.cross_neighborsize, "nerbors mismatch with model setting"
-        if self.cache_coordGrid is None or self.cache_coordGrid.shape[0] != B or self.cache_coordGrid.shape[2] != X or self.cache_coordGrid.shape[3] != Y:
-            self.construct_cache_coordGrid(B, X, Y)
-
-        # 1) Encode cross-primitive to per-cell 32-D feature
-        P = lowResPathlines.reshape(B * N, nerbors * L, Dim).contiguous()
-        points_N3 = P  # [B*N, K, 3]
-        points_3N = P.permute(0, 2, 1).contiguous()  # [B*N, 3, K]
-        feat = self.encoder(points_N3, points_3N)  # [B*N, 32]
-        feat = feat.reshape(B, X, Y, self.embed_dim).permute(0, 3, 1, 2).contiguous()  # [B,32,X,Y]
-
-        # 2) Coordinate channels normalized to [0,1]
-        coord = self.cache_coordGrid.to(lowResFTLE.device)
-
-        # 3) Concatenate input channels (1 + 2 + 32)
-        ftle_in = lowResFTLE.unsqueeze(1)
-        x_in = torch.cat([ftle_in, coord, feat], dim=1)  # [B, 35, X, Y]
-
-        # 4) UNet encode-decode + upsampling head
-        x1 = self.inc(x_in)
-        x2 = self.down1(x1)
-        x3 = self.down2(x2)
-        x = self.up1(x3, x2)
-        x = self.up2(x, x1)
-        x = self.out_low(x)
-        for blk in self.up_blocks:
-            x = blk(x)
-        pred = self.out_high(x).squeeze(1)  # [B, X*UP, Y*UP]
-
-        # Align to target spatial size
-        target_h = int(X * max(1, self.upscale))
-        target_w = int(Y * max(1, self.upscale))
-        if pred.shape[-2] != target_h or pred.shape[-1] != target_w:
-            pred = F.interpolate(pred.unsqueeze(1), size=(target_h, target_w), mode='bilinear', align_corners=False).squeeze(1)
-        return pred
+        reject_retired_fmt("FTLEUpsamplingFMT_Unet")
 
 class DoubleConv(nn.Module):
     def __init__(self, in_ch: int, out_ch: int):
@@ -405,427 +304,32 @@ class UpsamplingUnetModelV2(nn.Module):
 
 
 class AttentionFusion(nn.Module):
-    """
-    融合来自 pathline 的特征图 F ∈ [B, D, X, Y] 与低分辨率 FTLE 的单通道映射 L ∈ [B, 1, X, Y]。
-    - 首先将 L 通过 1x1 卷积映射到 D 维，与 F 对齐；
-    - 计算通道维度上的注意力权重：
-        a = sigmoid(Conv1x1([F, L_proj])) ∈ [B, D, X, Y]
-      最终输出：a · F + (1-a) · L_proj
-    该设计能在逐空间位置和逐通道上自适应选择来自 pathline 的信息或来自低分辨率 FTLE 的先验。
-    """
-    def __init__(self, channels: int):
+    """Removed with the convolutional FMT U-Net fusion models."""
+    def __init__(self, *args, **kwargs):
         super().__init__()
-        self.to_d_from_lr = nn.Conv2d(1, channels, kernel_size=1, bias=True)
-        self.gate = nn.Sequential(
-            nn.Conv2d(channels * 2, channels, kernel_size=1, bias=True),
-            nn.Sigmoid(),
-        )
-
-    def forward(self, feat_from_pathline: torch.Tensor, lowres_ftle_1ch: torch.Tensor) -> torch.Tensor:
-        # feat_from_pathline: [B, D, X, Y]
-        # lowres_ftle_1ch:    [B, 1, X, Y]
-        Lp = self.to_d_from_lr(lowres_ftle_1ch)
-        gate_in = torch.cat([feat_from_pathline, Lp], dim=1)
-        a = self.gate(gate_in)
-        return a * feat_from_pathline + (1.0 - a) * Lp
+        reject_retired_fmt('AttentionFusion')
 
 
 class FTLEupsamplingFMT_UnetV3(nn.Module):
-    """
-    基于 FTLEupsamplingFMT_UnetV2 的滑窗 FMT 特征提取流程，但将 "特征与低分辨率 FTLE 的简单拼接"
-    替换为 "注意力融合"（AttentionFusion）。
-
-    Pipeline:
-      1) 滑窗聚合局部 pathline，EncNPNew → coarse FMT 特征图 [B, D, Hc, Wc]
-      2) 双线性上采样到 [B, D, X, Y]
-      3) 与低分辨率 FTLE 的 1 通道图 [B,1,X,Y] 通过 AttentionFusion 融合 → [B, D, X, Y]
-      4) 以 D 通道作为 UNet 编码器输入，随后与 V2 相同的上采样头输出高分辨率预测
-    """
-    def __init__(self, cfg, lowResX: int, lowResY: int, upscale: float, base_ch: int = 32,
-                 embed_dim: int | None = None):
+    """Removed: convolutional FMT is prohibited by project policy."""
+    def __init__(self, *args, **kwargs):
         super().__init__()
-        self.lowResX = int(lowResX)
-        self.lowResY = int(lowResY)
-        self.upscale = int(upscale)
-
-        # FMT 编码器（滑窗）
-        self.FMT_focus_area = int(getattr(cfg, 'FMT_focus_area', 8))
-        num_stages = int(getattr(cfg.pnn, 'stages', 1)) if hasattr(cfg, 'pnn') else 1
-        k = int(getattr(cfg.pnn, 'k', 6)) if hasattr(cfg, 'pnn') else 6
-        alpha = float(getattr(cfg.pnn, 'alpha', 1000)) if hasattr(cfg, 'pnn') else 1000.0
-        beta = float(getattr(cfg.pnn, 'beta', 100)) if hasattr(cfg, 'pnn') else 100.0
-        nerbors = int(getattr(cfg.pcds, 'num_cross_points_per_seeding', 5)) if hasattr(cfg, 'pcds') else 5
-        LstepsPerline = int(getattr(cfg.pcds, 'sampled_points_per_line', 4)) if hasattr(cfg, 'pcds') else 4
-        self.cross_neighborsize = nerbors
-        self.pointsPerPrimitive = LstepsPerline * nerbors
-        self.embed_dim = int(embed_dim if embed_dim is not None else getattr(cfg.pnn, 'dim', 36))
-        self.encoder = EncNPNew(self.pointsPerPrimitive, num_stages, self.embed_dim, k, alpha, beta)
-        self.fmt_feature_dim = self.embed_dim * (2 ** (num_stages - 0))
-
-        # 注意力融合：将 [B,D,X,Y] 与 [B,1,X,Y] 融合到 [B,D,X,Y]
-        self.fuse = AttentionFusion(self.fmt_feature_dim)
-
-        # Unet 主干：输入通道使用融合后的 D 通道（不再拼接 1 通道 FTLE）
-        in_channels = self.fmt_feature_dim
-        self.inc = DoubleConv(in_channels, base_ch)
-        self.down1 = Down(base_ch, base_ch * 2)
-        self.down2 = Down(base_ch * 2, base_ch * 4)
-        self.up1 = Up(base_ch * 4, base_ch * 2)
-        self.up2 = Up(base_ch * 2, base_ch)
-        self.out_low = nn.Conv2d(base_ch, base_ch, kernel_size=1)
-
-        n_up = max(0, int(round(math.log2(max(1, self.upscale)))))
-        self.up_blocks = nn.ModuleList()
-        in_ch = base_ch
-        for i in range(n_up):
-            out_ch = base_ch if i < n_up - 1 else base_ch // 2
-            self.up_blocks.append(
-                nn.Sequential(
-                    nn.ConvTranspose2d(in_ch, out_ch, kernel_size=2, stride=2),
-                    nn.ReLU(inplace=True),
-                    nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1, bias=False),
-                    nn.BatchNorm2d(out_ch),
-                    nn.ReLU(inplace=True),
-                )
-            )
-            in_ch = out_ch
-        self.out_high = nn.Conv2d(in_ch, 1, kernel_size=1)
-
-    def _tiling_starts(self, length: int, k: int):
-        if k >= length:
-            return [0]
-        s = int(k)
-        starts = list(range(0, length - k + 1, s))
-        last = length - k
-        if starts[-1] != last:
-            starts.append(last)
-        return starts
-
-    def forward(self, lowResFTLE: torch.Tensor, lowResPathlines: torch.Tensor) -> torch.Tensor:
-        B, X, Y = lowResFTLE.shape
-        _, N, nerbors, L, Dim = lowResPathlines.shape
-        assert N == X * Y, "lowResPathlines second dim must be X*Y"
-        assert nerbors == self.cross_neighborsize, "nerbors mismatch with model setting"
-
-        # 1) 滑窗局部 FMT → coarse feature map [B, D, Hc, Wc]
-        k = int(self.FMT_focus_area)
-        row_starts = self._tiling_starts(int(X), k)
-        col_starts = self._tiling_starts(int(Y), k)
-        Hc, Wc = len(row_starts), len(col_starts)
-
-        feat_coarse = lowResFTLE.new_zeros((B, self.fmt_feature_dim, Hc, Wc))
-        for ri, i0 in enumerate(row_starts):
-            i1 = min(i0 + k, int(X))
-            for ci, j0 in enumerate(col_starts):
-                j1 = min(j0 + k, int(Y))
-                idx_list = []
-                for rr in range(i0, i1):
-                    base = rr * int(Y)
-                    idx_list.extend(range(base + j0, base + j1))
-                if len(idx_list) == 0:
-                    continue
-                idx_tensor = torch.as_tensor(idx_list, dtype=torch.long, device=lowResFTLE.device)
-                pl_win = lowResPathlines[:, idx_tensor, ...]  # [B, M, nerbors, L, Dim]
-                B2, M, _, _, _ = pl_win.shape
-                P = pl_win.reshape(B2, M * nerbors * L, Dim).contiguous()
-                points_N3 = P
-                points_3N = P.permute(0, 2, 1).contiguous()
-                feat_win = self.encoder(points_N3, points_3N)  # [B, D]
-                feat_coarse[:, :, ri, ci] = feat_win
-
-        # 2) 上采样到低分辨率大小 [B, D, X, Y]
-        feat_map = F.interpolate(feat_coarse, size=(int(X), int(Y)), mode='bilinear', align_corners=False)
-
-        # 3) 注意力融合 FMT 特征与 1 通道低分辨率 FTLE
-        ftle_in = lowResFTLE.unsqueeze(1)  # [B,1,X,Y]
-        fused = self.fuse(feat_map, ftle_in)  # [B,D,X,Y]
-
-        # 4) UNet 编码-解码 + 渐进上采样
-        x1 = self.inc(fused)
-        x2 = self.down1(x1)
-        x3 = self.down2(x2)
-        x = self.up1(x3, x2)
-        x = self.up2(x, x1)
-        x = self.out_low(x)
-        for blk in self.up_blocks:
-            x = blk(x)
-        pred = self.out_high(x).squeeze(1)  # [B, X*UP, Y*UP]
-
-        # 尺寸对齐
-        target_h = int(X * max(1, self.upscale))
-        target_w = int(Y * max(1, self.upscale))
-        if pred.shape[-2] != target_h or pred.shape[-1] != target_w:
-            pred = F.interpolate(pred.unsqueeze(1), size=(target_h, target_w), mode='bilinear', align_corners=False).squeeze(1)
-        return pred
+        reject_retired_fmt("FTLEupsamplingFMT_UnetV3")
 
 
 
 class FTLEupsamplingFMT_UnetV2(nn.Module):
-    """
-    Local sliding-window FMT features + low-resolution FTLE → UNet upsampling
-
-    - Use a 2D sliding window (window size = self.FMT_focus_area, e.g., 8x8; stride equals window)
-      on the low-resolution grid to extract local patches
-    - Within each patch, concatenate all cross-primitives into a point cloud and feed into EncNPNew
-      to obtain a local feature vector f ∈ R^D
-    - Arrange the local features into a coarse feature map [B, D, Hc, Wc] (Hc/Wc are window centers)
-    - Bilinearly upsample this feature map to [B, D, X, Y], then concatenate with the 1-channel
-      low-resolution FTLE → [B, D+1, X, Y]
-    - Apply UNet encode-decode, followed by transposed-convolution upsampling to high resolution
-
-    Inputs:
-      lowResFTLE:      [B, X, Y]
-      lowResPathlines: [B, X*Y, 5, L, 3]
-    Output:
-      pred:            [B, X*UP, Y*UP]
-    """
-    def __init__(self, cfg, lowResX: int, lowResY: int, upscale: float, base_ch: int = 32,
-                 embed_dim: int | None = None):
+    """Removed: convolutional FMT is prohibited by project policy."""
+    def __init__(self, *args, **kwargs):
         super().__init__()
-        self.lowResX = int(lowResX)
-        self.lowResY = int(lowResY)
-        self.upscale = int(upscale)
-
-        # FMT encoder (global): use small num_stages; output dimension fixed by embed_dim
-        self.FMT_focus_area=8# if this is too large, too many points will make knn too slow, self.FMT_focus_area should divide 64.
-        num_stages= int(getattr(cfg.pnn, 'stages', 1)) if hasattr(cfg, 'pnn') else 1
-        k = int(getattr(cfg.pnn, 'k', 6)) if hasattr(cfg, 'pnn') else 6
-        alpha = float(getattr(cfg.pnn, 'alpha', 1000)) if hasattr(cfg, 'pnn') else 1000.0
-        beta = float(getattr(cfg.pnn, 'beta', 100)) if hasattr(cfg, 'pnn') else 100.0
-        nerbors = int(getattr(cfg.pcds, 'num_cross_points_per_seeding', 5)) if hasattr(cfg, 'pcds') else 5
-        LstepsPerline = int(getattr(cfg.pcds, 'sampled_points_per_line', 4)) if hasattr(cfg, 'pcds') else 4
-        self.cross_neighborsize = nerbors
-        self.pointsPerPrimitive = LstepsPerline * nerbors
-        self.embed_dim = int(embed_dim if embed_dim is not None else getattr(cfg.pnn, 'dim', 36))
-
-        self.encoder = EncNPNew(self.pointsPerPrimitive, num_stages, self.embed_dim, k, alpha, beta)
-
-        self.fmt_feature_dim= self.embed_dim* (2 ** (num_stages - 0))
-
-        in_channels = self.fmt_feature_dim+ 1  # Global D channels + 1 channel of low-res FTLE
-        self.inc = DoubleConv(in_channels, base_ch)
-        self.down1 = Down(base_ch, base_ch * 2)
-        self.down2 = Down(base_ch * 2, base_ch * 4)
-        self.up1 = Up(base_ch * 4, base_ch * 2)
-        self.up2 = Up(base_ch * 2, base_ch)
-        self.out_low = nn.Conv2d(base_ch, base_ch, kernel_size=1)
-
-        n_up = max(0, int(round(math.log2(max(1, self.upscale)))))
-        self.up_blocks = nn.ModuleList()
-        in_ch = base_ch
-        for i in range(n_up):
-            out_ch = base_ch if i < n_up - 1 else base_ch // 2
-            self.up_blocks.append(
-                nn.Sequential(
-                    nn.ConvTranspose2d(in_ch, out_ch, kernel_size=2, stride=2),
-                    nn.ReLU(inplace=True),
-                    nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1, bias=False),
-                    nn.BatchNorm2d(out_ch),
-                    nn.ReLU(inplace=True),
-                )
-            )
-            in_ch = out_ch
-        self.out_high = nn.Conv2d(in_ch, 1, kernel_size=1)
-
-    def _tiling_starts(self, length: int, k: int):
-        if k >= length:
-            return [0]
-        s = int(k)
-        starts = list(range(0, length - k + 1, s))
-        last = length - k
-        if starts[-1] != last:
-            starts.append(last)
-        return starts
-
-    def forward(self, lowResFTLE: torch.Tensor, lowResPathlines: torch.Tensor) -> torch.Tensor:
-        B, X, Y = lowResFTLE.shape
-        _, N, nerbors, L, Dim = lowResPathlines.shape
-        assert N == X * Y, "lowResPathlines second dim must be X*Y"
-        assert nerbors == self.cross_neighborsize, "nerbors mismatch with model setting"
-
-        # 1) Extract local point-cloud features via sliding window to get coarse feature map [B, D, Hc, Wc]
-        k = int(self.FMT_focus_area)
-        row_starts = self._tiling_starts(int(X), k)
-        col_starts = self._tiling_starts(int(Y), k)
-        Hc, Wc = len(row_starts), len(col_starts)
-
-        feat_coarse = lowResFTLE.new_zeros((B, self.fmt_feature_dim, Hc, Wc))
-        for ri, i0 in enumerate(row_starts):
-            i1 = min(i0 + k, int(X))
-            for ci, j0 in enumerate(col_starts):
-                j1 = min(j0 + k, int(Y))
-                # Collect linear indices within this window
-                idx_list = []
-                for rr in range(i0, i1):
-                    base = rr * int(Y)
-                    idx_list.extend(range(base + j0, base + j1))
-                if len(idx_list) == 0:
-                    continue
-                idx_tensor = torch.as_tensor(idx_list, dtype=torch.long, device=lowResFTLE.device)
-                # Select pathlines within the window and build the point cloud
-                pl_win = lowResPathlines[:, idx_tensor, ...]  # [B, M, nerbors, L, Dim]
-                B2, M, _, _, _ = pl_win.shape
-                P = pl_win.reshape(B2, M * nerbors * L, Dim).contiguous()  # [B, M*K, 3]
-                points_N3 = P
-                points_3N = P.permute(0, 2, 1).contiguous()
-                feat_win = self.encoder(points_N3, points_3N)  # [B, D]
-                feat_coarse[:, :, ri, ci] = feat_win
-
-        # 2) Bilinear upsample the coarse feature map to [X, Y]
-        feat_map = F.interpolate(feat_coarse, size=(int(X), int(Y)), mode='bilinear', align_corners=False)
-        # 3) Concatenate with low-resolution FTLE
-        ftle_in = lowResFTLE.unsqueeze(1)  # [B, 1, X, Y]
-        x_in = torch.cat([ftle_in, feat_map], dim=1)  # [B, D+1, X, Y]
-
-        # UNet encode-decode + upsampling head
-        x1 = self.inc(x_in)
-        x2 = self.down1(x1)
-        x3 = self.down2(x2)
-        x = self.up1(x3, x2)
-        x = self.up2(x, x1)
-        x = self.out_low(x)
-        for blk in self.up_blocks:
-            x = blk(x)
-        pred = self.out_high(x).squeeze(1)  # [B, X*UP, Y*UP]
-
-        # Size alignment
-        target_h = int(X * max(1, self.upscale))
-        target_w = int(Y * max(1, self.upscale))
-        if pred.shape[-2] != target_h or pred.shape[-1] != target_w:
-            pred = F.interpolate(pred.unsqueeze(1), size=(target_h, target_w), mode='bilinear', align_corners=False).squeeze(1)
-        return pred
+        reject_retired_fmt("FTLEupsamplingFMT_UnetV2")
 
 
 class FTLEupsamplingDCT_FMT_UnetV2(nn.Module):
-    """
-    Twin of :class:`FTLEupsamplingFMT_UnetV2`, with the FMT point-cloud encoder
-    (EncNPNew: KNN + PosE + pooling) replaced by the training-free, Fourier-based
-    :class:`~FMT_Utils.DCT_FMT_encoder.DCT_FMT` tokenizer.
-
-    Everything else is identical to V2 so the two models form a fair A/B test of
-    the *tokenizer* only (same sliding-window mechanism, same UNet backend, same
-    upsampling head):
-      1) sliding window (k = self.FMT_focus_area, stride = k) over the low-res grid
-      2) DCT_FMT encodes each window's *structured* pathlines -> token [B, D]
-         (note: pathlines are kept as [B, M, K, L, 3]; NOT flattened to a cloud)
-      3) coarse feature map [B, D, Hc, Wc] -> bilinear upsample to [B, D, X, Y]
-      4) concat with the 1-channel low-res FTLE -> UNet -> transposed-conv upsample
-
-    Inputs:
-      lowResFTLE:      [B, X, Y]
-      lowResPathlines: [B, X*Y, nerbors, L, 3]
-    Output:
-      pred:            [B, X*UP, Y*UP]
-    """
-    def __init__(self, cfg, lowResX: int, lowResY: int, upscale: float, base_ch: int = 32):
+    """Removed: convolutional FMT is prohibited by project policy."""
+    def __init__(self, *args, **kwargs):
         super().__init__()
-        self.lowResX = int(lowResX)
-        self.lowResY = int(lowResY)
-        self.upscale = int(upscale)
-
-        # Sliding-window size (same default/intent as V2).
-        self.FMT_focus_area = int(getattr(cfg, 'FMT_focus_area', 8))
-        nerbors = int(getattr(cfg.pcds, 'num_cross_points_per_seeding', 5)) if hasattr(cfg, 'pcds') else 5
-        LstepsPerline = int(getattr(cfg.pcds, 'sampled_points_per_line', 4)) if hasattr(cfg, 'pcds') else 4
-        self.cross_neighborsize = nerbors
-
-        # DCT_FMT hyper-parameters (optional `dct:` config block; sensible defaults otherwise).
-        dct_cfg = getattr(cfg, 'dct', None)
-        dct_k = int(getattr(dct_cfg, 'k', 6)) if dct_cfg is not None else 6
-        dct_weight = float(getattr(dct_cfg, 'weight', 0.5)) if dct_cfg is not None else 0.5
-        neighbor_diff_scale = float(getattr(dct_cfg, 'neighbor_diff_scale', 100.0)) if dct_cfg is not None else 100.0
-
-        self.encoder = DCT_FMT(nerbors=nerbors, L=LstepsPerline, dct_k=dct_k,
-                               dct_weight=dct_weight, neighbor_diff_scale=neighbor_diff_scale)
-        self.fmt_feature_dim = self.encoder.out_dim
-
-        in_channels = self.fmt_feature_dim + 1  # D feature channels + 1 channel low-res FTLE
-        self.inc = DoubleConv(in_channels, base_ch)
-        self.down1 = Down(base_ch, base_ch * 2)
-        self.down2 = Down(base_ch * 2, base_ch * 4)
-        self.up1 = Up(base_ch * 4, base_ch * 2)
-        self.up2 = Up(base_ch * 2, base_ch)
-        self.out_low = nn.Conv2d(base_ch, base_ch, kernel_size=1)
-
-        n_up = max(0, int(round(math.log2(max(1, self.upscale)))))
-        self.up_blocks = nn.ModuleList()
-        in_ch = base_ch
-        for i in range(n_up):
-            out_ch = base_ch if i < n_up - 1 else base_ch // 2
-            self.up_blocks.append(
-                nn.Sequential(
-                    nn.ConvTranspose2d(in_ch, out_ch, kernel_size=2, stride=2),
-                    nn.ReLU(inplace=True),
-                    nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1, bias=False),
-                    nn.BatchNorm2d(out_ch),
-                    nn.ReLU(inplace=True),
-                )
-            )
-            in_ch = out_ch
-        self.out_high = nn.Conv2d(in_ch, 1, kernel_size=1)
-
-    def _tiling_starts(self, length: int, k: int):
-        if k >= length:
-            return [0]
-        s = int(k)
-        starts = list(range(0, length - k + 1, s))
-        last = length - k
-        if starts[-1] != last:
-            starts.append(last)
-        return starts
-
-    def forward(self, lowResFTLE: torch.Tensor, lowResPathlines: torch.Tensor) -> torch.Tensor:
-        B, X, Y = lowResFTLE.shape
-        _, N, nerbors, L, Dim = lowResPathlines.shape
-        assert N == X * Y, "lowResPathlines second dim must be X*Y"
-        assert nerbors == self.cross_neighborsize, "nerbors mismatch with model setting"
-
-        # 1) Sliding-window DCT_FMT -> coarse feature map [B, D, Hc, Wc]
-        k = int(self.FMT_focus_area)
-        row_starts = self._tiling_starts(int(X), k)
-        col_starts = self._tiling_starts(int(Y), k)
-        Hc, Wc = len(row_starts), len(col_starts)
-
-        feat_coarse = lowResFTLE.new_zeros((B, self.fmt_feature_dim, Hc, Wc))
-        for ri, i0 in enumerate(row_starts):
-            i1 = min(i0 + k, int(X))
-            for ci, j0 in enumerate(col_starts):
-                j1 = min(j0 + k, int(Y))
-                idx_list = []
-                for rr in range(i0, i1):
-                    base = rr * int(Y)
-                    idx_list.extend(range(base + j0, base + j1))
-                if len(idx_list) == 0:
-                    continue
-                idx_tensor = torch.as_tensor(idx_list, dtype=torch.long, device=lowResFTLE.device)
-                # Keep structure: [B, M, nerbors, L, Dim] (do NOT flatten to a point cloud)
-                pl_win = lowResPathlines[:, idx_tensor, ...]
-                feat_win = self.encoder(pl_win)  # [B, D]
-                feat_coarse[:, :, ri, ci] = feat_win
-
-        # 2) Bilinear upsample the coarse feature map to [X, Y]
-        feat_map = F.interpolate(feat_coarse, size=(int(X), int(Y)), mode='bilinear', align_corners=False)
-        # 3) Concatenate with low-resolution FTLE
-        ftle_in = lowResFTLE.unsqueeze(1)  # [B, 1, X, Y]
-        x_in = torch.cat([ftle_in, feat_map], dim=1)  # [B, D+1, X, Y]
-
-        # 4) UNet encode-decode + upsampling head
-        x1 = self.inc(x_in)
-        x2 = self.down1(x1)
-        x3 = self.down2(x2)
-        x = self.up1(x3, x2)
-        x = self.up2(x, x1)
-        x = self.out_low(x)
-        for blk in self.up_blocks:
-            x = blk(x)
-        pred = self.out_high(x).squeeze(1)  # [B, X*UP, Y*UP]
-
-        # Size alignment
-        target_h = int(X * max(1, self.upscale))
-        target_w = int(Y * max(1, self.upscale))
-        if pred.shape[-2] != target_h or pred.shape[-1] != target_w:
-            pred = F.interpolate(pred.unsqueeze(1), size=(target_h, target_w), mode='bilinear', align_corners=False).squeeze(1)
-        return pred
+        reject_retired_fmt("FTLEupsamplingDCT_FMT_UnetV2")
 
 
 
@@ -1057,4 +561,3 @@ def build_model(config, device):
         return model
     else:
         raise ValueError(f"Unknown model: {config.model.NAME}")
-

@@ -1,5 +1,9 @@
 # 验证实验总表
 
+<!-- fmt-convolution-withdrawal-notice-20260917 -->
+> **2026-09-17撤销通知：** 本文旧Raw卷积＋FMT/残差及二维FMT卷积方案已撤销，不能重跑或用作当前FMT主表、附录、“最佳方法”证据。历史数值仅供核对。无卷积的固定特征和全连接分支另行保留；以 [FMT禁止空间卷积协议](FMT_no_spatial_convolution_protocol_1.1.md) 为准。
+<!-- fmt-convolution-withdrawal-notice-20260917-end -->
+
 <a id="status-20260913"></a>
 
 ## 截至2026-09-13的进展索引

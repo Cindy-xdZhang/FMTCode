@@ -1,5 +1,9 @@
 # Re160 / Tangaroa Task1–3 效果图
 
+<!-- fmt-convolution-withdrawal-notice-20260917 -->
+> **2026-09-17撤销通知：** 本文旧Raw卷积＋FMT/残差及二维FMT卷积方案已撤销，不能重跑或用作当前FMT主表、附录、“最佳方法”证据。历史数值仅供核对。无卷积的固定特征和全连接分支另行保留；以 [FMT禁止空间卷积协议](FMT_no_spatial_convolution_protocol_1.1.md) 为准。
+<!-- fmt-convolution-withdrawal-notice-20260917-end -->
+
 2026-09-06完成。版本 `Other_Task123_PaperTriptychs_1.1`；绘图方法索引P13。
 两流场各三任务，共6组科学内容；每组分别提供论文版与组会PPT版。
 

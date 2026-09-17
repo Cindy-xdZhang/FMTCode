@@ -1,0 +1,14 @@
+[
+  {
+    "source": "docs/paper_tables_tasks_3d.md",
+    "archive": "docs/archive/retired_fmt_convolution_20260917/paper_tables_tasks_3d.md",
+    "sha256": "2cf48bdeab967999dba506f2048f315879aed84c1adf0c2f15c9c7f297ab1e71",
+    "status": "historical_snapshot_not_active_evidence"
+  },
+  {
+    "source": "docs/paper_tables_ftle_2d.md",
+    "archive": "docs/archive/retired_fmt_convolution_20260917/paper_tables_ftle_2d.md",
+    "sha256": "9344beaaa4191376ca41ddbfd4888a31937662468cf8f02b45810bcb1fb48bc8",
+    "status": "historical_snapshot_not_active_evidence"
+  }
+]

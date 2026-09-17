@@ -1,5 +1,8 @@
 # Other_FTLEUpsampling2D_1.1
 
+> **2026-09-17撤销状态：** 本文涉及的Raw卷积＋FMT/残差或二维FMT卷积网络，已按用户要求从可用方案及有效FMT证据中删除；旧数值仅为撤销历史，不得用于当前主表、附录或“最佳FMT”结论。固定傅里叶特征本身及明确无卷积的Task1/Task4-c分支不受此撤销影响。以 [FMT禁止空间卷积协议1.1](FMT_no_spatial_convolution_protocol_1.1.md) 为准。
+
+
 2026-09-14：用户要求移植 PyFlowVis 可用 FTLE 超分辨代码，明确二维每个时刻只有
 中心、x+、x−、y+、y−五个对应物质点；后续确认采用当前 Fourier 方法体系，
 三种编码器共用 U-Net 解码器，加入 Raw 路径线对照。

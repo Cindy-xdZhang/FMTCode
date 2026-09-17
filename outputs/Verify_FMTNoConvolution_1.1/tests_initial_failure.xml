@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="40" time="11.455" timestamp="2026-09-17T19:00:52.716724+03:00" hostname="DESKTOP-3HIJVF7"><testcase classname="tests.test_fmt_no_convolution_policy" name="test_hidden_frozen_convolution_is_rejected[Conv1d]" time="0.003" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_hidden_frozen_convolution_is_rejected[Conv2d]" time="0.003" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_hidden_frozen_convolution_is_rejected[Conv3d]" time="0.001" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_hidden_frozen_convolution_is_rejected[ConvTranspose1d]" time="0.002" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_hidden_frozen_convolution_is_rejected[ConvTranspose2d]" time="0.001" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_hidden_frozen_convolution_is_rejected[ConvTranspose3d]" time="0.001" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_retained_task4_models_are_identical_to_previous_revision[original-76738]" time="0.119" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_retained_task4_models_are_identical_to_previous_revision[wide_residual-992386]" time="0.199" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_task4b_only_the_raw_fmt_variant_is_removed" time="0.006" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_2d_fmt_unet_removed_before_config_or_device_access[FTLE_Upsampling_2D_1_1]" time="0.129" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_2d_fmt_unet_removed_before_config_or_device_access[FTLE_Upsampling_2D_1_2]" time="0.097" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_p35_spatial_fusion_removed" time="0.004" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_model_zoo_retired_classes_have_no_implementation" time="0.011" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_direct_task35_models_have_no_convolution" time="0.024" /><testcase classname="tests.test_fmt_no_convolution_policy" name="test_archival_table_bytes_are_hash_locked" time="0.003" /><testcase classname="tests.test_pathline_classifier_3d" name="test_shapes_capacity_and_neighbour_permutation" time="0.041" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_clean_is_exact_and_inputs_not_modified" time="0.006" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_dropout_preserves_endpoints_and_physical_grid" time="0.006" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_frozen_training_and_prediction_interface" time="0.319" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_incomplete_retained_line_rejected" time="0.002" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_mixed_scale_lengths_and_times" time="0.002" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_negative_invalid_flags_rejected" time="0.001" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_padding_does_not_discard_information" time="0.001" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_paired_noise_is_deterministic_and_varies_with_repeat" time="0.002" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_rotations_recover_physical_curl_and_sample_mean" time="0.003" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_stress_default_matches_reference_and_preserves_input" time="0.004" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_stress_rejects_invalid_parameter_grid" time="0.002" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_stress_vae_in_memory_training_is_reproducible" time="3.903" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_truncation_does_not_read_future_points" time="0.004" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_uniform_translation_has_zero_vorticity" time="0.003" /><testcase classname="tests.test_geometric_controls_3d.GeometricControlsTests" name="test_zero_coordinates_are_valid" time="0.002" /><testcase classname="tests.test_task3_main_table" name="test_raw_pca_is_train_only_and_reproducible" time="0.005" /><testcase classname="tests.test_task3_main_table" name="test_fixed_nonzero_alpha_is_allowed_for_ap_selection" time="0.002" /><testcase classname="tests.test_task3_main_table" name="test_raw_method_selection_uses_family_validation_ap" time="0.014" /><testcase classname="tests.test_task3_main_table" name="test_raw_pca_residual_training_smoke" time="0.012"><failure message="NameError: name 'row' is not defined">tmp_path = WindowsPath('C:/Users/xingdi/AppData/Local/Temp/pytest-of-xingdi/pytest-70/test_raw_pca_residual_training0')
+
+    def test_raw_pca_residual_training_smoke(tmp_path):
+        rng = np.random.default_rng(9)
+        train = _split(rng, 40)
+        validation = _split(rng, 16)
+        train = (train[0], train[1], np.tile([0.0, 1.0], 20).astype(np.float32))
+        validation = (
+            validation[0], validation[1],
+            np.tile([0.0, 1.0], 8).astype(np.float32),
+        )
+        stats = {
+            "raw_mean": np.zeros((1, 1, 1, 1), dtype=np.float32),
+            "raw_std": np.ones((1, 1, 1, 1), dtype=np.float32),
+            "fmt_mean": np.zeros((1, 5), dtype=np.float32),
+            "fmt_std": np.ones((1, 5), dtype=np.float32),
+        }
+        checkpoint_dir = tmp_path / "raw" / "checkpoints"
+        checkpoint_dir.mkdir(parents=True)
+        raw_model = PathlineBinaryClassifier3D(
+            variant="raw", fmt_dim=8, temporal_width=16,
+            embedding_dim=32, auxiliary_dim=8,
+        )
+        torch.save({
+            "state_dict": raw_model.state_dict(), "variant": "raw",
+            "dataset": "toy", "seed": 30, "threshold": 0.5,
+            "best_epoch": 1, "normalization": stats,
+            "config": {"model": {
+                "temporal_width": 16, "embedding_dim": 32, "auxiliary_dim": 8,
+            }},
+        }, checkpoint_dir / "toy_raw_seed30.pt")
+        spec = {
+            "raw_checkpoint_dir": str(checkpoint_dir),
+            "auxiliary_source": "raw_pca", "raw_pca_components": 8,
+            "raw_pca_random_state": 7, "raw_wide_parameter_count": 10_000_000,
+            "model": {"embedding_dim": 32, "auxiliary_dim": 8,
+                      "residual_input": "geometry_fmt"},
+            "fusion": {"fixed_alpha": 1.0, "selection_metric": "average_precision"},
+            "training": {"batch_size": 16, "learning_rate": 1e-3,
+                         "weight_decay": 1e-4, "max_epochs": 1,
+                         "patience": 1, "min_delta": 0.0},
+        }
+        with pytest.raises(ForbiddenFMTConvolutionError):
+            _train_one(
+                spec, "toy", 30, (train, validation, None), stats,
+                torch.device("cpu"), tmp_path / "result",
+            )
+&gt;       saved = torch.load(row["checkpoint"], map_location="cpu", weights_only=False)
+                           ^^^
+E       NameError: name 'row' is not defined
+
+tests\test_task3_main_table.py:142: NameError</failure></testcase><testcase classname="tests.test_asap_frame_1_1.ASAPTests" name="test_arbitrary_per_sample_observer" time="0.017" /><testcase classname="tests.test_asap_frame_1_1.ASAPTests" name="test_degeneracy_and_times_rejected" time="0.007" /><testcase classname="tests.test_asap_frame_1_1.ASAPTests" name="test_distances_residual_and_continuous_limit" time="0.277" /><testcase classname="tests.test_asap_frame_1_1.ASAPTests" name="test_model_counts_and_cpu_backward" time="0.069" /><testcase classname="tests.test_asap_frame_1_1.ASAPTests" name="test_pure_rigid_and_center" time="0.012" /></testsuite></testsuites>

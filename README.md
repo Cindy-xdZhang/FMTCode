@@ -1,5 +1,7 @@
 # FMT — Pathline Geometry Features
 
+**2026-09-17硬性协议：FMT完整预测路径禁止空间卷积，包括原始坐标/冻结骨干中的Conv1d、Conv2d、Conv3d及转置卷积。** 旧Raw＋FMT残差、Task4-b raw_fmt、FMT＋U-Net及P35卷积融合方案已撤销。旧名称只会报错，旧成绩不得进入有效FMT表。详见 [项目协议](docs/FMT_no_spatial_convolution_protocol_1.1.md)；本条优先于以下历史状态。
+
 FMT 将中心轨线及其邻居组成的轨线组编码为几何特征。编码器没有可训练参数，
 用于涡区域聚类、无监督表示学习和监督识别；后续聚类器与神经网络仍需拟合。
 
@@ -53,12 +55,10 @@ python -m experiments.FMT_Clustering_3D --input /path/to/field3d.nc
 当前论文实验的入口与配置：
 
 - Task1：`experiments/Run_Task1_3D_Uniform.py`，`config/mainExp_Task1_3D_4.1_uniform.yaml`。
-- Task2/3：`experiments/Run_UniformFMT_Confirmation_3D.py`，分别使用
-  `config/mainExp_Task2_3D_6.2_uniform_confirmation.yaml` 和
-  `config/mainExp_Task3_3D_9.2_uniform_confirmation.yaml`。
-- Task5：`experiments/Evaluate_Task5_Multiscale.py`，`config/mainExp_Task5_3D_1.1_evaluate.yaml`。
-- 更强对照、消融与噪声测试：`experiments/Run_Task123_*.py`，对应配置和提交入口保留在
-  `config/` 与 `ibex_bash/`。这些流程需要已有数据缓存及冻结选择记录，不是单命令下载即跑。
+- Task2：直接特征交互分析，见 `docs/Task2_feature_visual_analysis_protocol_2.1.md`；旧FMT＋VAE指标流程已撤销。
+- Task3/5：无卷积直接分类 `experiments/ASAPFMT_Task35_1_1.py`，配置 `config/mainExp_ASAPFMT_Task35_1.1.json`；包括fmt_c156和ASAP。旧Raw＋FMT卷积融合/残差入口已撤销。
+- Task4-c：`experiments/Task4C_P35GTHead_1_1.py` 对应原p35/h0全连接小网络；c156为加宽残差全连接网络。独立Conv3D对照不是FMT方案。
+- 历史更强对照、消融与噪声配置仅保留核对记录；涉及卷积FMT的分支不再获准运行。
 
 例如查看统一确认流程的参数：
 

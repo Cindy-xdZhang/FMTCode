@@ -1,5 +1,8 @@
 # FTLE 2D 1.2 验证记录
 
+> **2026-09-17撤销状态：** 本文涉及的Raw卷积＋FMT/残差或二维FMT卷积网络，已按用户要求从可用方案及有效FMT证据中删除；旧数值仅为撤销历史，不得用于当前主表、附录或“最佳FMT”结论。固定傅里叶特征本身及明确无卷积的Task1/Task4-c分支不受此撤销影响。以 [FMT禁止空间卷积协议1.1](FMT_no_spatial_convolution_protocol_1.1.md) 为准。
+
+
 本地CPU环境：PyTorch 2.14.0+cpu、NumPy 2.4.6。
 `outputs/Verify_FTLEUpsampling2D_Preflight_1.2/preflight.json`：原基线类哈希、五线输入、
 频谱维数与前缀、物理积分、全部36种方法/倍率/dropout组合的输出、梯度与train/eval行为通过。

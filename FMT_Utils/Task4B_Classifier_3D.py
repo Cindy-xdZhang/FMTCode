@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from FMT_Utils.FMTNoConvolution_1_1 import reject_retired_fmt, assert_no_fmt_convolution
+
 import torch
 from torch import nn
 
@@ -12,11 +14,10 @@ class PathlineMulticlassClassifier3D(nn.Module):
     """Classify a seven-line primitive into four vortex types.
 
     ``raw`` and ``raw_wide`` are no-FMT controls. ``fmt_only`` is the literal
-    FMT-to-neural-network diagnostic requested for Task4-b. ``raw_fmt`` mirrors
-    Task3's effective design by combining local Raw geometry with fixed FMT.
+    FMT-to-neural-network diagnostic. Convolutional raw_fmt has been removed.
     """
 
-    VALID_VARIANTS = {"raw", "raw_wide", "fmt_only", "raw_fmt"}
+    VALID_VARIANTS = {"raw", "raw_wide", "fmt_only"}
 
     def __init__(
         self,
@@ -31,6 +32,8 @@ class PathlineMulticlassClassifier3D(nn.Module):
     ):
         super().__init__()
         variant = str(variant)
+        if variant == "raw_fmt":
+            reject_retired_fmt("PathlineMulticlassClassifier3D.raw_fmt")
         if variant not in self.VALID_VARIANTS:
             raise ValueError(f"unknown multiclass variant {variant!r}")
         if int(num_classes) < 2:
@@ -43,14 +46,14 @@ class PathlineMulticlassClassifier3D(nn.Module):
         auxiliary_dim = int(auxiliary_dim)
 
         self.geometry = None
-        if variant in {"raw", "raw_wide", "raw_fmt"}:
+        if variant in {"raw", "raw_wide"}:
             self.geometry = PathlineGeometryEncoder3D(
                 temporal_width=int(temporal_width),
                 embedding_dim=embedding_dim,
             )
 
         self.auxiliary = None
-        if variant in {"fmt_only", "raw_fmt"}:
+        if variant == "fmt_only":
             self.auxiliary = nn.Sequential(
                 nn.Linear(int(fmt_dim), auxiliary_dim),
                 nn.LayerNorm(auxiliary_dim),
@@ -82,6 +85,9 @@ class PathlineMulticlassClassifier3D(nn.Module):
             nn.Linear(embedding_dim, self.num_classes),
         )
 
+        if variant == "fmt_only":
+            assert_no_fmt_convolution(self)
+
     def forward(
         self, pathlines: torch.Tensor, fmt_features: torch.Tensor | None = None
     ) -> torch.Tensor:
@@ -97,12 +103,6 @@ class PathlineMulticlassClassifier3D(nn.Module):
                 fused = geometry
             elif self.variant == "raw_wide":
                 fused = torch.cat((geometry, self.auxiliary(geometry)), dim=-1)
-            else:
-                if fmt_features is None:
-                    raise ValueError("raw_fmt requires fmt_features")
-                fused = torch.cat(
-                    (geometry, self.auxiliary(fmt_features)), dim=-1
-                )
         logits = self.head(fused)
         if logits.shape[-1] != self.num_classes:
             raise RuntimeError("multiclass head returned the wrong logit width")

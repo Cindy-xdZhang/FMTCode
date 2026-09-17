@@ -1,5 +1,7 @@
 """Frozen-method x2 extension and common x2/x4/x8 interpolation comparison."""
 from __future__ import annotations
+
+from FMT_Utils.FMTNoConvolution_1_1 import reject_retired_fmt, assert_no_fmt_convolution
 import argparse
 import ast
 import csv
@@ -303,6 +305,7 @@ def report(spec,config):
     (root/'report.md').write_text('\n'.join(lines),encoding='utf-8')
 
 def submit(spec,config):
+    reject_retired_fmt("Retired P35 convolutional FTLE fusion")
     locked(spec);root=Path(spec['output']);(root/'slurm').mkdir(parents=True,exist_ok=True)
     assert not (root/'submission.json').exists();jobs=[]
     def dispatch(phase,count=1,gpu=False,dependency=None,minutes=60):
@@ -331,6 +334,7 @@ def submit(spec,config):
     dispatch('report',dependency=combined_check)
 
 def main():
+    reject_retired_fmt("Retired P35 convolutional FTLE fusion")
     parser=argparse.ArgumentParser();parser.add_argument('phase')
     parser.add_argument('--config',default='config/Other_FTLEP35Fusion_2.2.json')
     parser.add_argument('--index',type=int,default=0);parser.add_argument('--device',default='cuda' if torch.cuda.is_available() else 'cpu')

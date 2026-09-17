@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from FMT_Utils.FMTNoConvolution_1_1 import reject_retired_fmt, assert_no_fmt_convolution
+
 import math
 
 import torch
@@ -884,14 +886,16 @@ class PathlineBinaryClassifier3D(nn.Module):
     Variants:
     - ``raw``: geometric encoder only.
     - ``raw_wide``: geometric encoder plus a larger raw-only capacity branch.
-    - ``raw_fmt``: the same geometric encoder plus fixed cached FMT features.
+    Convolutional Raw+FMT variants have been removed by project policy.
     """
 
-    VALID_VARIANTS = {"raw", "raw_wide", "raw_fmt"}
+    VALID_VARIANTS = {"raw", "raw_wide"}
 
     def __init__(self, variant="raw", fmt_dim=161, temporal_width=64,
                  embedding_dim=128, auxiliary_dim=64):
         super().__init__()
+        if variant == "raw_fmt":
+            reject_retired_fmt("PathlineBinaryClassifier3D.raw_fmt")
         if variant not in self.VALID_VARIANTS:
             raise ValueError(f"unknown variant {variant!r}")
         self.variant = str(variant)
@@ -907,12 +911,6 @@ class PathlineBinaryClassifier3D(nn.Module):
                 nn.LayerNorm(auxiliary_dim),
                 nn.GELU(),
             )
-        elif variant == "raw_fmt":
-            self.auxiliary = nn.Sequential(
-                nn.Linear(int(fmt_dim), auxiliary_dim),
-                nn.LayerNorm(auxiliary_dim),
-                nn.GELU(),
-            )
         else:
             self.auxiliary = None
         head_input = embedding_dim + (0 if self.auxiliary is None else auxiliary_dim)
@@ -925,11 +923,7 @@ class PathlineBinaryClassifier3D(nn.Module):
 
     def forward(self, pathlines, fmt_features=None):
         geometry = self.geometry(pathlines)
-        if self.variant == "raw_fmt":
-            if fmt_features is None:
-                raise ValueError("raw_fmt requires fmt_features")
-            fused = torch.cat((geometry, self.auxiliary(fmt_features)), dim=-1)
-        elif self.variant == "raw_wide":
+        if self.variant == "raw_wide":
             fused = torch.cat((geometry, self.auxiliary(geometry)), dim=-1)
         else:
             fused = geometry
@@ -937,385 +931,10 @@ class PathlineBinaryClassifier3D(nn.Module):
 
 
 class PathlineFMTResidualClassifier3D(nn.Module):
-    """Add a trainable FMT correction without changing a frozen Raw model.
-
-    The frozen Raw logit is always available as the ``alpha=0`` case.  Only
-    the FMT auxiliary and residual head are trained.  This separates genuine
-    incremental FMT information from changes to the raw geometry backbone.
-    """
-
-    VALID_HEAD_ARCHITECTURES = {
-        "linear", "mlp", "deep_mlp", "residual_mlp", "gated_fusion",
-        "bilinear_fusion", "attention_fusion",
-    }
-
-    def __init__(self, raw_model, fmt_dim=161, embedding_dim=128,
-                 auxiliary_dim=64, residual_input="geometry_fmt",
-                 head_architecture="mlp", head_hidden_dim=None,
-                 head_depth=2, bilinear_rank=32, attention_heads=4,
-                 head_dropout=0.0, head_normalization="layernorm",
-                 head_activation="gelu",
-                 auxiliary_projection="linear_layernorm_gelu",
-                 auxiliary_hidden_dim=64, auxiliary_block_dims=None,
-                 auxiliary_linear_weight_initialization="default",
-                 auxiliary_linear_weight_initialization_gain=1.0,
-                 auxiliary_linear_bias_initial_scale=1.0,
-                 auxiliary_projection_activation_override="source",
-                 auxiliary_projection_activation_input_scale=1.0,
-                 auxiliary_projection_activation_input_shift=0.0,
-                 auxiliary_projection_activation_residual_mix=0.0,
-                 auxiliary_projection_activation_residual_gain=0.0,
-                 auxiliary_normalization_initial_scale=None,
-                 auxiliary_normalization_initial_bias=None,
-                 auxiliary_dropout=0.0,
-                 auxiliary_classifier_architecture="none",
-                 auxiliary_classifier_hidden_dim=64,
-                 residual_output_initialization="default",
-                 residual_output_initialization_scale=1.0,
-                 auxiliary_normalization_epsilon=None,
-                 auxiliary_noise_std=0.0,
-                 auxiliary_feature_scale=1.0,
-                 auxiliary_post_normalization="none"):
+    """Removed: convolutional FMT is prohibited by project policy."""
+    def __init__(self, *args, **kwargs):
         super().__init__()
-        if not isinstance(raw_model, PathlineBinaryClassifier3D):
-            raise TypeError("raw_model must be PathlineBinaryClassifier3D")
-        if raw_model.variant != "raw":
-            raise ValueError("raw_model must use the raw variant")
-        self.raw_model = raw_model
-        for parameter in self.raw_model.parameters():
-            parameter.requires_grad_(False)
-        embedding_dim = int(embedding_dim)
-        auxiliary_dim = int(auxiliary_dim)
-        if residual_input not in {"geometry_fmt", "fmt_only", "dual"}:
-            raise ValueError(
-                "residual_input must be 'geometry_fmt', 'fmt_only', or 'dual'"
-            )
-        self.residual_input = str(residual_input)
-        self.head_architecture = str(head_architecture)
-        if self.head_architecture not in self.VALID_HEAD_ARCHITECTURES:
-            raise ValueError(
-                f"unknown residual head architecture {self.head_architecture!r}"
-            )
-        fusion_architectures = {
-            "gated_fusion", "bilinear_fusion", "attention_fusion"
-        }
-        if (self.head_architecture in fusion_architectures
-                and self.residual_input != "geometry_fmt"):
-            raise ValueError(
-                f"{self.head_architecture} requires residual_input='geometry_fmt'"
-            )
-        hidden_dim = (
-            embedding_dim if head_hidden_dim is None else int(head_hidden_dim)
-        )
-        if hidden_dim < 1:
-            raise ValueError("head_hidden_dim must be positive")
-        self.head_normalization = str(head_normalization).lower()
-        self.head_activation = str(head_activation).lower()
-        if self.head_architecture != "deep_mlp" and (
-            self.head_normalization != "layernorm"
-            or self.head_activation != "gelu"
-        ):
-            raise ValueError(
-                "head_normalization/head_activation overrides require "
-                "head_architecture='deep_mlp'"
-            )
-        self.auxiliary_projection = str(auxiliary_projection)
-        self.auxiliary_hidden_dim = int(auxiliary_hidden_dim)
-        self.auxiliary_block_dims = (
-            None if auxiliary_block_dims is None
-            else tuple(int(value) for value in auxiliary_block_dims)
-        )
-        self.fmt_encoder = _auxiliary_projection(
-            int(fmt_dim), auxiliary_dim, self.auxiliary_projection,
-            self.auxiliary_hidden_dim, self.auxiliary_block_dims,
-        )
-        self.auxiliary_projection_activation_override = str(
-            auxiliary_projection_activation_override
-        ).lower()
-        self.auxiliary_projection_activation_layer_count = (
-            _override_auxiliary_projection_activations(
-                self.fmt_encoder,
-                self.auxiliary_projection_activation_override,
-            )
-        )
-        if (
-            self.auxiliary_projection_activation_override != "source"
-            and self.auxiliary_projection_activation_layer_count == 0
-        ):
-            raise ValueError(
-                "auxiliary projection activation override requires at least "
-                "one existing activation layer"
-            )
-        self.auxiliary_projection_activation_input_scale = float(
-            auxiliary_projection_activation_input_scale
-        )
-        self.auxiliary_projection_activation_input_scale_layer_count = (
-            _scale_auxiliary_projection_activation_inputs(
-                self.fmt_encoder,
-                self.auxiliary_projection_activation_input_scale,
-            )
-        )
-        if (
-            self.auxiliary_projection_activation_input_scale != 1.0
-            and self.auxiliary_projection_activation_input_scale_layer_count == 0
-        ):
-            raise ValueError(
-                "auxiliary projection activation input scale requires at "
-                "least one existing activation layer"
-            )
-        self.auxiliary_projection_activation_input_shift = float(
-            auxiliary_projection_activation_input_shift
-        )
-        self.auxiliary_projection_activation_input_shift_layer_count = (
-            _shift_auxiliary_projection_activation_inputs(
-                self.fmt_encoder,
-                self.auxiliary_projection_activation_input_shift,
-            )
-        )
-        if (
-            self.auxiliary_projection_activation_input_shift != 0.0
-            and self.auxiliary_projection_activation_input_shift_layer_count
-            == 0
-        ):
-            raise ValueError(
-                "auxiliary projection activation input shift requires at "
-                "least one existing activation layer"
-            )
-        self.auxiliary_projection_activation_residual_mix = float(
-            auxiliary_projection_activation_residual_mix
-        )
-        self.auxiliary_projection_activation_residual_mix_layer_count = (
-            _mix_auxiliary_projection_activation_residuals(
-                self.fmt_encoder,
-                self.auxiliary_projection_activation_residual_mix,
-            )
-        )
-        if (
-            self.auxiliary_projection_activation_residual_mix != 0.0
-            and self.auxiliary_projection_activation_residual_mix_layer_count
-            == 0
-        ):
-            raise ValueError(
-                "auxiliary projection activation residual mix requires at "
-                "least one existing activation layer"
-            )
-        self.auxiliary_projection_activation_residual_gain = float(
-            auxiliary_projection_activation_residual_gain
-        )
-        self.auxiliary_projection_activation_residual_gain_layer_count = (
-            _add_auxiliary_projection_activation_residuals(
-                self.fmt_encoder,
-                self.auxiliary_projection_activation_residual_gain,
-            )
-        )
-        if (
-            self.auxiliary_projection_activation_residual_gain != 0.0
-            and self.auxiliary_projection_activation_residual_gain_layer_count
-            == 0
-        ):
-            raise ValueError(
-                "auxiliary projection activation residual gain requires at "
-                "least one existing activation layer"
-            )
-        self.auxiliary_post_normalization = str(
-            auxiliary_post_normalization
-        ).lower()
-        self.auxiliary_post_normalizer = _FixedAuxiliaryNormalization(
-            self.auxiliary_post_normalization
-        )
-        self.auxiliary_normalization_initial_scale = (
-            None if auxiliary_normalization_initial_scale is None
-            else float(auxiliary_normalization_initial_scale)
-        )
-        self.auxiliary_normalization_initial_bias = (
-            None if auxiliary_normalization_initial_bias is None
-            else float(auxiliary_normalization_initial_bias)
-        )
-        self.auxiliary_normalization_epsilon = (
-            None if auxiliary_normalization_epsilon is None
-            else float(auxiliary_normalization_epsilon)
-        )
-        self.auxiliary_normalization_epsilon_layer_count = (
-            _set_auxiliary_normalization_epsilon(
-                self.fmt_encoder, self.auxiliary_normalization_epsilon
-            )
-        )
-        (
-            self.auxiliary_normalization_layer_count,
-            self.auxiliary_normalization_bias_layer_count,
-        ) = _initialize_auxiliary_normalization(
-            self.fmt_encoder,
-            self.auxiliary_normalization_initial_scale,
-            self.auxiliary_normalization_initial_bias,
-        )
-        auxiliary_dropout = float(auxiliary_dropout)
-        if not 0.0 <= auxiliary_dropout < 1.0:
-            raise ValueError("auxiliary_dropout must be in [0, 1)")
-        # This regularizer acts only on the projected auxiliary representation,
-        # before it is fused with the frozen Raw geometry.  Dropout has no
-        # parameters or checkpoint state, so p=0 remains byte-compatible with
-        # historical residual checkpoints.
-        self.auxiliary_dropout = nn.Dropout(auxiliary_dropout)
-        self.auxiliary_noise_std = float(auxiliary_noise_std)
-        self.auxiliary_noise = _TrainingGaussianNoise(self.auxiliary_noise_std)
-        self.auxiliary_feature_scale = float(auxiliary_feature_scale)
-        if (not math.isfinite(self.auxiliary_feature_scale)
-                or self.auxiliary_feature_scale < 0.0):
-            raise ValueError(
-                "auxiliary_feature_scale must be finite and non-negative"
-            )
-        residual_width = (
-            embedding_dim + auxiliary_dim
-            if self.residual_input in {"geometry_fmt", "dual"} else auxiliary_dim
-        )
-        self.fusion_head = None
-        if self.head_architecture == "linear":
-            self.residual_head = nn.Linear(residual_width, 1)
-        elif self.head_architecture == "mlp":
-            # Keep the historical default byte-for-byte compatible with old
-            # checkpoints: one embedding-width hidden layer and no Dropout.
-            self.residual_head = nn.Sequential(
-                nn.Linear(residual_width, embedding_dim),
-                nn.LayerNorm(embedding_dim),
-                nn.GELU(),
-                nn.Linear(embedding_dim, 1),
-            )
-        elif self.head_architecture == "deep_mlp":
-            self.residual_head = _dense_head(
-                residual_width, hidden_dim, head_depth, head_dropout,
-                self.head_normalization, self.head_activation,
-            )
-        elif self.head_architecture == "residual_mlp":
-            self.residual_head = _ResidualMLPHead(
-                residual_width, hidden_dim, head_depth, head_dropout
-            )
-        elif self.head_architecture == "gated_fusion":
-            self.residual_head = None
-            self.fusion_head = _GatedFusionHead(
-                embedding_dim, auxiliary_dim, hidden_dim, head_dropout
-            )
-        elif self.head_architecture == "bilinear_fusion":
-            self.residual_head = None
-            self.fusion_head = _LowRankBilinearFusionHead(
-                embedding_dim, auxiliary_dim, hidden_dim, bilinear_rank,
-                head_dropout,
-            )
-        elif self.head_architecture == "attention_fusion":
-            self.residual_head = None
-            self.fusion_head = _AttentionFusionHead(
-                embedding_dim, auxiliary_dim, hidden_dim, attention_heads,
-                head_dropout,
-            )
-        self.fmt_only_head = None
-        if self.residual_input == "dual":
-            self.fmt_only_head = nn.Sequential(
-                nn.Linear(auxiliary_dim, embedding_dim),
-                nn.LayerNorm(embedding_dim),
-                nn.GELU(),
-                nn.Linear(embedding_dim, 1),
-            )
-        # Build the training-only classifier after every inference module so
-        # enabling deep supervision cannot change their random initialization.
-        self.auxiliary_classifier_architecture = str(
-            auxiliary_classifier_architecture
-        ).lower()
-        auxiliary_classifier_hidden_dim = int(auxiliary_classifier_hidden_dim)
-        if auxiliary_classifier_hidden_dim < 1:
-            raise ValueError("auxiliary_classifier_hidden_dim must be positive")
-        if self.auxiliary_classifier_architecture == "none":
-            self.auxiliary_classifier = None
-        elif self.auxiliary_classifier_architecture == "linear":
-            self.auxiliary_classifier = nn.Linear(auxiliary_dim, 1)
-        elif self.auxiliary_classifier_architecture == "mlp":
-            self.auxiliary_classifier = nn.Sequential(
-                nn.Linear(auxiliary_dim, auxiliary_classifier_hidden_dim),
-                nn.GELU(),
-                nn.Linear(auxiliary_classifier_hidden_dim, 1),
-            )
-        else:
-            raise ValueError(
-                "auxiliary_classifier_architecture must be 'none', "
-                "'linear', or 'mlp'"
-            )
-        self.residual_output_initialization = str(
-            residual_output_initialization
-        ).lower()
-        self.residual_output_initialization_scale = float(
-            residual_output_initialization_scale
-        )
-        _initialize_residual_outputs(
-            (self.residual_head, self.fusion_head, self.fmt_only_head),
-            self.residual_output_initialization,
-            self.residual_output_initialization_scale,
-        )
-        self.auxiliary_linear_weight_initialization = str(
-            auxiliary_linear_weight_initialization
-        ).lower()
-        self.auxiliary_linear_weight_initialization_gain = float(
-            auxiliary_linear_weight_initialization_gain
-        )
-        self.auxiliary_linear_weight_layer_count = (
-            _initialize_auxiliary_linear_weights(
-                self.fmt_encoder,
-                self.auxiliary_linear_weight_initialization,
-                self.auxiliary_linear_weight_initialization_gain,
-            )
-        )
-        self.auxiliary_linear_bias_initial_scale = float(
-            auxiliary_linear_bias_initial_scale
-        )
-        self.auxiliary_linear_bias_layer_count = (
-            _scale_auxiliary_linear_biases(
-                self.fmt_encoder, self.auxiliary_linear_bias_initial_scale
-            )
-        )
-
-    def forward_components(self, pathlines, fmt_features,
-                           return_auxiliary=False):
-        if fmt_features is None:
-            raise ValueError("FMT residual classifier requires fmt_features")
-        with torch.no_grad():
-            geometry = self.raw_model.geometry(pathlines)
-            raw_logit = self.raw_model.head(geometry).squeeze(-1)
-        auxiliary = self.auxiliary_post_normalizer(
-            self.fmt_encoder(fmt_features)
-        )
-        auxiliary = self.auxiliary_noise(self.auxiliary_dropout(auxiliary))
-        # Preserve the historical graph exactly for the registered control.
-        if self.auxiliary_feature_scale != 1.0:
-            auxiliary = auxiliary * self.auxiliary_feature_scale
-        residual_input = (
-            torch.cat((geometry.detach(), auxiliary), dim=-1)
-            if self.residual_input in {"geometry_fmt", "dual"} else auxiliary
-        )
-        residual_logit = (
-            self.fusion_head(geometry.detach(), auxiliary).squeeze(-1)
-            if self.fusion_head is not None
-            else self.residual_head(residual_input).squeeze(-1)
-        )
-        if self.fmt_only_head is not None:
-            residual_logit = residual_logit + self.fmt_only_head(auxiliary).squeeze(-1)
-        if return_auxiliary:
-            return raw_logit, residual_logit, auxiliary
-        return raw_logit, residual_logit
-
-    def auxiliary_classification_logits(self, auxiliary):
-        """Classify the projected auxiliary representation during training.
-
-        The auxiliary head is deliberately absent from the inference fusion.
-        It only provides direct supervision to the shared projection, and the
-        exact same head is trained for the FMT and train-only Raw-PCA arms.
-        """
-        if self.auxiliary_classifier is None:
-            raise RuntimeError(
-                "auxiliary classification logits require a configured "
-                "auxiliary classifier"
-            )
-        return self.auxiliary_classifier(auxiliary).squeeze(-1)
-
-    def forward(self, pathlines, fmt_features, alpha=1.0):
-        raw_logit, residual_logit = self.forward_components(pathlines, fmt_features)
-        return raw_logit + float(alpha) * residual_logit
+        reject_retired_fmt("PathlineFMTResidualClassifier3D")
 
 
 def residual_model_kwargs(model_spec):

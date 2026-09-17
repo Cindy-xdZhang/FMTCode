@@ -1,5 +1,9 @@
 # 六流场Task1–3：模式a与模式b
 
+<!-- fmt-convolution-withdrawal-notice-20260917 -->
+> **2026-09-17撤销通知：** 本文旧Raw卷积＋FMT/残差及二维FMT卷积方案已撤销，不能重跑或用作当前FMT主表、附录、“最佳方法”证据。历史数值仅供核对。无卷积的固定特征和全连接分支另行保留；以 [FMT禁止空间卷积协议](FMT_no_spatial_convolution_protocol_1.1.md) 为准。
+<!-- fmt-convolution-withdrawal-notice-20260917-end -->
+
 版本 `Other_Task123_PaperTriptychs_1.2`。固定流场顺序：Half-cylinder Re160、Re640、Re6400、
 Tangaroa、Boeing747、Delta-wing原始LBM。每流场三任务，各有论文版和PPT版。
 2026-09-06全部完成：18组三联图、36张版式图片、126个格式文件；

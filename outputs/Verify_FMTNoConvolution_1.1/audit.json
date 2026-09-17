@@ -1,0 +1,311 @@
+{
+  "version": "Verify_FMTNoConvolution_1.1",
+  "status": "PASS",
+  "prechange_commit": "52f6284cbf413645605df6283c890140cf379c3a",
+  "tests": 40,
+  "failures": 0,
+  "tests_seconds": 9.609,
+  "initial_test_failure": "One obsolete checkpoint assertion left after replacing a retired training smoke test; removed it. Initial report retained.",
+  "warning": "Existing numpy.ndarray binary-size RuntimeWarning during FTLE import; no test failure.",
+  "ibex_queue_check": "2026-09-17: squeue -u zhanx0o returned zero jobs; no cancellation required.",
+  "retained_models": {
+    "p35_h0": {
+      "parameters": 76738,
+      "convolution_modules": 0,
+      "same_weights_and_output_as_prechange": true
+    },
+    "fmt_c156": {
+      "parameters": 992386,
+      "convolution_modules": 0,
+      "same_weights_and_output_as_prechange": true
+    },
+    "asap_fmt": {
+      "convolution_modules": 0
+    }
+  },
+  "remaining_convolution_calls": [
+    {
+      "path": "FMT_Utils/FTLE_Baselines_2D.py",
+      "calls": [
+        {
+          "line": 39,
+          "operator": "ConvTranspose2d"
+        },
+        {
+          "line": 65,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 66,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 67,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 14,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 17,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 91,
+          "operator": "Conv2d"
+        }
+      ]
+    },
+    {
+      "path": "FMT_Utils/model_zoo.py",
+      "calls": [
+        {
+          "line": 145,
+          "operator": "ConvTranspose2d"
+        },
+        {
+          "line": 202,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 221,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 267,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 284,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 405,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 406,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 410,
+          "operator": "ConvTranspose2d"
+        },
+        {
+          "line": 427,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 441,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 466,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 467,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 468,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 122,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 125,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 493,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 213,
+          "operator": "ConvTranspose2d"
+        },
+        {
+          "line": 215,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 276,
+          "operator": "ConvTranspose2d"
+        },
+        {
+          "line": 278,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 434,
+          "operator": "ConvTranspose2d"
+        },
+        {
+          "line": 436,
+          "operator": "Conv2d"
+        }
+      ]
+    },
+    {
+      "path": "FMT_Utils/PathlineClassifier_3D.py",
+      "calls": [
+        {
+          "line": 836,
+          "operator": "Conv1d"
+        },
+        {
+          "line": 839,
+          "operator": "Conv1d"
+        },
+        {
+          "line": 842,
+          "operator": "Conv1d"
+        }
+      ]
+    },
+    {
+      "path": "FMT_Utils/Task4C_HairpinBinary_2_1.py",
+      "calls": [
+        {
+          "line": 189,
+          "operator": "Conv3d"
+        },
+        {
+          "line": 190,
+          "operator": "Conv3d"
+        },
+        {
+          "line": 191,
+          "operator": "Conv3d"
+        }
+      ]
+    },
+    {
+      "path": "FMT_Utils/Task4C_LinePooling_4_3.py",
+      "calls": [
+        {
+          "line": 79,
+          "operator": "Conv3d"
+        }
+      ]
+    },
+    {
+      "path": "FMT_Utils/Task4C_Multiscale_4_1.py",
+      "calls": [
+        {
+          "line": 121,
+          "operator": "Conv3d"
+        },
+        {
+          "line": 122,
+          "operator": "Conv3d"
+        },
+        {
+          "line": 123,
+          "operator": "Conv3d"
+        }
+      ]
+    },
+    {
+      "path": "experiments/FTLE_Upsampling_2D_1_1.py",
+      "calls": [
+        {
+          "line": 80,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 82,
+          "operator": "Conv2d"
+        }
+      ]
+    },
+    {
+      "path": "experiments/FTLE_Upsampling_2D_1_2.py",
+      "calls": [
+        {
+          "line": 84,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 86,
+          "operator": "Conv2d"
+        }
+      ]
+    },
+    {
+      "path": "experiments/Task4C_ConvCapacity_4_18.py",
+      "calls": [
+        {
+          "line": 33,
+          "operator": "Conv3d"
+        }
+      ]
+    },
+    {
+      "path": "experiments/Task4C_InstanceCoverage_9_15.py",
+      "calls": [
+        {
+          "line": 83,
+          "operator": "Conv3d"
+        }
+      ]
+    },
+    {
+      "path": "experiments/Task4C_InstanceCoverage_9_15_v2.py",
+      "calls": [
+        {
+          "line": 365,
+          "operator": "Conv3d"
+        }
+      ]
+    },
+    {
+      "path": "experiments/Task4C_TrainingMemorization_4_12.py",
+      "calls": [
+        {
+          "line": 104,
+          "operator": "Conv3d"
+        }
+      ]
+    },
+    {
+      "path": "pnn/models/point_pn.py",
+      "calls": [
+        {
+          "line": 100,
+          "operator": "Conv1d"
+        },
+        {
+          "line": 116,
+          "operator": "Conv2d"
+        },
+        {
+          "line": 122,
+          "operator": "Conv2d"
+        }
+      ]
+    }
+  ],
+  "remaining_call_scope": "Independent non-FMT Raw/voxel/upsampling baselines or unused Point-PN library. Retired FMT constructors fail before these paths. New functional/custom operators still require source review.",
+  "limitations": "Historical git/Ibex snapshots and prediction archives remain historical, not authorized runnable FMT recipes. No new training or performance claim.",
+  "final_source_sha256": {
+    "FMT_Utils/FMTNoConvolution_1_1.py": "8eba5ec1afd7d158fabd40298091f1c95787334ba3f3d22b93c5e34fb40ffd00",
+    "FMT_Utils/FTLE_Fusion_2D_2_1.py": "3787f0bbe74be23fbf663a9ac0bc6cbb6634d8e53a617eb0cf5404952a24f0a7",
+    "FMT_Utils/PathlineClassifier_3D.py": "cd7b8d843fb1ef661f0c5a57bb6b4b59238c77f7167845d8ec227bb290969f84",
+    "FMT_Utils/Task4B_Classifier_3D.py": "16de89ec93d8080e28ed308260f584e9c49f76990cc4846d22e7f8b4201760f7",
+    "FMT_Utils/Task4C_Encoders_4_15.py": "a5b303ffd9a2b149a1a63b00795574234be12a07ab271c8401f68509bd500caa",
+    "FMT_Utils/Task4C_FPSAugmentSearch_1_1.py": "e409442b5deb6774891f5ef303bb14a9c5e20bd913848b1bfa569430ca601f90",
+    "FMT_Utils/model_zoo.py": "6839637c76aeada9e1bafeada5c8a4938340d23251debaab01cab800007a25f8",
+    "docs/FMT_no_spatial_convolution_protocol_1.1.md": "78490eb30016059ab9ea8313109e39b5c6b5d3debe886b80d50712f6da29b09c",
+    "experiments/FTLE_P35_Final_2_1.py": "2b25b094754f71b88582a82822f715df7f76bb4b2c8733236ef4bea28432b5fb",
+    "experiments/FTLE_P35_Fusion_2_1.py": "9d639088d42cde64a50c9d124466a7ed8f00011d6db9c6034ee2988441217fc6",
+    "experiments/FTLE_P35_Scales_2_2.py": "1802c4fea1075bcd9a42bee749c7d513b9164bd34c5c468383e267345e099490",
+    "experiments/FTLE_Upsampling_2D_1_1.py": "9fe97fc4171f064ae8a4e2ba63bb4c5465212b5a7a1001f1e9f9a6536db90712",
+    "experiments/FTLE_Upsampling_2D_1_2.py": "f40891459c38c7e49b45813de94326ca151aa16e420592c168e7b65dc9b3d80e",
+    "experiments/Verify_Task3_FMTResidual.py": "ba860c38886c3816758e32bc8473fb34b88061b7a02ab79a7dfbd3afecd18108"
+  }
+}

@@ -1,5 +1,9 @@
 # Ibex 总实验运行表
 
+<!-- fmt-convolution-withdrawal-notice-20260917 -->
+> **2026-09-17撤销通知：** 本文旧Raw卷积＋FMT/残差及二维FMT卷积方案已撤销，不能重跑或用作当前FMT主表、附录、“最佳方法”证据。历史数值仅供核对。无卷积的固定特征和全连接分支另行保留；以 [FMT禁止空间卷积协议](FMT_no_spatial_convolution_protocol_1.1.md) 为准。
+<!-- fmt-convolution-withdrawal-notice-20260917-end -->
+
 本文件记录从 2026-08-23 起提交到 Ibex 的**每一个进程**。方法级汇总结论仍写入 `docs/experiment_log.md`；本表是一行一个 scheduler job 的运行证据。历史本地实验不补造 Ibex 设备信息。
 
 ## 强制登记规则

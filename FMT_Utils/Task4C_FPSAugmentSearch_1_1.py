@@ -1,6 +1,8 @@
 """Frozen-bundle resampling, train-only augmentation, and Fourier classifiers."""
 from __future__ import annotations
 
+from FMT_Utils.FMTNoConvolution_1_1 import reject_retired_fmt, assert_no_fmt_convolution
+
 import math
 import torch
 from torch import nn
@@ -198,6 +200,7 @@ class FourierClassifier(nn.Module):
         width = POOLS[pool]['feature_dimensions']
         if architecture == 'original':
             self.network = task4_model(width, profile)
+            assert_no_fmt_convolution(self)
             return
         if pool != 'p35' or profile != 'h0':
             raise ValueError('New architecture comparison fixes the p35 Fourier representation')
@@ -223,6 +226,7 @@ class FourierClassifier(nn.Module):
         else:
             raise ValueError(architecture)
         self.head = nn.Sequential(mlp(output_width, 256), mlp(256, 128), nn.Linear(128, 2))
+        assert_no_fmt_convolution(self)
 
     def forward(self, tokens, neighbors=None):
         if self.architecture == 'original':

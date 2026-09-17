@@ -1,6 +1,8 @@
 """Reproducible migration of FTLE upsampling to current five-line FMT encoders."""
 from __future__ import annotations
 
+from FMT_Utils.FMTNoConvolution_1_1 import reject_retired_fmt, assert_no_fmt_convolution
+
 import argparse
 import copy
 import csv
@@ -25,7 +27,7 @@ from FMT_Utils.FTLE_Data_2D import (Velocity, evaluation_mask, file_sha256, ftle
 from FMT_Utils.FTLE_Encoders_2D import encode
 from FMT_Utils.FTLE_Temporal_Audit_2D import certify
 
-GEOMETRY = ('raw', 'fmt', 'fmt_objective_ntod_v2', 'fmt_v5')
+GEOMETRY = ('raw',)
 
 
 def dump(path, value):
@@ -65,6 +67,8 @@ def provenance(config):
 class Model(nn.Module):
     def __init__(self, spec, method, scale, width=0, dropout=0.):
         super().__init__()
+        if method not in ("espcn", "unet", "raw"):
+            reject_retired_fmt(f"FTLE U-Net + {method}")
         self.method, self.scale = method, scale
         self.dropout = nn.Dropout2d(dropout)
         cfg = SimpleNamespace(model=SimpleNamespace(**spec['model']))
@@ -424,6 +428,7 @@ def event(spec, config, phase, state, code=None):
 
 
 def submit(spec, config):
+    reject_retired_fmt("Legacy FTLE FMT convolution experiment")
     root = Path(spec['output']); (root/'slurm').mkdir(parents=True,exist_ok=True)
     jobs = []
     def dispatch(phase, count, dependency=None, gpu=False):

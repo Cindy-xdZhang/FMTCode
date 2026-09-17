@@ -1,0 +1,423 @@
+{
+  "status": "PASS",
+  "files_checked": 61,
+  "authorization": "User: delete every convolutional FMT scheme and make no-spatial-convolution a project rule.",
+  "scope_explanation": "Large deletion is primarily two historical FMT model implementations plus withdrawal of their old performance tables. Tables have byte-preserved, hash-locked snapshots. No data/prediction arrays or independent Conv baselines deleted.",
+  "unrelated_paths_excluded": [
+    "docs/Task4C_GT_head_coverage_protocol_1.1.md",
+    "docs/Task4C_handoff.md",
+    "experiments/Build_Task4C_GTHeadViewer_1_1.py",
+    "experiments/templates/task4c_gt_coverage_1_1.js",
+    "docs/Other_Task2_VisualAnalysis_1.1.md",
+    "docs/mainExp_Task23_3D_4.1.md"
+  ],
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "staged_sha256": "3b2d151a7249c5898f9bc2af50ff569d5088ae84097d7e9788f4ab86bc174da2",
+      "category": "only new policy/withdrawal block",
+      "unrelated_worktree_changes_excluded": true
+    },
+    {
+      "path": "FMT_Utils/FMTNoConvolution_1_1.py",
+      "staged_sha256": "8eba5ec1afd7d158fabd40298091f1c95787334ba3f3d22b93c5e34fb40ffd00",
+      "category": "new full-model prohibition and regression checks"
+    },
+    {
+      "path": "FMT_Utils/FTLE_Fusion_2D_2_1.py",
+      "staged_sha256": "3787f0bbe74be23fbf663a9ac0bc6cbb6634d8e53a617eb0cf5404952a24f0a7",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "FusionSR",
+        "ResidualBlock"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "FMT_Utils/PathlineClassifier_3D.py",
+      "staged_sha256": "cd7b8d843fb1ef661f0c5a57bb6b4b59238c77f7167845d8ec227bb290969f84",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "PathlineBinaryClassifier3D",
+        "PathlineFMTResidualClassifier3D"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "FMT_Utils/Task4B_Classifier_3D.py",
+      "staged_sha256": "16de89ec93d8080e28ed308260f584e9c49f76990cc4846d22e7f8b4201760f7",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "PathlineMulticlassClassifier3D"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "FMT_Utils/Task4C_Encoders_4_15.py",
+      "staged_sha256": "a5b303ffd9a2b149a1a63b00795574234be12a07ab271c8401f68509bd500caa",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "EncoderLinePooling"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "FMT_Utils/Task4C_FPSAugmentSearch_1_1.py",
+      "staged_sha256": "e409442b5deb6774891f5ef303bb14a9c5e20bd913848b1bfa569430ca601f90",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "FourierClassifier"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "FMT_Utils/model_zoo.py",
+      "staged_sha256": "6839637c76aeada9e1bafeada5c8a4938340d23251debaab01cab800007a25f8",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "AttentionFusion",
+        "FTLEUpsamplingFMT_Unet",
+        "FTLEupsamplingDCT_FMT_UnetV2",
+        "FTLEupsamplingFMT_UnetV2",
+        "FTLEupsamplingFMT_UnetV3",
+        "PointWiseFMT_Regressor"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "README.md",
+      "staged_sha256": "69736cd50fd487fb076e8287d6641746ced9cfe89ada068747ff6588ee5bb8fc",
+      "category": "publish policy and remove retired FMT launch recommendations"
+    },
+    {
+      "path": "config/README.md",
+      "staged_sha256": "26e92810567d691c246dca19f207ddedfb13a06ffdb101266317a2105b9d8e68",
+      "category": "new full-model prohibition and regression checks"
+    },
+    {
+      "path": "docs/FMT_no_spatial_convolution_protocol_1.1.md",
+      "staged_sha256": "17b044f87f931923ea2aa0f0a981a189bd61b9c1004cf7f68bbd2ab671f54f38",
+      "category": "new full-model prohibition and regression checks"
+    },
+    {
+      "path": "docs/FMT_p35_h0_structure_2.2_zh.md",
+      "staged_sha256": "47241125cb07e9207f49561e3196653d2990405ba3c372bb1931abc5918950ae",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FMT_v8_norm_frequency_protocol_3.1.md",
+      "staged_sha256": "e60303580ff8c596434fe47ca947b2bfe35b6e2009dc2d89c0fb1ec6b9d930d4",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FMT_v8_protocol_1.1.md",
+      "staged_sha256": "a641dcb8abe57de0a801cb55c3739c6122f638e6f19da81d74b3911222ac2eb1",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FMT_v8_search_protocol_2.1.md",
+      "staged_sha256": "71ca12b18dcd1b677b73519da1d64842eb4ec0a10b9a4f88d6b5b1747b034be3",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FMT_v8_search_protocol_2.2.md",
+      "staged_sha256": "559320578ab6f4a37358adb394176c79a16e36179bd2d935ecd759cd6ecb69ac",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FTLE_p35_cuda_verification_2.1.md",
+      "staged_sha256": "a052f757d9c69bea62582a196a340beec2c2746c95206d5848c9ba68a3b5e017",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FTLE_p35_fusion_figure_contract_2.1.md",
+      "staged_sha256": "ec7699f1676d4e542f7abd17941c5b8a7ba6e398afad2d3c0de3df964ff06fd1",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FTLE_p35_fusion_figure_validation_2.1.md",
+      "staged_sha256": "a78cc6c5c48385d56916dbadcdbec2790887786f26965c7629a4e9206ba8b684",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FTLE_p35_fusion_mechanism_2.1_zh.md",
+      "staged_sha256": "c1c5da24b45b439b67c5ea91ce4d372f6982b9d441a5fe46b7f12fcf54f4e272",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FTLE_p35_fusion_protocol_2.1.md",
+      "staged_sha256": "53cdfcb00b9b8d4c575f0e8d66a77ba91ce64bbe526befb01bf1de6715705284",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FTLE_p35_fusion_validation_2.1.md",
+      "staged_sha256": "b1f2e8f3611c91a839d2a187ddbca05ba5cf6356ec1e54fce416026b228e1221",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FTLE_p35_numerical_audit_2.1.md",
+      "staged_sha256": "c189755eeffa7de41df98e5a60cdcfb3c984db073b4e0bcc149f75bc05a151a1",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FTLE_p35_scales_protocol_2.2.md",
+      "staged_sha256": "bb67991b5ac0c19a9d5411ae4f9e80b12a106e6536d07c670c351f698c00433e",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FTLE_p35_scales_validation_2.2.md",
+      "staged_sha256": "e3eebce7400d36662cb6671e084828e2540d4011b912edc5e70bd947bb8c378c",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FTLE_upsampling_2d_protocol_1.1.md",
+      "staged_sha256": "054298b387252580bcdee32b665521ecf012901780304474b448bab4758f033b",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FTLE_upsampling_2d_protocol_1.2.md",
+      "staged_sha256": "04f8792c743cfba8fe87908b8402fe3144a3aad1f013b0abd9ec7d1266bfbb2d",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FTLE_upsampling_2d_validation_1.1.md",
+      "staged_sha256": "a7202c67330e5d4806069cd9270995fd2488cbb7e15630f3c5df8e6f6306a335",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/FTLE_upsampling_2d_validation_1.2.md",
+      "staged_sha256": "e2ea925d840d62c63e0d4dc9da61c2b99f9fc151532071d19bd2ea573b7922fc",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/Other_Task123_PaperTriptychs_1.1.md",
+      "staged_sha256": "6c11aa3510f9412971332259ea403a5b301dcbea830d621d993ba8f006e69936",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/Other_Task123_PaperTriptychs_1.2.md",
+      "staged_sha256": "5aa399dd413f01690c1c6afa45f00c8b212b13691f9170822b324b784ed6f484",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/Task1235_angle_features_protocol_1.1.md",
+      "staged_sha256": "dbfbc3f75fb4ca1874b4813409721485ee5a5ed405aef8fe25025a6b973eaaa9",
+      "category": "only new policy/withdrawal block",
+      "unrelated_worktree_changes_excluded": true
+    },
+    {
+      "path": "docs/Verify_experiments.md",
+      "staged_sha256": "b8f37211d0211057bba121fdbdec3516254e68adfb2021638b8f712964da6094",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/archive/retired_fmt_convolution_20260917/README.md",
+      "staged_sha256": "e4f8a9ec1e459253284b835bdc95e0a6f36782f70756028087e56d240bbb7502",
+      "category": "byte-preserved pre-withdrawal evidence; no runnable Python"
+    },
+    {
+      "path": "docs/archive/retired_fmt_convolution_20260917/manifest.json",
+      "staged_sha256": "02cd6ceef5bae64d2f4fbbf056d16268c87efd3d12253cffe82873473ae085b4",
+      "category": "byte-preserved pre-withdrawal evidence; no runnable Python"
+    },
+    {
+      "path": "docs/archive/retired_fmt_convolution_20260917/paper_tables_ftle_2d.md",
+      "staged_sha256": "6b9218f80a12eb3b2051b8b5b6951402c8f618f791e6b70628c6bfcec4b5a7b6",
+      "category": "byte-preserved pre-withdrawal evidence; no runnable Python"
+    },
+    {
+      "path": "docs/archive/retired_fmt_convolution_20260917/paper_tables_tasks_3d.md",
+      "staged_sha256": "2cf48bdeab967999dba506f2048f315879aed84c1adf0c2f15c9c7f297ab1e71",
+      "category": "byte-preserved pre-withdrawal evidence; no runnable Python"
+    },
+    {
+      "path": "docs/experiment_log.md",
+      "staged_sha256": "98676510e966062eef18169f33f2fb584e5a496f594e0d3fb47fee9a280062bb",
+      "category": "only new policy/withdrawal block",
+      "unrelated_worktree_changes_excluded": true
+    },
+    {
+      "path": "docs/ibex_run_registry.md",
+      "staged_sha256": "d41bc8f171d4ab8483bc71b012ca62a7f58f0ad90b268ffcb98fe389442c0a1b",
+      "category": "only new policy/withdrawal block",
+      "unrelated_worktree_changes_excluded": true
+    },
+    {
+      "path": "docs/mainExp_Task3_3D.md",
+      "staged_sha256": "3c5f5d9ef66186793735db4fb87fda1939b0e98e983db29c231efa0f85963ccc",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/mainExp_Task4B_1.1.md",
+      "staged_sha256": "12ab5d80512a93d9d90847c51c540e8ce74f605f9038d1dafbadcd1a32ec3248",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/mainExp_Task5_3D_1.1.md",
+      "staged_sha256": "f12d5696b2c60fd7b642e526f080e9c912ba5da4aa539091c55a2d03ad4e635e",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/paper_tables_ftle_2d.md",
+      "staged_sha256": "296aaad0063d695f18a0b28b881795d88410bbf575f85c2a6e1e2c6d174ec158",
+      "category": "withdraw unsafe FMT result sections; original bytes preserved in hash-locked archive"
+    },
+    {
+      "path": "docs/paper_tables_tasks_3d.md",
+      "staged_sha256": "d3a510697acf51ed2fa3e63c7ce1f305983016a45452a05eefebec4223c152a9",
+      "category": "withdraw unsafe FMT result sections; original bytes preserved in hash-locked archive"
+    },
+    {
+      "path": "docs/plotting_methods_catalog.md",
+      "staged_sha256": "b2b50ebd4e366e9f4d2c349d1dacb6a3f5753a5d912cc081591122de378ec08b",
+      "category": "withdrawal notice only",
+      "historical_document_body_unchanged": true
+    },
+    {
+      "path": "docs/research_tasks_and_protocol.md",
+      "staged_sha256": "4a5d217dd1063ba9b0dec343507f8a4dcb3d441b3aca662f1c3c11cffbfced5e",
+      "category": "only new policy/withdrawal block",
+      "unrelated_worktree_changes_excluded": true
+    },
+    {
+      "path": "experiments/FTLE_P35_Final_2_1.py",
+      "staged_sha256": "2b25b094754f71b88582a82822f715df7f76bb4b2c8733236ef4bea28432b5fb",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "main",
+        "submit"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "experiments/FTLE_P35_Fusion_2_1.py",
+      "staged_sha256": "9d639088d42cde64a50c9d124466a7ed8f00011d6db9c6034ee2988441217fc6",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "main",
+        "submit"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "experiments/FTLE_P35_Scales_2_2.py",
+      "staged_sha256": "1802c4fea1075bcd9a42bee749c7d513b9164bd34c5c468383e267345e099490",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "main",
+        "submit"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "experiments/FTLE_Upsampling_2D_1_1.py",
+      "staged_sha256": "9fe97fc4171f064ae8a4e2ba63bb4c5465212b5a7a1001f1e9f9a6536db90712",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "Model",
+        "submit"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "experiments/FTLE_Upsampling_2D_1_2.py",
+      "staged_sha256": "f40891459c38c7e49b45813de94326ca151aa16e420592c168e7b65dc9b3d80e",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "Model",
+        "submit"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "experiments/Verify_Task3_FMTResidual.py",
+      "staged_sha256": "ba860c38886c3816758e32bc8473fb34b88061b7a02ab79a7dfbd3afecd18108",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "_train_one"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "outputs/Verify_FMTNoConvolution_1.1/audit.json",
+      "staged_sha256": "2196f0acfa15b762c234731816574a99c84ccebe131fba09a275390d1aead01a",
+      "category": "new task-specific verification evidence"
+    },
+    {
+      "path": "outputs/Verify_FMTNoConvolution_1.1/document_changes.json",
+      "staged_sha256": "36430bfea83b4c240a0fdb76d2cb6766213a7144d946666410c83cb62a439db8",
+      "category": "new task-specific verification evidence"
+    },
+    {
+      "path": "outputs/Verify_FMTNoConvolution_1.1/source_changes.json",
+      "staged_sha256": "0fe0d0807bb1a2080f09ea0bb39f5118965e441f005d03b5254af331df583669",
+      "category": "new task-specific verification evidence"
+    },
+    {
+      "path": "outputs/Verify_FMTNoConvolution_1.1/tests.xml",
+      "staged_sha256": "0509b230fa606913705a4eb346a39b6bf2300e38185ed13af15f971cdb67f9d8",
+      "category": "new task-specific verification evidence"
+    },
+    {
+      "path": "outputs/Verify_FMTNoConvolution_1.1/tests_initial_failure.xml",
+      "staged_sha256": "371090065de1c269b2361c030748bb881963193cee3d944c61d1aaf35b634db4",
+      "category": "new task-specific verification evidence"
+    },
+    {
+      "path": "tests/test_fmt_no_convolution_policy.py",
+      "staged_sha256": "b82aea4c2a99274606c786797f140171377498a0b0e26eb0cdf1f3f12e213957",
+      "category": "new full-model prohibition and regression checks"
+    },
+    {
+      "path": "tests/test_geometric_controls_3d.py",
+      "staged_sha256": "bcb908ce09e4b00a88a75c24794a9056494f755eb8aa0245fda8ccb3195043d6",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "GeometricControlsTests"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "tests/test_pathline_classifier_3d.py",
+      "staged_sha256": "0e2ecfd768f29f90d3b9debb814325d526b6a0063ec65138d6cae7ae846610c4",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "test_shapes_capacity_and_neighbour_permutation"
+      ],
+      "unrelated_definitions_unchanged": true
+    },
+    {
+      "path": "tests/test_task3_main_table.py",
+      "staged_sha256": "c6c412f01a3068d7f7ba71a38117002d52b46907711ad378ef25aa607c4b10f2",
+      "category": "retired model implementation or enforcement/test",
+      "changed_definitions": [
+        "test_raw_pca_residual_training_smoke"
+      ],
+      "unrelated_definitions_unchanged": true
+    }
+  ]
+}

@@ -4,6 +4,8 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import pytest
+from FMT_Utils.FMTNoConvolution_1_1 import ForbiddenFMTConvolutionError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -132,14 +134,12 @@ def test_raw_pca_residual_training_smoke(tmp_path):
                      "weight_decay": 1e-4, "max_epochs": 1,
                      "patience": 1, "min_delta": 0.0},
     }
-    row = _train_one(
-        spec, "toy", 30, (train, validation, None), stats,
-        torch.device("cpu"), tmp_path / "result",
-    )
-    assert row["variant"] == "raw_pca_residual"
-    assert row["validation_alpha"] == 1.0
-    saved = torch.load(row["checkpoint"], map_location="cpu", weights_only=False)
-    assert saved["auxiliary_transform"]["components"].shape == (8, 84)
+    with pytest.raises(ForbiddenFMTConvolutionError):
+        _train_one(
+            spec, "toy", 30, (train, validation, None), stats,
+            torch.device("cpu"), tmp_path / "result",
+        )
+    assert not (tmp_path / "result").exists()
 
 
 if __name__ == "__main__":

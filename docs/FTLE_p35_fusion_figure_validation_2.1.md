@@ -1,5 +1,8 @@
 # FTLE P35 2.1：最终图检查
 
+> **2026-09-17撤销状态：** 本文涉及的Raw卷积＋FMT/残差或二维FMT卷积网络，已按用户要求从可用方案及有效FMT证据中删除；旧数值仅为撤销历史，不得用于当前主表、附录或“最佳FMT”结论。固定傅里叶特征本身及明确无卷积的Task1/Task4-c分支不受此撤销影响。以 [FMT禁止空间卷积协议1.1](FMT_no_spatial_convolution_protocol_1.1.md) 为准。
+
+
 后端为Python/matplotlib。固定三种子测试和独立指标审计通过后才绘图；脚本`experiments/Plot_FTLE_P35_Fusion_2_1.py`，输入为正式`final/summary.json`及逐次预测。
 
 最终九幅图包含配对增益图的两个绘图区，以及八幅场图的各十二个绘图区；共98个绘图区经过严格1.5pt边界/间隔检查。每图输出PDF、SVG、300dpi PNG、600dpi LZW TIFF。最终PDF字体最小6pt，九幅图的字体检查、重叠检查均PASS，零碰撞报告。所有主图与每个面板均已逐一目视核查。
