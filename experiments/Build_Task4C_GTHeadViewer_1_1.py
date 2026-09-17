@@ -38,6 +38,11 @@ def decorate(output,package,input_root):
     shutil.copyfile('experiments/templates/task4c_gt_coverage_1_1.js',output/'gt_coverage.js')
     record=dict(complete=True,html_sha256=sha(path),coverage=census,source_manifest_sha256=sha(Path(package)/'manifest.json'))
     (output/'head_coverage_manifest.json').write_text(json.dumps(record,indent=2)+'\n',encoding='utf8')
+    build=json.loads((output/'viewer_manifest.json').read_text())
+    build['base_template_html_sha256']=build['html_sha256'];build['html_sha256']=sha(path)
+    build['head_coverage_manifest_sha256']=sha(output/'head_coverage_manifest.json')
+    build['head_controls_sha256']=sha(output/'gt_coverage.js')
+    (output/'viewer_manifest.json').write_text(json.dumps(build,indent=2)+'\n',encoding='utf8')
     return record
 
 

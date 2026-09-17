@@ -240,6 +240,15 @@ def generate(spec, index, source, input_root=None, pilot=False):
         reserved_failed_proposals_remain_excluded=True,maximum_geometry_rounds=spec['head_coverage']['maximum_geometry_rounds'])
 
 
+def append_arrays(source, extra, destination):
+    a=np.load(source,mmap_mode='r');b=np.load(extra,mmap_mode='r')
+    assert a.dtype==b.dtype and a.shape[1:]==b.shape[1:]
+    out=np.lib.format.open_memmap(destination,mode='w+',dtype=a.dtype,shape=(len(a)+len(b),*a.shape[1:]))
+    for first in range(0,len(a),512):
+        stop=min(first+512,len(a));out[first:stop]=a[first:stop]
+    out[len(a):]=b;out.flush();del out
+
+
 def prepare(spec, index, source, input_root, output, pilot=False):
     import shutil
     from FMT_Utils.Task4C_BottomDensity_1_1 import save_added
@@ -255,6 +264,7 @@ def prepare(spec, index, source, input_root, output, pilot=False):
         np.savez_compressed(root/('added_'+role+'_index.npz'),instance=np.array([r['instance'] for r in ordered]),
             paired_test_number=np.array([r['target_number'] for r in ordered]))
         save_added(ordered,root/('added_'+role),spec)
+    (root/'generation.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf8')
     if not pilot:
         for role in ('train','validation','test'):
             dest=root/role;dest.mkdir()
@@ -264,10 +274,7 @@ def prepare(spec, index, source, input_root, output, pilot=False):
             else:
                 extra=root/('added_'+role)
                 for filename in ('geometry.npy','seeds.npy'):
-                    a=np.load(src/filename,mmap_mode='r');b=np.load(extra/filename,mmap_mode='r')
-                    out=np.lib.format.open_memmap(dest/filename,mode='w+',dtype=a.dtype,shape=(len(a)+len(b),*a.shape[1:]))
-                    for first in range(0,len(a),512):out[first:first+512]=a[first:first+512]
-                    out[len(a):]=b;out.flush();del out
+                    append_arrays(src/filename,extra/filename,dest/filename)
                 with np.load(extra/'metadata.npz') as z:added={k:z[k] for k in z.files}
                 assert metadata[role].keys()==added.keys()
                 np.savez_compressed(dest/'metadata.npz',**{k:np.concatenate((v,added[k].astype(v.dtype))) for k,v in metadata[role].items()})

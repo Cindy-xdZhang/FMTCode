@@ -25,7 +25,7 @@ window.installGTCoverage=function(){
    $('coverageRows').replaceChildren();
    for(const r of rows.sort((a,b)=>(a.available>0)-(b.available>0)||a.id-b.id)){
      const tr=document.createElement('tr');if(!r.available)tr.className='missing';const first=document.createElement('td'),button=document.createElement('button');button.textContent='GT '+r.id;
-     button.onclick=()=>{$('region').value=String(r.id);$('viewMode').value='heads';state.focus=false;state.revision++;state.counts.hairpin=Infinity;$('hairpin').checked=true;update(true);};first.append(button);tr.append(first);
+     button.onclick=()=>{$('region').value=String(r.id);$('viewMode').value='heads';state.focus=false;state.selected=null;$('focus').disabled=true;state.revision++;state.counts.hairpin=Infinity;$('hairpin').checked=true;update(true);};first.append(button);tr.append(first);
      for(const v of [r.available,r.added,r.shown,r.tp,r.fn]){const td=document.createElement('td');td.textContent=v;tr.append(td);}$('coverageRows').append(tr);
    }
  };
