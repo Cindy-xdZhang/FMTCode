@@ -12357,3 +12357,39 @@ Scientific commits9d05abc571bc7c45e5da8a8f9f3ee55db367d467 (source) and21cf1fb75
 51946838_0/1/2分别为种子96611/96612/96613，验证选中epoch89/60/57，测试F1为0.914793/0.909695/0.903207；均值0.909232±0.005807，总参数76,723，平均训练367.316分钟。方法判断见experiment_log同标记。
 
 独立复算9份训练/验证/测试预测的哈希、完整行覆盖、源标签与实例编号、F1/precision/recall/accuracy/average precision及混淆矩阵，核对验证选择轮次、三种子均值和样本标准差；18个源数据文件哈希相同，9进程/18条运行事件与Slurm全部完成、exit0。未保留或下载checkpoint。证据：`outputs/Ablation_Task4C_PointNetPlusPlus_1.1/final_verified_evidence.json`；原始结果：`/ibex/user/zhanx0o/FMT_Task4C_PointNetPlusPlus_1p1_20260916/outputs/Ablation_Task4C_PointNetPlusPlus_1.1/`。
+
+<!-- task4c-gt-head-coverage-start-20260917 -->
+## 2026-09-17：mainExp_Task4C_GTHeadCoverage_1.1
+
+科学commit `8fd6be94f542ddebf7f2d8215b5cf8d23632e062`；根目录 `/ibex/user/zhanx0o/FMT_Task4C_GTHeadCoverage_20260917`；配置 `config/mainExp_Task4C_GTHeadCoverage_1.1.json`；正式输出 `outputs/mainExp_Task4C_GTHeadCoverage_1.1`。用户确认新增人工GT头部正类与固定c156，仅一次seed96721训练，不搜索。源BottomDensity1.2文件及旧预测不改。
+
+| 调度ID | 阶段 | 依赖 | 首次核对状态 |
+|---|---|---|---|
+| 52000820_0 | Channel追加数据 | 本地132实例积分预检通过 | RUNNING cn511-19 |
+| 52000820_1 | TBL追加数据 | 同上 | RUNNING cn504-14 |
+| 52000821 | 数据、源前缀、全部GT及距离审计 | 52000820全部成功 | PENDING Dependency |
+| 52000822 | V100/32真实训练束预检 | 52000821 | PENDING Dependency |
+| 52000823 | 固定c156/seed96721训练与全量预测 | 52000822 | PENDING Dependency |
+| 52000824 | 预测独立复算及查看器数据导出 | 52000823 | PENDING Dependency |
+
+共6个进程，各4CPU、64GiB、8h上限；GPU两阶段各1张V100，数据两流场可并行。无checkpoint文件，最终导出仅数组与预测。提交UTC和配置哈希见本地 `outputs/Verify_Task4C_GTHeadCoverage_1.1/submission.json`。当前不是完成记录。
+<!-- task4c-gt-head-coverage-start-20260917-end -->
+
+<!-- task4c-gt-head-coverage-r2-20260917 -->
+### GT头部覆盖1.1：首链结束与r2重提
+
+52000820_0 FAILED/1:0，2分17秒；52000820_1 FAILED/1:0，1分15秒。均完成全部几何配额后在数组末批拼接失败，原源文件未写；52000821、52000822、52000823、52000824在启动前取消。两运行任务四条runtime事件待最终回收；取消任务不应伪造运行事件。
+
+修复科学commit `c3952a7b8cafa10a50d73703da65c36279713368`；根 `/ibex/user/zhanx0o/FMT_Task4C_GTHeadCoverage_20260917_r2`。配置、配额、模型和预算不变。
+
+| 调度ID | 阶段 | 依赖 |
+|---|---|---|
+| 52000893_0 | Channel重新准备 | 末批拼接检查通过 |
+| 52000893_1 | TBL重新准备 | 同上 |
+| 52000894 | 全量数据审计 | 52000893全部成功 |
+| 52000895 | V100/真实32束工程检查 | 52000894 |
+| 52000896 | 固定c156/seed96721 | 52000895 |
+| 52000897 | 预测复算与显示包导出 | 52000896 |
+
+仍为6个进程，各4CPU/64GiB/8h上限，两GPU阶段各1V100。尚未填写新完成状态。
+<!-- task4c-gt-head-coverage-r2-20260917-end -->
