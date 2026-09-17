@@ -4402,3 +4402,15 @@ Evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/{status_latest,independen
 
 协议 `docs/ASAPFMT_Task35_protocol_1.1.md`；完整表 `docs/ASAPFMT_Task35_results_1.1.md`；逐样本预测、每种子/逐尺度CSV、独立审计及环境信息在 `outputs/mainExp_ASAPFMT_Task35_1.1/execution_r2`。科学commit `6870898574a493cd132f602e2e48bb032e21c3e9`；原首链commit `9bff2235` 及失败记录保留。
 <!-- asap-fmt-task35-complete-20260917-end -->
+
+<!-- task4c-p35-gt-head-1.1-deployed-20260917 -->
+2026-09-17 用户确认并部署 `Verify_Task4C_P35GTHead_1.1`：原p35/h0小网络76,738参数、32点、最近六邻居、原倍率100/权重0.5及signed-log标准化，三种子96721–96723。只读复用最新196,960/3,000/11,320扩充数据，18文件哈希锁定。本地CPU容量/编码/补零/梯度检查通过；科学commitc2072bac已推送，Ibex52005866–52005869共6进程提交，正式成绩待完成。协议docs/Task4C_p35_GT_head_protocol_1.1.md；新旧结果独立，不自动搜索。
+<!-- task4c-p35-gt-head-1.1-deployed-20260917-end -->
+
+<!-- task4c-p35-gt-head-r2-deployed-20260917 -->
+P35GTHead最新执行r2：首链预检因CPU/GPU近等距邻居集合不同而失败，原检查记录保留；固定同邻居编码原容差通过、V100跨批逐值一致。只修正工程检查，不改冻结p35/h0和数据。科学commite05097bd，52006250–52006253共6进程提交，输出execution_r2；三种子正式结果尚待完成。
+<!-- task4c-p35-gt-head-r2-deployed-20260917-end -->
+
+<!-- task4c-p35-gt-head-started-20260917 -->
+2026-09-17 17:48:50+03:00，P35GTHead三次正式训练52006252_0/1/2同时进入V100，节点gpu210-18/gpu210-14/gpu210-10，种子96721/96722/96723。源核验52006250和GPU预检52006251已COMPLETED/0:0；32真实训练束工程拟合F1=1，loss0.691124→0.0001345，批128反向、补零屏蔽、固定同邻居CPU/GPU原容差及V100跨批逐值检查通过。原完整CPU/GPU选择管线仍不一致（r2批次下128个有效中心邻居集合不同），如实保留，不能称所有跨设备检查通过。正式训练/验证/测试都用同一V100实现。科学commite05097bd；源18文件哈希不变；没有正式测试F1。依赖汇总52006253将独立复算三种子与逐GT结果。
+<!-- task4c-p35-gt-head-started-20260917-end -->

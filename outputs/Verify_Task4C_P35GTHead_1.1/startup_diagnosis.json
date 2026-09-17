@@ -1,0 +1,13 @@
+{
+  "job": "52006093",
+  "script_sha256": "840a7b12a5949995bee0da87fa75e30aaec65e661d70263f0e72623f103123a9",
+  "valid_anchors": 634,
+  "different_order": 353,
+  "different_neighbor_sets": 130,
+  "max_selected_radius_difference_float64": 1.3170889906488625e-08,
+  "cpu_gpu_features_max": 68.11061096191406,
+  "gpu_batch_features_max": 0.0,
+  "fixed_same_neighbor_ids_max": 2.288818359375e-05,
+  "fixed_same_neighbor_ids_allclose": true,
+  "gpu_batch_allclose": true
+}

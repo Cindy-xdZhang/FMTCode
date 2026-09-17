@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "parameters": 76738,
+  "feature_shape": [
+    4,
+    27,
+    142
+  ],
+  "cpu_batch_consistency": true,
+  "padding_ignored": true,
+  "finite_gradients": true,
+  "scientific_metric": false
+}
