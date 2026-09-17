@@ -12167,3 +12167,52 @@ Task4-c FPS augmentation1.1 runtime update,2026-09-17 07:34Saudi. Same scientifi
 
 <!-- task4c-fpsaug-top20-extension-20260917 -->
 Task4-c FPS augmentation1.2 user-authorized extension,2026-09-17. Original pending selection51974957 held at04:37UTC while preserving every original refinement51974956. Replace pending selection/final51974958/merge51974959 only after successful replacement submission; cancellation evidence retained. Planned new chain: prepare1, additional refinement24, selection1 (depends on old36 and new24), final6 replacing old pending6, merge1 =33 processes. Original data/recipes/seeds/budgets unchanged; only top12→20. New config SHA256e908650742e5eedaa7f08d17ffe035c67407d7e661c43bb2604c53d947024974. Deployment/job IDs to be appended after submission. Expected GPU V100; combined old/new cap24. CPU fixture passed; no new GPU fits yet. Remote hold evidence: original output/top20_extension_hold.json.
+
+
+<!-- task4c-fpsaug-top20-submitted-20260917 -->
+Scientific commit `21cf1fb75b556741ae7a6da8bd0f08104c1a0db5`; config `config/Ablation_Task4C_FPSAugmentSearch_1.2.json`, SHA256e908650742e5eedaa7f08d17ffe035c67407d7e661c43bb2604c53d947024974. Independent checkout `/ibex/user/zhanx0o/FMT_Task4C_FPSAugmentSearch_1p2_20260917`. All33 new processes submitted04:43:26UTC. Parent array51974956 future throttle12; additional array throttle10 while14 parent fits were still active, guaranteeing combined<=24 without interruption. Original selection51974957 remains held until preparation passes and replacement cancellation is recorded. Every task uses the same33-process chain; source36 fits retain their original records.
+
+| Process | Phase | Candidate / seed | Submitted UTC | Device | Dependency |
+|---|---|---|---|---|---|
+| 51984022 | prepare |  | 2026-09-17T04:43:26.364478+00:00 | CPU | none |
+| 51984023_0 | refine | c146 / 96612 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_1 | refine | c146 / 96613 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_2 | refine | c146 / 96711 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_3 | refine | c164 / 96612 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_4 | refine | c164 / 96613 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_5 | refine | c164 / 96711 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_6 | refine | c198 / 96612 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_7 | refine | c198 / 96613 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_8 | refine | c198 / 96711 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_9 | refine | c192 / 96612 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_10 | refine | c192 / 96613 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_11 | refine | c192 / 96711 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_12 | refine | c187 / 96612 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_13 | refine | c187 / 96613 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_14 | refine | c187 / 96711 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_15 | refine | c253 / 96612 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_16 | refine | c253 / 96613 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_17 | refine | c253 / 96711 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_18 | refine | c200 / 96612 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_19 | refine | c200 / 96613 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_20 | refine | c200 / 96711 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_21 | refine | c163 / 96612 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_22 | refine | c163 / 96613 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984023_23 | refine | c163 / 96711 | 2026-09-17T04:43:26.429989+00:00 | V100 | afterok:51984022 |
+| 51984024 | select |  | 2026-09-17T04:43:26.492262+00:00 | CPU | afterok:51984023:51974956 |
+| 51984025_0 | final | selected / 96721 | 2026-09-17T04:43:26.554940+00:00 | V100 | afterok:51984024 |
+| 51984025_1 | final | selected / 96722 | 2026-09-17T04:43:26.554940+00:00 | V100 | afterok:51984024 |
+| 51984025_2 | final | selected / 96723 | 2026-09-17T04:43:26.554940+00:00 | V100 | afterok:51984024 |
+| 51984025_3 | final | fps_reference / 96721 | 2026-09-17T04:43:26.554940+00:00 | V100 | afterok:51984024 |
+| 51984025_4 | final | fps_reference / 96722 | 2026-09-17T04:43:26.554940+00:00 | V100 | afterok:51984024 |
+| 51984025_5 | final | fps_reference / 96723 | 2026-09-17T04:43:26.554940+00:00 | V100 | afterok:51984024 |
+| 51984026 | merge |  | 2026-09-17T04:43:26.624755+00:00 | CPU | afterok:51984025 |
+
+
+<!-- task4c-fpsaug-top20-deployed-20260917 -->
+Preparation51984022 completed07:43:29–07:43:45Saudi oncn604-11,exit0; full source/data/prediction checks passed. Extra24 GPU fits remain priority-pending; selection/final/merge dependency-pending. Confirmed intentional cancellation of old unstarted chain at2026-09-17 07:44:31Saudi (04:44:31UTC):51974957,51974958_0,51974958_1,51974958_2,51974958_3,51974958_4,51974958_5,51974959. All8 had no start and zero elapsed time. Old refinement51974956 preserved. Cancellation evidence: new output/superseded_jobs.json and startup_final.json. The final pending chain is now51984024→51984025→51984026; select waits for both51974956 and51984023.
+
+| Process / array | Phase | State | UTC | Node | Device | Exit |
+|---|---|---|---|---|---|---|
+| 51984022 / None | prepare | STARTED | 2026-09-17T04:43:36.416770+00:00 | cn604-11 | CPU | None |
+| 51984022 / None | prepare | ENDED | 2026-09-17T04:43:44.865347+00:00 | cn604-11 | CPU | 0 |
