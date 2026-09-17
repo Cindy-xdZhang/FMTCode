@@ -4352,3 +4352,15 @@ Evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/{status_latest,independen
 独立复算9份训练/验证/测试预测的哈希、完整行覆盖、源标签与实例编号、F1/precision/recall/accuracy/average precision及混淆矩阵，核对验证选择轮次、三种子均值和样本标准差；18个源数据文件哈希相同，9进程/18条运行事件与Slurm全部完成、exit0。未保留或下载checkpoint。证据：`outputs/Ablation_Task4C_PointNetPlusPlus_1.1/final_verified_evidence.json`；原始结果：`/ibex/user/zhanx0o/FMT_Task4C_PointNetPlusPlus_1p1_20260916/outputs/Ablation_Task4C_PointNetPlusPlus_1.1/`。
 
 用户要求的最新专门交接已更新至 `docs/Task4C_handoff.md`：当前数据构建及划分、原始VTK PointData/CellData与实例0语义、冻结缓存读取、c156和所有同数据基线、可视化版本说明。VTK读取示例在Channel/TBL原始数据运行通过；缓存示例在Ibex冻结数据运行通过。旧v9.15_v2手册中的“正在构建”状态被当前手册取代，历史数据/协议不改写。
+
+<!-- fmt-color-explanation-1.3-2026-09-17 -->
+## Other_FMT_AnalysisWorkbench_1.3：着色解释与色带方向纠正（2026-09-17）
+
+用户无法理解“精确片段”“历史重叠片段”“梯度”等选项。本次将名称改成具体操作，新增常驻说明与五种模式对照：实际局部拉直、重叠窗口Δ均值、坐标梯度范数、16组加噪梯度向量先平均再取范数、纯几何。拉直Δ仍为原Hairpin logit差减改后差；后两种梯度量只有敏感程度，不能判断正负贡献，也不构成抗噪能力证据。
+
+旧界面在梯度模式中仍展示另一个拉直实验的前后概率 → 新界面只在拉直模式显示这些结果及片段表/替代线 → 原因是这些数值不属于当前梯度着色法，容易造成错误解释。概率改为百分数，差异明确标为百分点；模型分数Δ另作说明。
+
+浏览器核查当前打包Plotly的内置YlOrRd发现，旧梯度色条0端深红、高值端浅黄；这与“高敏感度深红”的解释相反。现在两种梯度模式均明确指定低值浅黄、高值深红，实屏复核通过。旧源码与原数值保留，未重算梯度或改变模型。正支持图的红/蓝符号计算与该色带问题分开。
+
+1.3从1.2继承的827份文件哈希一致，包括400束所有几何/干预/梯度与特征数据；五模式解释、隐藏/恢复控件在真实浏览器检查。代码与检查记录见docs/FMT_analysis_workbench_protocol_1.3.md和outputs/Other_FMT_AnalysisWorkbench_1.3/{build_manifest,browser_checks}.json。仍解释原p35 seed96611，不是c156，不启动新训练。旧1.2入口归档后转向1.3，交接文档同步追加。
+<!-- fmt-color-explanation-1.3-2026-09-17-end -->

@@ -245,3 +245,7 @@ Task4-b 当前阈值以2026-09-06用户最新指定为准：**Channel IVD>5.785�
 <!-- fmt-analysis-workbench-1.2-2026-09-17 -->
 2026-09-17完成`Other_FMT_AnalysisWorkbench_1.2`：特征差异页新增141维逐特征计算步骤图；Hairpin页默认显示精确最大正支持窗口、原/局部拉直概率与有符号热图，紫色人工替代线默认关闭。冻结400束50,708次原干预及特征/KMeans数组，逐项独立复核和五项回归检查通过；浏览器已验证主要交互。代码及核查见`docs/FMT_analysis_workbench_protocol_1.2.md`；旧工作台入口自动转至1.2，原HTML归档，不训练或换模型。显示问题与证据边界见experiment_log同名条目。
 <!-- fmt-analysis-workbench-1.2-2026-09-17-end -->
+
+<!-- fmt-color-explanation-1.3-2026-09-17 -->
+2026-09-17分析工作台更新`Other_FMT_AnalysisWorkbench_1.3`：五种着色改为直接说明用途的名称，并在图上方显示计算、颜色与限制；非拉直模式隐藏片段控制/拉直前后概率/窗口表。原梯度内置色带的低红高黄改为明确低黄高红；数值不变。827份继承文件哈希一致，五模式浏览器交互核验通过；旧1.2入口自动跳转，原HTML归档。协议docs/FMT_analysis_workbench_protocol_1.3.md，当前不训练或更换c156模型。
+<!-- fmt-color-explanation-1.3-2026-09-17-end -->
