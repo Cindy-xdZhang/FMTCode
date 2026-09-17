@@ -33,8 +33,13 @@ def finish(workspace, input_root, wait_hours):
     root = workspace/'outputs/mainExp_Task4C_GTHeadCoverage_1.1'
     root.mkdir(parents=True, exist_ok=True)
     status_file = root/'local_delivery_status.json'
+    retry = json.loads((root/'retry_submission.json').read_text()) if (root/'retry_submission.json').exists() else None
+    train_job = retry['jobs']['train'] if retry else '52000896'
+    export_job = retry['jobs']['export'] if retry else '52000897'
+    assert train_job.isdecimal() and export_job.isdecimal()
+    job_list = JOBS+(','+train_job+','+export_job if retry else '')
     def status(stage, **extra):
-        value = dict(stage=stage, at_utc=utc(), pid=os.getpid(), export_job='52000897', **extra)
+        value = dict(stage=stage, at_utc=utc(), pid=os.getpid(), export_job=export_job, **extra)
         temporary = status_file.with_suffix('.tmp')
         temporary.write_text(json.dumps(value, indent=2)+'\n', encoding='utf8')
         temporary.replace(status_file)
@@ -43,7 +48,7 @@ def finish(workspace, input_root, wait_hours):
         deadline = time.monotonic()+wait_hours*3600
         previous = None
         while True:
-            state = ssh('sacct -j 52000897 --format=State,ExitCode -n -P').strip().splitlines()
+            state = ssh('sacct -j '+export_job+' --format=State,ExitCode -n -P').strip().splitlines()
             state = state[0].strip() if state else 'UNKNOWN|'
             if state != previous:
                 status('waiting_for_submitted_export', scheduler=state)
@@ -53,7 +58,7 @@ def finish(workspace, input_root, wait_hours):
             if state.split('|')[0] in ('FAILED', 'CANCELLED', 'TIMEOUT', 'NODE_FAIL', 'OUT_OF_MEMORY'):
                 raise RuntimeError('Export chain ended without a successful export: '+state)
             # A failed dependency can otherwise leave the export pending forever.
-            chain = ssh('sacct -j 52000895,52000896 --format=JobIDRaw,State,ExitCode -n -P')
+            chain = ssh('sacct -j 52000895,'+train_job+' --format=JobIDRaw,State,ExitCode -n -P')
             for row in chain.splitlines():
                 parts = row.split('|')
                 if len(parts) >= 3 and '.' not in parts[0] and parts[1] in ('FAILED', 'CANCELLED', 'TIMEOUT', 'OUT_OF_MEMORY'):
@@ -64,6 +69,8 @@ def finish(workspace, input_root, wait_hours):
         status('collecting_completed_predictions')
         members = ['scientific_config.json', 'data_audit.json', 'gpu_check.json', 'selection.lock.json', 'submission.json',
                    'runtime.jsonl', 'completion.json', 'viewer_package', 'final/c156/seed96721', 'logs']
+        if retry:
+            members += ['retry_submission.json', 'retry_wrapper.sh', 'failed_runs']
         for flow in ('channel', 'tbl'):
             members += ['physical/'+flow+'/preparation.json', 'physical/'+flow+'/generation.json']
             members += ['physical/'+flow+'/'+role+'/metadata.npz' for role in ('train', 'validation', 'test')]
@@ -80,16 +87,19 @@ def finish(workspace, input_root, wait_hours):
                 if path.is_absolute() or '..' in path.parts or not (member.isfile() or member.isdir()):
                     raise ValueError('Unsafe archive member: '+member.name)
             stream.extractall(root, filter='data')
-        jobs = ssh('sacct -j '+JOBS+' --format=JobID,State,ExitCode,Elapsed,Start,End,Timelimit -n -P')
+        jobs = ssh('sacct -j '+job_list+' --format=JobID,State,ExitCode,Elapsed,Start,End,Timelimit -n -P')
         (root/'scheduler_records.psv').write_text(jobs, encoding='utf8')
         (root/'first_attempt_runtime.jsonl').write_text(ssh('cat '+OLD_REMOTE+'/runtime.jsonl'), encoding='utf8')
         rows = {r.split('|')[0]: r.split('|') for r in jobs.splitlines() if r}
-        for job in ('52000893_0', '52000893_1', '52000894', '52000895', '52000896', '52000897'):
+        for job in ('52000893_0', '52000893_1', '52000894', '52000895', train_job, export_job):
             assert rows[job][1:3] == ['COMPLETED', '0:0'], rows[job]
         for job in ('52000820_0', '52000820_1'):
             assert rows[job][1:3] == ['FAILED', '1:0'], rows[job]
         for job in ('52000821', '52000822', '52000823', '52000824'):
             assert rows[job][1].startswith('CANCELLED'), rows[job]
+        if retry:
+            assert rows['52000896'][1:3] == ['FAILED', '1:0']
+            assert rows['52000897'][1].startswith('CANCELLED')
         old_events = [json.loads(s) for s in (root/'first_attempt_runtime.jsonl').read_text().splitlines()]
         assert len(old_events) == 4
         status('independently_auditing_results')

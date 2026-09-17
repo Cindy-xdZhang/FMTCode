@@ -138,19 +138,36 @@ def audit(root, config, catalog):
                 for i, h in heads[name]['per_instance'].items():
                     assert h['correct'] == expected_head['added_head_counts'][i]['correctly_predicted']
     runtime = [json.loads(line) for line in (root/'runtime.jsonl').read_text().splitlines()]
+    retry = read(root/'retry_submission.json') if (root/'retry_submission.json').exists() else None
     processes = {}
     for event in runtime:
         assert event['identity'] == identity
         processes.setdefault((event['job_id'], event['array_index'], event['phase']), []).append(event)
-    assert len(processes) == 6 and len(runtime) == 12
-    for events in processes.values():
+    assert len(processes) == (7 if retry else 6) and len(runtime) == (13 if retry else 12)
+    for key, events in processes.items():
+        if retry and key[0] == retry['failed_train']:
+            assert [r['state'] for r in events] == ['STARTED']
+            continue
         assert [r['state'] for r in events] == ['STARTED', 'ENDED']
         assert events[-1]['exit_code'] == 0
+    retry_check = None
+    if retry:
+        assert retry['scientific_identity'] == identity and retry['same_data_and_model_and_seed']
+        assert sha(root/'retry_wrapper.sh') == retry['wrapper_sha256']
+        failed = [json.loads(s) for s in (root/'failed_runs'/retry['failed_train']/'seed96721/history.jsonl').read_text().splitlines()]
+        assert len(failed) == retry['failed_epochs'] == 91
+        paired = list(zip(failed, history))
+        assert all(a['permutation_sha256'] == b['permutation_sha256'] for a, b in paired)
+        retry_check = dict(failed_job=retry['failed_train'], failed_epochs=91,
+            paired_epochs=len(paired), identical_permutations=True,
+            max_validation_f1_difference=max(abs(a['validation_f1']-b['validation_f1']) for a, b in paired),
+            missing_failed_END_event_preserved=True)
     output = dict(complete=True, identity=identity, seed=96721, parameters=992386,
         audit_implementation=dict(git_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(), source_sha256=sha(__file__)),
         selected_epoch=best['epoch'], epochs=len(history), training_seconds=result['training_seconds'],
         metrics=reports, head_coverage=heads, runtime_processes=len(processes), runtime_events=len(runtime),
         original_test_combined=score(np.concatenate(original_test_labels), np.concatenate(original_test_probability)),
+        retry_check=retry_check,
         source_result_sha256=sha(run/'result.json'), single_seed=True)
     path = root/'independent_results_audit.json'
     path.write_text(json.dumps(output, indent=2)+'\n', encoding='utf8')
