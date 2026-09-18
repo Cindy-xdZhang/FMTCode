@@ -53,8 +53,8 @@ def append_line(path, text):
 
 
 def identity(config):
-    return dict(git_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(), config_sha256=sha(config), sources={p: sha(p) for p in FILES},
-                host=socket.gethostname())
+    # No hostname here: export, reuse and training run on different Slurm nodes and compare identities.
+    return dict(git_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(), config_sha256=sha(config), sources={p: sha(p) for p in FILES})
 
 
 def load_spec(config, family):
@@ -113,7 +113,7 @@ def export(definition_path, index):
     tables = v2.build_neighbor_tables(fmt_spec, sha); neighbors = v2.load_neighbors(fmt_spec, name)
     seeds, curves, meta = data.load(folder); masks = v2.split_masks(meta, index, spec); K = len(flow['half_lengths'])
     steps = data.half_steps(flow['half_lengths'], flow['ds']); ds = flow['ds']
-    report = dict(complete=False, pilot=False, version=spec['version'], identity=identity(definition_path), flow=flow, source_flow_files=audit['frozen_files'][name],
+    report = dict(complete=False, pilot=False, version=spec['version'], identity=identity(definition_path), host=socket.gethostname(), flow=flow, source_flow_files=audit['frozen_files'][name],
                   neighbor_table=tables[name], cluster='slot 0 = sample line; slots 1..16 = FPS16 neighbours (64 nearest samples of the same flow), same half length; frozen normalisation; 27 slots zero padded',
                   splits={})
     for split in SPLITS:
