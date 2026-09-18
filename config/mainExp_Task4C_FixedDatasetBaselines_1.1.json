@@ -5,7 +5,7 @@
   "base_config": "config/Ablation_Task4C_BottomDensity_1.2.json",
   "base_config_role": "frozen training rules (batch 128, AdamW 1e-3/1e-4, dropout 0.15, 500 epochs, patience 50, validation F1 selection), encoding definition and Conv3D parameter budget; its data keys are NOT used",
   "source_version": "mainExp_Task4C_FixedDataset_1.1",
-  "source_output": "/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918/outputs/mainExp_Task4C_FixedDataset_1.1",
+  "source_output": "/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r3/outputs/mainExp_Task4C_FixedDataset_1.1",
   "source_audit_sha256": "TO_BE_FILLED_AFTER_AUDIT_DATA",
   "source_scientific_commit": "ae65e9200006891d53ed0cae13d4ed4f139108c9",
   "dataset_policy": "reuse_all_source_geometry_seeds_metadata_without_sampling",
