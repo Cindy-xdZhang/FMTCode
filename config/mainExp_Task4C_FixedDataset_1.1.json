@@ -1,0 +1,48 @@
+{
+  "version": "mainExp_Task4C_FixedDataset_1.1",
+  "execution_revision": "r1",
+  "output": "outputs/mainExp_Task4C_FixedDataset_1.1",
+  "physical_config": "config/mainExp_Task4C_GTHeadCoverage_1.1.json",
+  "physical_config_note": "frozen flow files, lambda2 thresholds, integration parameters, cleaning and 3/1/1 head blocks are read from this file; nothing else of GTHeadCoverage 1.1 is reused",
+  "flows": [{"name": "channel"}, {"name": "tbl"}],
+  "dataset": {
+    "per_flow_counts": {"train": 90000, "validation": 1500, "test": 6000},
+    "expected_counts": {"train": 180000, "validation": 3000, "test": 12000},
+    "role": "Task4-c fixed bundle dataset v1; long-term read-only after audit-data"
+  },
+  "instance_split": {
+    "held_out_fraction": 0.2,
+    "seed": 98101,
+    "rule": "hairpin GT instances (VortexIds, including 0) per flow; overlapping GT boxes stay in one group; exactly round(0.2 n) held-out instances when achievable, otherwise the largest achievable count below it"
+  },
+  "coverage": {
+    "min_head_centers_per_instance_per_split": 10,
+    "definition": "center inside the GT instance volume and |cos(velocity,vorticity)|^2 < 0.5 (GTHeadCoverage 1.1 head condition)",
+    "train": "every covered instance", "test": "every instance", "validation_gt_head_rows": false
+  },
+  "distances": {
+    "eval_min_to_any_train_over_h": 3.0,
+    "test_max_to_same_instance_train_over_h": 6.0,
+    "test_min_to_validation_over_h": 0.5,
+    "heldout_exclusion_margin_over_h": 1.0,
+    "note": "h is the local grid spacing (geometric mean); validation and test centers keep >=3h from every training center; test centers of covered hairpin instances stay <=6h from a same-instance training center; training/validation centers never enter a held-out GT box expanded by one median spacing"
+  },
+  "proposals": {
+    "seed": 98201,
+    "minimum_valid_lines": 17,
+    "normal_attempts": 1000,
+    "relaxed_attempts": 1000,
+    "integration_batch_templates": 128,
+    "center_filter": "head-region centers: oyf>0 and same head component (frozen 4.14 rule); GT-head centers: GT membership, head angle, lambda2<threshold, oyf>0",
+    "neighbor_filter": "in-domain only; all 26 stencil neighbours are integrated",
+    "relaxation": "after normal_attempts consecutive failures of one head / instance the center filter is dropped; label = GT membership of the center"
+  },
+  "pilot": {"per_flow_counts": {"train": 900, "validation": 150, "test": 300}, "min_head_centers_per_instance_per_split": 2},
+  "storage": {
+    "geometry.npy": "float32 [N,27,32,3] normalized lines, slot 0 = center line",
+    "seeds.npy": "float32 [N,27,3] normalized seeds",
+    "metadata.npz": "labels, counts, head_component, instance, scale_id, center_number, source_cell, center, centroid, radius, bounds, neighbor_distance, seed_rms_distance, measured_mean_arc_length, half_arc_lengths, half_step_counts, ds, maxiteration, requested_half_length, local_grid_scale, nearest_train_center_distance, nearest_same_head_train_center_distance",
+    "index.npz": "sample_kind (0 head region / 1 GT head), relaxed, neighbor_filter (1 in-domain / 2 relaxed), original_center_id (0), nearest_instance, heldout_instance, center_gt_owner, center_in_gt_head, offset_test",
+    "line_seed_attributes.npz": "seed_points, stencil_slot, exact_stencil_coordinates, lambda2, oyf, inside, head_candidate, oyf_positive, lambda2_threshold"
+  }
+}
