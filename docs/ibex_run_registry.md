@@ -13028,3 +13028,18 @@ r2 科学commit `e67b03f9b2f47ba67e3bfb9efeded51d9fc19b6e`；远端`/ibex/user/z
 | 52047085_[0-1] | build（channel/tbl） | 52047084 | CPU | 依赖等待 |
 | 52047086 | audit-data | 52047085 | CPU | 依赖等待 |
 <!-- task4c-fixed-dataset-1p1-submitted-20260918-registry-end -->
+
+
+### mainExp_Task4C_FixedDataset_1.1 — r1 失败与 r2 提交（2026-09-18 13:00 UTC）
+
+<!-- task4c-fixed-dataset-1p1-r2-20260918-registry -->
+r1（ae65e920）：52047083 verify-inputs COMPLETED 6s；52047084_0/1 pilot COMPLETED 57s/77s；52047085_0 build FAILED 1:0 15m12s cn604-13（channel/test/gt10耗尽配对与放松试探）；52047085_1 build CANCELLED（17m20s）；52047086 audit-data CANCELLED。
+r2 科学commit `e45006866516c6a93684c982d702dd8729c110e8`；远端`/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r2`。
+
+| Job ID | 阶段 | 依赖 | 设备 | 提交时状态 |
+|---|---|---|---|---|
+| 52048030 | verify-inputs | 无 | CPU | 等待 |
+| 52048031_[0-1] | pilot | 52048030 | CPU | 依赖等待 |
+| 52048032_[0-1] | build | 52048031 | CPU | 依赖等待 |
+| 52048033 | audit-data | 52048032 | CPU | 依赖等待 |
+<!-- task4c-fixed-dataset-1p1-r2-20260918-registry-end -->

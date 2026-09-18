@@ -1,5 +1,9 @@
 # FMT 项目研究协议
 
+<!-- task4c-fixed-dataset-1p1-r2-20260918 -->
+2026-09-18 `mainExp_Task4C_FixedDataset_1.1` r1（ae65e920）：输入核验52047083、pilot 52047084_0/1通过（channel 59/15、TBL 46/12实例分组，覆盖满足，放松仅channel测试2行），但正式重建52047085_0 channel在测试集GT头部实例10处FAILED：训练集先生成、9万行填满头区后，头区内没有任何点离所有训练中心≥3h（拒绝31,902次`too_close_to_train`、7,271次`too_far_from_same_instance_train`），放松只解除λ₂/oyf不解除距离；52047085_1与核验52047086取消。r2（科学commit `e4500686`）把生成顺序改为test→validation→train：验证距测试中心≥0.5h_test，训练距所有评价中心≥3h_eval；每个覆盖实例的正类测试点在同实例内3h–6h环带配对生成一个训练中心（保证≤6h规则），配不到的测试正类删除并复核覆盖；核验新增配对距离与调整后行数检查；重复中心断言改为(中心,尺度)唯一。本地7项测试通过；私有部署`/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r2`（远端测试通过）。13:00 UTC提交输入核验52048030、pilot 52048031[0–1]、重建52048032[0–1]、数据核验52048033。训练版本`mainExp_Task4C_FixedDatasetFMT_1.1`（d7a71ecf，四臂×3种子）与`mainExp_Task4C_FixedDatasetBaselines_1.1`（0240a366：p35轮换对照、Conv3D 16³/24³、BiLSTM、PointNet、PointNet++，各3种子，复用冻结驱动只重绑identity与数据根）已提交代码，待数据核验哈希填入后部署。
+<!-- task4c-fixed-dataset-1p1-r2-20260918-end -->
+
 <!-- task4c-fixed-dataset-1p1-submitted-20260918 -->
 2026-09-18 立项并提交`mainExp_Task4C_FixedDataset_1.1`（科学commit `ae65e920`）：按总协议2b节从头生成Task4-c固定线簇数据集v1。每流场train 90,000/validation 1,500/test 6,000（合计180,000/3,000/12,000）；hairpin实例按流场固定种子分80%覆盖组/20%未见组（重叠包围盒同组），训练每个覆盖实例≥10个GT头部中心，测试每个实例≥10个（覆盖实例为距任意训练中心≥3h、距同实例训练中心≤6h的偏移点，未见实例为新点）；验证/测试距训练≥3h、测试距验证≥0.5h；训练/验证不进入未见实例GT包围盒外扩一格的排除区；负类头区跟随最近实例分组。中心只筛λ₂/oyf/同头区，26邻居仅域内，≥17线保留，1000次失败后放松并按中心GT归属定标签；逐线保存播种点与head_candidate/oyf_positive。r2替换式重建核验失败的“中心唯一”断言查明为断言写错（模板允许同一中心配三种积分长度，channel训练模板本身有3,678组重复中心），新版本以(中心,尺度)为唯一签名。本地6项新测试通过；私有部署`/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918`（HEAD与3份源码哈希一致，远端14项测试通过）。12:33 UTC提交输入核验52047083、两流场pilot 52047084[0–1]（每流场900/150/300行、每实例≥2覆盖）、正式重建52047085[0–1]、数据核验52047086，共6进程；尚无数据。协议`docs/Task4C_fixed_dataset_protocol_1.1.md`。训练与baseline比较待数据冻结后另立版本。
 <!-- task4c-fixed-dataset-1p1-submitted-20260918-end -->
