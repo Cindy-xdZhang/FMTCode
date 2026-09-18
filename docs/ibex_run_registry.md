@@ -13014,3 +13014,17 @@ r2 科学commit `e67b03f9b2f47ba67e3bfb9efeded51d9fc19b6e`；远端`/ibex/user/z
 <!-- task4c-fps16-1p2-r2-end -->
 52046106_0 build COMPLETED 0:0 7m00s cn604-18；52046106_1 build COMPLETED 0:0 11m45s cn604-17；52046107 audit-data FAILED 1:0 8s cn604-17（重复中心断言）；52046108_[0-3] train 与 52046109 audit-results 按用户“停止构建”指示 CANCELLED（未启动）。用户追加实例覆盖与实例划分规则，本版本数据不冻结。
 <!-- task4c-fps16-1p2-r2-end-end -->
+
+
+## mainExp_Task4C_FixedDataset_1.1 — submitted 2026-09-18 12:33 UTC
+
+<!-- task4c-fixed-dataset-1p1-submitted-20260918-registry -->
+科学commit `ae65e9200006891d53ed0cae13d4ed4f139108c9`；配置`config/mainExp_Task4C_FixedDataset_1.1.json`；远端`/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918`；输出`outputs/mainExp_Task4C_FixedDataset_1.1`。
+
+| Job ID | 阶段 | 依赖 | 设备 | 提交时状态 |
+|---|---|---|---|---|
+| 52047083 | verify-inputs | 无 | CPU | Priority等待 |
+| 52047084_[0-1] | pilot（channel/tbl） | 52047083 | CPU | 依赖等待 |
+| 52047085_[0-1] | build（channel/tbl） | 52047084 | CPU | 依赖等待 |
+| 52047086 | audit-data | 52047085 | CPU | 依赖等待 |
+<!-- task4c-fixed-dataset-1p1-submitted-20260918-registry-end -->

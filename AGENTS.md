@@ -1,5 +1,9 @@
 # FMT 项目研究协议
 
+<!-- task4c-fixed-dataset-1p1-submitted-20260918 -->
+2026-09-18 立项并提交`mainExp_Task4C_FixedDataset_1.1`（科学commit `ae65e920`）：按总协议2b节从头生成Task4-c固定线簇数据集v1。每流场train 90,000/validation 1,500/test 6,000（合计180,000/3,000/12,000）；hairpin实例按流场固定种子分80%覆盖组/20%未见组（重叠包围盒同组），训练每个覆盖实例≥10个GT头部中心，测试每个实例≥10个（覆盖实例为距任意训练中心≥3h、距同实例训练中心≤6h的偏移点，未见实例为新点）；验证/测试距训练≥3h、测试距验证≥0.5h；训练/验证不进入未见实例GT包围盒外扩一格的排除区；负类头区跟随最近实例分组。中心只筛λ₂/oyf/同头区，26邻居仅域内，≥17线保留，1000次失败后放松并按中心GT归属定标签；逐线保存播种点与head_candidate/oyf_positive。r2替换式重建核验失败的“中心唯一”断言查明为断言写错（模板允许同一中心配三种积分长度，channel训练模板本身有3,678组重复中心），新版本以(中心,尺度)为唯一签名。本地6项新测试通过；私有部署`/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918`（HEAD与3份源码哈希一致，远端14项测试通过）。12:33 UTC提交输入核验52047083、两流场pilot 52047084[0–1]（每流场900/150/300行、每实例≥2覆盖）、正式重建52047085[0–1]、数据核验52047086，共6进程；尚无数据。协议`docs/Task4C_fixed_dataset_protocol_1.1.md`。训练与baseline比较待数据冻结后另立版本。
+<!-- task4c-fixed-dataset-1p1-submitted-20260918-end -->
+
 <!-- task4c-dataset-frozen-policy-20260918 -->
 **2026-09-18 用户裁定：Task4-c 数据集从此长期固定。** 采样点即样本；中心保留 λ₂/oyf/同头区筛选，26 个模板邻居只要求在计算域内并全部积分；样本须中心线有效且 ≥16 邻居通过清理；1000 次失败后放松中心筛选并按中心 GT 归属定标签；每条线保存播种点坐标与 `head_candidate`（step1）/`oyf_positive` 标签。数据由 `Ablation_Task4C_FPS16_1.2`（e67b03f9）构建，`audit-data` 通过后按 `data_audit.json` 哈希冻结。改邻居数（k≤16）、选法、中心策略、重采样、编码或网络**不得重建数据**；只有改积分/清理/标签/播种筛选/模板才建新版本。规则全文：`docs/research_tasks_and_protocol.md` 2b 节、`docs/Task4C_handoff.md` 3b 节、`docs/Task4C_FPS16_protocol_1.2.md`。
 
