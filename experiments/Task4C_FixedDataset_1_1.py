@@ -60,7 +60,8 @@ def audit_data(spec, config):
             with np.load(src/data.INDEX_FILE) as z: idx = {k: z[k] for k in z.files}
             with np.load(src/data.ATTRIBUTE_FILE) as z: at = {k: z[k] for k in z.files}
             metas[role], index[role], attrs[role] = m, idx, at; n = len(m['labels']); totals[role] += n
-            assert n == spec['dataset']['per_flow_counts'][role] and set(m) == set(data.METADATA_KEYS)
+            removed = prep['unpaired_test_rows_removed'] if role == 'test' else 0
+            assert n == spec['dataset']['per_flow_counts'][role]-removed and set(m) == set(data.METADATA_KEYS)
             assert np.all(m['counts'] >= minimum) and np.all(idx['original_center_id'] == 0)
             g = np.load(src/'geometry.npy', mmap_mode='r'); s = np.load(src/'seeds.npy', mmap_mode='r')
             center, _ = rules.original_center_indices(s, m); assert np.all(center == 0)
@@ -100,6 +101,15 @@ def audit_data(spec, config):
             assert cov == prep['splits'][role]['coverage_head_centers_per_instance']
             if role == 'train': assert all(cov[str(i)] >= cover for i in covered)
             if role == 'test': assert all(cov[str(i)] >= cover for i in covered+list(heldout))
+        # Pairing: every covered-instance test positive has a paired same-instance training center 3h..6h away.
+        pair = index['train']['paired_test_center']; test_m = metas['test']; test_idx = index['test']
+        assert np.all(pair[index['train']['sample_kind'] == data.KIND_HEAD_REGION] == -1)
+        paired_targets = pair[pair >= 0]; offset_rows = np.flatnonzero(test_idx['offset_test'])
+        assert set(paired_targets.tolist()) == set(offset_rows.tolist())
+        for i in np.flatnonzero(pair >= 0):
+            j = pair[i]; d = np.linalg.norm(metas['train']['center'][i]-test_m['center'][j]); h = test_m['local_grid_scale'][j]
+            assert metas['train']['instance'][i] == test_m['instance'][j] and metas['train']['labels'][i] == 1 and test_m['labels'][j] == 1
+            assert dist['eval_min_to_any_train_over_h']*h-1e-9 <= d <= dist['test_max_to_same_instance_train_over_h']*h+1e-9
         train = metas['train']; tree = cKDTree(train['center']); v_tree = cKDTree(metas['validation']['center'])
         inst = {i: cKDTree(train['center'][(train['labels'] == 1) & (train['instance'] == i)]) for i in covered if np.any((train['labels'] == 1) & (train['instance'] == i))}
         for role in ('validation', 'test'):
@@ -116,7 +126,8 @@ def audit_data(spec, config):
                             test_composition=dict(offset_positive=int(index['test']['offset_test'].sum()), heldout_rows=int(index['test']['heldout_instance'].sum()),
                                                   heldout_positive=int(np.sum(index['test']['heldout_instance'] & (metas['test']['labels'] == 1)))))
         del scene
-    assert totals == spec['dataset']['expected_counts']
+    removed_total = sum(json.loads((root/'physical'/f['name']/'preparation.json').read_text())['unpaired_test_rows_removed'] for f in spec['flows'])
+    assert totals == dict(spec['dataset']['expected_counts'], test=spec['dataset']['expected_counts']['test']-removed_total)
     write(root/'data_audit.json', dict(complete=True, identity=identity(config), counts=totals, flows=report, frozen_files=frozen_files,
                                        rules='protocol_2b_recomputed', distances=dist, minimum_valid_lines=minimum, coverage_minimum=cover))
 

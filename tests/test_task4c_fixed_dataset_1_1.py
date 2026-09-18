@@ -31,21 +31,33 @@ class FixedDatasetRules(unittest.TestCase):
         for seed in range(20):
             h = data.instance_groups(ids, low, high, seed, .2)['heldout']; self.assertEqual((2 in h), (3 in h)); self.assertLessEqual(len(h), 2)
 
-    def test_legal_center_applies_split_distance_rules(self):
-        b = bare_builder(); train = np.array([[0., 0, 0], [10., 0, 0]]); b.final_trees['train'] = cKDTree(train)
-        b.final_trees['validation'] = cKDTree(np.array([[5., 20, 0]])); b.instance_trees = {7: cKDTree(train[:1])}; b.heldout = {9}
-        b.exclusion = [(np.array([40., -1, -1]), np.array([50., 1, 1]))]
-        self.assertTrue(b.legal_center('train', np.array([1., 0, 0]), 1., 7, 1))
-        self.assertFalse(b.legal_center('train', np.array([45., 0, 0]), 1., -1, 0)); self.assertIn('inside_heldout_exclusion', b.rejections)
-        self.assertFalse(b.legal_center('validation', np.array([2., 0, 0]), 1., 7, 1)); self.assertIn('too_close_to_train', b.rejections)
-        self.assertTrue(b.legal_center('validation', np.array([5., 0, 0]), 1., 7, 1))            # 5h from both training centers
-        self.assertTrue(b.legal_center('test', np.array([5., 0, 0]), 1., 7, 1))                  # >=3h, <=6h from instance 7
-        self.assertFalse(b.legal_center('test', np.array([5., 7, 0]), 1., 7, 1)); self.assertIn('too_far_from_same_instance_train', b.rejections)
-        self.assertTrue(b.legal_center('test', np.array([5., 7, 0]), 1., 9, 1))                  # held-out instance: no <=6h rule
-        self.assertTrue(b.legal_center('test', np.array([45., 0, 0]), 1., -1, 0))               # exclusion only binds train/validation
-        self.assertFalse(b.legal_center('test', np.array([5., 20.2, 0]), 1., -1, 0)); self.assertIn('too_close_to_validation', b.rejections)
+    def test_legal_center_applies_eval_first_distance_rules(self):
+        b = bare_builder(); b.eval_points = np.array([[0., 0, 0], [10., 0, 0]]); b.eval_h = np.ones(2); b.eval_tree = cKDTree(b.eval_points)
+        b.exclusion = [(np.array([40., -1, -1]), np.array([50., 1, 1]))]; b.heldout = {9}
+        self.assertTrue(b.legal_center('test', np.array([0.1, 0, 0]), 1., 7, 1))                # test rows: only exact duplicates are forbidden
+        self.assertTrue(b.legal_center('test', np.array([45., 0, 0]), 1., -1, 0))               # exclusion binds train/validation only
         b.reserved['test'] = [np.array([5., 0, 0])]
         self.assertFalse(b.legal_center('test', np.array([5., 0, 0]), 1., 7, 1)); self.assertIn('duplicate_center', b.rejections)
+        self.assertFalse(b.legal_center('validation', np.array([0.3, 0, 0]), 1., -1, 0)); self.assertIn('too_close_to_test', b.rejections)
+        self.assertTrue(b.legal_center('validation', np.array([0.7, 0, 0]), 1., -1, 0))          # >= 0.5 h_test
+        self.assertFalse(b.legal_center('validation', np.array([45., 0, 0]), 1., -1, 0)); self.assertIn('inside_heldout_exclusion', b.rejections)
+        self.assertFalse(b.legal_center('train', np.array([2.9, 0, 0]), 1., 7, 1)); self.assertIn('too_close_to_evaluation', b.rejections)
+        self.assertTrue(b.legal_center('train', np.array([5., 0, 0]), 1., 7, 1))                 # 5h from both evaluation centers
+        self.assertFalse(b.legal_center('train', np.array([45., 0, 0]), 1., -1, 0))
+
+    def test_pair_sample_places_a_same_instance_training_center_in_the_3h_6h_shell(self):
+        b = bare_builder(scene=dict(gt=None, locator=None), axes=None)
+        target = dict(center=np.array([10., 10, 10]), local_grid_scale=2., instance=7, test_index=42)
+        captured = {}
+        def fake_gt_head_sample(scene, center, instance, scale, sid, number, group, role, relaxed=False):
+            captured['center'] = center; return dict(center=center, seeds=np.zeros((27, 3)), label=1, instance=instance, local_grid_scale=2., scale_id=sid)
+        with patch.object(data, 'sample_gt', return_value=(np.array([7]), None)), patch.object(data, 'gt_head_sample', fake_gt_head_sample):
+            s = b.pair_sample('train', target, 5, {'neighbor_grid_scale': 1.}, 0, False, np.random.default_rng(1))
+        r = np.linalg.norm(captured['center']-target['center']); self.assertTrue(6. <= r <= 12.)          # 3h..6h with h = 2
+        self.assertEqual((s['kind'], s['paired_test_center'], s['nearest_instance'], s['relaxed']), (data.KIND_GT_HEAD, 42, 7, False))
+        with patch.object(data, 'sample_gt', return_value=(np.array([-1]), None)):
+            self.assertIsNone(b.pair_sample('train', target, 6, {'neighbor_grid_scale': 1.}, 0, False, np.random.default_rng(2)))
+        self.assertIn('pair_outside_instance', b.rejections)
 
     def test_fill_relaxes_a_source_after_normal_attempts_and_labels_relaxed_rows(self):
         b = bare_builder(flow='x', index=0, plan=[{'neighbor_grid_scale': 1.}], relaxed={r: 0 for r in data.ROLES}, attempts={r: 0 for r in data.ROLES}, trace_calls=0)

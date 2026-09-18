@@ -122,18 +122,20 @@ class Builder:
         return result
 
     def legal_center(self, role, point, h, instance, label):
+        """Generation order is test -> validation -> train; every rule is checked against already reserved centers.
+
+        test: distinct centers only.  validation: >= 0.5 h_test from every test center, outside held-out zones.
+        train: >= 3 h_eval from every validation / test center, outside held-out zones.  The <= 6h same-instance
+        rule of covered-instance test positives is guaranteed by pairing (``pair_sample``) and re-checked in ``save``.
+        """
         if self.reserved_distance(role, point) <= 1e-10: self.reject('duplicate_center'); return False
         if role != 'test' and self.in_exclusion(point): self.reject('inside_heldout_exclusion'); return False
-        if role == 'train': return True
-        train = self.final_trees['train']
-        if train.query(point)[0] < self.dist['eval_min_to_any_train_over_h']*h-1e-12: self.reject('too_close_to_train'); return False
-        if role == 'test':
-            if label == 1 and instance not in self.heldout:
-                tree = self.instance_trees.get(instance)
-                if tree is None or tree.query(point)[0] > self.dist['test_max_to_same_instance_train_over_h']*h+1e-12:
-                    self.reject('too_far_from_same_instance_train'); return False
-            if self.final_trees['validation'].query(point)[0] < self.dist['test_min_to_validation_over_h']*h-1e-12:
-                self.reject('too_close_to_validation'); return False
+        if role == 'validation':
+            if not rules.clear(point, h, self.eval_points, self.eval_h, self.eval_tree, self.dist['test_min_to_validation_over_h']):
+                self.reject('too_close_to_test'); return False
+        elif role == 'train':
+            if not rules.clear(point, h, self.eval_points, self.eval_h, self.eval_tree, self.dist['eval_min_to_any_train_over_h']):
+                self.reject('too_close_to_evaluation'); return False
         return True
 
     def head_sample(self, role, head, number, scale, sid, relaxed, rng):
@@ -157,7 +159,7 @@ class Builder:
             label = head['label']; instance = head['instance']; sample['local_grid_scale'] = sample['neighbor_distance']/scale['neighbor_grid_scale']
         sample.update(head_component=head['head_component'], instance=instance, label=label, scale_id=sid, center_number=number,
                       nearest_train_center_distance=0., nearest_same_head_train_center_distance=0., kind=KIND_HEAD_REGION,
-                      relaxed=relaxed, nearest_instance=self.head_group[head['head_component']]['nearest_instance'])
+                      relaxed=relaxed, nearest_instance=self.head_group[head['head_component']]['nearest_instance'], paired_test_center=-1)
         return sample
 
     def gt_sample(self, role, instance, number, scale, sid, relaxed, rng):
@@ -171,7 +173,19 @@ class Builder:
             if not angle[0]: self.reject('GT_head_angle'); return None
         sample = gt_head_sample(self.scene, center, instance, scale, sid, number, instance, role, relaxed)
         if sample is None: self.reject('gt_center_failed_domain_lambda2_oyf'); return None
-        sample.update(kind=KIND_GT_HEAD, relaxed=relaxed, nearest_instance=instance); return sample
+        sample.update(kind=KIND_GT_HEAD, relaxed=relaxed, nearest_instance=instance, paired_test_center=-1); return sample
+
+    def pair_sample(self, role, target, number, scale, sid, relaxed, rng):
+        """Training center inside the same GT instance, 3h..6h (h of the test row) away from a covered-instance test positive."""
+        instance = int(target['instance']); h = float(target['local_grid_scale'])
+        direction = rng.normal(size=3); direction /= np.linalg.norm(direction)
+        radius = rng.uniform(self.dist['eval_min_to_any_train_over_h'], self.dist['test_max_to_same_instance_train_over_h'])*h
+        center = np.asarray(target['center'], float)+direction*radius
+        owner, _ = sample_gt(self.scene['gt'], center[None], self.scene['locator'])
+        if owner[0] != instance: self.reject('pair_outside_instance'); return None
+        sample = gt_head_sample(self.scene, center, instance, scale, sid, number, instance, role, relaxed)
+        if sample is None: self.reject('pair_center_failed_domain_lambda2_oyf'); return None
+        sample.update(kind=KIND_GT_HEAD, relaxed=relaxed, nearest_instance=instance, paired_test_center=int(target['test_index'])); return sample
 
     def finish(self, sample, role, h):
         if len(sample['seeds']) < self.rule['minimum_valid_lines']: self.reject('fewer_than_17_in_domain_seed_points'); return None
@@ -191,66 +205,99 @@ class Builder:
         return accepted
 
     # ------------------------------------------------------------------ generation
-    def generate_role(self, role):
-        counts = self.spec['dataset']['per_flow_counts'][role]; minimum = self.spec['coverage']['min_head_centers_per_instance_per_split']
-        rows = []; started = time.perf_counter()
-        # 1. GT-head coverage rows: covered instances for train / validation, every instance for test.
-        instances = self.instances if role == 'test' else self.groups['covered']
-        if role == 'validation' and not self.spec['coverage']['validation_gt_head_rows']: instances = []
-        for instance in instances:
-            rows.extend(self.fill(role, [('gt', instance)], minimum, tag=f'gt{instance}'))
-        # 2. Head-region rows per scale, cycling eligible heads as in 4.14.
-        remaining = counts-len(rows); per_scale = [remaining//len(self.plan)+int(s < remaining % len(self.plan)) for s in range(len(self.plan))]
-        for sid, quota in enumerate(per_scale):
-            rows.extend(self.fill(role, [('head', h) for h in self.pools[role]], quota, tag=f'scale{sid}', fixed_sid=sid))
-        rng = np.random.default_rng([self.rule['seed'], self.index, ROLES.index(role), 7]); rng.shuffle(rows)
-        print(json.dumps(dict(flow=self.flow, role=role, rows=len(rows), seconds=round(time.perf_counter()-started, 1),
-                              relaxed=self.relaxed[role], rejections=self.rejections)), flush=True)
-        return rows
-
-    def fill(self, role, sources, quota, tag, fixed_sid=None):
-        """Draw ``quota`` accepted rows from ``sources`` (heads or a GT instance); relax a source after normal_attempts failures."""
+    def fill(self, role, sources, quota, tag, fixed_sid=None, allow_short=False):
+        """Draw ``quota`` accepted rows from ``sources`` (heads, GT instances or pairing targets); relax a source after normal_attempts failures."""
         if quota <= 0 or not sources: return []
         accepted = []; failures = {k: 0 for k in range(len(sources))}; attempt = 0; batch = self.rule['integration_batch_templates']
+        limit = self.rule['normal_attempts']+self.rule['relaxed_attempts']
         order = np.random.default_rng([self.rule['seed'], self.index, ROLES.index(role), zlib.crc32(tag.encode())])
         while len(accepted) < quota:
-            pending = {s: [] for s in range(len(self.plan))}; proposed = 0
+            live = [k for k, f in failures.items() if f < limit]
+            if not live:
+                if allow_short: break
+                raise ValueError(f'{self.flow}/{role}/{tag}: every source exhausted relaxed proposals; {self.rejections}')
+            pending = {s: [] for s in range(len(self.plan))}
             for _ in range(min(batch, 4*(quota-len(accepted)))):
-                k = int(order.integers(len(sources))); kind, source = sources[k]
-                stage = failures[k]; attempt += 1; self.attempts[role] += 1
-                if stage >= self.rule['normal_attempts']+self.rule['relaxed_attempts']:
-                    raise ValueError(f'{self.flow}/{role}/{tag}: source {k} exhausted relaxed proposals; {self.rejections}')
-                relaxed = stage >= self.rule['normal_attempts']
+                k = live[int(order.integers(len(live)))]; kind, source = sources[k]
+                relaxed = failures[k] >= self.rule['normal_attempts']; attempt += 1; self.attempts[role] += 1
                 sid = fixed_sid if fixed_sid is not None else int(order.integers(len(self.plan))); scale = self.plan[sid]
                 number = 700000000+ROLES.index(role)*100000000+self.attempts[role]
                 rng = np.random.default_rng([self.rule['seed'], self.index, ROLES.index(role), number])
-                sample = self.gt_sample(role, source, number, scale, sid, relaxed, rng) if kind == 'gt' else self.head_sample(role, source, number, scale, sid, relaxed, rng)
+                if kind == 'gt': sample = self.gt_sample(role, source, number, scale, sid, relaxed, rng)
+                elif kind == 'pair': sample = self.pair_sample(role, source, number, scale, sid, relaxed, rng)
+                else: sample = self.head_sample(role, source, number, scale, sid, relaxed, rng)
                 if sample is not None: sample = self.finish(sample, role, sample['local_grid_scale'])
                 if sample is None: failures[k] += 1; continue
-                sample['source_index'] = k; pending[sid].append(sample); proposed += 1
+                sample['source_index'] = k; pending[sid].append(sample)
             for sid, samples in pending.items():
                 for row in self.trace(samples, sid):
                     if len(accepted) >= quota: break
                     if not self.legal_center(role, row['center'], row['local_grid_scale'], row['instance'], row['label']): failures[row['source_index']] += 1; continue
                     failures[row['source_index']] = 0; accepted.append(row); self.reserved[role].append(row['center'])
                     if row['relaxed']: self.relaxed[role] += 1
-            if proposed == 0 and all(f >= self.rule['normal_attempts']+self.rule['relaxed_attempts'] for f in failures.values()):
-                raise ValueError(f'{self.flow}/{role}/{tag}: no source can produce a legal center; {self.rejections}')
             if attempt % 2048 < batch:
                 print(json.dumps(dict(flow=self.flow, role=role, tag=tag, accepted=len(accepted), quota=quota, attempts=attempt)), flush=True)
         return accepted[:quota]
 
+    def head_region_rows(self, role, quota):
+        rows = []; per_scale = [quota//len(self.plan)+int(s < quota % len(self.plan)) for s in range(len(self.plan))]
+        for sid, q in enumerate(per_scale): rows.extend(self.fill(role, [('head', h) for h in self.pools[role]], q, tag=f'scale{sid}', fixed_sid=sid))
+        return rows
+
+    def generate_test(self):
+        counts = self.spec['dataset']['per_flow_counts']['test']; minimum = self.spec['coverage']['min_head_centers_per_instance_per_split']
+        rows = []
+        for instance in self.instances: rows.extend(self.fill('test', [('gt', instance)], minimum, tag=f'gt{instance}'))
+        rows.extend(self.head_region_rows('test', counts-len(rows)))
+        return rows
+
+    def generate_validation(self):
+        return self.head_region_rows('validation', self.spec['dataset']['per_flow_counts']['validation'])
+
+    def generate_train(self, test_rows):
+        """Paired training centers for every covered-instance test positive, then head-region rows up to the quota."""
+        counts = self.spec['dataset']['per_flow_counts']['train']; rows = []; unpaired = []
+        targets = [dict(r, test_index=i) for i, r in enumerate(test_rows) if r['label'] == 1 and r['instance'] not in self.heldout]
+        for target in targets:
+            pair = self.fill('train', [('pair', target)], self.spec['coverage']['paired_train_centers_per_test_positive'], tag=f"pair{target['test_index']}", allow_short=True)
+            if not pair: unpaired.append(int(target['test_index']))
+            rows.extend(pair)
+        self.unpaired_test_rows = unpaired
+        rows.extend(self.head_region_rows('train', counts-len(rows)))
+        return rows
+
+    def reserve_evaluation(self, rows):
+        centers = np.stack([r['center'] for r in rows]); h = np.array([r['local_grid_scale'] for r in rows])
+        self.eval_points = np.concatenate([self.eval_points, centers]) if len(self.eval_points) else centers
+        self.eval_h = np.concatenate([self.eval_h, h]) if len(self.eval_h) else h; self.eval_tree = cKDTree(self.eval_points)
+
     def build(self, out):
-        out.mkdir(parents=True, exist_ok=False); reports = {}
+        out.mkdir(parents=True, exist_ok=False); rows = {}; started = time.perf_counter()
+        self.eval_points = np.zeros((0, 3)); self.eval_h = np.zeros(0); self.eval_tree = None
+        shuffle = lambda role, items: [items[i] for i in np.random.default_rng([self.rule['seed'], self.index, 11, ROLES.index(role)]).permutation(len(items))]
+        rows['test'] = shuffle('test', self.generate_test()); self.reserve_evaluation(rows['test']); self.log('test', rows['test'], started)
+        rows['validation'] = shuffle('validation', self.generate_validation()); self.reserve_evaluation(rows['validation']); self.log('validation', rows['validation'], started)
+        rows['train'] = shuffle('train', self.generate_train(rows['test'])); self.log('train', rows['train'], started)
+        # Test positives of covered instances that could not be paired are removed; pairing indices are remapped.
+        if self.unpaired_test_rows:
+            keep = np.ones(len(rows['test']), bool); keep[self.unpaired_test_rows] = False
+            remap = np.full(len(rows['test']), -1, np.int64); remap[keep] = np.arange(int(keep.sum()))
+            rows['test'] = [r for r, k in zip(rows['test'], keep) if k]
+            for r in rows['train']:
+                if r.get('paired_test_center', -1) >= 0: r['paired_test_center'] = int(remap[r['paired_test_center']]); assert r['paired_test_center'] >= 0
+        self.final_trees['train'] = cKDTree(np.stack([r['center'] for r in rows['train']]))
+        self.final_trees['validation'] = cKDTree(np.stack([r['center'] for r in rows['validation']]))
+        for instance in self.groups['covered']:
+            pts = np.array([r['center'] for r in rows['train'] if r['label'] == 1 and r['instance'] == instance])
+            if len(pts): self.instance_trees[instance] = cKDTree(pts)
+        reports = {}
         for role in ROLES:
-            rows = self.generate_role(role); folder = out/role; folder.mkdir()
-            reports[role] = self.save(role, rows, folder)
-            centers = np.stack([r['center'] for r in rows]); self.final[role] = rows; self.final_trees[role] = cKDTree(centers)
-            if role == 'train':
-                for instance in self.groups['covered']:
-                    pts = np.array([r['center'] for r in rows if r['label'] == 1 and r['instance'] == instance])
-                    if len(pts): self.instance_trees[instance] = cKDTree(pts)
+            folder = out/role; folder.mkdir(); reports[role] = self.save(role, rows[role], folder)
+        reports['test']['unpaired_test_rows_removed'] = len(self.unpaired_test_rows)
         return reports
+
+    def log(self, role, rows, started):
+        print(json.dumps(dict(flow=self.flow, role=role, rows=len(rows), seconds=round(time.perf_counter()-started, 1), relaxed=self.relaxed[role], rejections=self.rejections)), flush=True)
 
     def save(self, role, rows, folder):
         n = len(rows); g = np.lib.format.open_memmap(folder/'geometry.npy', mode='w+', dtype=np.float32, shape=(n, 27, 32, 3))
@@ -289,7 +336,8 @@ class Builder:
         np.savez_compressed(folder/INDEX_FILE, sample_kind=kind, relaxed=relaxed, neighbor_filter=np.where(relaxed, FILTER_RELAXED, FILTER_IN_DOMAIN).astype(np.int8),
                             original_center_id=np.zeros(n, np.int64), nearest_instance=np.array([r['nearest_instance'] for r in rows], np.int64),
                             heldout_instance=np.array([r['nearest_instance'] in self.heldout for r in rows]), center_gt_owner=owner,
-                            center_in_gt_head=in_gt_head, offset_test=np.array([role == 'test' and r['label'] == 1 and r['instance'] not in self.heldout for r in rows]))
+                            center_in_gt_head=in_gt_head, offset_test=np.array([role == 'test' and r['label'] == 1 and r['instance'] not in self.heldout for r in rows]),
+                            paired_test_center=np.array([r.get('paired_test_center', -1) for r in rows], np.int64))
         np.savez_compressed(folder/ATTRIBUTE_FILE, seed_points=points, stencil_slot=slots, exact_stencil_coordinates=np.ones(n, bool),
                             lambda2_threshold=np.array(self.threshold), **attributes)
         return dict(samples=n, classes=np.bincount(m['labels'], minlength=2).tolist(), gt_head_rows=int((kind == KIND_GT_HEAD).sum()),
@@ -314,7 +362,8 @@ def prepare(spec, index, write, sha, identity, pilot=False):
     report = dict(complete=True, pilot=pilot, identity=identity(), flow=flow, splits=reports, instance_split=builder.groups,
                   heldout_exclusion_boxes=[[lo.tolist(), hi.tolist()] for lo, hi in builder.exclusion], head_groups={str(k): v for k, v in builder.head_group.items()},
                   catalog=builder.catalog_report, rejections=builder.rejections, relaxed=builder.relaxed, trace_calls=builder.trace_calls,
-                  coverage_requirement_met=coverage_ok, distances=spec['distances'], proposals=spec['proposals'],
+                  coverage_requirement_met=coverage_ok, distances=spec['distances'], proposals=spec['proposals'], generation_order=['test', 'validation', 'train'],
+                  unpaired_test_rows_removed=reports['test'].get('unpaired_test_rows_removed', 0),
                   spatial_cell_and_physical_length_audit_passed=True, scale_plan=builder.plan)
     write(out/'preparation.json', report)
     if not all(coverage_ok.values()): raise ValueError(f'{flow}: coverage requirement not met: {coverage_ok}')
