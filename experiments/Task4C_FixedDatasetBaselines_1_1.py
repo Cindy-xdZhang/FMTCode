@@ -119,6 +119,7 @@ def summarize(spec, config):
 
 
 def runtime(spec, config, phase, state, code):
+    Path(spec['output']).mkdir(parents=True, exist_ok=True)   # the per-family folder does not exist before preflight runs
     engine.append_locked(Path(spec['output'])/'runtime.jsonl', json.dumps(dict(identity=identity(config), family=spec['family'], phase=phase, state=state, exit_code=code,
         job_id=os.environ.get('SLURM_JOB_ID'), array_job_id=os.environ.get('SLURM_ARRAY_JOB_ID'), array_index=os.environ.get('SLURM_ARRAY_TASK_ID'),
         hostname=socket.gethostname(), at_utc=datetime.now(timezone.utc).isoformat()))+'\n')
