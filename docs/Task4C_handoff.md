@@ -165,6 +165,8 @@ VTK点数组按x最快变化，NumPy空间数组按 **`[z,y,x]`** reshape。上�
 
 ## 3. 当前冻结数据的构造规则
 
+> 2026-09-18 起：本节与第 4 节描述的 BottomDensity 1.2 / GTHeadCoverage 1.1 数据是新固定数据集的**模板**；新实验使用 3b 节的固定线簇数据集 v1。
+
 配置：[Ablation_Task4C_BottomDensity_1.2.json](../config/Ablation_Task4C_BottomDensity_1.2.json)。科学commit `a7643890d22c7faf63c1f716bb6222ba5271c5ff`；配置SHA256 `c92b892ed1db9e6e01d64f4eea7792e616e5ab6f0b4a7436b3b456739be44363`。四个原始VTK哈希也登记在该配置。
 
 **候选及标签。** Channel的lambda2阈值为−13.395，TBL为−0.0272。网格单元八顶点全部低于阈值，且八顶点`oyf`均值>0；实际播种点插值后的`oyf`也须>0。将这些单元按六邻接连接，少于10个单元的头区剔除。查询完整头区所有单元中心的GT归属：同一实例覆盖≥50%则为Hairpin；完全没有GT覆盖则为Non-hairpin；其余部分重叠头区剔除。同头区线簇继承该标签。**当前为恢复后的完整头区规则，不是曾尝试的局部线束多数标签。** 负样本也来自涡候选区，不从全场空白区域随意采样。
@@ -230,6 +232,45 @@ physical_seeds = seed_xyz.astype(np.float64) * meta["radius"][i] + meta["centroi
 ```
 
 `counts`控制mask；填充不参与池化、归一化或损失。`instance/head_component/source_cell/center/scale_id`仅供追溯，不能作为分类特征。`center`为原播种中心，`centroid`为整束点质心，两者不同。追加样本来源见各流场`augmentation_index.npz`，文件哈希见`preparation.json`。原始VTK、缓存和可视化大产物不随Git推送，合作者需要这些文件或Ibex读取权限。
+
+## 3b. 2026-09-18 起的固定线簇数据集 v1（Ablation_Task4C_FPS16_1.2）
+
+用户裁定 Task4-c 数据集从此长期固定：改变邻居数（k≤16）、邻居选法、是否固定中心、重采样点数、编码或网络都不重建数据；只有改变积分/清理/标签/播种筛选/模板才建新版本。规则全文见总协议 2b 节与 [Task4C_FPS16_protocol_1.2.md](Task4C_FPS16_protocol_1.2.md)；要点：
+
+- 样本 = 采样点；中心保留 λ₂/oyf/同头区筛选，26 个模板邻居只要求在计算域内，全部积分。
+- 保留条件：中心线通过清理且 ≥16 条邻居通过清理（≥17 线）；同一层 1000 次失败后放松中心筛选，标签按中心点 GT 归属决定并记 `relaxed`。
+- 模板为上节 GTHeadCoverage 1.1 的 196,960 / 3,000 / 11,320 行，只替换不满足条件的行（72,043 / 1,248 / 4,518）及失去 4h 内同头区训练中心的评价行；旧行邻居曾经过涡区过滤（`neighbor_filter`=0），新行没有（1），放松行为 2。
+- 重建行中心恒在第 0 槽（`original_center_id`=0）；保存全部通过清理的域内邻居（16–26 条）。
+
+缓存（重建 52046106、核验 52046107 完成后为冻结版本；哈希以 `data_audit.json` 为准）：
+
+```text
+/ibex/user/zhanx0o/FMT_Task4C_FPS16_1p2_20260918_r2/
+  outputs/Ablation_Task4C_FPS16_1.2/physical/
+    {channel,tbl}/{train,validation,test}/
+      geometry.npy               # float32 [N,27,32,3] 归一化线，第0槽中心线
+      seeds.npy                  # float32 [N,27,3] 归一化播种点
+      metadata.npz               # labels, counts, instance, center, centroid, radius, ...
+      replacement_index.npz      # replaced, relaxed, neighbor_filter, original_center_id, source_row, ...
+      line_seed_attributes.npz   # seed_points, stencil_slot, lambda2, oyf, inside, head_candidate, oyf_positive
+```
+
+```python
+import numpy as np
+from pathlib import Path
+folder = Path(".../physical/channel/train")
+geometry = np.load(folder / "geometry.npy", mmap_mode="r"); seeds = np.load(folder / "seeds.npy", mmap_mode="r")
+with np.load(folder / "metadata.npz") as z: meta = {k: z[k] for k in z.files}
+with np.load(folder / "replacement_index.npz") as z: index = {k: z[k] for k in z.files}
+with np.load(folder / "line_seed_attributes.npz") as z: attr = {k: z[k] for k in z.files}
+i = 0; n = int(meta["counts"][i])                      # n >= 17
+center_line = geometry[i, index["original_center_id"][i]]   # 第0槽
+neighbour_ids = [j for j in range(n) if j != index["original_center_id"][i]]
+step1_neighbours = [j for j in neighbour_ids if attr["head_candidate"][i, j]]   # 按 step1 标签筛选，无需重建
+seed_xyz = attr["seed_points"][i, :n]                  # 物理播种点，与 geometry 逐槽对应
+```
+
+`labels` 为最终标签（放松行可能与 `source_label` 不同）；`instance/head_component/source_cell/center/scale_id` 与属性文件只供追溯和邻居筛选，不能作为分类特征。
 
 ## 5. 当前最佳FMT：c156
 

@@ -159,12 +159,42 @@ FMT 是由 Fourier 变换、`sin/cos`、几何不变量和 aggregation 构成的
 | **Task4-c：Hairpin区域二分类（2.1）** | **仅 Channel 3D 快照** | 局部七线簇几何→Hairpin / Non-hairpin，标签为中心是否在GT区域 | FMT＋MLP与同几何体素化的Conv3D＋MLP | 正类F1、AP、平衡准确率、混淆矩阵、积分有效率 | FMT是否改善隔离空间区间的hairpin区域识别；不作为论文曲面检测F1 |
 | **Task4-c：论文预处理线簇二分类（冻结3.1）** | **Channel+TBL各一帧** | lambda2/正oyf头区→RK45→清洗及32点重采样→10..256线整束归一化；完整头区GT重叠二类标签 | 同束FMT＋MLP与Conv3D＋MLP | 合并、分流场及每头区一票的F1/AP等；独立头区和GT实例数、清洗统计 | 两帧空间留出上的表示比较；多线子集不等于独立涡实例，不是论文人工四类/曲面检测 |
 | **Task4-c：多尺度线簇二分类（4.1数据、4.6最终评估）** | **Channel+TBL各一帧** | 相同头区/GT二类标签；中心周围27种子、10..27条清洗后涡线，实际改变距离和积分尺度 | 原表示＋有版本的正则化网络，两方法使用同一束几何 | 合并/分流场/分尺度/每头区F1等，三个新优化种子；扩大测试10,000束 | 仅以训练/验证冻结选择后一次测试；4.1–4.5旧验证门槛记录保留；不是新增独立快照 |
+| **Task4-c：固定线簇数据集 v1（1.2 起长期固定）** | **Channel+TBL各一帧** | 采样点为样本；中心保留λ₂/oyf/同头区筛选，26个域内邻居全部积分；中心线有效且≥16邻居通过清理；放松按中心GT归属定标签；逐线保存播种点与step1/oyf标签 | 同一固定数据上固定中心的p35/h0与c156（FPS16及六邻居对照），后续任何编码/网络比较 | 合并、分流场、保留/替换/放松子集的F1、AP等；单种子或多种子按各实验登记 | 数据集不再因邻居数、选法或中心策略重建；比较只改变编码与网络。见2b节 |
 | **Task5：不同尺度几何学习** | 2D、3D | 每个 primitive 的邻居距离、积分步长和积分步数可变；积分后统一重采样为固定 `K×L×C`，再做 IVD 监督二分类 | 固定尺度 Task3 迁移、variable-scale Raw、结构匹配 Raw-PCA residual、variable-scale Raw+FMT | unseen-scale confirmation 的 F1、Average Precision；逐尺度、逐流场及 family macro | 模型能否学习跨尺度 primitive；FMT 是否提高 variable-scale IVD 涡识别 |
 | **Task6：单流场primitive几何重建（2.1冻结；当前修复3.1）** | 当前 3D | 多时间、多位置、多尺度七线geometry→冻结FMT token→VAE→同一簇完整七线geometry；每流场单独训练，测试完整未见primitive | 2.1原FMT与3.1新signed-FMT分别与各自同数据、同VAE结构及同潜变量维数的Raw geometry→VAE→geometry配对；原实验不覆盖 | 七条对应路径线全时段几何重建误差、同时间粒子间距误差、逐尺度/时长及训练/测试分项 | FMT是否帮助VAE学习和重建该流场的primitive几何分布 |
 | **Task7：遮挡区域补全** | 当前 3D | 外部可见 primitive tokens → 隐藏区域材料轨迹；原流场积分自监督 | 同上下文网络与相同可见材料点下的各特征方案 | 隐藏区域位置及相对几何误差、存储/计算开销 | tokens 是否能支持区域间上下文推断 |
 | **Task8：短流映射组合** | 当前 3D | 已观测的短流映射 tokens 逐段查询，将预测到达位置输入下一段 | 同逐段解码器设置的特征方案与原轨线插值组合 | 组合轨迹位置和形变误差、分段误差增长 | token 是否支持流映射实际组合；不宣称预测未知未来 |
 
 Task4 的背景类处理必须在首个实验前冻结。Task4-b 1.2 冻结为涡候选内部四类：ordinary streamwise、ordinary spanwise、hairpin head、hairpin limb；non-vortex 使用 `ignore=-1`，不进入四分类损失或指标。若加入 non-vortex，必须建立五分类新版本；两种协议不得混在同一结果表中。
+
+## 2b. Task4-c 固定线簇数据集 v1（2026-09-18 起长期固定；由 `Ablation_Task4C_FPS16_1.2` 构建）
+
+用户 2026-09-18 裁定：Task4-c 以后不再因为改变邻居数量、邻居选择方式或“中心是否固定”而重建数据集。数据集一次建好、长期固定；改变编码/网络的实验只在编码阶段读取所需的线。构建规则如下，细节与证据见 [Task4C_FPS16_protocol_1.2.md](Task4C_FPS16_protocol_1.2.md)。
+
+**样本定义。** 一个样本就是三维空间中的一个采样点（中心）。从它沿涡量场积分得到的线是中心线；以它为中心的 3×3×3 立方模板（间距 0.25h / 0.5h / 1h，h 为当地网格间距几何平均）上的 26 个点积分得到邻居线。中心线加邻居线构成线束；线束只是采样点的派生物，不是样本本身。
+
+**构建步骤。**
+1. **筛选播种点（step1，只对中心）。** 头区样本：中心落在 λ₂<阈值（Channel −13.395，TBL −0.0272）且 oyf>0 的候选头区单元内，插值 oyf>0，并属于该连通头区；GT 头部补样：中心在指定人工 GT 实例内且满足速度–涡量夹角、λ₂、oyf>0。**26 个邻居播种点只要求落在计算域内，不再施加 λ₂/oyf/同头区过滤**（旧过滤使薄头区最多只有 12–15 个合格模板点，无法满足 16 个邻居）。
+2. **积分。** 沿完整原生涡量场 RK45 双向积分。Channel 单向目标长度 0.08 / 0.10 / 0.12（ds 0.001/80、0.002/50、0.004/30 步），TBL 4 / 5 / 6（0.025/160、0.05/100、0.04/150）。三种模板间距 × 三种长度共九种尺度组合。
+3. **逐线清理。** 删除非有限值或点数 ≤2、任一半线实际弧长不在 [0.95L, 1.002L]、去重后点数不足、任一坐标轴跨度为 0 的曲线；其余按弧长均匀重采样 32 点并再次检查坐标轴跨度。**样本保留条件：中心线通过清理且至少 16 条邻居线通过清理（≥17 条有效线）**，否则丢弃该采样点并在同一层重新播种。
+4. **放松。** 同一层（流场 / 划分 / 类别 / 实例 / 头区 / 尺度 / 采样池）连续 1000 次试探仍无合法样本时，放松中心点的 λ₂/oyf 筛选（头区样本在该层候选单元包围盒外扩一个网格间距内均匀采样，GT 头部样本从该实例未过滤的 GT 单元采样）；放松样本的标签按中心点的人工 GT 归属决定（在某实例内为正类并记该实例，否则负类），并标记 `relaxed`。再 1000 次仍失败则构建报错，不再放松。
+
+**标签。** 头区样本沿用整头区 GT 覆盖规则（单一实例覆盖 ≥50% 为正，零覆盖为负，其余排除）；132 个人工 GT 头部补样按中心所在 GT 实例为正；放松样本按中心点 GT 归属。GT 实例 0 有效。
+
+**模板与替换。** 模板为 GTHeadCoverage 1.1 的 196,960 / 3,000 / 11,320 行（Channel 100,720 / 1,500 / 5,740；TBL 96,240 / 1,500 / 5,580），流场、划分、类别、GT 实例、头区、尺度、下半区采样池、标签规则逐行保持。只替换不满足保留条件的行（72,043 / 1,248 / 4,518），以及因训练中心被替换而失去 4h 内同头区训练中心的验证/测试行。保留的旧行邻居曾经过 λ₂/oyf/同头区过滤，新行没有；逐行 `neighbor_filter` 标记（0 旧行 / 1 新行 / 2 放松），这是用户接受的已知不一致。划分距离规则（评价中心距任意训练中心 ≥1h、距同头区训练中心 ≤4h、测试距验证 ≥0.5h）对最终数据集检查。
+
+**存储格式（每流场每划分一组）。**
+- `geometry.npy` float32 [N,27,32,3]：整束质心/最大半径归一化后的线，第 0 槽为中心线，`counts` 之外补零。
+- `seeds.npy` float32 [N,27,3]：同一归一化坐标系下的播种点。
+- `metadata.npz`：`labels`、`counts`、`instance`、`head_component`、`scale_id`、`center`（物理中心）、`centroid`、`radius`、`neighbor_distance`、`local_grid_scale`、`ds`/`maxiteration`/`requested_half_length`、`half_arc_lengths`、`half_step_counts`、`nearest_train_center_distance`、`nearest_same_head_train_center_distance`、`source_cell`、`center_number`、`bounds`、`seed_rms_distance`、`measured_mean_arc_length`。
+- `replacement_index.npz`：`source_row`、`replaced`、`attempts`、`original_center_id`（重建行恒为 0）、`source_head`、`lower_pool`、`relaxed`、`neighbor_filter`、`source_label`、`source_instance`。
+- `line_seed_attributes.npz`：`seed_points` float64 [N,27,3] 每条线的物理播种点（重建行为模板点精确坐标，保留行由 float32 反算），`stencil_slot`（0 为中心，−1 填充），`exact_stencil_coordinates`，`lambda2`、`oyf`（播种点三线性插值），`inside`，`head_candidate`（= inside ∧ λ₂<阈值 ∧ oyf>0，即 step1 条件的逐点版本），`oyf_positive`，`lambda2_threshold`。播种点与线束因此是显式的键值对。
+
+**冻结政策。**
+- 数据文件由 `Ablation_Task4C_FPS16_1.2`（科学 commit `e67b03f9`，Ibex 重建 52046106、核验 52046107）生成；`audit-data` 通过后其 `data_audit.json` 中的 30 份文件哈希即为冻结哈希，后续实验必须核对后只读使用，不得修改、重排或重新积分。
+- **无需重建即可改变**：邻居数 k ≤ 16 及选法（FPS、最近、按 `head_candidate`/`oyf_positive` 标签筛选）、固定中心或明确标名的轮换对照、逐线重采样点数（如 48 点）、编码时的归一化与特征配方、网络与训练规则。
+- **必须建新数据版本**：改变积分长度/步长、清理阈值、λ₂ 阈值或播种筛选、标签规则、模板行数或划分规则、流场快照。新版本必须换版本号并保留本版本文件。
+- 引用方式：论文与表格中称“Task4-c 固定线簇数据集 v1”，并注明 `Ablation_Task4C_FPS16_1.2` 与冻结哈希；旧的 BottomDensity 1.2 / GTHeadCoverage 1.1 数据只作为其模板与历史结果的来源，不再用于新实验。
 
 ## 3. 不得混用的表述
 
@@ -250,6 +280,7 @@ Task4 的背景类处理必须在首个实验前冻结。Task4-b 1.2 冻结为�
 
 ### Task4
 
+- **2026-09-18 起 Task4-c 使用固定线簇数据集 v1（本文 2b 节，`Ablation_Task4C_FPS16_1.2`）；新实验只改编码与网络，不重建数据。** 下列历史定义保留供追溯。
 - Task4-c 当前为Channel+TBL多尺度线簇二分类，见 `Task4C_multiscale_protocol_4.1.md`；3.1预处理与2.1局部七线定义和结果冻结。下列Task4-b部位标签和IVD阈值不应用于Task4-c。GT实例0有效；3.1/4.1完整头区被单一实例覆盖至少50%为正、完全无GT重叠为负，其他部分重叠排除。完整头区、GT实例和原生源节点支撑隔离。
 - 只允许 3D 数据；必须报告每类样本数和 class-balanced 指标。
 - 涡区域定位误差与涡型分类误差应分开统计。
