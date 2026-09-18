@@ -13100,3 +13100,16 @@ r4 链：52050941 verify-inputs COMPLETED 24s；52050942_0/1 pilot COMPLETED 2m1
 | pointnet | preflight 52058967 / reuse 52058968 / pilot 52058969 / train 52058970 / summarize 52058971 |
 | pointnetpp | preflight 52058972 / reuse 52058973 / pilot 52058974 / encode 52058975 / train 52058976 / summarize 52058977 |
 <!-- task4c-fixed-dataset-train-submit-20260918-registry-end -->
+
+### mainExp_Task4C_FixedDatasetBaselines_1.1 — preflight 失败与重提（2026-09-18 15:26 UTC）
+
+<!-- task4c-fixed-dataset-baselines-resubmit-20260918-registry -->
+首批 52058955–52058977：四个 preflight FAILED 1:0（`runtime.jsonl` 所在目录不存在），其余 CANCELLED。修复 commit `a827ad5843d4e63f1cd1b1a22e44b657bfeac2e6`，部署 `/ibex/user/zhanx0o/FMT_Task4C_FixedDatasetBaselines_20260918`。
+
+| 家族 | 作业 |
+|---|---|
+| conv | preflight 52059304 / reuse 52059305 / encode 52059306 / train 52059307 / summarize 52059308 |
+| bilstm | preflight 52059309 / reuse 52059311 / pilot 52059312 / train 52059313 / summarize 52059314 |
+| pointnet | preflight 52059315 / reuse 52059316 / pilot 52059317 / train 52059318 / summarize 52059319 |
+| pointnetpp | preflight 52059320 / reuse 52059321 / pilot 52059322 / encode 52059323 / train 52059324 / summarize 52059325 |
+<!-- task4c-fixed-dataset-baselines-resubmit-20260918-registry-end -->
