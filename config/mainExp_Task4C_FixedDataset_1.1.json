@@ -1,6 +1,6 @@
 {
   "version": "mainExp_Task4C_FixedDataset_1.1",
-  "execution_revision": "r3_heldout_box_no_rules",
+  "execution_revision": "r4_label_by_center_no_negative_grouping",
   "output": "outputs/mainExp_Task4C_FixedDataset_1.1",
   "physical_config": "config/mainExp_Task4C_GTHeadCoverage_1.1.json",
   "physical_config_note": "frozen flow files, lambda2 thresholds, integration parameters, cleaning and 3/1/1 head blocks are read from this file; nothing else of GTHeadCoverage 1.1 is reused",
@@ -56,7 +56,7 @@
     "normal_attempts": 100,
     "relaxed_attempts": 1000,
     "integration_batch_templates": 128,
-    "center_filter": "head-region centers: oyf>0 and same head component (frozen 4.14 rule); GT-head centers: GT membership, head angle, lambda2<threshold, oyf>0",
+    "center_filter": "head-region centers: oyf>0 and same head component (frozen 4.14 rule); covered-instance GT rows: GT membership, head angle, lambda2<threshold, oyf>0; held-out box rows: none",
     "neighbor_filter": "in-domain only; all 26 stencil neighbours are integrated",
     "relaxation": "after normal_attempts (100) consecutive failures of one head / instance / pairing target the center filter is dropped; label = GT membership of the center"
   },
@@ -83,5 +83,8 @@
   ],
   "r1_failure": "channel build 52047085_0 FAILED at test/gt10 after training was generated first: no head point stayed >=3h from the dense training centers (31,902 too_close_to_train rejections); order inverted in r2",
   "r2_failure": "pilots 52048031_[0-1] FAILED the train coverage check (channel 11 / tbl 4 covered instances at 1 head center): paired centers were required to lie inside the GT box but not to satisfy the head-angle condition that coverage counts; r3 adds the angle check to pair_sample and a per-covered-instance GT-head top-up, and applies the user's 2026-09-18 evening rules (1h instead of 3h, 100 instead of 1000 attempts, coverage minimum 2 with target 10)",
-  "rules_document": "docs/Task4C_fixed_dataset_rules_v1.md"
+  "rules_document": "docs/Task4C_fixed_dataset_rules_v1.md",
+  "labels": "every row: label = 1 if the center point lies inside a hairpin GT cell (instance = that VortexId, 0 is valid), else 0; no head-region overlap rule",
+  "head_pools": "every candidate head region is split by its own 3/1/1 spatial blocks into train/validation/test pools; no grouping of non-hairpin heads by nearest instance (r4)",
+  "r3_note": "r3 (d9dc32bf) pilots passed and channel build completed; cancelled and outputs deleted before use because the user replaced the head-region overlap label rule with center GT membership and removed the negative-head grouping"
 }

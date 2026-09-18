@@ -147,6 +147,17 @@ class FixedDatasetRules(unittest.TestCase):
         with patch.object(b, 'fill', fill): rows = b.generate_test()
         self.assertEqual(calls[:2], [('gt', 7, 2, True), ('box', 9, 2, True)]); self.assertEqual(len(rows), 6)
 
+    def test_head_sample_labels_every_row_by_gt_membership_of_the_center(self):
+        b = bare_builder(components=None, axes=None, oyf=None, index=0, scene=dict(gt=None, locator=None))
+        head = dict(head_component=3, cell_ids=[0], label=0, instance=-1)
+        fake = lambda *a: dict(center=np.array([1., 2, 3]), seeds=np.zeros((27, 3)), neighbor_distance=1.)
+        with patch.object(data, 'head_center_and_neighbors', fake), patch.object(data, 'sample_gt', return_value=(np.array([5]), None)):
+            s = b.head_sample('train', head, 1, {'neighbor_grid_scale': 1.}, 0, False, np.random.default_rng(0))
+        self.assertEqual((s['label'], s['instance'], s['nearest_instance'], s['kind']), (1, 5, 5, data.KIND_HEAD_REGION))      # head catalogue said 0, center is inside GT 5
+        with patch.object(data, 'head_center_and_neighbors', fake), patch.object(data, 'sample_gt', return_value=(np.array([-1]), None)):
+            s = b.head_sample('train', dict(head, label=1, instance=7), 2, {'neighbor_grid_scale': 1.}, 0, False, np.random.default_rng(0))
+        self.assertEqual((s['label'], s['instance'], s['nearest_instance']), (0, -1, -1))
+
     def test_config_encodes_user_rules(self):
         c = self.config
         self.assertEqual(c['distances']['test_max_to_same_instance_train_over_h'], 6.); self.assertEqual(c['distances']['test_min_to_validation_over_h'], .5)

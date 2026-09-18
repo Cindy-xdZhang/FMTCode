@@ -6,6 +6,7 @@ Rules (user, 2026-09-18; protocol section 2b):
   (lambda2 < threshold and oyf > 0, same head component; GT-head centers additionally need
   GT membership and the head angle).  Neighbours only need to lie inside the domain.
 * A sample is kept only when the center line and >= 16 neighbour lines survive cleaning.
+* Every row's label is the GT membership of its center point (inside a hairpin GT cell -> 1, else 0); no other label rule.
 * After ``normal_attempts`` (100) consecutive failures of one head the center filter is relaxed
   (center anywhere in the head's cell box); the label of a relaxed center is the GT
   membership of the center point.
@@ -91,19 +92,12 @@ class Builder:
         self.heldout = set(self.groups['heldout'])
         spacing = np.array([np.median(np.diff(a)) for a in self.axes]); margin = spacing.max()*self.dist['heldout_exclusion_margin_over_h']
         self.exclusion = [(self.bounds[i][0]-margin, self.bounds[i][1]+margin) for i in self.heldout]
-        gt_tree_points = np.concatenate([self.gt_cells[i] for i in self.instances]); owners = np.concatenate([[i]*len(self.gt_cells[i]) for i in self.instances])
-        gt_tree = cKDTree(gt_tree_points)
-        # Head pools per split: positive heads follow their instance, negatives the nearest instance.
+        # Head pools per split: every candidate head region is split by its own 3/1/1 spatial blocks (r4: no grouping of
+        # non-hairpin heads, no routing by instance; held-out GT boxes are kept out of train/validation by the exclusion check).
         self.pools = {r: [] for r in ROLES}; self.head_group = {}
         for head in self.catalog:
-            if head['label'] == 1: instance = head['instance']
-            else:
-                d, j = gt_tree.query(cell_centers(head['cell_ids'], self.components.shape, self.axes)); instance = int(owners[j[np.argmin(d)]])
-            heldout = instance in self.heldout; self.head_group[head['head_component']] = dict(nearest_instance=instance, heldout=heldout)
-            if heldout: self.pools['test'].append(dict(head, cell_ids=head['cell_ids']))
-            else:
-                for r in ROLES:
-                    if len(head['split_cells'][r]): self.pools[r].append(dict(head, cell_ids=head['split_cells'][r]))
+            for r in ROLES:
+                if len(head['split_cells'][r]): self.pools[r].append(dict(head, cell_ids=head['split_cells'][r]))
         self.rejections = {}; self.trace_calls = 0; self.relaxed = {r: 0 for r in ROLES}; self.failures = {}
         self.final = {}; self.final_trees = {}; self.instance_trees = {}; self.reserved = {r: [] for r in ROLES}; self.attempts = {r: 0 for r in ROLES}
         self.box_cache = {}; self.reserved_cache = {}
@@ -156,10 +150,12 @@ class Builder:
         else:
             sample = head_center_and_neighbors(head, self.components, self.axes, self.oyf, number, scale, self.rule['seed']+self.index*100000)
             if sample is None: self.reject('center_failed_oyf_or_head'); return None
-            label = head['label']; instance = head['instance']; sample['local_grid_scale'] = sample['neighbor_distance']/scale['neighbor_grid_scale']
+            sample['local_grid_scale'] = sample['neighbor_distance']/scale['neighbor_grid_scale']
+            owner, _ = sample_gt(self.scene['gt'], sample['center'][None], self.scene['locator'])   # r4: label = is the center inside a hairpin GT cell
+            label = int(owner[0] >= 0); instance = int(owner[0]) if label else -1
         sample.update(head_component=head['head_component'], instance=instance, label=label, scale_id=sid, center_number=number,
                       nearest_train_center_distance=0., nearest_same_head_train_center_distance=0., kind=KIND_HEAD_REGION,
-                      relaxed=relaxed, nearest_instance=self.head_group[head['head_component']]['nearest_instance'], paired_test_center=-1)
+                      relaxed=relaxed, nearest_instance=instance, paired_test_center=-1)
         return sample
 
     def gt_sample(self, role, instance, number, scale, sid, relaxed, rng):
@@ -358,6 +354,7 @@ class Builder:
         relaxed = np.array([r['relaxed'] for r in rows]); kind = np.array([r['kind'] for r in rows], np.int8)
         assert np.all(attributes['head_candidate'][~relaxed & (kind != KIND_GT_BOX), 0]), 'non-relaxed center violates step 1'
         owner, _ = sample_gt(self.scene['gt'], m['center'], self.scene['locator'])
+        assert np.array_equal(m['labels'], (owner >= 0).astype(np.int8)) and np.array_equal(m['instance'], np.where(owner >= 0, owner, -1)), 'label != GT membership of the center'
         angle, _ = head_mask(vector_at(m['center'], self.axes, self.scene['velocity']), vector_at(m['center'], self.axes, self.scene['omega']))
         in_gt_head = (owner >= 0) & angle
         in_box = {i: np.all((m['center'] >= self.bounds[i][0]) & (m['center'] <= self.bounds[i][1]), axis=1) for i in self.heldout}

@@ -90,6 +90,8 @@ def audit_data(spec, config):
             owner, _ = data.sample_gt(scene['gt'], m['center'], scene['locator']); assert np.array_equal(owner, idx['center_gt_owner'])
             angle, _ = data.head_mask(data.vector_at(m['center'], scene['axes'], scene['velocity']), data.vector_at(m['center'], scene['axes'], scene['omega']))
             assert np.array_equal((owner >= 0) & angle, idx['center_in_gt_head'])
+            assert np.array_equal(m['labels'], (owner >= 0).astype(m['labels'].dtype)) and np.array_equal(m['instance'], np.where(owner >= 0, owner, -1))   # r4: one label rule
+            head_rows = idx['sample_kind'] == data.KIND_HEAD_REGION; assert np.array_equal(idx['nearest_instance'][head_rows], m['instance'][head_rows])
             gt_rows = idx['sample_kind'] == data.KIND_GT_HEAD
             assert np.all(m['labels'][gt_rows] == 1) and np.all(owner[gt_rows] == m['instance'][gt_rows]) and np.all(m['head_component'][gt_rows] == -m['instance'][gt_rows]-1)
             relaxed = idx['relaxed']; assert np.array_equal(idx['neighbor_filter'] == data.FILTER_RELAXED, relaxed)
