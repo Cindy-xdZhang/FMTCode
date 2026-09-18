@@ -2,6 +2,8 @@
 
 <!-- task4c-dataset-frozen-policy-20260918 -->
 **2026-09-18 用户裁定：Task4-c 数据集从此长期固定。** 采样点即样本；中心保留 λ₂/oyf/同头区筛选，26 个模板邻居只要求在计算域内并全部积分；样本须中心线有效且 ≥16 邻居通过清理；1000 次失败后放松中心筛选并按中心 GT 归属定标签；每条线保存播种点坐标与 `head_candidate`（step1）/`oyf_positive` 标签。数据由 `Ablation_Task4C_FPS16_1.2`（e67b03f9）构建，`audit-data` 通过后按 `data_audit.json` 哈希冻结。改邻居数（k≤16）、选法、中心策略、重采样、编码或网络**不得重建数据**；只有改积分/清理/标签/播种筛选/模板才建新版本。规则全文：`docs/research_tasks_and_protocol.md` 2b 节、`docs/Task4C_handoff.md` 3b 节、`docs/Task4C_FPS16_protocol_1.2.md`。
+
+**同日追加（覆盖与划分）：** 训练集须覆盖 80% hairpin 实例（每实例头部区域 ≥2 个采样点），余下 20% 实例训练/验证不出现；测试集覆盖全部实例（已覆盖实例用 ≥1h/≤4h 偏移点，未见实例用新点）。数据必须从头重建；`Ablation_Task4C_FPS16_1.2` r2 替换式重建核验失败（重复中心）且不满足覆盖规则，52046108/52046109 已取消，不冻结。规则见总协议 2b 节。
 <!-- task4c-dataset-frozen-policy-20260918-end -->
 <!-- task4c-fps16-1p2-submitted-20260918 -->
 2026-09-18 Claude接替codex，立项`Ablation_Task4C_FPS16_1.2`。查询确认1.1的r2 pilot 52044303_0/1 FAILED/1:0不是导入问题：冻结的`center_and_neighbors`要求27个模板点都oyf>0且属同一连通头区，codex诊断的失败层头区只有7–21个单元、1.0h模板最多12–15个合格点，channel pilot 4,096次试探中46,963/47,550次拒绝为`fewer_than_17_seed_points`，≥17播种点在旧规则下结构性不可能；r2后续52044304–52044307已取消，无F1。

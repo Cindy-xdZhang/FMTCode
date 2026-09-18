@@ -13008,3 +13008,9 @@ r2 科学commit `e67b03f9b2f47ba67e3bfb9efeded51d9fc19b6e`；远端`/ibex/user/z
 | 52046108_[0-3]%4 | train（四臂，seed96721） | 52046107 | V100 | 依赖等待 |
 | 52046109 | audit-results | 52046108 | CPU | 依赖等待 |
 <!-- task4c-fps16-1p2-submitted-20260918-r2-end -->
+
+### FPS16 1.2 r2 结束（2026-09-18 12:20 UTC）
+
+<!-- task4c-fps16-1p2-r2-end -->
+52046106_0 build COMPLETED 0:0 7m00s cn604-18；52046106_1 build COMPLETED 0:0 11m45s cn604-17；52046107 audit-data FAILED 1:0 8s cn604-17（重复中心断言）；52046108_[0-3] train 与 52046109 audit-results 按用户“停止构建”指示 CANCELLED（未启动）。用户追加实例覆盖与实例划分规则，本版本数据不冻结。
+<!-- task4c-fps16-1p2-r2-end-end -->
