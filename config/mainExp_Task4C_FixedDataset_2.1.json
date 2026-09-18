@@ -1,0 +1,66 @@
+{
+  "version": "mainExp_Task4C_FixedDataset_2.1",
+  "rules": "docs/Task4C_fixed_dataset_rules_v2.md",
+  "output": "outputs/mainExp_Task4C_FixedDataset_2.1",
+  "physical_config": "config/mainExp_Task4C_GTHeadCoverage_1.1.json",
+  "physical_config_note": "only the frozen flow files, their SHA-256, the lambda2 thresholds and the RK45 tracer settings are read from this file",
+  "input_roots": [
+    "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D",
+    "/ibex/user/zhanx0o/FMT_Task4B_VelocityCurl_4p1_20260906/repo/inputs"
+  ],
+  "flows": [
+    {
+      "name": "channel",
+      "half_lengths": [
+        0.07,
+        0.1,
+        0.13
+      ],
+      "ds": 0.001
+    },
+    {
+      "name": "tbl",
+      "half_lengths": [
+        3.5,
+        5.0,
+        6.5
+      ],
+      "ds": 0.025
+    }
+  ],
+  "sampling": {
+    "pool_per_flow": 2000000,
+    "samples_per_flow": 200000,
+    "pool_seed": 98301,
+    "poisson_seed": 98302,
+    "pool_chunk": 2000000,
+    "radius_relative_tolerance": 0.0001,
+    "grid_capacity_per_cell": 8,
+    "rule": "uniform-by-volume points inside candidate cells kept only when trilinear lambda2<threshold and oyf>0 (step1); random permutation; greedy dart throwing with the largest radius that still accepts >= N points; the first N accepted points are the samples"
+  },
+  "integration": {
+    "points_per_curve": 32,
+    "minimum_actual_half_arc_fraction": 0.95,
+    "maximum_actual_half_arc_fraction": 1.002,
+    "maximum_error_over_ds": 0.0001,
+    "vtk_internal_propagation_guard_steps": 0.001,
+    "trace_batch_seeds": 4096,
+    "rule": "one bidirectional fixed-step RK45 integration to the longest length; the shorter lengths are the first n_k steps of each half; a half line that left the fluid domain (VTK termination OUT_OF_DOMAIN) only needs [0.25L, 1.25L] of arc, every other half needs [0.95L, 1.002L]; a sample is kept only when all three curves pass",
+    "out_of_domain_min_half_arc_fraction": 0.25,
+    "out_of_domain_max_half_arc_fraction": 1.25
+  },
+  "folds": {
+    "count": 5,
+    "seed": 98303,
+    "test_fold": 0
+  },
+  "pilot": {
+    "pool_per_flow": 200000,
+    "samples_per_flow": 1000
+  },
+  "audit": {
+    "reintegrate_samples": 500,
+    "seed": 98304
+  },
+  "execution_revision": "r3_pool_2M_samples_200k_per_flow"
+}

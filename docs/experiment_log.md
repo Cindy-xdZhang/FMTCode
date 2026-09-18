@@ -4774,3 +4774,15 @@ r2（科学commit `e67b03f9`）：新增`line_seed_attributes.npz`（seed_points
 <!-- task4c-fixed-dataset-baselines-resubmit-20260918 -->
 2026-09-18 `mainExp_Task4C_FixedDatasetBaselines_1.1` 首批四个 preflight（52058955/52058962/52058967/52058972）4–14 秒 FAILED：启动钩子在家族输出目录建立前就写 `runtime.jsonl`，`FileNotFoundError`；后续作业随依赖取消。修复（commit `a827ad58`：钩子先建目录）部署到新目录 `/ibex/user/zhanx0o/FMT_Task4C_FixedDatasetBaselines_20260918`（远端测试 OK），15:26 UTC 重新提交：conv 52059304–52059308、bilstm 52059309–52059314、pointnet 52059315–52059319、pointnetpp 52059320–52059325。FMT 链不受影响：verify-source 52058941、gpu-check 52058942 已完成，train 52058943[0–11] 排队。
 <!-- task4c-fixed-dataset-baselines-resubmit-20260918-end -->
+
+## 2026-09-18：Task4-c 固定数据集 v2（mainExp_Task4C_FixedDataset_2.1）本地构建并核验通过
+
+用户要求从头重写 Task4-c 数据构造：样本＝三维采样点＋三条涡线（Channel 单向 0.07/0.10/0.13、TBL 3.5/5/6.5，固定步长 0.001/0.025），不再生成邻居线，邻域由各方法读取时自行查询；候选区域（λ₂<阈值 ∧ oyf>0）内每流场 20,000,000 均匀初始点经 Poisson disk 降到 100,000；标签＝播种点 GT 单元归属，归属（标注单元→包围盒→候选分量→最近实例）只用于按实例分五折（折 0 测试）。三条曲线全有效才保留、不补采：Channel 保留 83,757（hairpin 12,560），TBL 89,240（hairpin 11,484），共 172,997。Channel 实例 10、39 无正类样本。全部在本地构建（每流场 7–9 分钟），audit-data 通过，`data_audit.json` SHA-256 6ba9b741…。规则 `docs/Task4C_fixed_dataset_rules_v2.md`，实现记录 `docs/Task4C_fixed_dataset_protocol_2.1.md`。代码未提交；v1 数据与 v1 训练作业保留。
+
+## 2026-09-18：固定数据集 v2 r2——出域半线放宽后重建并核验通过
+
+r1 中 Channel 实例 10、39 无正类的根因：两实例贴展向 y 边界，标注单元内的全部 Poisson 样本（50、100 个）因某一方向半线出域、0.13 曲线弧长不足而被“三条全有效”规则删除；2,000 万初始点中分别有 9,954、26,504 个落在其标注单元内，Poisson 选出 150 个，问题在清洗而不在采样。用户裁定：出域（VTK OUT_OF_DOMAIN）导致达不到目标长度的半线放宽到 [0.25L, 1.25L]，照常重采样 32 点。r2 重建：Channel 保留 94,570（hairpin 13,739，含出域半线 11,500），TBL 99,154（hairpin 13,336，含出域半线 11,143），共 193,724，所有实例都有正类；audit-data 通过，`data_audit.json` SHA-256 61c61447…。r1 输出移至 `superseded_r1/`。记录见 `docs/Task4C_fixed_dataset_protocol_2.1.md`。代码仍未提交。
+
+## 2026-09-18：固定数据集 v2 r3——规模改为每流场 2,000,000 初始点 / 200,000 样本
+
+用户修正规模：两流场合计初始点 4,000,000、Poisson 降采样后 400,000 样本，各半。r3 重建并核验通过：Channel 保留 189,416（hairpin 28,878），TBL 198,413（hairpin 28,777），共 387,829；每流场按实例五折，折 0 测试（Channel 40,670、TBL 41,231）。`data_audit.json` SHA-256 e5aaa4fb…。数据、规则文档与配置已打包到 OneDrive `flowData3D/Task4C_fixed_dataset_v2/`（及同名 zip）。r1/r2 输出在 `superseded_r1/`、`superseded_r2/`。代码仍未提交。
