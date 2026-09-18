@@ -13084,3 +13084,19 @@ r4 科学commit `792256a1c00ca7d609840a8c17886bfd6aa94d9d`；远端 `/ibex/user/
 | 52050943_[0-1] | build | 52050942 | CPU | 依赖等待 |
 | 52050944 | audit-data | 52050943 | CPU | 依赖等待 |
 <!-- task4c-fixed-dataset-1p1-r4-submit-20260918-registry-end -->
+
+### mainExp_Task4C_FixedDataset_1.1 r4 完成/冻结；FixedDatasetFMT 1.1 与 FixedDatasetBaselines 1.1 提交（2026-09-18 15:19 UTC）
+
+<!-- task4c-fixed-dataset-train-submit-20260918-registry -->
+r4 链：52050941 verify-inputs COMPLETED 24s；52050942_0/1 pilot COMPLETED 2m15s/2m47s；52050943_0/1 build COMPLETED 15m13s/1h11m47s；52050944 audit-data COMPLETED 35s。数据冻结，`data_audit.json` SHA-256 `60e0ebb67a9fc319debaa378ce90e2027149eadb6381218ee61874e2ed3355e6`。
+
+训练部署 `/ibex/user/zhanx0o/FMT_Task4C_FixedDatasetTrain_20260918`，commit `10927c4512cb7375816a4fc5f80d55222bae23ff`（配置含冻结哈希）。
+
+| 版本 | 作业 |
+|---|---|
+| FixedDatasetFMT_1.1 | verify-source 52058941 / gpu-check 52058942 / train 52058943_[0-11] / audit-results 52058944 |
+| conv | preflight 52058955 / reuse 52058957 / encode 52058958 / train 52058960 / summarize 52058961 |
+| bilstm | preflight 52058962 / reuse 52058963 / pilot 52058964 / train 52058965 / summarize 52058966 |
+| pointnet | preflight 52058967 / reuse 52058968 / pilot 52058969 / train 52058970 / summarize 52058971 |
+| pointnetpp | preflight 52058972 / reuse 52058973 / pilot 52058974 / encode 52058975 / train 52058976 / summarize 52058977 |
+<!-- task4c-fixed-dataset-train-submit-20260918-registry-end -->

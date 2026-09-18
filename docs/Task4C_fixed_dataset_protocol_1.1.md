@@ -44,6 +44,19 @@ GT 头部行的中心从该实例满足“在 GT 内 ∧ 头部夹角 ∧ λ₂<
 
 r2 失败根因：`pair_sample` 只要求新放的训练中心落在 GT 包围盒内，而覆盖计数还要求头部夹角条件；落在 GT 内但不在头部区域的行不计入覆盖。r3 加了夹角检查并补 GT 头部行。
 
-| r4 | 见状态记录 | 待填 | 待运行 | 标签一律＝中心点是否在 hairpin 标注单元内（`save` 与核验逐行断言）；候选区域不再按最近实例分组，未见组头区也按 3/1/1 分池 |
+| **r4（冻结）** | **792256a1** | `..._r4`；52050941 verify 24s、52050942_0/1 pilot 2m15s/2m47s、52050943_0/1 build 15m13s/1h11m47s、52050944 audit-data 35s，全部 COMPLETED | **数据核验通过，数据冻结** | 标签一律＝中心点是否在 hairpin 标注单元内（`save` 与核验逐行断言）；候选区域不再按最近实例分组，未见组头区也按 3/1/1 分池 |
 
 代码：`FMT_Utils/Task4C_FixedDataset_1_1.py`、`experiments/Task4C_FixedDataset_1_1.py`；配置 `config/mainExp_Task4C_FixedDataset_1.1.json`（`execution_revision` 记录修订）；启动器 `ibex_bash/task4c_fixed_dataset_1p1.sh`；测试 `tests/test_task4c_fixed_dataset_1_1.py`（实例分组、距离规则、配对环带与夹角、补样顺序、放松、耗尽、写出、配置，共 8 项）。训练与 baseline 比较在数据冻结后以 `mainExp_Task4C_FixedDatasetFMT_1.1` 与 `mainExp_Task4C_FixedDatasetBaselines_1.1` 进行。
+
+## 冻结数据（r4）
+
+- 远端目录 `/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r4/outputs/mainExp_Task4C_FixedDataset_1.1/physical/{channel,tbl}/{train,validation,test}/`；科学 commit `792256a1c00ca7d609840a8c17886bfd6aa94d9d`。
+- `data_audit.json` SHA-256 **`60e0ebb67a9fc319debaa378ce90e2027149eadb6381218ee61874e2ed3355e6`**（30 份数据文件的哈希在其 `frozen_files`；本地副本 `outputs/mainExp_Task4C_FixedDataset_1.1/data_audit.json`，两份 `preparation.json` 在 `outputs/mainExp_Task4C_FixedDataset_1.1/physical/*/`）。
+- 行数 180,000 / 3,000 / 12,000（每流场 90,000 / 1,500 / 6,000，测试未删行）。
+
+| 流场 | 实例 覆盖/未见 | train 非hairpin/hairpin（放松） | validation | test | 测试中未见实例行（其中 hairpin） | 覆盖组 hairpin 测试点 |
+|---|---|---|---|---|---|---|
+| channel | 59 / 15 | 75,270 / 14,730（48） | 1,267 / 233 | 4,355 / 1,645 | 331（205） | 1,440 |
+| tbl | 46 / 12 | 79,461 / 10,539（9） | 1,349 / 151 | 4,924 / 1,076 | 198（98） | 978 |
+
+每流场训练集约 241.6 万条线，其中约 87% 满足 step1 条件（`head_candidate`），93% oyf>0。训练与 baseline：`mainExp_Task4C_FixedDatasetFMT_1.1`（作业 {'verify-source': '52058941', 'gpu-check': '52058942', 'train': '52058943', 'audit-results': '52058944'}）与 `mainExp_Task4C_FixedDatasetBaselines_1.1`（conv/bilstm/pointnet/pointnetpp，见 Ibex 登记表），部署 `/ibex/user/zhanx0o/FMT_Task4C_FixedDatasetTrain_20260918`（commit 10927c45），2026-09-18 15:17–15:19 UTC 提交。

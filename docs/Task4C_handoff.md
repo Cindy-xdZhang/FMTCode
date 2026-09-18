@@ -1,5 +1,9 @@
 # Task4-c Hairpin 分类：最新交接
 
+<!-- task4c-fixed-dataset-1p1-frozen-20260918 -->
+2026-09-18 **Task4-c 固定线簇数据集 v1 已冻结。** `mainExp_Task4C_FixedDataset_1.1` r4（科学commit `792256a1`）链全部 COMPLETED：52050941 输入核验、52050942_0/1 pilot、52050943_0/1 正式重建（channel 15 分钟、TBL 1 小时 12 分）、52050944 数据核验（35 秒，逐行规则全部通过）。`data_audit.json` SHA-256 `60e0ebb67a9fc319debaa378ce90e2027149eadb6381218ee61874e2ed3355e6`；远端 `/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r4/outputs/mainExp_Task4C_FixedDataset_1.1/physical/`；本地证据 `outputs/mainExp_Task4C_FixedDataset_1.1/`。行数 180,000/3,000/12,000；channel 训练 75,270/14,730（放松 48）、测试 4,355/1,645，TBL 训练 79,461/10,539（放松 9）、测试 4,924/1,076；未见实例测试行 331/198。15:17–15:19 UTC 提交训练：`mainExp_Task4C_FixedDatasetFMT_1.1`（commit 10927c45，部署 `/ibex/user/zhanx0o/FMT_Task4C_FixedDatasetTrain_20260918`）verify-source 52058941 → gpu-check 52058942 → train 52058943[0–11]（四臂×3 种子）→ audit-results 52058944；`mainExp_Task4C_FixedDatasetBaselines_1.1` conv 52058955–52058961、bilstm 52058962–52058966、pointnet 52058967–52058971、pointnetpp 52058972–52058977。规则文档 `docs/Task4C_fixed_dataset_rules_v1.md`，实现记录 `docs/Task4C_fixed_dataset_protocol_1.1.md`。
+<!-- task4c-fixed-dataset-1p1-frozen-20260918-end -->
+
 <!-- task4c-fixed-dataset-1p1-r4-submit-20260918 -->
 2026-09-18 `mainExp_Task4C_FixedDataset_1.1` r3（d9dc32bf，52049385–52049388）pilot 通过、channel build 完成后被用户叫停：用户指出 step1 只产生候选点、任务是二分类，旧代码“整块候选区域与标注重叠 ≥50% 为正”的标签规则和“非 hairpin 候选区域按最近实例分组”都不该有；52049387_1/52049388 取消，r3 pilot 与 physical 输出（1.1 GB）删除。r4（科学commit `792256a1`）：每行标签一律＝中心点是否落在 hairpin 标注单元内（`save` 与核验逐行断言）；候选区域一律按自身 3/1/1 空间块分池，不再按实例分组或把未见组候选区域只送测试；文档改用直白描述、删掉自造名词。本地 11 项构建测试通过；私有部署 `/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r4`（HEAD 792256a1，远端测试 OK）。14:00 UTC 提交输入核验 52050941、pilot 52050942[0–1]、正式重建 52050943[0–1]、数据核验 52050944。训练与 baseline 版本仍待冻结哈希。
 <!-- task4c-fixed-dataset-1p1-r4-submit-20260918-end -->
@@ -261,12 +265,12 @@ physical_seeds = seed_xyz.astype(np.float64) * meta["radius"][i] + meta["centroi
 - 保留条件：中心线通过清理且 ≥16 条邻居通过（≥17 线）；同一来源 100 次失败后放松中心筛选，标签按中心点 GT 归属并记 `relaxed`。
 - 实例覆盖：训练集覆盖 80% 的 hairpin 实例（每实例头部区域 ≥2 个采样点，目标 10），余下 20% 实例训练/验证完全不出现；测试集覆盖全部实例——覆盖组实例用轻微偏移的测试点（距任意训练中心 ≥1h、距同实例训练中心 ≤6h），未见组实例直接在其 GT 包围盒内均匀随机取点、不加筛选（`sample_kind=2`，标签按中心 GT 归属）；验证从覆盖组头区空间块划出（距训练 ≥1h）。非 hairpin 种子不分组。
 - 每流场 90,000 / 1,500 / 6,000 行，全部从头生成（不再替换旧模板行）；中心恒在第 0 槽（`original_center_id`=0），保存全部通过清理的域内邻居（16–26 条）。
-- 状态：r1、r2 分别在 build、pilot 阶段失败（原因见实现记录），r2 pilot 输出已删除；r3 已部署运行（作业见顶部状态块）。**目前没有冻结数据**；下方路径与读取方式在 r3 建成并通过 audit-data 后生效。
+- **状态：已冻结（r4，科学 commit `792256a1`，核验 52050944 通过，`data_audit.json` SHA-256 `60e0ebb67a9fc319debaa378ce90e2027149eadb6381218ee61874e2ed3355e6`）。** 只读使用；训练与 baseline 版本正在跑。
 
-缓存路径格式（`<remote>` 为 r3 部署目录，建成后填入）：
+缓存路径：
 
 ```text
-<remote>/outputs/mainExp_Task4C_FixedDataset_1.1/physical/
+/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r4/outputs/mainExp_Task4C_FixedDataset_1.1/physical/
     {channel,tbl}/{train,validation,test}/
       geometry.npy               # float32 [N,27,32,3] 归一化线，第0槽中心线
       seeds.npy                  # float32 [N,27,3] 归一化播种点

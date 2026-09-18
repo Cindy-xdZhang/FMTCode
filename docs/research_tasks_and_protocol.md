@@ -185,7 +185,7 @@ Task4 的背景类处理必须在首个实验前冻结。Task4-b 1.2 冻结为�
 - **配额。** 每流场 90,000 / 1,500 / 6,000（合计 180,000 / 3,000 / 12,000）。
 - **存储。** `geometry.npy`（第 0 槽恒为中心线）、`seeds.npy`、`metadata.npz`（22 键）、`index.npz`（sample_kind、relaxed、neighbor_filter、original_center_id=0、nearest_instance、heldout_instance、center_gt_owner、center_in_gt_head、offset_test、paired_test_center）、`line_seed_attributes.npz`（逐线物理播种点、stencil_slot、lambda2、oyf、inside、`head_candidate`＝step1 条件逐线版、`oyf_positive`）。
 - **冻结政策。** 无需重建：k≤16 的邻居数与选法、固定中心或标名的轮换对照、重采样点数、编码与网络。必须建新数据版本：积分/清理/λ₂/step1/标签/配额/划分/覆盖/距离规则/流场快照的任何改变。`Ablation_Task4C_FPS16_1.2` r2 的替换式重建不满足覆盖规则且核验失败，不是冻结数据。论文中称“Task4-c 固定线簇数据集 v1”并注明实现版本与冻结哈希；BottomDensity 1.2 / GTHeadCoverage 1.1 旧数据只作历史结果来源。
-- **状态。** 实现版本 `mainExp_Task4C_FixedDataset_1.1`：r1/r2 均在 pilot 或 build 阶段失败（见实现记录），r3 按用户晚间规则（1h、100 次、下限 2/目标 10、未见实例包围盒随机取点）实现并部署；冻结哈希建成后填入本节。
+- **状态（已冻结）。** 实现版本 `mainExp_Task4C_FixedDataset_1.1` r4，科学 commit `792256a1`；数据核验 52050944 通过，`data_audit.json` SHA-256 `60e0ebb67a9fc319debaa378ce90e2027149eadb6381218ee61874e2ed3355e6`；远端 `/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r4/outputs/mainExp_Task4C_FixedDataset_1.1/physical/`。180,000 / 3,000 / 12,000 行；channel 59/15、TBL 46/12 个实例覆盖/未见。r1–r3 的失败与取消见实现记录。
 
 ## 3. 不得混用的表述
 
