@@ -13043,3 +13043,17 @@ r2 科学commit `e45006866516c6a93684c982d702dd8729c110e8`；远端`/ibex/user/z
 | 52048032_[0-1] | build | 52048031 | CPU | 依赖等待 |
 | 52048033 | audit-data | 52048032 | CPU | 依赖等待 |
 <!-- task4c-fixed-dataset-1p1-r2-20260918-registry-end -->
+
+### mainExp_Task4C_FixedDataset_1.1 — r2 pilot 失败、链取消与 r3 规则（2026-09-18 ~13:10 UTC）
+
+<!-- task4c-fixed-dataset-1p1-r3-rules-20260918-registry -->
+| Job ID | 阶段 | 结果 |
+|---|---|---|
+| 52048030 | verify-inputs | COMPLETED 7s cn604-18 |
+| 52048031_0 | pilot channel | FAILED 1:0 43s cn604-13（train coverage requirement not met） |
+| 52048031_1 | pilot tbl | FAILED 1:0 66s cn604-13（同上） |
+| 52048032_[0-1] | build | CANCELLED（用户叫停） |
+| 52048033 | audit-data | CANCELLED（用户叫停） |
+
+r2 pilot 输出 `outputs/mainExp_Task4C_FixedDataset_1.1/pilot`（30 MB）已删除；`_r2` 目录其余文件保留。r3（1h / 100 次 / 覆盖下限 2 目标 10 / 配对夹角检查 / GT 头部补样）代码已就绪，未部署。
+<!-- task4c-fixed-dataset-1p1-r3-rules-20260918-registry-end -->

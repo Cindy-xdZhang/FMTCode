@@ -11,7 +11,7 @@ from FMT_Utils import Task4C_FixedDataset_1_1 as data
 
 def bare_builder(**attributes):
     b = data.Builder.__new__(data.Builder); b.rejections = {}; b.reserved = {r: [] for r in data.ROLES}; b.reserved_cache = {}
-    b.dist = dict(eval_min_to_any_train_over_h=3., test_max_to_same_instance_train_over_h=6., test_min_to_validation_over_h=.5, heldout_exclusion_margin_over_h=1.)
+    b.dist = dict(eval_min_to_any_train_over_h=1., test_max_to_same_instance_train_over_h=6., test_min_to_validation_over_h=.5, heldout_exclusion_margin_over_h=1.)
     b.rule = dict(seed=1, minimum_valid_lines=17, normal_attempts=4, relaxed_attempts=4, integration_batch_templates=8)
     b.final_trees = {}; b.instance_trees = {}; b.exclusion = []; b.heldout = set()
     for k, v in attributes.items(): setattr(b, k, v)
@@ -41,23 +41,44 @@ class FixedDatasetRules(unittest.TestCase):
         self.assertFalse(b.legal_center('validation', np.array([0.3, 0, 0]), 1., -1, 0)); self.assertIn('too_close_to_test', b.rejections)
         self.assertTrue(b.legal_center('validation', np.array([0.7, 0, 0]), 1., -1, 0))          # >= 0.5 h_test
         self.assertFalse(b.legal_center('validation', np.array([45., 0, 0]), 1., -1, 0)); self.assertIn('inside_heldout_exclusion', b.rejections)
-        self.assertFalse(b.legal_center('train', np.array([2.9, 0, 0]), 1., 7, 1)); self.assertIn('too_close_to_evaluation', b.rejections)
+        self.assertFalse(b.legal_center('train', np.array([0.9, 0, 0]), 1., 7, 1)); self.assertIn('too_close_to_evaluation', b.rejections)
         self.assertTrue(b.legal_center('train', np.array([5., 0, 0]), 1., 7, 1))                 # 5h from both evaluation centers
         self.assertFalse(b.legal_center('train', np.array([45., 0, 0]), 1., -1, 0))
 
     def test_pair_sample_places_a_same_instance_training_center_in_the_3h_6h_shell(self):
-        b = bare_builder(scene=dict(gt=None, locator=None), axes=None)
+        b = bare_builder(scene=dict(gt=None, locator=None, velocity=None, omega=None), axes=None)
         target = dict(center=np.array([10., 10, 10]), local_grid_scale=2., instance=7, test_index=42)
         captured = {}
         def fake_gt_head_sample(scene, center, instance, scale, sid, number, group, role, relaxed=False):
             captured['center'] = center; return dict(center=center, seeds=np.zeros((27, 3)), label=1, instance=instance, local_grid_scale=2., scale_id=sid)
-        with patch.object(data, 'sample_gt', return_value=(np.array([7]), None)), patch.object(data, 'gt_head_sample', fake_gt_head_sample):
+        angle = lambda ok: patch.multiple(data, vector_at=lambda *a: np.zeros((1, 3)), head_mask=lambda *a: (np.array([ok]), None))
+        with patch.object(data, 'sample_gt', return_value=(np.array([7]), None)), patch.object(data, 'gt_head_sample', fake_gt_head_sample), angle(True):
             s = b.pair_sample('train', target, 5, {'neighbor_grid_scale': 1.}, 0, False, np.random.default_rng(1))
-        r = np.linalg.norm(captured['center']-target['center']); self.assertTrue(6. <= r <= 12.)          # 3h..6h with h = 2
+        r = np.linalg.norm(captured['center']-target['center']); self.assertTrue(2. <= r <= 12.)          # 1h..6h with h = 2
         self.assertEqual((s['kind'], s['paired_test_center'], s['nearest_instance'], s['relaxed']), (data.KIND_GT_HEAD, 42, 7, False))
-        with patch.object(data, 'sample_gt', return_value=(np.array([-1]), None)):
+        with patch.object(data, 'sample_gt', return_value=(np.array([-1]), None)), angle(True):
             self.assertIsNone(b.pair_sample('train', target, 6, {'neighbor_grid_scale': 1.}, 0, False, np.random.default_rng(2)))
         self.assertIn('pair_outside_instance', b.rejections)
+        with patch.object(data, 'sample_gt', return_value=(np.array([7]), None)), patch.object(data, 'gt_head_sample', fake_gt_head_sample), angle(False):
+            self.assertIsNone(b.pair_sample('train', target, 7, {'neighbor_grid_scale': 1.}, 0, False, np.random.default_rng(3)))   # inside GT but not a head center
+            self.assertIn('pair_head_angle', b.rejections)
+            self.assertIsNotNone(b.pair_sample('train', target, 8, {'neighbor_grid_scale': 1.}, 0, True, np.random.default_rng(4)))  # relaxed pairs skip the angle
+
+    def test_generate_train_tops_up_gt_head_rows_per_covered_instance_before_head_region_rows(self):
+        b = bare_builder(spec=dict(dataset=dict(per_flow_counts=dict(train=10)), coverage=dict(min_head_centers_per_instance_per_split=1, target_head_centers_per_instance_per_split=2, paired_train_centers_per_test_positive=1)),
+                         groups=dict(covered=[7, 8], heldout=[9]), heldout={9}, plan=[{'neighbor_grid_scale': 1.}], pools=dict(train=[dict(head_component=3)]))
+        test_rows = [dict(label=1, instance=7), dict(label=1, instance=9), dict(label=0, instance=-1)]
+        calls = []
+        def fill(role, sources, quota, tag, fixed_sid=None, allow_short=False):
+            calls.append((sources[0][0], sources[0][1] if sources[0][0] == 'gt' else tag, quota, allow_short))
+            if sources[0][0] == 'pair': return [dict(kind=data.KIND_GT_HEAD, relaxed=False, instance=7, paired_test_center=0)]
+            if sources[0][0] == 'gt': return [dict(kind=data.KIND_GT_HEAD, relaxed=False, instance=sources[0][1]) for _ in range(quota)]
+            return [dict(kind=data.KIND_HEAD_REGION, relaxed=False, instance=-1) for _ in range(quota)]
+        with patch.object(b, 'fill', fill):
+            rows = b.generate_train(test_rows)
+        self.assertEqual(calls[0], ('pair', 'pair0', 1, True))                       # only the covered-instance positive is paired
+        self.assertEqual(calls[1:3], [('gt', 7, 1, True), ('gt', 8, 2, True)])        # top-up to the target of two head centers per covered instance
+        self.assertEqual(sum(q for k, _, q, _ in calls if k == 'head'), 10-4); self.assertEqual(len(rows), 10); self.assertEqual(b.unpaired_test_rows, [])
 
     def test_fill_relaxes_a_source_after_normal_attempts_and_labels_relaxed_rows(self):
         b = bare_builder(flow='x', index=0, plan=[{'neighbor_grid_scale': 1.}], relaxed={r: 0 for r in data.ROLES}, attempts={r: 0 for r in data.ROLES}, trace_calls=0)
@@ -108,9 +129,10 @@ class FixedDatasetRules(unittest.TestCase):
 
     def test_config_encodes_user_rules(self):
         c = self.config
-        self.assertEqual(c['distances']['eval_min_to_any_train_over_h'], 3.); self.assertEqual(c['distances']['test_max_to_same_instance_train_over_h'], 6.)
+        self.assertEqual(c['distances']['test_max_to_same_instance_train_over_h'], 6.); self.assertEqual(c['distances']['test_min_to_validation_over_h'], .5)
         self.assertEqual(c['instance_split']['held_out_fraction'], .2); self.assertEqual(c['proposals']['minimum_valid_lines'], 17)
-        self.assertEqual(c['proposals']['normal_attempts'], 1000); self.assertGreaterEqual(c['coverage']['min_head_centers_per_instance_per_split'], 2)
+        self.assertEqual(c['proposals']['normal_attempts'], 100); self.assertEqual(c['coverage']['min_head_centers_per_instance_per_split'], 2)
+        self.assertEqual(c['coverage']['target_head_centers_per_instance_per_split'], 10); self.assertEqual(c['distances']['eval_min_to_any_train_over_h'], 1.)
         self.assertEqual(c['dataset']['expected_counts'], {k: 2*v for k, v in c['dataset']['per_flow_counts'].items()})
 
 

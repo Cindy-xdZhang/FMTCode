@@ -6,7 +6,7 @@ Rules (user, 2026-09-18; protocol section 2b):
   (lambda2 < threshold and oyf > 0, same head component; GT-head centers additionally need
   GT membership and the head angle).  Neighbours only need to lie inside the domain.
 * A sample is kept only when the center line and >= 16 neighbour lines survive cleaning.
-* After ``normal_attempts`` consecutive failures of one head the center filter is relaxed
+* After ``normal_attempts`` (100) consecutive failures of one head the center filter is relaxed
   (center anywhere in the head's cell box); the label of a relaxed center is the GT
   membership of the center point.
 * Hairpin GT instances are split into a covered group (80 %) and a held-out group (20 %);
@@ -183,6 +183,9 @@ class Builder:
         center = np.asarray(target['center'], float)+direction*radius
         owner, _ = sample_gt(self.scene['gt'], center[None], self.scene['locator'])
         if owner[0] != instance: self.reject('pair_outside_instance'); return None
+        if not relaxed:
+            angle, _ = head_mask(vector_at(center[None], self.axes, self.scene['velocity']), vector_at(center[None], self.axes, self.scene['omega']))
+            if not angle[0]: self.reject('pair_head_angle'); return None       # r3: the paired center must count as a head center
         sample = gt_head_sample(self.scene, center, instance, scale, sid, number, instance, role, relaxed)
         if sample is None: self.reject('pair_center_failed_domain_lambda2_oyf'); return None
         sample.update(kind=KIND_GT_HEAD, relaxed=relaxed, nearest_instance=instance, paired_test_center=int(target['test_index'])); return sample
@@ -244,10 +247,13 @@ class Builder:
         for sid, q in enumerate(per_scale): rows.extend(self.fill(role, [('head', h) for h in self.pools[role]], q, tag=f'scale{sid}', fixed_sid=sid))
         return rows
 
+    def target_head_centers(self):
+        cov = self.spec['coverage']; return max(int(cov.get('target_head_centers_per_instance_per_split', cov['min_head_centers_per_instance_per_split'])), int(cov['min_head_centers_per_instance_per_split']))
+
     def generate_test(self):
-        counts = self.spec['dataset']['per_flow_counts']['test']; minimum = self.spec['coverage']['min_head_centers_per_instance_per_split']
+        counts = self.spec['dataset']['per_flow_counts']['test']; target = self.target_head_centers()
         rows = []
-        for instance in self.instances: rows.extend(self.fill('test', [('gt', instance)], minimum, tag=f'gt{instance}'))
+        for instance in self.instances: rows.extend(self.fill('test', [('gt', instance)], target, tag=f'gt{instance}', allow_short=True))
         rows.extend(self.head_region_rows('test', counts-len(rows)))
         return rows
 
@@ -255,7 +261,7 @@ class Builder:
         return self.head_region_rows('validation', self.spec['dataset']['per_flow_counts']['validation'])
 
     def generate_train(self, test_rows):
-        """Paired training centers for every covered-instance test positive, then head-region rows up to the quota."""
+        """Paired training centers for every covered-instance test positive, a GT-head top-up per covered instance, then head-region rows up to the quota."""
         counts = self.spec['dataset']['per_flow_counts']['train']; rows = []; unpaired = []
         targets = [dict(r, test_index=i) for i, r in enumerate(test_rows) if r['label'] == 1 and r['instance'] not in self.heldout]
         for target in targets:
@@ -263,6 +269,11 @@ class Builder:
             if not pair: unpaired.append(int(target['test_index']))
             rows.extend(pair)
         self.unpaired_test_rows = unpaired
+        # r3: coverage top-up. Non-relaxed GT-head rows are head centers by construction; every covered instance is topped up to the target when achievable.
+        target = self.target_head_centers()
+        for instance in self.groups['covered']:
+            have = sum(1 for r in rows if r['kind'] == KIND_GT_HEAD and not r['relaxed'] and r['instance'] == instance)
+            if have < target: rows.extend(self.fill('train', [('gt', instance)], target-have, tag=f'gt{instance}', allow_short=True))
         rows.extend(self.head_region_rows('train', counts-len(rows)))
         return rows
 
@@ -351,7 +362,9 @@ class Builder:
 def prepare(spec, index, write, sha, identity, pilot=False):
     spec = json.loads(json.dumps(spec))
     if pilot:
-        spec['dataset']['per_flow_counts'] = spec['pilot']['per_flow_counts']; spec['coverage']['min_head_centers_per_instance_per_split'] = spec['pilot']['min_head_centers_per_instance_per_split']
+        spec['dataset']['per_flow_counts'] = spec['pilot']['per_flow_counts']
+        for key in ('min_head_centers_per_instance_per_split', 'target_head_centers_per_instance_per_split'):
+            if key in spec['pilot']: spec['coverage'][key] = spec['pilot'][key]
     builder = Builder(spec, index, pilot); flow = builder.flow
     out = Path(spec['output'])/('pilot' if pilot else 'physical')/flow
     reports = builder.build(out)

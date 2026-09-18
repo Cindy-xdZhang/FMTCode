@@ -1,6 +1,6 @@
 {
   "version": "mainExp_Task4C_FixedDataset_1.1",
-  "execution_revision": "r2_eval_first_paired_training",
+  "execution_revision": "r3_rules_2026-09-18_evening",
   "output": "outputs/mainExp_Task4C_FixedDataset_1.1",
   "physical_config": "config/mainExp_Task4C_GTHeadCoverage_1.1.json",
   "physical_config_note": "frozen flow files, lambda2 thresholds, integration parameters, cleaning and 3/1/1 head blocks are read from this file; nothing else of GTHeadCoverage 1.1 is reused",
@@ -31,30 +31,33 @@
     "rule": "hairpin GT instances (VortexIds, including 0) per flow; overlapping GT boxes stay in one group; exactly round(0.2 n) held-out instances when achievable, otherwise the largest achievable count below it"
   },
   "coverage": {
-    "min_head_centers_per_instance_per_split": 10,
-    "definition": "center inside the GT instance volume and |cos(velocity,vorticity)|^2 < 0.5 (GTHeadCoverage 1.1 head condition)",
-    "train": "every covered instance",
+    "min_head_centers_per_instance_per_split": 2,
+    "target_head_centers_per_instance_per_split": 10,
+    "definition": "center inside the GT instance volume and |cos(velocity,vorticity)|^2 < 0.5 (GTHeadCoverage 1.1 head condition); an instance is covered by a split when the split has >= min_head_centers such centers",
+    "train": "every covered instance (80% group)",
     "test": "every instance",
     "validation_gt_head_rows": false,
     "paired_train_centers_per_test_positive": 1,
-    "pairing": "every covered-instance test positive gets >=1 training center inside the same GT instance at 3h..6h (h of the test row); unpaired test positives are removed and coverage is re-checked"
+    "pairing": "every covered-instance test positive gets >=1 training center inside the same GT instance, satisfying the head condition, at 1h..6h (h of the test row); unpaired test positives are removed and coverage is re-checked",
+    "train_topup": "after pairing, every covered instance with fewer than target non-relaxed GT-head training rows receives GT-head rows (GT membership, head angle, lambda2<threshold, oyf>0, >=1h from evaluation centers) up to the target when achievable; the hard requirement is min_head_centers",
+    "test_target": "every instance gets GT-head test rows up to the target when achievable; the hard requirement is min_head_centers"
   },
   "distances": {
-    "eval_min_to_any_train_over_h": 3.0,
+    "eval_min_to_any_train_over_h": 1.0,
     "test_max_to_same_instance_train_over_h": 6.0,
     "test_min_to_validation_over_h": 0.5,
     "heldout_exclusion_margin_over_h": 1.0,
-    "note": "h is the local grid spacing (geometric mean). Generation order test -> validation -> train: validation >= 0.5 h_test from test centers; training >= 3 h_eval from every validation/test center; covered-instance test positives have a paired same-instance training center within 6h; training/validation never enter a held-out GT box expanded by one median spacing"
+    "note": "h is the local grid spacing (geometric mean). Generation order test -> validation -> train: validation >= 0.5 h_test from test centers; training >= 1 h_eval from every validation/test center; covered-instance test positives have a paired same-instance training center within 6h; training/validation never enter a held-out GT box expanded by one median spacing"
   },
   "proposals": {
     "seed": 98201,
     "minimum_valid_lines": 17,
-    "normal_attempts": 1000,
+    "normal_attempts": 100,
     "relaxed_attempts": 1000,
     "integration_batch_templates": 128,
     "center_filter": "head-region centers: oyf>0 and same head component (frozen 4.14 rule); GT-head centers: GT membership, head angle, lambda2<threshold, oyf>0",
     "neighbor_filter": "in-domain only; all 26 stencil neighbours are integrated",
-    "relaxation": "after normal_attempts consecutive failures of one head / instance the center filter is dropped; label = GT membership of the center"
+    "relaxation": "after normal_attempts (100) consecutive failures of one head / instance / pairing target the center filter is dropped; label = GT membership of the center"
   },
   "pilot": {
     "per_flow_counts": {
@@ -62,7 +65,8 @@
       "validation": 150,
       "test": 300
     },
-    "min_head_centers_per_instance_per_split": 2
+    "min_head_centers_per_instance_per_split": 2,
+    "target_head_centers_per_instance_per_split": 2
   },
   "storage": {
     "geometry.npy": "float32 [N,27,32,3] normalized lines, slot 0 = center line",
@@ -76,5 +80,7 @@
     "validation",
     "train"
   ],
-  "r1_failure": "channel build 52047085_0 FAILED at test/gt10 after training was generated first: no head point stayed >=3h from the dense training centers (31,902 too_close_to_train rejections); order inverted in r2"
+  "r1_failure": "channel build 52047085_0 FAILED at test/gt10 after training was generated first: no head point stayed >=3h from the dense training centers (31,902 too_close_to_train rejections); order inverted in r2",
+  "r2_failure": "pilots 52048031_[0-1] FAILED the train coverage check (channel 11 / tbl 4 covered instances at 1 head center): paired centers were required to lie inside the GT box but not to satisfy the head-angle condition that coverage counts; r3 adds the angle check to pair_sample and a per-covered-instance GT-head top-up, and applies the user's 2026-09-18 evening rules (1h instead of 3h, 100 instead of 1000 attempts, coverage minimum 2 with target 10)",
+  "rules_document": "docs/Task4C_fixed_dataset_rules_v1.md"
 }

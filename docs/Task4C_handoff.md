@@ -1,5 +1,9 @@
 # Task4-c Hairpin 分类：最新交接
 
+<!-- task4c-fixed-dataset-1p1-r3-rules-20260918 -->
+2026-09-18 `mainExp_Task4C_FixedDataset_1.1` r2 pilot 52048031_0/1 FAILED（channel 43s、TBL 66s）：测试覆盖满足但训练覆盖不满足，channel 11 个、TBL 4 个覆盖实例只有 1 个头部中心；根因是`pair_sample`只要求配对中心在 GT 包围盒内，未要求覆盖计数所用的头部夹角条件，配对行落在 GT 内但不在头部区域。用户随即叫停并细化规则：评价点距训练 3h→**1h**、放松阈值 1000→**100** 次、覆盖下限 2（目标 10），并要求把构建规则单独写成规范文档。已取消 52048032[0-1]/52048033，删除 r2 pilot 输出（远端目录其余文件保留）。r3 改动：配对中心加头部夹角检查；每覆盖实例在头区填充前补非放松 GT 头部训练行到目标 10（`allow_short`，下限 2 由覆盖检查保证）；测试 GT 头部行同样目标 10/下限 2；配置 `execution_revision=r3_rules_2026-09-18_evening`。规范文本 `docs/Task4C_fixed_dataset_rules_v1.md`（新），实现记录 `docs/Task4C_fixed_dataset_protocol_1.1.md` 重写，总协议 2b 与交接 3b 改为指向规范文本。本地 8+3+2 项测试通过。**r3 尚未部署**，待用户确认规范文本；训练/baseline 版本仍待冻结哈希。
+<!-- task4c-fixed-dataset-1p1-r3-rules-20260918-end -->
+
 <!-- task4c-fixed-dataset-1p1-r2-20260918 -->
 2026-09-18 `mainExp_Task4C_FixedDataset_1.1` r1（ae65e920）：输入核验52047083、pilot 52047084_0/1通过（channel 59/15、TBL 46/12实例分组，覆盖满足，放松仅channel测试2行），但正式重建52047085_0 channel在测试集GT头部实例10处FAILED：训练集先生成、9万行填满头区后，头区内没有任何点离所有训练中心≥3h（拒绝31,902次`too_close_to_train`、7,271次`too_far_from_same_instance_train`），放松只解除λ₂/oyf不解除距离；52047085_1与核验52047086取消。r2（科学commit `e4500686`）把生成顺序改为test→validation→train：验证距测试中心≥0.5h_test，训练距所有评价中心≥3h_eval；每个覆盖实例的正类测试点在同实例内3h–6h环带配对生成一个训练中心（保证≤6h规则），配不到的测试正类删除并复核覆盖；核验新增配对距离与调整后行数检查；重复中心断言改为(中心,尺度)唯一。本地7项测试通过；私有部署`/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r2`（远端测试通过）。13:00 UTC提交输入核验52048030、pilot 52048031[0–1]、重建52048032[0–1]、数据核验52048033。训练版本`mainExp_Task4C_FixedDatasetFMT_1.1`（d7a71ecf，四臂×3种子）与`mainExp_Task4C_FixedDatasetBaselines_1.1`（0240a366：p35轮换对照、Conv3D 16³/24³、BiLSTM、PointNet、PointNet++，各3种子，复用冻结驱动只重绑identity与数据根）已提交代码，待数据核验哈希填入后部署。
 <!-- task4c-fixed-dataset-1p1-r2-20260918-end -->
@@ -241,26 +245,25 @@ physical_seeds = seed_xyz.astype(np.float64) * meta["radius"][i] + meta["centroi
 
 `counts`控制mask；填充不参与池化、归一化或损失。`instance/head_component/source_cell/center/scale_id`仅供追溯，不能作为分类特征。`center`为原播种中心，`centroid`为整束点质心，两者不同。追加样本来源见各流场`augmentation_index.npz`，文件哈希见`preparation.json`。原始VTK、缓存和可视化大产物不随Git推送，合作者需要这些文件或Ibex读取权限。
 
-## 3b. 2026-09-18 起的固定线簇数据集 v1（Ablation_Task4C_FPS16_1.2）
+## 3b. 2026-09-18 起的固定线簇数据集 v1（mainExp_Task4C_FixedDataset_1.1）
 
-用户裁定 Task4-c 数据集从此长期固定：改变邻居数（k≤16）、邻居选法、是否固定中心、重采样点数、编码或网络都不重建数据；只有改变积分/清理/标签/播种筛选/模板才建新版本。规则全文见总协议 2b 节与 [Task4C_FPS16_protocol_1.2.md](Task4C_FPS16_protocol_1.2.md)；要点：
+用户裁定 Task4-c 数据集从此长期固定：改变邻居数（k≤16）、邻居选法、是否固定中心、重采样点数、编码或网络都不重建数据；只有改变积分/清理/标签/播种筛选/配额/划分规则才建新版本。**规则全文见 [Task4C_fixed_dataset_rules_v1.md](Task4C_fixed_dataset_rules_v1.md)**（规范文本），实现记录见 [Task4C_fixed_dataset_protocol_1.1.md](Task4C_fixed_dataset_protocol_1.1.md)。要点：
 
-- 样本 = 采样点；中心保留 λ₂/oyf/同头区筛选，26 个模板邻居只要求在计算域内，全部积分。
-- 保留条件：中心线通过清理且 ≥16 条邻居通过清理（≥17 线）；同一层 1000 次失败后放松中心筛选，标签按中心点 GT 归属决定并记 `relaxed`。
-- 模板为上节 GTHeadCoverage 1.1 的 196,960 / 3,000 / 11,320 行，只替换不满足条件的行（72,043 / 1,248 / 4,518）及失去 4h 内同头区训练中心的评价行；旧行邻居曾经过涡区过滤（`neighbor_filter`=0），新行没有（1），放松行为 2。
-- 重建行中心恒在第 0 槽（`original_center_id`=0）；保存全部通过清理的域内邻居（16–26 条）。
-- **实例覆盖与划分（2026-09-18 追加）：** 训练集覆盖 80% 的 hairpin 实例（每个实例头部区域 ≥2 个训练采样点），余下 20% 实例训练/验证完全不出现；测试集覆盖全部实例——训练覆盖过的实例用轻微偏移（≥1h、同实例 ≤4h）的新采样点，未见实例用其头部区域的新采样点。负类头区跟随最近 hairpin 实例的分组。因此数据须从头重建，不再是替换模板行；下方缓存路径中的 r2 重建（52046106）核验失败且不满足覆盖规则，**不是冻结数据**，仅供追溯。
+- 样本 = 采样点；中心保留 λ₂/oyf（头区样本还要同头区）筛选，26 个模板邻居只要求在计算域内，全部积分。
+- 保留条件：中心线通过清理且 ≥16 条邻居通过（≥17 线）；同一来源 100 次失败后放松中心筛选，标签按中心点 GT 归属并记 `relaxed`。
+- 实例覆盖：训练集覆盖 80% 的 hairpin 实例（每实例头部区域 ≥2 个采样点，目标 10），余下 20% 实例训练/验证完全不出现；测试集覆盖全部实例——覆盖组实例用轻微偏移的测试点（距任意训练中心 ≥1h、距同实例训练中心 ≤6h），未见组实例在头部区域新采样；验证从覆盖组头区空间块划出（距训练 ≥1h）。负类头区跟随最近实例分组。
+- 每流场 90,000 / 1,500 / 6,000 行，全部从头生成（不再替换旧模板行）；中心恒在第 0 槽（`original_center_id`=0），保存全部通过清理的域内邻居（16–26 条）。
+- 状态：r1、r2 分别在 build、pilot 阶段失败（原因见实现记录），r2 pilot 输出已删除；r3 代码已改好、待确认规范文本后部署。**目前没有冻结数据**；下方路径与读取方式在 r3 建成并通过 audit-data 后生效。
 
-缓存路径格式如下（r2 重建 52046106 的文件仍在此路径，但核验 52046107 失败且已被覆盖规则取代；新版本建成后替换路径与哈希）：
+缓存路径格式（`<remote>` 为 r3 部署目录，建成后填入）：
 
 ```text
-/ibex/user/zhanx0o/FMT_Task4C_FPS16_1p2_20260918_r2/
-  outputs/Ablation_Task4C_FPS16_1.2/physical/
+<remote>/outputs/mainExp_Task4C_FixedDataset_1.1/physical/
     {channel,tbl}/{train,validation,test}/
       geometry.npy               # float32 [N,27,32,3] 归一化线，第0槽中心线
       seeds.npy                  # float32 [N,27,3] 归一化播种点
-      metadata.npz               # labels, counts, instance, center, centroid, radius, ...
-      replacement_index.npz      # replaced, relaxed, neighbor_filter, original_center_id, source_row, ...
+      metadata.npz               # labels, counts, instance, center, centroid, radius, ... (22 键)
+      index.npz                  # sample_kind, relaxed, neighbor_filter, original_center_id, nearest_instance, heldout_instance, center_gt_owner, center_in_gt_head, offset_test, paired_test_center
       line_seed_attributes.npz   # seed_points, stencil_slot, lambda2, oyf, inside, head_candidate, oyf_positive
 ```
 
@@ -270,16 +273,17 @@ from pathlib import Path
 folder = Path(".../physical/channel/train")
 geometry = np.load(folder / "geometry.npy", mmap_mode="r"); seeds = np.load(folder / "seeds.npy", mmap_mode="r")
 with np.load(folder / "metadata.npz") as z: meta = {k: z[k] for k in z.files}
-with np.load(folder / "replacement_index.npz") as z: index = {k: z[k] for k in z.files}
+with np.load(folder / "index.npz") as z: index = {k: z[k] for k in z.files}
 with np.load(folder / "line_seed_attributes.npz") as z: attr = {k: z[k] for k in z.files}
 i = 0; n = int(meta["counts"][i])                      # n >= 17
 center_line = geometry[i, index["original_center_id"][i]]   # 第0槽
-neighbour_ids = [j for j in range(n) if j != index["original_center_id"][i]]
+neighbour_ids = [j for j in range(1, n)]
 step1_neighbours = [j for j in neighbour_ids if attr["head_candidate"][i, j]]   # 按 step1 标签筛选，无需重建
 seed_xyz = attr["seed_points"][i, :n]                  # 物理播种点，与 geometry 逐槽对应
+heldout_test = index["heldout_instance"]               # 测试报告分“未见实例”与“覆盖实例偏移测试”两栏
 ```
 
-`labels` 为最终标签（放松行可能与 `source_label` 不同）；`instance/head_component/source_cell/center/scale_id` 与属性文件只供追溯和邻居筛选，不能作为分类特征。
+`labels` 为最终标签（放松行按中心点 GT 归属）；`instance/head_component/source_cell/center/scale_id` 与属性文件只供追溯和邻居筛选，不能作为分类特征。
 
 ## 5. 当前最佳FMT：c156
 
