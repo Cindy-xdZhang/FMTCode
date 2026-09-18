@@ -1,5 +1,108 @@
 # Task4-c Hairpin 分类：最新交接
 
+<!-- task4c-fps16-1p2-submitted-20260918 -->
+2026-09-18 Claude接替codex，立项`Ablation_Task4C_FPS16_1.2`。查询确认1.1的r2 pilot 52044303_0/1 FAILED/1:0不是导入问题：冻结的`center_and_neighbors`要求27个模板点都oyf>0且属同一连通头区，codex诊断的失败层头区只有7–21个单元、1.0h模板最多12–15个合格点，channel pilot 4,096次试探中46,963/47,550次拒绝为`fewer_than_17_seed_points`，≥17播种点在旧规则下结构性不可能；r2后续52044304–52044307已取消，无F1。
+
+用户2026-09-18决定：样本的根本是采样点，邻居播种点只要求在计算域内，只有中心保留λ₂/oyf/同头区筛选；样本须中心线有效且≥16邻居通过清理（≥17线），否则重采；一层连续1000次失败后放松中心筛选、标签按中心点GT归属决定并标记relaxed；只替换不满足条件的行，模板为完整GTHeadCoverage 196,960/3,000/11,320（需替换72,043/1,248/4,518行，另加因训练中心被替换而失去4h内同头区训练中心的评价行）；每条线保存播种点坐标及`head_candidate`（step1条件：λ₂<阈值∧oyf>0）与`oyf_positive`标签，播种点与线束成为显式键值对，此后数据集长期固定。四臂p35_h0_fps16/c156_fps16/p35_h0_six_control/c156_six_control、141维、76,738/992,386参数、训练规则与seed96721与1.1完全相同。替换行中心固定第0槽并保存全部域内存活邻居（16–26），索引记录`neighbor_filter`（0旧行/1新行/2放松）与`relaxed`；保留旧行与新行的邻居过滤规则不同，为用户接受的已知不一致。
+
+r1（科学commit `83ec5139`，尚无逐线属性）：私有部署`/ibex/user/zhanx0o/FMT_Task4C_FPS16_1p2_20260918`，源核验52045843、GPU预检52045844（四臂32束F1=1.0）、两流场pilot 52045845_0/1均COMPLETED/0:0；pilot新行27线占多数（channel训练137/148）、最少17线、平均1.6–6.4次试探，但channel验证集1个槽第1001次才成功，拒绝几乎全是与已被替换的旧训练中心保持1h间距。用户随即追加逐线属性要求，重建52045846启动1分42秒后取消（未写数据），52045847–52045849未启动；证据下载至`outputs/Ablation_Task4C_FPS16_1.2/r1_cancelled/`。
+
+r2（科学commit `e67b03f9`）：新增`line_seed_attributes.npz`（seed_points、stencil_slot、lambda2、oyf、inside、head_candidate、oyf_positive），距离规则改为只针对最终数据集（旧中心仅禁止重合），数据核验从原始场重新插值复核。本地18项测试（1.2新增10项＋1.1五项＋原中心三项）通过；私有部署`/ibex/user/zhanx0o/FMT_Task4C_FPS16_1p2_20260918_r2`（远端HEAD与4份源码哈希一致，远端13项测试通过）。11:59 UTC提交源核验52046103、GPU预检52046104、pilot 52046105[0–1]、重建52046106[0–1]、数据核验52046107、四臂训练52046108[0–3]%4、结果复算52046109，共12进程，尚无F1。存储：用户授权删除`/ibex/user/zhanx0o/project_pvit_codefiles`（732 GB）与`/ibex/user/zhanx0o/outputs`（131 GB，旧FTLE超分数据集），11:40–11:42 UTC完成，`/ibex/user`可用3.8 GB→871 GB；其他目录未动。协议`docs/Task4C_FPS16_protocol_1.2.md`，状态`outputs/Ablation_Task4C_FPS16_1.2/deployment_status.json`。未公开推送。
+<!-- task4c-fps16-1p2-submitted-20260918-end -->
+
+<!-- task4c-fps16-r2-20260918 -->
+2026-09-18查询发现FPS16首链源核验52036137和GPU检查52036138已成功，但两个补样本pilot52036139_0/1均FAILED/1:0，分别55/30秒：GT新增样本分支错误地从experiments模块导入vector_at。首次正式重建和训练从未开始，无F1；取消后续52036140–52036143八个未启动进程，失败证据保留在outputs/Ablation_Task4C_FPS16_1.1/failed_attempt_bc41b003。此前“排队”是提交时状态，本条取代其当前状态。
+
+修复科学commit8888eecb：从FMT_Utils中的原实现导入并提前至模块加载检查；增加真实插值/夹角/播种分支测试，五项本地测试通过；依赖源码加入哈希。数据规则、标签、固定原中心、FPS16、四模型、seed96721及训练预算均不变。已部署独立目录/ibex/user/zhanx0o/FMT_Task4C_FPS16_20260918_r2；新链源核验52044301、GPU52044302、pilot52044303[0–1]、重建52044304[0–1]、数据核验52044305、训练52044306[0–3]%4、结果复算52044307，共12进程。r2源核验52044301已COMPLETED/0:0/12秒，GPU和实际补样本pilot排队；尚无新F1，不把首链小拟合分数当正式性能。实际证据r2/submission.json，状态deployment_status.json。
+<!-- task4c-fps16-r2-20260918-end -->
+
+
+<!-- task4c-fps16-submitted-20260918 -->
+2026-09-18用户明确“授权上传，立刻跑实验”，此前上传审批阻碍已解除。`Ablation_Task4C_FPS16_1.1`科学commit `bc41b0034955f6e1db82f68604e9825278ac0ae2`已私有部署到`/ibex/user/zhanx0o/FMT_Task4C_FPS16_20260918`，远端包SHA256和科学源码/配置哈希一致，完整依赖导入通过。
+
+已提交：源数据核验52036137、V100四臂预检52036138、Channel/TBL补样本pilot52036139[0–1]、正式重建52036140[0–1]、全量数据核验52036141、四次固定中心训练52036142[0–3]%4、预测复算52036143，共12进程。源核验52036137已COMPLETED/0:0/29秒，18份源数据和六份共同子集索引及原中心核验通过；GPU/pilot排队，后续作业按成功依赖等待。尚未称GPU/pilot通过或正式训练已开始，没有新F1。原共同子集196,042/2,993/11,288，计划替换71,125/1,241/4,486行；16邻居两方法和六邻居两对照共用重建数据，全部固定原中心、无卷积、seed96721，无搜索。保留失败/审批历史及其他实验状态。
+
+实际调度证据`outputs/Ablation_Task4C_FPS16_1.1/submission.json`和`submissions.jsonl`；状态`deployment_status.json`；协议`docs/Task4C_FPS16_protocol_1.1.md`。未公开推送。
+<!-- task4c-fps16-submitted-20260918-end -->
+
+
+<!-- task4c-fps16-prepared-20260918 -->
+2026-09-18用户授权固定原中心，改以中心为起点FPS选16条邻居（17线primitive）；不足17有效线的样本在其他合法位置重新播种积分补足。`Ablation_Task4C_FPS16_1.1`，科学commit bc41b003，沿用原中心共同子集196,042/2,993/11,288；需替换71,125/1,241/4,486行。保持流场/类别/实例/尺度/标签类型与原清洗、积分和空间距离，所有原有效几何保留；原27槽包含中心+26邻居。两方法仍141维/76,738与992,386参数，无卷积、无轮换；同新数据跑FPS16两臂和原六邻居两对照，seed96721共四次完整训练，不搜索。p35六邻居对照原为最近6，c156原为FPS6，均不改写。
+
+本地4项FPS/描述量/容量梯度/替换门禁测试通过，私有Git增量部署包已准备。上传scp被自动审批拒绝，理由为未由可信用户内容明确确认具体账号`zhanx0o@glogin.ibex.kaust.edu.sa`及目录`/ibex/user/zhanx0o/`所有权；已请求用户明确确认。当前未上传成功，未提交任何FPS16作业，没有新F1；没有改走其他方式绕过拒绝。待确认目标`/ibex/user/zhanx0o/FMT_Task4C_FPS16_20260918`。协议`docs/Task4C_FPS16_protocol_1.1.md`，状态`outputs/Ablation_Task4C_FPS16_1.1/deployment_status.json`。
+<!-- task4c-fps16-prepared-20260918-end -->
+
+
+<!-- task4c-center-cleaning-clarification-20260917 -->
+清理机制解释及措辞纠正：此前把957条缺失原中心都称作“实际长度不足”；准确结论应为“957条均触发双向物理弧长范围检查”。冻结`experiments/Task4C_PhysicalLength_4_14.py:141`将任一侧低于0.95L或高于1.002L均计入`insufficient_physical_length`，已有诊断没有保留逐条half_arcs，故该计数本身不能区分过短/过长。之前依据计数名字直接说全部过短，表述过强；此处更正，不改变样本筛选、代码或F1。
+
+已核对当前数据与原GT构建commit c3952a7b的清理代码一致。播种阶段强制中心有效，后续`trace_batch`却只检查剩余有效线>=10，并按good掩码压缩曲线/播种点，不检查good[0]；metadata.center仍保存，因此产生“原中心被删但整个样本仍在”的数据。逐线依次检查有限数/点数、每侧弧长、连续重复点、任意坐标轴范围是否恰为0，再等弧长重采样32点。任意坐标恒定规则会删除例如完全位于xy平面的正常曲线，不能等同于一般几何退化，也不是旋转不变检查。本次957条在前面的长度门槛就已拒绝；后续axis_degenerate计数0并不能说明所有原始数据从未被轴规则过滤。
+
+补积分两侧共1914次终止记录：880次码1、1034次码3；Ibex实际VTK9.5.0核实为OUT_OF_DOMAIN/UNEXPECTED_VALUE。它们分别表示出计算域/积分器报告异常值，现汇总未保留逐样本原因与长度配对，不能声称所有957条都是越界，也不能确定UNEXPECTED_VALUE的底层原因。当前只做只读诊断和解释，没有修改清理、重建样本或启动实验。证据center_reintegration_channel.json、center_reintegration_tbl.json；上述编码前清理发生于涡量场积分，不由分类器预测决定。
+<!-- task4c-center-cleaning-clarification-20260917-end -->
+
+
+<!-- task4c-original-center-results-20260917 -->
+2026-09-17 `Ablation_Task4C_OriginalCenter_1.1`已完成：科学commitad0ffc85；同原中心有效子集196,042/2,993/11,288、seed96721和0.5阈值。p35/h0固定原中心/轮换对照测试F1=0.808841/0.885085，c156=0.843708/0.910726；分别下降7.6244/6.7018个百分点。固定中心参数76,738/992,386，训练23.623/45.548分钟；轮换对照25.262/33.065分钟。四组均最佳轮后50轮早停。8份预测、7成功进程/14运行事件、共同样本/中心索引/训练排列及科学源码独立核对通过。结果为单种子，无标准差；原数据及历史成绩不改。两种新方案严格原采样点中心，无卷积；旧轮换仅为本次配对对照。结果`docs/Task4C_original_center_results_1.1.md`，证据`outputs/Ablation_Task4C_OriginalCenter_1.1/independent_result_audit.json`。本项已完成，不追加实验，其他独立任务状态不变。
+<!-- task4c-original-center-results-20260917-end -->
+
+
+<!-- task4c-original-center-subset-submitted-20260917 -->
+2026-09-17用户已确认原中心有效共同子集。`Ablation_Task4C_OriginalCenter_1.1`科学commit ad0ffc85，固定196,042训练/2,993验证/11,288测试；仅按原中心是否保留筛选，18原文件不改、标签不改、不换中心。p35/h0与c156原中心版本，以及两种旧轮换同子集对照，共四次完整训练，seed96721，无搜索。新方案仅计算原中心一个141维特征，网络参数76,738/992,386与原优化、标准化公式不变；轮换仅出现在明确命名的历史对照。
+
+私有Ibex路径`/ibex/user/zhanx0o/FMT_Task4C_OriginalCenter_20260917`。52009985共同数据核验已COMPLETED/0:0/9s；52009986四臂V100预检已COMPLETED/0:0/20s；52009987[0–3]正式训练、52009988独立预测复算已按成功依赖提交，共7进程。四训练当前因Priority排队，尚无正式F1；工程小拟合不得当作测试成绩。训练/测试仍覆盖Channel74和TBL58全部GT实例，每实例测试正类最少9/8束；验证集中有一个TBL实例正类数为0，原划分不调整。启动证据formal_startup_verified.json。所有原中心缺失诊断和原4个预检记录保留。协议`docs/Task4C_original_center_protocol_1.1.md`，配置`config/Ablation_Task4C_OriginalCenter_1.1.json`。代码通过5项本地特征/原中心门禁/初始化/共同子集测试；没有公开GitHub推送，不恢复其他任务。
+<!-- task4c-original-center-subset-submitted-20260917-end -->
+
+
+<!-- task4c-original-center-preflight-20260917 -->
+2026-09-17原采样点单中心预检全部完成：科学commit2ef05ac0；52009638数据核验8秒、52009639 V100模型检查17秒、52009640_0/1两流场补积分诊断31/105秒，均COMPLETED/0:0。p35_h0/c156的原中心141维与旧实现中同中心特征逐值相同（最大误差0）；输入严格[32,1,142]，参数76,738/992,386、批128反向、跨批检查和无卷积检查通过。32真实训练样本小拟合F1均1.0，损失分别0.699520→0.000121、0.739039→0.000343；这些是工程检查，不是正式测试F1。
+
+缺失原中心训练918、验证7、测试32全部按原参数补积分，0条通过旧清洗，957条全部是实际积分长度不足。故不能靠重新积分恢复原有效中心，也不能用邻居替代。已向用户更新必要选择：①共同原中心有效子集196,042/2,993/11,288，配对重跑两原方法与两单中心方法，以隔离中心策略；或②保留全部样本，但允许957条原中心使用真实较短积分长度。回复前不删除行、不放宽清洗、不正式训练；其他任务不恢复。先前询问的“补积分看看”已由只读诊断回答，现待上述数据处理选择。
+
+证据`outputs/Ablation_Task4C_OriginalCenter_1.1/preflight_verified.json`、`gpu_check.json`、`original_center_audit.json`和`center_reintegration_{channel,tbl}.json`。已完成私有Ibex部署，公开GitHub发布未获自动审批，未进行公开推送；本地科学提交与原科学证据完整保留。正式单中心F1尚不存在。
+<!-- task4c-original-center-preflight-20260917-end -->
+
+<!-- task4c-original-center-start-20260917 -->
+2026-09-17用户最新明确要求Task4-c p35/h0和c156只取消中心轮换，必须以原三维采样点积分的线作唯一中心。新版本`Ablation_Task4C_OriginalCenter_1.1`，科学commit2ef05ac0；不恢复此前暂停的Task3/5单中心21次实验。p35保留原32点/nearest6/scale100/weight0.5/signed-log+zscore+clip8及76,738参数；c156保留48点uniform/FPS6/scale1/weight1/zscore及992,386参数。两者只计算一个141维向量，网络严格只接收一个token；原均值/最大值对同一个隐藏向量形成[h,h]，不复制token或轮换。原网络容量及训练规则不变，预定共同seed96721各一次完整训练，无搜索。
+
+只读核验最新196,960/3,000/11,320缓存：原中心缺失训练918、验证7、测试32（Channel412/1/14；TBL506/6/18）。缺失行最近线约在一个邻居间距外，禁止替代；已询问用户补积分原中心、失败再处理，或共同保留中心子集加配对旧对照，尚待回复，正式训练有硬门禁。没有丢样本、换中心或新增正式F1。本地三项特征/固定中心/原网络容量及梯度测试通过。
+
+已私有部署`/ibex/user/zhanx0o/FMT_Task4C_OriginalCenter_20260917`，完整包含FLowUtils且导入检查通过。52009638数据哈希与中心索引核验已COMPLETED/0:0；52009639两模型V100小预检排队；52009640_0/1原参数中心补积分只读诊断运行。提交4个预检进程，正式训练未提交。首次远程提交命令末尾Windows回车导致参数解析退出，未产生作业，去除回车后正常提交；科学代码不变。公开GitHub推送被自动审批拒绝，未公开；通过14KB本地Git增量包部署到用户本人已授权的私有Ibex，不绕过公开限制。
+
+协议`docs/Task4C_original_center_protocol_1.1.md`；证据`outputs/Ablation_Task4C_OriginalCenter_1.1/`。历史多中心数值只作原方案结果，不能称单中心性能。
+<!-- task4c-original-center-start-20260917-end -->
+
+<!-- task4c-gt-head-coverage-final-20260917 -->
+2026-09-17 `mainExp_Task4C_GTHeadCoverage_1.1` 已完成；取代此前“训练中/等待浏览器检查”的状态。科学commit `c3952a7b`，固定c156/seed96721、992,386参数，196,960训练/3,000验证/11,320测试；132个GT每个新增30训练＋10测试，旧数据前缀和验证保持。113轮训练、验证选择63轮、25.712分钟；验证F1=0.921547，新完整测试F1=0.912008，同一个新模型在原10,000束子集F1=0.922946。新增正类头部1,320束识别1,071束、漏检249束，召回81.14%；132个GT均至少识别3/10束。这是单种子、共享GT实例的局部评估，不改写历史c156三种子结果。
+
+重试训练52001957与导出52001958均COMPLETED/0:0；前91轮训练排列及验证F1与失败52000896完全一致。原退出根因仍未确证：stderr无栈、CPU20:00.904、只有STARTED。新运行实际CPU限制为unlimited，累计CPU25:47.310；换节点并禁用资源限制继承后一遍完成，不能据此单独证明旧CPU限制就是原因。失败证据、缺失的结束事件及取消任务保留。独立审计通过：r2七个实际进程/13事件、全部预测与原数据哈希、选择轮次和GT配额。
+
+工作台1.5已上线，旧1.4入口跳转1.5并保留旧HTML。第三页测试全部11,320束，训练展示新增3,960束；每个GT均可查看正确识别与漏检。最终交互检查发现全局GT体单元查询在重叠区域可能返回另一有效GT，已逐个GT独立验证全部5,280新增中心的实际包含关系，再按其播种GT计数；每束只计一次，不改标签/训练/预测。构建强制每GT10/30配额，控件脚本带内容哈希以避免旧缓存。第一、二页内容继承1.4，形状解释仍是原p35模型。
+
+证据：`outputs/mainExp_Task4C_GTHeadCoverage_1.1/{independent_results_audit,browser_checks,local_delivery_status}.json`，查看器 `outputs/Other_Task4C_GTHeadCoverage_1.1/viewer/head_coverage_manifest.json`；协议 `docs/Task4C_GT_head_coverage_protocol_1.1.md`、`docs/FMT_analysis_workbench_protocol_1.5.md`。入口 `http://127.0.0.1:8767/Other_FMT_AnalysisWorkbench_1.5/index.html#results`。当前请求完成，不自动新增训练或调参。
+
+## GT头部全覆盖c156单种子结果 — mainExp_Task4C_GTHeadCoverage_1.1
+
+固定科学commit `c3952a7b`、seed96721、992,386参数、阈值0.5；训练196,960束，验证3,000束。训练113轮、选择63轮、25.712分钟，验证F1=0.921547。下列两种测试范围来自**同一次训练和同一份预测**，不可混为一个指标。属于交互可视化的单种子运行，不替换旧c156三种子均值。
+
+| 评价范围 | 样本数 | 合并F1 | Channel F1 | TBL F1 |
+|---|---:|---:|---:|---:|
+| 扩充后的完整测试 | 11,320 | 0.912008 | 0.917098 | 0.904781 |
+| 其中原测试子集 | 10,000 | 0.922946 | 0.930647 | 0.911175 |
+
+完整测试TP/FP/FN/TN=2700/134/387/8099，precision=0.952717，recall=0.874636。原子集TP/FP/FN/TN=1629/134/138/8099。完整训练F1=0.999988，只有2个FN、0个FP；训练页面仅展示新增头部子集，不能把3,960束展示数量当完整训练规模。
+
+| 新增正类头部子集 | GT数 | 新增训练 | 新增测试 | 正确识别 / 漏检 | 召回率 |
+|---|---:|---:|---:|---:|---:|
+| Channel | 74 | 2,220 | 740 | 600 / 140 | 0.810811 |
+| TBL | 58 | 1,740 | 580 | 471 / 109 | 0.812069 |
+| 合计 | 132 | 3,960 | 1,320 | 1,071 / 249 | 0.811364 |
+
+每个GT新增30训练＋10测试；全部132个GT的新增测试至少识别3/10束，24个GT识别10/10。数据全覆盖不等于分类100%正确。新增子集只有正类，主报召回率；新旧标签规则与类别比例不同，整体F1变化不能直接归为模型性能提升。每GT附近都有训练样本，结果只说明共享实例的局部分类。
+
+来源：`outputs/mainExp_Task4C_GTHeadCoverage_1.1/independent_results_audit.json`，包含逐GT正确数、原子集复算及训练代价；`final/c156/seed96721/result.json`，SHA256 `6c8b06da225a6ccf12e815fbc8cb56d6da8acdfd061b84f7416521c545d7d726`。
+<!-- task4c-gt-head-coverage-final-20260917-end -->
+
 更新：2026-09-17。本文核对实际代码、原始VTK及逐样本预测；本次不修改数据或模型，不启动新训练。
 
 **当前数据为 `Ablation_Task4C_BottomDensity_1.2`：193,000训练 / 3,000验证 / 10,000测试。当前验证选出的最佳FMT为c156，最终三种子测试F1为0.920390±0.003032。** 本文替换此前“v9.15_v2正在构建”的过时状态；旧版本的协议、数据和结果仍保留，不能混用于当前比较。
@@ -222,3 +325,7 @@ python -m http.server 8767 --bind 127.0.0.1 --directory outputs
 打开 `http://127.0.0.1:8767/Other_FMT_AnalysisWorkbench_1.2/index.html#saliency` 查看Hairpin支持分析，`#features`查看特征差异。**解释对象仍是旧p35、最近6邻居、76,738参数、seed96611，测试F1为0.878796，不是c156。** 原三维分类界面 `outputs/Other_Task4C_BundleVisualization_1.3/viewer/index.html`支持半透明GT、分类/混淆颜色、数量控制和相机预设，但其旧4.14数据也不是当前五倍训练缓存；不能把旧界面的数量或指标当作c156结果。
 
 合作者添加模型时固定缓存和划分，只用训练数据估计统计量、验证数据选择结构和轮数；保存每束概率、流场编号、集合内行号，以便统一复算和可视化。初筛单种子，较好方案再多种子复核。测试集是已反复使用的benchmark，不称全新确认集。新方案单独建版本、配置、结果目录，记录代码commit及设备；不覆盖上述缓存和历史结果。现有运行不保留训练权重，复现依靠代码、配置、随机种子、数据及逐次结果，不能依赖已有checkpoint。
+
+<!-- task4c-gt-head-training-retry-20260917 -->
+2026-09-17 GT头部覆盖1.1已完成正式数据及V100工程检查：196960/3000/11320，132个GT各10新增测试＋30新增训练，原前缀/验证文件相同。科学commitc3952a7b；数据证据outputs/Verify_Task4C_GTHeadCoverage_1.1/formal_data_audit.json。首次正式训练52000896在第91轮无错误栈退出1，CPU20:00.904、墙钟20:26，缺少ENDED事件；根因未确证，不称训练完成。失败历史保留failed_runs/52000896，原导出52000897取消。同科学代码/数据/c156/seed96721重试52001957，后接导出52001958；V100、3h、16GiB，排除原gpu213-18，增加进程限制/故障日志，未改学习设置。工作台1.5代码和逐GT表已准备，旧真实4.14诊断交互通过，但新c156结果尚无，原1.4页面未替换。一次性本地收尾进程跟踪重试，成功后独立核验并构建，状态outputs/mainExp_Task4C_GTHeadCoverage_1.1/local_delivery_status.json；新页面交互仍需正式结果后核对。协议docs/Task4C_GT_head_coverage_protocol_1.1.md及docs/FMT_analysis_workbench_protocol_1.5.md。
+<!-- task4c-gt-head-training-retry-20260917-end -->

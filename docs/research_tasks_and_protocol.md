@@ -1,5 +1,19 @@
 # FMT 研究任务与统一协议
 
+<!-- task4c-fps16-1p2-submitted-20260918 -->
+2026-09-18 Claude接替codex，立项`Ablation_Task4C_FPS16_1.2`。查询确认1.1的r2 pilot 52044303_0/1 FAILED/1:0不是导入问题：冻结的`center_and_neighbors`要求27个模板点都oyf>0且属同一连通头区，codex诊断的失败层头区只有7–21个单元、1.0h模板最多12–15个合格点，channel pilot 4,096次试探中46,963/47,550次拒绝为`fewer_than_17_seed_points`，≥17播种点在旧规则下结构性不可能；r2后续52044304–52044307已取消，无F1。
+
+用户2026-09-18决定：样本的根本是采样点，邻居播种点只要求在计算域内，只有中心保留λ₂/oyf/同头区筛选；样本须中心线有效且≥16邻居通过清理（≥17线），否则重采；一层连续1000次失败后放松中心筛选、标签按中心点GT归属决定并标记relaxed；只替换不满足条件的行，模板为完整GTHeadCoverage 196,960/3,000/11,320（需替换72,043/1,248/4,518行，另加因训练中心被替换而失去4h内同头区训练中心的评价行）；每条线保存播种点坐标及`head_candidate`（step1条件：λ₂<阈值∧oyf>0）与`oyf_positive`标签，播种点与线束成为显式键值对，此后数据集长期固定。四臂p35_h0_fps16/c156_fps16/p35_h0_six_control/c156_six_control、141维、76,738/992,386参数、训练规则与seed96721与1.1完全相同。替换行中心固定第0槽并保存全部域内存活邻居（16–26），索引记录`neighbor_filter`（0旧行/1新行/2放松）与`relaxed`；保留旧行与新行的邻居过滤规则不同，为用户接受的已知不一致。
+
+r1（科学commit `83ec5139`，尚无逐线属性）：私有部署`/ibex/user/zhanx0o/FMT_Task4C_FPS16_1p2_20260918`，源核验52045843、GPU预检52045844（四臂32束F1=1.0）、两流场pilot 52045845_0/1均COMPLETED/0:0；pilot新行27线占多数（channel训练137/148）、最少17线、平均1.6–6.4次试探，但channel验证集1个槽第1001次才成功，拒绝几乎全是与已被替换的旧训练中心保持1h间距。用户随即追加逐线属性要求，重建52045846启动1分42秒后取消（未写数据），52045847–52045849未启动；证据下载至`outputs/Ablation_Task4C_FPS16_1.2/r1_cancelled/`。
+
+r2（科学commit `e67b03f9`）：新增`line_seed_attributes.npz`（seed_points、stencil_slot、lambda2、oyf、inside、head_candidate、oyf_positive），距离规则改为只针对最终数据集（旧中心仅禁止重合），数据核验从原始场重新插值复核。本地18项测试（1.2新增10项＋1.1五项＋原中心三项）通过；私有部署`/ibex/user/zhanx0o/FMT_Task4C_FPS16_1p2_20260918_r2`（远端HEAD与4份源码哈希一致，远端13项测试通过）。11:59 UTC提交源核验52046103、GPU预检52046104、pilot 52046105[0–1]、重建52046106[0–1]、数据核验52046107、四臂训练52046108[0–3]%4、结果复算52046109，共12进程，尚无F1。存储：用户授权删除`/ibex/user/zhanx0o/project_pvit_codefiles`（732 GB）与`/ibex/user/zhanx0o/outputs`（131 GB，旧FTLE超分数据集），11:40–11:42 UTC完成，`/ibex/user`可用3.8 GB→871 GB；其他目录未动。协议`docs/Task4C_FPS16_protocol_1.2.md`，状态`outputs/Ablation_Task4C_FPS16_1.2/deployment_status.json`。未公开推送。
+<!-- task4c-fps16-1p2-submitted-20260918-end -->
+
+<!-- fmt-single-center-results-20260918 -->
+2026-09-18完成`Verify_FMT_SingleCenter_Task354C_1.2`：科学commit61d34fde，p35/n0_k06统一141维，固定原中心、无卷积/轮换/Raw旁路，MLP78,530参数；seed40共21次拟合。Task3/5十流场等权测试F1=0.725259/0.652650，Task4-c共同原中心子集合并测试F1=0.788932（Channel0.824313/TBL0.739482），验证分别0.778854/0.734302/0.769697。Task4-c196,042/2,993/11,288，58轮选中/108轮早停、训练10.394分钟。52012261、52012308[0–20]、52012309全部成功；远端源标签/行号核验和本地42预测、21结构/轮次/阈值、14源码哈希、23进程46事件复算PASS。无模型文件；单候选单种子，不能声称统一最好，不挪用其他Task4-c实验成绩。结果docs/FMT_single_center_results_1.2.md，证据outputs/Verify_FMT_SingleCenter_Task354C_1.2/local_result_verification.json。此前等待资源状态已结束；本项完成，不新增实验，其他任务状态不变。
+<!-- fmt-single-center-results-20260918-end -->
+
 <!-- fmt-single-center-resume-20260917 -->
 2026-09-17用户要求恢复部署统一FMT核验，版本Verify_FMT_SingleCenter_Task354C_1.2。遵守最新已确认原中心共同子集：Task4-c196,042/2,993/11,288，六份原行号/中心索引哈希固定于ad0ffc85已运行实验，不用邻居替代；Task3/5十流场原数据不变。p35/n0_k06固定单中心、其余全部有效邻居、141维、无卷积和Raw旁路，MLP78,530参数，seed40，21次拟合、最多4张V100。训练代码和预算不变；1.1预检因漏部署FLowUtils失败且未正式训练，本版补齐依赖后预检再提交。与另一轮原p35/h0、c156四臂任务分开，不重复那四次训练。协议docs/FMT_single_center_verification_protocol_1.2.md。本条恢复此次核验，取代下文审计暂停状态，不恢复其他任务或扩展搜索。
 
@@ -21,6 +35,8 @@ FMT任意探索的完整预测路径禁止空间卷积；包括原始坐标旁�
 
 Task4-c p35/h0 76,738参数、c156 992,386参数，以及直接fmt_c156/ASAP全连接版本没有卷积，保持原定义。Task3/5旧p35/h0含Raw卷积骨干，不能与Task4-c同名特征配方混称。历史数值/预测/日志仅保留撤销证据，不改写成无卷积成绩。详见 [FMT无空间卷积硬性协议1.1](FMT_no_spatial_convolution_protocol_1.1.md)。本条优先于本文以下全部历史授权和“冻结/当前最佳”表述。
 <!-- fmt-no-convolution-20260917-end -->
+
+> **2026-09-16 Task2纠正：** 本文所有旧Task2的FMT＋VAE结果、可视化及IVD比较指标已按用户裁定弃用，仅保留为错误过程档案，不进入当前论文证据。当前Task2为直接特征可视化；VAE仅重构primitive坐标。见[任务纠正与历史](Task2_feature_visual_analysis_protocol_2.1.md)。其他任务记录不受影响。
 
 2026-09-14用户要求`Ablation_Task4C_ConvCapacity_4.18`：新Conv3D 83,918参数，为原4.14 FMT 88,514参数的94.8076%；卷积通道12/24/48、分类头384→96→64→2。原4.14数据、体素缓存、训练器及三种子固定，限定V100，原FMT和219,602参数Conv结果保留作为参考。五项Slurm任务和三份预测已独立核对完成，合并测试F1 0.7499±0.0126（用户独立核验修订），平均训练18.432分钟；协议`docs/Task4C_conv_capacity_protocol_4.18.md`，完整结果见实验日志和主表。该实验与4.16/4.17编码器核验分开。
 
@@ -137,7 +153,7 @@ FMT 是由 Fourier 变换、`sin/cos`、几何不变量和 aggregation 构成的
 | 任务 | 维度 | 输入与方法 | 核心比较 | 主要输出 | 允许的核心结论 |
 |---|---|---|---|---|---|
 | **Task1：无监督涡区域聚类** | 2D、3D | `primitive -> FMT -> feature -> KMeans(k=2)` | Raw geometry + KMeans、FMT + KMeans，以及必要的无参数几何 baseline | ARI、NMI、固定映射后的 F1/IoU；逐流场与 family macro | FMT feature 是否足以区分涡区域和非涡区域；是否优于 Raw 聚类 |
-| **Task2：FMT 作为 VAE 输入** | 2D、3D | 无监督 VAE 编码后，对 latent feature 做 KMeans 二类聚类 | **主比较：Raw+VAE vs FMT+VAE**；FMT direct 只作诊断 | held-out ARI、NMI、F1/IoU；多 VAE seed 分布 | FMT 是否是比 Raw pathline 更好的 VAE 输入 |
+| **Task2：特征可视化分析** | 2D、3D | 直接特征投影、分组与真实轨线联动 | FMT p35 / primitive坐标重构VAE / Raw＋PCA / Raw / 传统几何特征 | 无性能或质量指标；保存图形、样本ID和参数 | 交互观察不同特征揭示的轨线几何 |
 | **Task3：有监督 IVD 涡识别** | 2D、3D | IVD 标签监督的涡/非涡二分类网络 | Raw、参数量控制 Raw、Raw+FMT | F1、Average Precision、AUROC、precision、recall；多训练 seed | 加入 FMT 是否提高有监督涡区域识别 |
 | **Task4：有监督涡类型分类** | **仅 3D** | 对已定义的 3D 涡型标签做多分类 | 不使用 FMT vs 加入 FMT | macro-F1、每类 F1、balanced accuracy、confusion matrix | 加入 FMT 是否提高 streamwise、spanwise、hairpin 等涡型分类 |
 | **Task4-c：Hairpin区域二分类（2.1）** | **仅 Channel 3D 快照** | 局部七线簇几何→Hairpin / Non-hairpin，标签为中心是否在GT区域 | FMT＋MLP与同几何体素化的Conv3D＋MLP | 正类F1、AP、平衡准确率、混淆矩阵、积分有效率 | FMT是否改善隔离空间区间的hairpin区域识别；不作为论文曲面检测F1 |
@@ -152,7 +168,7 @@ Task4 的背景类处理必须在首个实验前冻结。Task4-b 1.2 冻结为�
 
 ## 3. 不得混用的表述
 
-- Task2 的正确主命题是 `FMT+VAE > Raw+VAE`。`FMT+VAE < FMT direct` 不会否定这个主命题，但说明 VAE 没有进一步改善 FMT 本身。因此不能把 Task2 写成“VAE 提高 FMT feature”。
+- Task2没有FMT＋VAE优于Raw＋VAE的当前主命题；该历史命题及所有旧Task2结果已弃用。新Task2直接比较特征可视化，VAE只能重构primitive坐标。
 - Task3 是 IVD 监督的**二分类识别**，不是 streamwise/spanwise/hairpin 多分类。后者统一属于 Task4。
 
 ## 4. 所有 Tasks 实验共享的最低协议
@@ -160,8 +176,8 @@ Task4 的背景类处理必须在首个实验前冻结。Task4-b 1.2 冻结为�
 1. **数据拆分**：同一数据集内实验按时间片拆 train/validation/test，不得随机拆空间 seed；pathline source window 必须一起计入时间泄漏检查。预先冻结的跨 volume 迁移可改用完全不同的 source volume 作训练、target volume 作一次测试，但模型参数、normalization、停止规则、feature、proxy-rule percentile 和超参数都必须在不读取 target 性能指标的情况下冻结；target 人工标签只能用于预先声明的测试标签、测试总体构建及最终评估。
 2. **test 冻结**：test/confirmation 标签不得参与 feature 选择、cluster-to-class 映射、checkpoint、threshold、alpha 或超参数选择。
 3. **标签冻结**：IVD 定义、空间平均区域、阈值和边界处理必须写入 config；
-   - 当前论文中所有采用 whole-field IVD 二分类的 3D 实验统一固定为 **IVD p95**：Task1/Task2 将其用于评估，Task3/Task5 将其用于监督。依据 `Ablation_Task23IVDPercentile_1.2`，p95 在 p80、p85、p87.5、p90、p92.5、p95 的完整扫描中给出最大的 Task2 F1 增益以及 Task3 F1、Average Precision 增益。p80–p92.5 只作为标签敏感性分析；后续若改变阈值，必须建立新实验版本并与已有 p95 结果并列报告。
-4. **论文主表使用任务级统一 FMT 配方**：Task1、Task2、Task3 的 3D 论文主表必须分别从既有候选中选择一套任务级配方，并在全部 10 个数据条目上保持相同的 FMT feature blocks、FMT 侧权重/缩放和 FMT 后处理维度（例如 PCA 维数）。选择只能使用 development 数据；允许用新随机种子复跑既有候选，但不得为了统一主表新增未搜索过的超参数。旧逐flow或逐physical-family最优配方、代码和结果完整保留，只能进入补充表和可视化，不能与统一配方混合计算论文主表 macro。Task5 的 FMT encoder 配方同样固定；其唯一例外是研究问题本身预注册的邻居距离、积分步长和积分步数会按尺度 tuple 变化。更严格地同时固定 VAE 或监督网络配方是允许的，但不能因此改变 Raw/FMT 两臂的公平比较。
+   - 当前论文中所有采用 whole-field IVD 二分类的 3D 实验统一固定为 **IVD p95**：Task1将其用于评估（旧Task2评价已弃用），Task3/Task5 将其用于监督。依据 `Ablation_Task23IVDPercentile_1.2`，p95 在 p80、p85、p87.5、p90、p92.5、p95 的完整扫描中给出最大的 Task2 F1 增益以及 Task3 F1、Average Precision 增益。p80–p92.5 只作为标签敏感性分析；后续若改变阈值，必须建立新实验版本并与已有 p95 结果并列报告。
+4. **论文主表使用任务级统一 FMT 配方**：Task1、Task3的3D论文主表（Task2已退出指标主表）必须分别从既有候选中选择一套任务级配方，并在全部 10 个数据条目上保持相同的 FMT feature blocks、FMT 侧权重/缩放和 FMT 后处理维度（例如 PCA 维数）。选择只能使用 development 数据；允许用新随机种子复跑既有候选，但不得为了统一主表新增未搜索过的超参数。旧逐flow或逐physical-family最优配方、代码和结果完整保留，只能进入补充表和可视化，不能与统一配方混合计算论文主表 macro。Task5 的 FMT encoder 配方同样固定；其唯一例外是研究问题本身预注册的邻居距离、积分步长和积分步数会按尺度 tuple 变化。更严格地同时固定 VAE 或监督网络配方是允许的，但不能因此改变 Raw/FMT 两臂的公平比较。
 5. **统一预处理**：normalization 只在 train 上拟合；Raw 与 FMT 的维度、缩放和邻居权重必须明确。
 6. **容量控制**：训练网络必须报告总参数和可训练参数；至少包含参数量更多的 Raw 或结构匹配的 Raw residual 对照。
 7. **重复实验**：神经网络至少 3 个训练 seed。KMeans 必须固定并报告 `random_state` 和 `n_init`。
@@ -205,6 +221,7 @@ Task4 的背景类处理必须在首个实验前冻结。Task4-b 1.2 冻结为�
       `docs/research_archive_manifest.json`，恢复说明见 `docs/repository_maintenance.md`。
       不删实验流水、失败结论或结果文件，不改冻结算法。实验版本仍保留在配置和记录中，
       相同执行逻辑应复用入口，不因每次参数扫描复制一个脚本。
+    - 规定审计、核验、codereview等开发部署测试时可以产生代码，但是审计、核验之后，审计、核验的代码要删除。
 
 
 
@@ -219,9 +236,10 @@ Task4 的背景类处理必须在首个实验前冻结。Task4-b 1.2 冻结为�
 
 ### Task2
 
-- 主实验的 VAE 先按 FMT 在 train/validation 上开发并冻结；同一 physical-family 内，Raw+VAE 与 FMT+VAE 使用完全相同的 VAE 架构、latent 维数、优化器、学习率、训练步数、KL 权重和 checkpoint 规则。不得为 Raw 单独搜索更强 VAE 后替换主 baseline。
-- 输入维数不同导致参数量不同，必须明确报告。独立优化的 strongest-Raw 或 dimension-matched Raw（例如 train-only PCA）可以作为附录压力测试，但不得取代 same-VAE 主表。
-- 主结果是 `FMT+VAE − Raw+VAE`；`FMT direct`、`Raw direct` 和 reconstruction loss 只作解释性诊断。重构误差不能替代 latent 聚类质量。
+- 当前唯一协议：[Task2特征可视化2.1](Task2_feature_visual_analysis_protocol_2.1.md)。
+- 相同primitive和样本ID下比较直接FMT、primitive坐标重构VAE潜在均值、Raw＋PCA、Raw及传统几何特征。
+- 不开展指标分析、IVD标签比较或自动排名。旧same-VAE、FMT特征重构及相关选择规则全部退役，不能恢复为默认流程。
+- VAE编码器和解码器以归一化坐标为输入/目标；显示编码器均值。直接FMT不经过VAE。新任务不使用旧Task2潜变量。
 
 ### Task3
 
