@@ -284,7 +284,7 @@ center_line = geometry[i, index["original_center_id"][i]]   # 第0槽
 neighbour_ids = [j for j in range(1, n)]
 step1_neighbours = [j for j in neighbour_ids if attr["head_candidate"][i, j]]   # 按 step1 标签筛选，无需重建
 seed_xyz = attr["seed_points"][i, :n]                  # 物理播种点，与 geometry 逐槽对应
-heldout_test = index["heldout_instance"]               # 测试报告分“未见实例”与“覆盖实例偏移测试”两栏
+heldout_test = index["heldout_instance"]               # 未见实例的测试行
 ```
 
 `labels` 为最终标签（放松行按中心点 GT 归属）；`instance/head_component/source_cell/center/scale_id` 与属性文件只供追溯和邻居筛选，不能作为分类特征。
