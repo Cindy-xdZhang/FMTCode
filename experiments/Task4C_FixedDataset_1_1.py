@@ -84,7 +84,8 @@ def audit_data(spec, config):
             fresh = rules.line_attributes(points, scene['axes'], scene['lambda2'], scene['oyf'], threshold)
             for key in ('lambda2', 'oyf'): assert np.allclose(np.nan_to_num(fresh[key]), np.nan_to_num(at[key]), atol=1e-6, rtol=1e-6)
             for key in ('inside', 'head_candidate', 'oyf_positive'): assert np.array_equal(fresh[key], at[key])
-            assert np.all(at['head_candidate'][~idx['relaxed'], 0]) and float(at['lambda2_threshold']) == threshold
+            box_rows = idx['sample_kind'] == data.KIND_GT_BOX
+            assert np.all(at['head_candidate'][~idx['relaxed'] & ~box_rows, 0]) and float(at['lambda2_threshold']) == threshold
             # Labels, instances, groups and exclusion zones.
             owner, _ = data.sample_gt(scene['gt'], m['center'], scene['locator']); assert np.array_equal(owner, idx['center_gt_owner'])
             angle, _ = data.head_mask(data.vector_at(m['center'], scene['axes'], scene['velocity']), data.vector_at(m['center'], scene['axes'], scene['omega']))
@@ -93,11 +94,18 @@ def audit_data(spec, config):
             assert np.all(m['labels'][gt_rows] == 1) and np.all(owner[gt_rows] == m['instance'][gt_rows]) and np.all(m['head_component'][gt_rows] == -m['instance'][gt_rows]-1)
             relaxed = idx['relaxed']; assert np.array_equal(idx['neighbor_filter'] == data.FILTER_RELAXED, relaxed)
             assert np.all(m['labels'][relaxed] == (owner[relaxed] >= 0)) and np.all(np.where(owner[relaxed] >= 0, owner[relaxed], -1) == m['instance'][relaxed])
+            # Held-out box rows: test only, center inside that instance's GT box, label = GT membership of the center, no filter asserted.
+            bounds = {int(i): (np.array(lo), np.array(hi)) for i, (lo, hi) in prep['gt_boxes'].items()}
+            assert not np.any(box_rows) or role == 'test'
+            for i in np.flatnonzero(box_rows):
+                lo, hi = bounds[int(idx['nearest_instance'][i])]; assert np.all(m['center'][i] >= lo) and np.all(m['center'][i] <= hi) and int(idx['nearest_instance'][i]) in heldout
+            assert np.all(m['labels'][box_rows] == (owner[box_rows] >= 0)) and np.all(np.where(owner[box_rows] >= 0, owner[box_rows], -1) == m['instance'][box_rows])
             assert np.array_equal(idx['heldout_instance'], np.isin(idx['nearest_instance'], list(heldout)))
             if role != 'test':
                 assert not np.any(np.isin(m['instance'][m['labels'] == 1], list(heldout))) and not idx['heldout_instance'].any()
                 for lo, hi in exclusion: assert not np.any(np.all((m['center'] >= lo) & (m['center'] <= hi), axis=1))
-            cov = {str(i): int(np.sum(idx['center_in_gt_head'] & (owner == i))) for i in prep['instance_split']['covered']+prep['instance_split']['heldout']}
+            cov = {str(i): int(np.sum(np.all((m['center'] >= bounds[i][0]) & (m['center'] <= bounds[i][1]), axis=1)) if i in heldout else np.sum(idx['center_in_gt_head'] & (owner == i)))
+                   for i in prep['instance_split']['covered']+prep['instance_split']['heldout']}
             assert cov == prep['splits'][role]['coverage_head_centers_per_instance']
             if role == 'train': assert all(cov[str(i)] >= cover for i in covered)
             if role == 'test': assert all(cov[str(i)] >= cover for i in covered+list(heldout))

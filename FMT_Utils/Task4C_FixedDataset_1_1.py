@@ -32,7 +32,7 @@ from FMT_Utils.Task4C_PaperBundles_3_1 import cell_centers
 from experiments import Task4C_PhysicalLength_4_14 as physical
 
 ROLES = ('train', 'validation', 'test')
-KIND_HEAD_REGION, KIND_GT_HEAD = 0, 1
+KIND_HEAD_REGION, KIND_GT_HEAD, KIND_GT_BOX = 0, 1, 2   # 2: held-out instance test row, center uniform in the GT box, no filter
 FILTER_IN_DOMAIN, FILTER_RELAXED = rules.FILTER_IN_DOMAIN, rules.FILTER_RELAXED
 ATTRIBUTE_FILE = rules.ATTRIBUTE_FILE
 INDEX_FILE = 'index.npz'
@@ -175,6 +175,21 @@ class Builder:
         if sample is None: self.reject('gt_center_failed_domain_lambda2_oyf'); return None
         sample.update(kind=KIND_GT_HEAD, relaxed=relaxed, nearest_instance=instance, paired_test_center=-1); return sample
 
+    def box_sample(self, role, instance, number, scale, sid, relaxed, rng):
+        """Held-out instance test row: center uniformly inside the instance GT box, no lambda2/oyf/angle filter, label = GT membership of the center."""
+        lo, hi = self.bounds[instance]; center = rng.uniform(lo, hi)
+        h = float(np.prod(coverage.spacing_at(center[None], self.axes))**(1/3)); distance = h*scale['neighbor_grid_scale']; seeds = stencil(center, distance)
+        _, inside, _ = interpolate_scalar(seeds, self.axes, self.lambda2)
+        if not inside[0]: self.reject('box_center_outside_domain'); return None
+        valid = inside.copy(); valid[0] = True
+        owner, _ = sample_gt(self.scene['gt'], center[None], self.scene['locator'])
+        label = int(owner[0] >= 0); owner_instance = int(owner[0]) if label else -1
+        sample = dict(center=center, seeds=seeds[valid], source_cell=cell_of(center, self.axes), neighbor_distance=distance, local_grid_scale=h,
+                      seed_rms_distance=float(np.sqrt(np.mean(np.sum((seeds[valid]-center)**2, axis=1)))), label=label, instance=owner_instance,
+                      head_component=-instance-1, scale_id=sid, center_number=number, nearest_train_center_distance=0., nearest_same_head_train_center_distance=0.,
+                      kind=KIND_GT_BOX, relaxed=False, nearest_instance=instance, paired_test_center=-1)
+        return sample
+
     def pair_sample(self, role, target, number, scale, sid, relaxed, rng):
         """Training center inside the same GT instance, 3h..6h (h of the test row) away from a covered-instance test positive."""
         instance = int(target['instance']); h = float(target['local_grid_scale'])
@@ -227,6 +242,7 @@ class Builder:
                 number = 700000000+ROLES.index(role)*100000000+self.attempts[role]
                 rng = np.random.default_rng([self.rule['seed'], self.index, ROLES.index(role), number])
                 if kind == 'gt': sample = self.gt_sample(role, source, number, scale, sid, relaxed, rng)
+                elif kind == 'box': sample = self.box_sample(role, source, number, scale, sid, relaxed, rng)
                 elif kind == 'pair': sample = self.pair_sample(role, source, number, scale, sid, relaxed, rng)
                 else: sample = self.head_sample(role, source, number, scale, sid, relaxed, rng)
                 if sample is not None: sample = self.finish(sample, role, sample['local_grid_scale'])
@@ -253,7 +269,9 @@ class Builder:
     def generate_test(self):
         counts = self.spec['dataset']['per_flow_counts']['test']; target = self.target_head_centers()
         rows = []
-        for instance in self.instances: rows.extend(self.fill('test', [('gt', instance)], target, tag=f'gt{instance}', allow_short=True))
+        for instance in self.instances:
+            kind = 'box' if instance in self.heldout else 'gt'       # held-out instances: anywhere in the GT box, no rules
+            rows.extend(self.fill('test', [(kind, instance)], target, tag=f'{kind}{instance}', allow_short=True))
         rows.extend(self.head_region_rows('test', counts-len(rows)))
         return rows
 
@@ -338,11 +356,12 @@ class Builder:
         valid = np.arange(27)[None] < m['counts'][:, None]; assert np.array_equal(np.isfinite(points).all(-1), valid) and np.all(slots[:, 0] == 0)
         attributes = line_attributes(points, self.axes, self.lambda2, self.oyf, self.threshold)
         relaxed = np.array([r['relaxed'] for r in rows]); kind = np.array([r['kind'] for r in rows], np.int8)
-        assert np.all(attributes['head_candidate'][~relaxed, 0]), 'non-relaxed center violates step 1'
+        assert np.all(attributes['head_candidate'][~relaxed & (kind != KIND_GT_BOX), 0]), 'non-relaxed center violates step 1'
         owner, _ = sample_gt(self.scene['gt'], m['center'], self.scene['locator'])
         angle, _ = head_mask(vector_at(m['center'], self.axes, self.scene['velocity']), vector_at(m['center'], self.axes, self.scene['omega']))
         in_gt_head = (owner >= 0) & angle
-        cov = {str(i): int(np.sum(in_gt_head & (owner == i))) for i in self.instances}
+        in_box = {i: np.all((m['center'] >= self.bounds[i][0]) & (m['center'] <= self.bounds[i][1]), axis=1) for i in self.heldout}
+        cov = {str(i): int(np.sum(in_box[i]) if i in self.heldout else np.sum(in_gt_head & (owner == i))) for i in self.instances}
         np.savez_compressed(folder/'metadata.npz', **m)
         np.savez_compressed(folder/INDEX_FILE, sample_kind=kind, relaxed=relaxed, neighbor_filter=np.where(relaxed, FILTER_RELAXED, FILTER_IN_DOMAIN).astype(np.int8),
                             original_center_id=np.zeros(n, np.int64), nearest_instance=np.array([r['nearest_instance'] for r in rows], np.int64),
@@ -351,7 +370,7 @@ class Builder:
                             paired_test_center=np.array([r.get('paired_test_center', -1) for r in rows], np.int64))
         np.savez_compressed(folder/ATTRIBUTE_FILE, seed_points=points, stencil_slot=slots, exact_stencil_coordinates=np.ones(n, bool),
                             lambda2_threshold=np.array(self.threshold), **attributes)
-        return dict(samples=n, classes=np.bincount(m['labels'], minlength=2).tolist(), gt_head_rows=int((kind == KIND_GT_HEAD).sum()),
+        return dict(samples=n, classes=np.bincount(m['labels'], minlength=2).tolist(), gt_head_rows=int((kind == KIND_GT_HEAD).sum()), gt_box_rows=int((kind == KIND_GT_BOX).sum()),
                     relaxed=int(relaxed.sum()), heldout_instance_rows=int(np.sum([r['nearest_instance'] in self.heldout for r in rows])),
                     line_count_histogram=np.bincount(m['counts'], minlength=28)[self.rule['minimum_valid_lines']:].tolist(),
                     coverage_head_centers_per_instance=cov,
@@ -373,7 +392,8 @@ def prepare(spec, index, write, sha, identity, pilot=False):
     coverage_ok = dict(train=all(reports['train']['coverage_head_centers_per_instance'][str(i)] >= minimum for i in covered),
                        test=all(reports['test']['coverage_head_centers_per_instance'][str(i)] >= minimum for i in builder.instances))
     report = dict(complete=True, pilot=pilot, identity=identity(), flow=flow, splits=reports, instance_split=builder.groups,
-                  heldout_exclusion_boxes=[[lo.tolist(), hi.tolist()] for lo, hi in builder.exclusion], head_groups={str(k): v for k, v in builder.head_group.items()},
+                  heldout_exclusion_boxes=[[lo.tolist(), hi.tolist()] for lo, hi in builder.exclusion],
+                  gt_boxes={str(i): [builder.bounds[i][0].tolist(), builder.bounds[i][1].tolist()] for i in builder.instances}, head_groups={str(k): v for k, v in builder.head_group.items()},
                   catalog=builder.catalog_report, rejections=builder.rejections, relaxed=builder.relaxed, trace_calls=builder.trace_calls,
                   coverage_requirement_met=coverage_ok, distances=spec['distances'], proposals=spec['proposals'], generation_order=['test', 'validation', 'train'],
                   unpaired_test_rows_removed=reports['test'].get('unpaired_test_rows_removed', 0),

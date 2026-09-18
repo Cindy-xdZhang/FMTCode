@@ -11,7 +11,7 @@ from FMT_Utils import Task4C_FixedDataset_1_1 as data
 
 def bare_builder(**attributes):
     b = data.Builder.__new__(data.Builder); b.rejections = {}; b.reserved = {r: [] for r in data.ROLES}; b.reserved_cache = {}
-    b.dist = dict(eval_min_to_any_train_over_h=1., test_max_to_same_instance_train_over_h=6., test_min_to_validation_over_h=.5, heldout_exclusion_margin_over_h=1.)
+    b.dist = dict(eval_min_to_any_train_over_h=1., test_max_to_same_instance_train_over_h=6., test_min_to_validation_over_h=.5, heldout_exclusion_margin_over_h=0.)
     b.rule = dict(seed=1, minimum_valid_lines=17, normal_attempts=4, relaxed_attempts=4, integration_batch_templates=8)
     b.final_trees = {}; b.instance_trees = {}; b.exclusion = []; b.heldout = set()
     for k, v in attributes.items(): setattr(b, k, v)
@@ -101,7 +101,7 @@ class FixedDatasetRules(unittest.TestCase):
 
     def test_save_writes_metadata_index_and_line_attributes(self):
         axes = [np.arange(0., 400., 50.) for _ in range(3)]; lam = np.full((8, 8, 8), -5.); oyf = np.ones((8, 8, 8))
-        b = bare_builder(axes=axes, lambda2=lam, oyf=oyf, threshold=-1., instances=[7, 9], heldout={9}, groups=dict(covered=[7], heldout=[9]),
+        b = bare_builder(axes=axes, lambda2=lam, oyf=oyf, threshold=-1., instances=[7, 9], heldout={9}, groups=dict(covered=[7], heldout=[9]), bounds={9: (np.array([250., 0, 0]), np.array([350., 100, 100]))},
                          scene=dict(gt=None, locator=None, velocity=np.zeros((8, 8, 8, 3)), omega=np.zeros((8, 8, 8, 3))))
         def row(center, label, instance, kind, relaxed, sid):
             grid = data.stencil(np.array(center, float), 1.); n = 20
@@ -127,13 +127,33 @@ class FixedDatasetRules(unittest.TestCase):
         self.assertEqual(at['seed_points'].shape, (3, 27, 3)); self.assertTrue(at['head_candidate'][:, :20].all() and not at['head_candidate'][:, 20:].any())
         np.testing.assert_allclose(at['seed_points'][0, :20], data.stencil(np.array([100., 50, 50]), 1.)[:20])
 
+    def test_box_sample_takes_any_point_of_a_heldout_gt_box_and_labels_by_gt_membership(self):
+        axes = [np.arange(0., 400., 50.) for _ in range(3)]
+        b = bare_builder(axes=axes, lambda2=np.zeros((8, 8, 8)), heldout={9}, bounds={9: (np.array([100., 100, 100]), np.array([150., 150, 150]))},
+                         scene=dict(gt=None, locator=None))
+        with patch.object(data, 'sample_gt', return_value=(np.array([9]), None)):
+            s = b.box_sample('test', 9, 1, {'neighbor_grid_scale': 1.}, 0, False, np.random.default_rng(0))
+        self.assertTrue(np.all(s['center'] >= 100) and np.all(s['center'] <= 150)); self.assertEqual((s['kind'], s['label'], s['instance'], s['nearest_instance']), (data.KIND_GT_BOX, 1, 9, 9))
+        with patch.object(data, 'sample_gt', return_value=(np.array([-1]), None)):
+            s = b.box_sample('test', 9, 2, {'neighbor_grid_scale': 1.}, 0, False, np.random.default_rng(1))
+        self.assertEqual((s['label'], s['instance'], s['nearest_instance']), (0, -1, 9)); self.assertEqual(len(s['seeds']), 27)
+
+    def test_generate_test_uses_box_rows_for_heldout_and_gt_head_rows_for_covered_instances(self):
+        b = bare_builder(spec=dict(dataset=dict(per_flow_counts=dict(test=6)), coverage=dict(min_head_centers_per_instance_per_split=2)), instances=[7, 9], heldout={9},
+                         plan=[{'neighbor_grid_scale': 1.}], pools=dict(test=[dict(head_component=3)]))
+        calls = []
+        def fill(role, sources, quota, tag, fixed_sid=None, allow_short=False):
+            calls.append((sources[0][0], sources[0][1] if sources[0][0] != 'head' else 'head', quota, allow_short)); return [dict()]*quota
+        with patch.object(b, 'fill', fill): rows = b.generate_test()
+        self.assertEqual(calls[:2], [('gt', 7, 2, True), ('box', 9, 2, True)]); self.assertEqual(len(rows), 6)
+
     def test_config_encodes_user_rules(self):
         c = self.config
         self.assertEqual(c['distances']['test_max_to_same_instance_train_over_h'], 6.); self.assertEqual(c['distances']['test_min_to_validation_over_h'], .5)
         self.assertEqual(c['instance_split']['held_out_fraction'], .2); self.assertEqual(c['proposals']['minimum_valid_lines'], 17)
         self.assertEqual(c['proposals']['normal_attempts'], 100); self.assertEqual(c['coverage']['min_head_centers_per_instance_per_split'], 2)
         self.assertEqual(c['coverage']['target_head_centers_per_instance_per_split'], 10); self.assertEqual(c['distances']['eval_min_to_any_train_over_h'], 1.)
-        self.assertEqual(c['dataset']['expected_counts'], {k: 2*v for k, v in c['dataset']['per_flow_counts'].items()})
+        self.assertEqual(c['dataset']['expected_counts'], {k: 2*v for k, v in c['dataset']['per_flow_counts'].items()}); self.assertEqual(c['distances']['heldout_exclusion_margin_over_h'], 0.)
 
 
 if __name__ == '__main__': unittest.main()

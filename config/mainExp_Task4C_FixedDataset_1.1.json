@@ -1,6 +1,6 @@
 {
   "version": "mainExp_Task4C_FixedDataset_1.1",
-  "execution_revision": "r3_rules_2026-09-18_evening",
+  "execution_revision": "r3_heldout_box_no_rules",
   "output": "outputs/mainExp_Task4C_FixedDataset_1.1",
   "physical_config": "config/mainExp_Task4C_GTHeadCoverage_1.1.json",
   "physical_config_note": "frozen flow files, lambda2 thresholds, integration parameters, cleaning and 3/1/1 head blocks are read from this file; nothing else of GTHeadCoverage 1.1 is reused",
@@ -35,19 +35,20 @@
     "target_head_centers_per_instance_per_split": 10,
     "definition": "center inside the GT instance volume and |cos(velocity,vorticity)|^2 < 0.5 (GTHeadCoverage 1.1 head condition); an instance is covered by a split when the split has >= min_head_centers such centers",
     "train": "every covered instance (80% group)",
-    "test": "every instance",
+    "test": "every instance (covered: GT-head rows; held-out: GT-box rows)",
     "validation_gt_head_rows": false,
     "paired_train_centers_per_test_positive": 1,
     "pairing": "every covered-instance test positive gets >=1 training center inside the same GT instance, satisfying the head condition, at 1h..6h (h of the test row); unpaired test positives are removed and coverage is re-checked",
     "train_topup": "after pairing, every covered instance with fewer than target non-relaxed GT-head training rows receives GT-head rows (GT membership, head angle, lambda2<threshold, oyf>0, >=1h from evaluation centers) up to the target when achievable; the hard requirement is min_head_centers",
-    "test_target": "every instance gets GT-head test rows up to the target when achievable; the hard requirement is min_head_centers"
+    "test_target": "every instance gets GT-head test rows up to the target when achievable; the hard requirement is min_head_centers",
+    "heldout_test": "held-out instances: test centers uniformly random inside the instance GT box, no lambda2/oyf/angle filter (user rule 2026-09-18 evening: no added rules); label = GT membership of the center; coverage of a held-out instance = test centers inside its GT box"
   },
   "distances": {
     "eval_min_to_any_train_over_h": 1.0,
     "test_max_to_same_instance_train_over_h": 6.0,
     "test_min_to_validation_over_h": 0.5,
-    "heldout_exclusion_margin_over_h": 1.0,
-    "note": "h is the local grid spacing (geometric mean). Generation order test -> validation -> train: validation >= 0.5 h_test from test centers; training >= 1 h_eval from every validation/test center; covered-instance test positives have a paired same-instance training center within 6h; training/validation never enter a held-out GT box expanded by one median spacing"
+    "heldout_exclusion_margin_over_h": 0.0,
+    "note": "h is the local grid spacing (geometric mean). Generation order test -> validation -> train: validation >= 0.5 h_test from test centers; training >= 1 h_eval from every validation/test center; covered-instance test positives have a paired same-instance training center within 6h; training/validation never enter a held-out GT box (no margin)"
   },
   "proposals": {
     "seed": 98201,
@@ -72,7 +73,7 @@
     "geometry.npy": "float32 [N,27,32,3] normalized lines, slot 0 = center line",
     "seeds.npy": "float32 [N,27,3] normalized seeds",
     "metadata.npz": "labels, counts, head_component, instance, scale_id, center_number, source_cell, center, centroid, radius, bounds, neighbor_distance, seed_rms_distance, measured_mean_arc_length, half_arc_lengths, half_step_counts, ds, maxiteration, requested_half_length, local_grid_scale, nearest_train_center_distance, nearest_same_head_train_center_distance",
-    "index.npz": "sample_kind (0 head region / 1 GT head), relaxed, neighbor_filter (1 in-domain / 2 relaxed), original_center_id (0), nearest_instance, heldout_instance, center_gt_owner, center_in_gt_head, offset_test",
+    "index.npz": "sample_kind (0 head region / 1 GT head / 2 held-out GT box), relaxed, neighbor_filter (1 in-domain / 2 relaxed), original_center_id (0), nearest_instance, heldout_instance, center_gt_owner, center_in_gt_head, offset_test, paired_test_center",
     "line_seed_attributes.npz": "seed_points, stencil_slot, exact_stencil_coordinates, lambda2, oyf, inside, head_candidate, oyf_positive, lambda2_threshold"
   },
   "generation_order": [
