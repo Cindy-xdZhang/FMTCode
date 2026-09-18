@@ -1,6 +1,6 @@
 {
   "version": "Ablation_Task4C_FPS16_1.2",
-  "execution_revision": "r1_full_template_in_domain_neighbours",
+  "execution_revision": "r2_line_attributes_final_set_distances",
   "output": "outputs/Ablation_Task4C_FPS16_1.2",
   "previous_version": "Ablation_Task4C_FPS16_1.1",
   "previous_config": "config/Ablation_Task4C_FPS16_1.1.json",
@@ -163,11 +163,17 @@
     "neighbor_filter": "in-domain only; the 26 stencil neighbours are integrated regardless of lambda2 / oyf / head membership",
     "relaxation": "after normal_attempts failed proposals the center filter is dropped; head-region centers are drawn uniformly in the stratum cell box with one spacing margin, GT-head centers from unfiltered GT cells of the instance; the label is the GT membership of the center point; relaxed rows are flagged and counted",
     "preserve": "flow, split, scale, old/additional label rule, training full/lower pool; class and GT instance preserved except for relaxed rows",
-    "distance_and_cleaning": "unchanged 1h/4h/0.5h rules and 0.95L..1.002L cleaning; original centers stay reserved for cross-split minimum-distance checks"
+    "distance_and_cleaning": "unchanged 1h/4h/0.5h rules and 0.95L..1.002L cleaning, checked against the FINAL data set (retained + new centers); old centers that are replaced only forbid exact duplicates (r1 pilot showed that reserving replaced training centers pushed evaluation slots into relaxation)",
+    "per_line_attributes": "line_seed_attributes.npz per split: seed_points [N,27,3] physical coordinates (exact stencil points for rebuilt rows, float32 reconstruction for retained rows), stencil_slot, lambda2, oyf, inside, head_candidate (lambda2<threshold and oyf>0 at the seed = step-1 condition), oyf_positive"
   },
   "original_center": "exact original sampling point in slot 0; no cycling, nearest replacement or padding-as-neighbor",
   "fixed_features": "23 center +72 direction +23 neighbor mean +23 numerical max =141",
   "frozen_other_rules": true,
   "dataset_role": "long-term fixed Task4-c bundle set: every row keeps its center line plus all surviving in-domain neighbours (16..26), so FPS-k with k<=16 needs no rebuild",
-  "comparison": "two FPS16 arms plus their fixed-center six-neighbor controls on the same rebuilt data"
+  "comparison": "two FPS16 arms plus their fixed-center six-neighbor controls on the same rebuilt data",
+  "r1_pilot": {
+    "jobs": "52045843-52045845 COMPLETED; build 52045846 and downstream cancelled before writing to add per-line attributes",
+    "new_rows_line_counts": "channel train 137/148 rows with 27 lines, minimum 17; tbl train 115/124 with 27 lines",
+    "attempts": "mean 1.6-6.4 per slot; one channel validation slot reached attempt 1001 (relaxed) because of clearance against replaced old training centers"
+  }
 }

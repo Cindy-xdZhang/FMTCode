@@ -221,10 +221,34 @@ def audit_data(spec,config):
         for role in ('train','test'):
             keep=~indices[role]['relaxed'];before=data.metadata(Path(spec['source_output'])/'physical'/name/role)
             assert np.array_equal(np.unique(metas[role]['instance'][keep]),np.unique(before['instance'][keep]))
+        # Independent recomputation of the per-line seed attributes from the frozen fields.
+        physical_spec=json.loads(Path(spec['physical_config']).read_text());fi=[f['name'] for f in physical_spec['flows']].index(name)
+        scene=data.coverage.load_scene(physical_spec,fi);threshold=float(scene['flow']['lambda2_threshold'])
+        for role in data.ROLES:
+            folder=root/'physical'/name/role;m=metas[role];idx=indices[role]
+            with np.load(folder/data.ATTRIBUTE_FILE) as z:attr={k:z[k] for k in z.files}
+            assert float(attr['lambda2_threshold'])==threshold
+            valid=np.arange(27)[None]<m['counts'][:,None];points=attr['seed_points']
+            assert np.array_equal(np.isfinite(points).all(-1),valid) and np.array_equal(attr['exact_stencil_coordinates'],idx['replaced'])
+            recon=data.reconstructed_seeds(np.load(folder/'seeds.npy',mmap_mode='r'),m)
+            error=np.linalg.norm(np.nan_to_num(points-recon),axis=-1)/m['neighbor_distance'][:,None]
+            assert error[valid].max()<1e-3
+            for i in np.flatnonzero(idx['replaced'])[:2000]:
+                grid=data.stencil(m['center'][i],m['neighbor_distance'][i]);n=int(m['counts'][i])
+                assert np.array_equal(points[i,:n],grid[attr['stencil_slot'][i,:n]]) and attr['stencil_slot'][i,0]==0
+            fresh=data.line_attributes(points,scene['axes'],scene['lambda2'],scene['oyf'],threshold)
+            for key in ('lambda2','oyf'):assert np.allclose(np.nan_to_num(fresh[key]),np.nan_to_num(attr[key]),atol=1e-6,rtol=1e-6)
+            for key in ('inside','head_candidate','oyf_positive'):assert np.array_equal(fresh[key],attr[key])
+            assert not np.any(attr['head_candidate']&~valid) and not np.any(attr['oyf_positive']&~valid)
+            assert np.all(attr['head_candidate'][idx['replaced']&~idx['relaxed'],0])
+            reports[name][role]['lines']=dict(total=int(valid.sum()),head_candidate=int(attr['head_candidate'].sum()),
+                oyf_positive=int(attr['oyf_positive'].sum()),retained_lines_not_head_candidate=int((valid&~idx['replaced'][:,None]&~attr['head_candidate']).sum()),
+                relaxed_centers_not_head_candidate=int((idx['relaxed']&~attr['head_candidate'][:,0]).sum()))
+        del scene
     assert totals==spec['expected_counts']
     write(root/'data_audit.json',dict(complete=True,identity=identity(config),counts=totals,flows=reports,
         original_center_required=True,minimum_valid_lines=minimum,source_unchanged=True,retained_geometry_exact=True,
-        neighbor_filter_recorded_per_row=True))
+        neighbor_filter_recorded_per_row=True,per_line_attributes_recomputed=True))
 
 
 def audit_results(spec,config):

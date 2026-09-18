@@ -73,36 +73,41 @@ class FPS16DataRules(unittest.TestCase):
     def test_trace_gate_requires_17_clean_lines_and_the_original_center(self):
         b=data.Builder.__new__(data.Builder);b.rejections={};b.actual_trace_calls=0;b.rule={'minimum_valid_lines':17}
         b.plan=[{}];b.physical={};b.scene={'grid':None}
-        seeds=np.zeros((27,3));seeds[:17,0]=np.arange(17)
+        seeds=np.zeros((27,3));seeds[:17]=data.stencil(np.zeros(3),1.)[:17]
         rows=[dict(line_count=16),
               dict(line_count=17,normalized_seeds=seeds,center=np.array([30.,0,0]),centroid=np.zeros(3),radius=1.,neighbor_distance=1.),
               dict(line_count=17,normalized_seeds=seeds,center=np.array([0.,0,0]),centroid=np.zeros(3),radius=1.,neighbor_distance=1.)]
         with patch.object(data.physical,'trace_batch',return_value=(rows,[dict(reason='fewer_than_10_full_length_clean_lines')],{})):
             result=b.trace([{}],0)
         self.assertEqual(len(result),1);self.assertEqual(result[0]['original_center_id'],0)
+        np.testing.assert_array_equal(result[0]['stencil_slots'][:17],np.arange(17));self.assertTrue(np.isnan(result[0]['physical_seeds'][17:]).all())
         self.assertEqual(b.rejections,dict(fewer_than_10_full_length_clean_lines=1,fewer_than_17_clean_lines=1,original_center_removed=1))
 
     def test_assemble_changes_labels_only_for_relaxed_rows(self):
         keys=('labels','instance','scale_id','head_component','counts','center','centroid','radius','neighbor_distance',
               'local_grid_scale','nearest_train_center_distance','nearest_same_head_train_center_distance')
         n=4;old=dict(labels=np.array([1,1,0,0],np.int8),instance=np.array([3,3,-1,-1],np.int32),scale_id=np.zeros(n,np.int32),
-            head_component=np.array([5,5,6,6],np.int32),counts=np.full(n,20,np.int16),center=np.tile(np.arange(n)[:,None]*10.,(1,3)),
+            head_component=np.array([5,5,6,6],np.int32),counts=np.full(n,20,np.int16),center=np.tile((np.arange(n)[:,None]+1)*10.,(1,3)),
             centroid=np.zeros((n,3)),radius=np.ones(n),neighbor_distance=np.ones(n),local_grid_scale=np.ones(n),
             nearest_train_center_distance=np.zeros(n),nearest_same_head_train_center_distance=np.zeros(n))
         assert set(old)==set(keys)
-        seeds=np.zeros((27,3));seeds[:,0]=np.arange(27)
         def row(slot,label,instance,relaxed,center):
-            return dict(replacement_slot=slot,replacement_attempt=3,relaxed=relaxed,neighbor_filter=data.FILTER_RELAXED if relaxed else data.FILTER_IN_DOMAIN,
-                label=label,instance=instance,scale_id=0,head_component=old['head_component'][slot],line_count=17,center=np.array(center),
+            center=np.array(center,float);grid=data.stencil(center,1.)
+            r=dict(replacement_slot=slot,replacement_attempt=3,relaxed=relaxed,neighbor_filter=data.FILTER_RELAXED if relaxed else data.FILTER_IN_DOMAIN,
+                label=label,instance=instance,scale_id=0,head_component=old['head_component'][slot],line_count=17,center=center,
                 centroid=np.zeros(3),radius=1.,neighbor_distance=1.,local_grid_scale=1.,nearest_train_center_distance=0.,
-                nearest_same_head_train_center_distance=0.,geometry=np.zeros((27,32,3),np.float32),normalized_seeds=(seeds+np.array(center)).astype(np.float32))
+                nearest_same_head_train_center_distance=0.,geometry=np.zeros((27,32,3),np.float32),normalized_seeds=np.zeros((27,3),np.float32))
+            r['normalized_seeds'][:17]=grid[:17];r['physical_seeds'],r['stencil_slots']=data.physical_seeds_of_row(r);return r
         b=data.Builder.__new__(data.Builder);b.rule={'minimum_valid_lines':17};b.flow='x';b.nbase=100;b.lower_original=np.zeros(100,bool)
+        b.axes=[np.arange(0.,400.,50.) for _ in range(3)];field=np.full((8,8,8),-5.);b.lambda2=field;b.oyf=np.ones((8,8,8));b.threshold=-1.
         with tempfile.TemporaryDirectory() as temp:
             src=Path(temp)/'physical/x/validation';src.mkdir(parents=True);b.source=Path(temp)/'physical/x'
             g=np.zeros((n,27,32,3),np.float32);g[:,0,0,0]=np.arange(n)+1;np.save(src/'geometry.npy',g)
-            s=np.zeros((n,27,3),np.float32);s[:,0]=old['center'];s[:,1:,0]=old['center'][:,0:1]+np.arange(1,27)[None];np.save(src/'seeds.npy',s)
+            s=np.zeros((n,27,3),np.float32)
+            for i in range(n):s[i]=data.stencil(old['center'][i],1.)
+            np.save(src/'seeds.npy',s)
             out=Path(temp)/'out';out.mkdir()
-            rows=[row(1,0,-1,True,[100.,0,0]),row(2,0,-1,False,[200.,0,0])]
+            rows=[row(1,0,-1,True,[100.,50,50]),row(2,0,-1,False,[200.,50,50])]
             report=data.assemble(b,'validation',out,np.arange(n),rows,old,lambda p:'h',pilot=True)
             with np.load(out/'metadata.npz') as z:m={k:z[k] for k in z.files}
             with np.load(out/'replacement_index.npz') as z:idx={k:z[k] for k in z.files}
@@ -110,10 +115,34 @@ class FPS16DataRules(unittest.TestCase):
             np.testing.assert_array_equal(idx['relaxed'],[False,True,False,False]);np.testing.assert_array_equal(idx['neighbor_filter'],[0,2,1,0])
             np.testing.assert_array_equal(idx['original_center_id'],[0,0,0,0]);np.testing.assert_array_equal(idx['source_label'],old['labels'])
             self.assertEqual((report['replaced'],report['relaxed'],report['label_changes']),(2,1,1))
+            with np.load(out/data.ATTRIBUTE_FILE) as z:attr={k:z[k] for k in z.files}
+            self.assertEqual(attr['seed_points'].shape,(n,27,3));np.testing.assert_array_equal(attr['exact_stencil_coordinates'],[False,True,True,False])
+            valid=np.arange(27)[None]<m['counts'][:,None];np.testing.assert_array_equal(m['counts'],[20,17,17,20])
+            np.testing.assert_array_equal(np.isfinite(attr['seed_points']).all(-1),valid)
+            np.testing.assert_allclose(attr['seed_points'][1,:17],data.stencil(np.array([100.,50,50]),1.)[:17])
+            np.testing.assert_allclose(attr['seed_points'][0,:20],data.stencil(np.array([10.,10,10]),1.)[:20],atol=1e-5)
+            np.testing.assert_array_equal(attr['head_candidate'],valid);np.testing.assert_array_equal(attr['oyf_positive'],valid)
+            self.assertEqual(report['lines'],dict(total=74,head_candidate=74,oyf_positive=74,retained_lines_not_head_candidate=0,new_neighbours_not_head_candidate=0,relaxed_centers_not_head_candidate=0))
             kept=np.load(out/'geometry.npy');self.assertEqual(float(kept[0,0,0,0]),1.);self.assertEqual(float(kept[3,0,0,0]),4.)
             (out/'bad').mkdir()
             with self.assertRaises(AssertionError):      # a non-relaxed replacement may not change the class
-                data.assemble(b,'validation',out/'bad',np.arange(n),[row(1,0,-1,False,[100.,0,0])],old,lambda p:'h',pilot=True)
+                data.assemble(b,'validation',out/'bad',np.arange(n),[row(1,0,-1,False,[100.,50,50])],old,lambda p:'h',pilot=True)
+
+    def test_physical_seeds_match_stencil_and_line_attributes_follow_step1(self):
+        center=np.array([3.3,4.1,2.2]);grid=data.stencil(center,.5)
+        row=dict(line_count=20,center=center,neighbor_distance=.5,radius=2.,centroid=np.array([1.,1.,1.]),
+                 normalized_seeds=((grid[[0,5,3,26,1,2,4,6,7,8,9,10,11,12,13,14,15,16,17,18]]-1.)/2.).astype(np.float32))
+        points,slots=data.physical_seeds_of_row(row)
+        np.testing.assert_allclose(points[:20],grid[slots[:20]]);self.assertEqual(slots[0],0);self.assertTrue(np.isnan(points[20:]).all())
+        bad=dict(row,normalized_seeds=np.roll(row['normalized_seeds'],1,axis=0))
+        with self.assertRaisesRegex(ValueError,'slot 0'):data.physical_seeds_of_row(bad)
+        axes=[np.arange(9,dtype=float) for _ in range(3)];lam=np.full((9,9,9),-2.);lam[:,:,:4]=0.;oyf=np.ones((9,9,9));oyf[:,:4]=-1.
+        pts=np.full((1,27,3),np.nan);pts[0,:8]=[[1.5,6,6],[6,6,6],[6,1,6],[1,1,6],[7.9,7.9,7.9],[0.1,0.1,0.1],[6,6,20],[2,6,6]]
+        a=data.line_attributes(pts,axes,lam,oyf,-1.)
+        np.testing.assert_array_equal(a['inside'][0,:8],[True,True,True,True,True,True,False,True])
+        np.testing.assert_array_equal(a['oyf_positive'][0,:8],[True,True,False,False,True,False,False,True])
+        np.testing.assert_array_equal(a['head_candidate'][0,:8],[False,True,False,False,True,False,False,False])
+        self.assertTrue(np.isnan(a['lambda2'][0,8:]).all() and not a['head_candidate'][0,8:].any())
 
     def test_config_keeps_frozen_arms_and_full_template(self):
         self.assertEqual(self.config['candidates'],self.previous['candidates'])

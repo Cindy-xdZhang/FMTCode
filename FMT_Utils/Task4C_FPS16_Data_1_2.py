@@ -13,6 +13,11 @@ Differences from 1.1 (user decisions of 2026-09-18):
 * After ``normal_attempts`` failed proposals for one slot the center filter is relaxed
   (``relaxed_attempts`` further proposals).  A relaxed center is labelled by the GT
   membership of the center point itself and flagged ``relaxed`` in the index.
+* Cross-split distance rules are checked against the FINAL data set (retained plus new
+  centers), not against old centers that are themselves being replaced (r2).
+* Every line stores its physical seed point, interpolated lambda2 / oyf and the two
+  flags ``head_candidate`` (step-1 condition lambda2<threshold and oyf>0) and
+  ``oyf_positive`` in ``line_seed_attributes.npz`` (r2).
 """
 from pathlib import Path
 import json
@@ -30,7 +35,9 @@ from experiments import Task4C_PhysicalLength_4_14 as physical
 ROLES=previous.ROLES
 metadata=previous.metadata
 row_metadata=previous.row_metadata
+clear=previous.clear
 FILTER_OLD,FILTER_IN_DOMAIN,FILTER_RELAXED=0,1,2
+ATTRIBUTE_FILE='line_seed_attributes.npz'
 
 
 def stencil(center,distance):
@@ -81,14 +88,43 @@ def gt_head_sample(scene,center,instance,scale,sid,number,group,role,relaxed=Fal
         nearest_train_center_distance=0.,nearest_same_head_train_center_distance=0.)
 
 
+def physical_seeds_of_row(row):
+    """Exact stencil coordinates of every retained line, matched from the float32 normalized seeds."""
+    n=int(row['line_count']);points=stencil(np.asarray(row['center'],float),float(row['neighbor_distance']))
+    recon=np.asarray(row['normalized_seeds'][:n],np.float64)*float(row['radius'])+np.asarray(row['centroid'],float)
+    distance=np.linalg.norm(recon[:,None]-points[None],axis=-1);match=distance.argmin(1)
+    if len(np.unique(match))!=n or np.any(distance[np.arange(n),match]>1e-3*float(row['neighbor_distance'])):
+        raise ValueError('Retained lines do not match the proposal stencil')
+    if match[0]!=0:raise ValueError('The center line must occupy slot 0')
+    result=np.full((27,3),np.nan);result[:n]=points[match]
+    slots=np.full(27,-1,np.int8);slots[:n]=match
+    return result,slots
+
+
+def line_attributes(points,axes,lambda2,oyf,threshold,chunk=20000):
+    """Point-wise step-1 quantities for every stored seed (NaN padding stays NaN / False)."""
+    n=len(points);lam=np.full((n,27),np.nan,np.float32);fl=np.full((n,27),np.nan,np.float32);inside=np.zeros((n,27),bool)
+    for first in range(0,n,chunk):
+        block=points[first:first+chunk];valid=np.isfinite(block).all(-1);flat=block[valid]
+        if not len(flat):continue
+        a,ok,_=interpolate_scalar(flat,axes,lambda2);b,_,_=interpolate_scalar(flat,axes,oyf)
+        l=np.full(block.shape[:2],np.nan);f=np.full(block.shape[:2],np.nan);i=np.zeros(block.shape[:2],bool)
+        l[valid]=a;f[valid]=b;i[valid]=ok
+        lam[first:first+chunk]=l;fl[first:first+chunk]=f;inside[first:first+chunk]=i
+    with np.errstate(invalid='ignore'):
+        oyf_positive=inside&(fl>0);head_candidate=oyf_positive&(lam<threshold)
+    return dict(lambda2=lam,oyf=fl,inside=inside,head_candidate=head_candidate,oyf_positive=oyf_positive)
+
+
 class Builder(previous.Builder):
-    """Reuses the frozen 1.1 pools, lower-pool provenance and center legality rules."""
+    """Reuses the frozen 1.1 pools and lower-pool provenance; distance rules target the final data set."""
 
     def __init__(self,spec,index):
         self.spec=spec;self.index=index;self.flow=spec['flows'][index]['name'];self.rule=spec['replacement']
         self.physical=json.loads(Path(spec['physical_config']).read_text())
         self.previous=json.loads(Path(spec['expansion_config']).read_text())
         self.scene=coverage.load_scene(self.physical,index)
+        self.lambda2=self.scene['lambda2'];self.threshold=float(self.scene['flow']['lambda2_threshold'])
         self.source=Path(spec['source_output'])/'physical'/self.flow
         self.original={r:metadata(self.source/r) for r in ROLES}
         self.ids={};self.good={};self.centers={}
@@ -109,12 +145,34 @@ class Builder(previous.Builder):
         self.pool_cache={};self.gt_points={};self.gt_cells=None;self.box_cache={}
         self.rejections={};self.actual_trace_calls=0;self.relaxed_accepted={r:0 for r in ROLES}
         self.reserved={r:[] for r in ROLES};self.reserved_cache={r:(None,0) for r in ROLES}
-        self.final_train=None;self.final_train_heads={}
+        self.final_train=None;self.final_train_heads={};self.final_validation=None
         self.all_old=np.concatenate([m['center'] for m in self.original.values()]);self.old_tree=cKDTree(self.all_old)
-        self.original_trees={r:cKDTree(m['center']) for r,m in self.original.items()}
-        self.eval_points=np.concatenate([self.original[r]['center'] for r in ('validation','test')])
-        self.eval_h=np.concatenate([self.original[r]['local_grid_scale'] for r in ('validation','test')])
+        # Only retained evaluation rows must be protected from new training centers; rows that fail
+        # the 17-line / center rule are replaced anyway.
+        keep=lambda r:self.good[r]
+        self.eval_points=np.concatenate([self.original[r]['center'][keep(r)] for r in ('validation','test')])
+        self.eval_h=np.concatenate([self.original[r]['local_grid_scale'][keep(r)] for r in ('validation','test')])
         self.eval_tree=cKDTree(self.eval_points)
+        self.test_points=self.original['test']['center'][keep('test')];self.test_h=self.original['test']['local_grid_scale'][keep('test')]
+        self.test_tree=cKDTree(self.test_points)
+
+    def legal_center(self,point,h,role,head):
+        """1h / 4h / 0.5h rules against the final data set; old centers only forbid exact duplicates."""
+        if self.old_tree.query(point)[0]<=1e-10:self.reject('old_center_duplicate');return False
+        if self.reserved_distance(role,point)<=1e-10:self.reject('new_center_duplicate');return False
+        if role=='train':
+            if not clear(point,h,self.eval_points,self.eval_h,self.eval_tree):self.reject('retained_evaluation_clearance');return False
+            return True
+        if self.final_train is None:raise ValueError('Evaluation rows need the final training set')
+        if self.final_train.query(point)[0]<h-1e-12:self.reject('final_train_clearance');return False
+        tree=self.final_train_heads.get(head)
+        if tree is None or tree.query(point)[0]>4*h+1e-12:self.reject('same_head_training_proximity');return False
+        if role=='validation':
+            if not clear(point,h,self.test_points,self.test_h,self.test_tree,.5):self.reject('retained_test_clearance');return False
+        else:
+            if self.final_validation is None:raise ValueError('Test rows need the final validation set')
+            if self.final_validation.query(point)[0]<.5*h-1e-12:self.reject('final_validation_clearance');return False
+        return True
 
     def stage(self,attempt):
         r=self.rule
@@ -218,7 +276,8 @@ class Builder(previous.Builder):
                    counts=np.array([row['line_count']]),neighbor_distance=np.array([row['neighbor_distance']]))
             center,_=original_center_indices(row['normalized_seeds'][None],m)
             if center[0]<0:self.reject('original_center_removed');continue
-            row['original_center_id']=int(center[0]);accepted.append(row)
+            row['original_center_id']=int(center[0]);row['physical_seeds'],row['stencil_slots']=physical_seeds_of_row(row)
+            accepted.append(row)
         return accepted
 
     def generate(self,role,slots,pilot=False):
@@ -260,19 +319,29 @@ def lost_same_head_proximity(builder,role):
     return lost
 
 
+def reconstructed_seeds(seeds,m):
+    """Physical seed points of stored rows from the float32 normalized cache (NaN beyond ``counts``)."""
+    points=np.asarray(seeds,np.float64)*np.asarray(m['radius'],float)[:,None,None]+np.asarray(m['centroid'],float)[:,None,:]
+    points[np.arange(27)[None]>=np.asarray(m['counts'])[:,None]]=np.nan
+    return points
+
+
 def assemble(builder,role,folder,keep,rows,old,sha,pilot):
-    """Copy retained rows, overwrite replaced slots, freeze provenance; quotas change only for relaxed rows."""
+    """Copy retained rows, overwrite replaced slots, freeze provenance and per-line seed attributes."""
     position={int(k):i for i,k in enumerate(keep)}
     m={k:v[keep].copy() for k,v in old.items()}
     g_old=np.load(builder.source/role/'geometry.npy',mmap_mode='r');s_old=np.load(builder.source/role/'seeds.npy',mmap_mode='r')
     g=np.lib.format.open_memmap(folder/'geometry.npy',mode='w+',dtype=np.float32,shape=(len(keep),27,32,3))
     seeds=np.lib.format.open_memmap(folder/'seeds.npy',mode='w+',dtype=np.float32,shape=(len(keep),27,3))
+    points=np.full((len(keep),27,3),np.nan);exact=np.zeros(len(keep),bool);slots=np.full((len(keep),27),-1,np.int8)
     for first in range(0,len(keep),512):
-        take=keep[first:first+512];g[first:first+len(take)]=g_old[take];seeds[first:first+len(take)]=s_old[take]
+        take=keep[first:first+512];sl=slice(first,first+len(take))
+        g[sl]=g_old[take];seeds[sl]=s_old[take]
+        points[sl]=reconstructed_seeds(s_old[take],{k:old[k][take] for k in ('radius','centroid','counts')})
     attempt=np.zeros(len(keep),np.int32);relaxed=np.zeros(len(keep),bool);filt=np.full(len(keep),FILTER_OLD,np.int8)
     for row in rows:
         i=position[int(row['replacement_slot'])];values=row_metadata(row)
-        g[i]=row['geometry'];seeds[i]=row['normalized_seeds']
+        g[i]=row['geometry'];seeds[i]=row['normalized_seeds'];points[i]=row['physical_seeds'];slots[i]=row['stencil_slots'];exact[i]=True
         for key in m:m[key][i]=values[key]
         attempt[i]=row['replacement_attempt'];relaxed[i]=bool(row['relaxed']);filt[i]=row['neighbor_filter']
     changed=attempt>0
@@ -282,6 +351,10 @@ def assemble(builder,role,folder,keep,rows,old,sha,pilot):
     anchor,_=original_center_indices(seeds,m)
     assert np.all(anchor>=0) and np.all(m['counts']>=builder.rule['minimum_valid_lines'])
     assert np.all(anchor[changed]==0),'replaced rows keep the center in slot 0'
+    valid=np.arange(27)[None]<m['counts'][:,None];assert np.array_equal(np.isfinite(points).all(-1),valid)
+    attributes=line_attributes(points,builder.axes,builder.lambda2,builder.oyf,builder.threshold)
+    # Non-relaxed new centers satisfied step 1 at proposal time; the stored point-wise flag must agree.
+    assert np.all(attributes['head_candidate'][changed&~relaxed,0]),'new center violates the step-1 flag'
     if not pilot:
         if role=='train':
             builder.final_train=cKDTree(m['center'])
@@ -294,14 +367,24 @@ def assemble(builder,role,folder,keep,rows,old,sha,pilot):
                 m['nearest_same_head_train_center_distance'][take]=tree.query(m['center'][take])[0]
             assert np.all(m['nearest_train_center_distance']>=m['local_grid_scale']-1e-12)
             assert np.all(m['nearest_same_head_train_center_distance']<=4*m['local_grid_scale']+1e-12)
+            if role=='validation':builder.final_validation=cKDTree(m['center'])
+            else:assert np.all(builder.final_validation.query(m['center'])[0]>=.5*m['local_grid_scale']-1e-12)
     g.flush();seeds.flush();del g,seeds
     np.savez_compressed(folder/'metadata.npz',**m)
     np.savez_compressed(folder/'replacement_index.npz',source_row=keep,replaced=changed,attempts=attempt,original_center_id=anchor,
         source_head=old['head_component'][keep],lower_pool=np.array([builder.lower(role,int(i)) for i in keep]),
         relaxed=relaxed,neighbor_filter=filt,source_label=old['labels'][keep],source_instance=old['instance'][keep])
+    np.savez_compressed(folder/ATTRIBUTE_FILE,seed_points=points,stencil_slot=slots,exact_stencil_coordinates=exact,
+        lambda2_threshold=np.array(builder.threshold),**attributes)
+    retained_lines=valid&~changed[:,None]
     return dict(samples=len(keep),replaced=int(changed.sum()),unchanged=int((~changed).sum()),relaxed=int(relaxed.sum()),
         label_changes=int(np.sum(m['labels']!=old['labels'][keep])),classes=np.bincount(m['labels'],minlength=2).tolist(),
-        minimum_lines=int(m['counts'].min()),files={file.name:sha(file) for file in folder.iterdir()})
+        minimum_lines=int(m['counts'].min()),line_count_histogram=np.bincount(m['counts'],minlength=28)[builder.rule['minimum_valid_lines']:].tolist(),
+        lines=dict(total=int(valid.sum()),head_candidate=int(attributes['head_candidate'].sum()),oyf_positive=int(attributes['oyf_positive'].sum()),
+                   retained_lines_not_head_candidate=int((retained_lines&~attributes['head_candidate']).sum()),
+                   new_neighbours_not_head_candidate=int((valid&changed[:,None]&~attributes['head_candidate']).sum()),
+                   relaxed_centers_not_head_candidate=int((relaxed&~attributes['head_candidate'][:,0]).sum())),
+        files={file.name:sha(file) for file in folder.iterdir()})
 
 
 def prepare(spec,index,write,sha,identity,pilot=False):
@@ -319,6 +402,11 @@ def prepare(spec,index,write,sha,identity,pilot=False):
             scales=np.column_stack([old[k][bad] for k in ('labels','scale_id')])
             selected=np.union1d(np.unique(strata,axis=0,return_index=True)[1],np.unique(scales,axis=0,return_index=True)[1])
             bad=bad[selected]
+            if role!='train':
+                # Evaluation proposals need a final training set; in the pilot the retained template rows stand in for it.
+                m=builder.original['train'];builder.final_train=cKDTree(m['center'])
+                builder.final_train_heads={int(h):cKDTree(m['center'][m['head_component']==h]) for h in np.unique(m['head_component'])}
+                builder.final_validation=cKDTree(builder.original['validation']['center'])
         rows=builder.generate(role,bad,pilot)
         folder=root/role;folder.mkdir()
         report=assemble(builder,role,folder,bad if pilot else ids,rows,old,sha,pilot)
@@ -328,6 +416,8 @@ def prepare(spec,index,write,sha,identity,pilot=False):
     report=dict(complete=True,pilot=pilot,identity=identity(),flow=flow,reports=reports,rejections=builder.rejections,
                 relaxed_accepted=builder.relaxed_accepted,trace_calls=builder.actual_trace_calls,source_files_unchanged=True,
                 neighbor_filter='center_only_lambda2_oyf_same_head; neighbours in domain only',
-                relaxation='center filter dropped after normal_attempts; label by GT membership of the center')
+                relaxation='center filter dropped after normal_attempts; label by GT membership of the center',
+                distance_rules='1h/4h/0.5h against the final data set; old centers only forbid exact duplicates',
+                per_line_attributes=ATTRIBUTE_FILE)
     write(root/'preparation.json',report)
     return report
