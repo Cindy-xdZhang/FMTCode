@@ -13070,3 +13070,17 @@ r2 pilot 输出 `outputs/mainExp_Task4C_FixedDataset_1.1/pilot`（30 MB）已删
 | 52049387_[0-1] | build | 52049386 | CPU | 依赖等待 |
 | 52049388 | audit-data | 52049387 | CPU | 依赖等待 |
 <!-- task4c-fixed-dataset-1p1-r3-submit-20260918-registry-end -->
+
+### mainExp_Task4C_FixedDataset_1.1 — r3 取消、r4 提交（2026-09-18 14:00 UTC）
+
+<!-- task4c-fixed-dataset-1p1-r4-submit-20260918-registry -->
+r3（d9dc32bf）：52049385 verify-inputs COMPLETED 10s；52049386_0/1 pilot COMPLETED 54s/85s；52049387_0 build COMPLETED；52049387_1 build CANCELLED；52049388 audit-data CANCELLED（用户改标签规则）。输出已删除。
+r4 科学commit `792256a1c00ca7d609840a8c17886bfd6aa94d9d`；远端 `/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r4`；输出 `outputs/mainExp_Task4C_FixedDataset_1.1`。
+
+| Job ID | 阶段 | 依赖 | 设备 | 提交时状态 |
+|---|---|---|---|---|
+| 52050941 | verify-inputs | 无 | CPU | 等待 |
+| 52050942_[0-1] | pilot | 52050941 | CPU | 依赖等待 |
+| 52050943_[0-1] | build | 52050942 | CPU | 依赖等待 |
+| 52050944 | audit-data | 52050943 | CPU | 依赖等待 |
+<!-- task4c-fixed-dataset-1p1-r4-submit-20260918-registry-end -->

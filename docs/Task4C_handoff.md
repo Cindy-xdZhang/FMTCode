@@ -1,5 +1,9 @@
 # Task4-c Hairpin 分类：最新交接
 
+<!-- task4c-fixed-dataset-1p1-r4-submit-20260918 -->
+2026-09-18 `mainExp_Task4C_FixedDataset_1.1` r3（d9dc32bf，52049385–52049388）pilot 通过、channel build 完成后被用户叫停：用户指出 step1 只产生候选点、任务是二分类，旧代码“整块候选区域与标注重叠 ≥50% 为正”的标签规则和“非 hairpin 候选区域按最近实例分组”都不该有；52049387_1/52049388 取消，r3 pilot 与 physical 输出（1.1 GB）删除。r4（科学commit `792256a1`）：每行标签一律＝中心点是否落在 hairpin 标注单元内（`save` 与核验逐行断言）；候选区域一律按自身 3/1/1 空间块分池，不再按实例分组或把未见组候选区域只送测试；文档改用直白描述、删掉自造名词。本地 11 项构建测试通过；私有部署 `/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r4`（HEAD 792256a1，远端测试 OK）。14:00 UTC 提交输入核验 52050941、pilot 52050942[0–1]、正式重建 52050943[0–1]、数据核验 52050944。训练与 baseline 版本仍待冻结哈希。
+<!-- task4c-fixed-dataset-1p1-r4-submit-20260918-end -->
+
 <!-- task4c-fixed-dataset-1p1-r3-submit-20260918 -->
 2026-09-18 `mainExp_Task4C_FixedDataset_1.1` r3 部署并提交（科学commit `d9dc32bf`）。用户晚间第二条裁定：未见实例的测试点直接在该实例 GT 包围盒内均匀随机取，**不加任何筛选**（无 λ₂/oyf/夹角），标签按中心点 GT 归属（`sample_kind=2`）；排除区就是 GT 包围盒，不外扩。与此前 r3 改动（1h、100 次放松、覆盖下限 2/目标 10、配对中心夹角检查、GT 头部补样）一起进入 `docs/Task4C_fixed_dataset_rules_v1.md`（变更记录第 4 行）。核验新增：包围盒行只在测试、中心在盒内、标签＝GT 归属；未见实例覆盖按盒内测试点计；`preparation.json` 增 `gt_boxes`。本地 10 项构建测试通过；私有部署 `/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r3`（HEAD d9dc32bf，远端 10 项测试通过）。13:37 UTC 提交输入核验 52049385、pilot 52049386[0–1]、正式重建 52049387[0–1]、数据核验 52049388。训练版本与 baseline 版本仍待冻结哈希。
 <!-- task4c-fixed-dataset-1p1-r3-submit-20260918-end -->
