@@ -1,5 +1,9 @@
 # Task4-c Hairpin 分类：最新交接
 
+<!-- task4c-fixed-dataset-1p1-r3-submit-20260918 -->
+2026-09-18 `mainExp_Task4C_FixedDataset_1.1` r3 部署并提交（科学commit `d9dc32bf`）。用户晚间第二条裁定：未见实例的测试点直接在该实例 GT 包围盒内均匀随机取，**不加任何筛选**（无 λ₂/oyf/夹角），标签按中心点 GT 归属（`sample_kind=2`）；排除区就是 GT 包围盒，不外扩。与此前 r3 改动（1h、100 次放松、覆盖下限 2/目标 10、配对中心夹角检查、GT 头部补样）一起进入 `docs/Task4C_fixed_dataset_rules_v1.md`（变更记录第 4 行）。核验新增：包围盒行只在测试、中心在盒内、标签＝GT 归属；未见实例覆盖按盒内测试点计；`preparation.json` 增 `gt_boxes`。本地 10 项构建测试通过；私有部署 `/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r3`（HEAD d9dc32bf，远端 10 项测试通过）。13:37 UTC 提交输入核验 52049385、pilot 52049386[0–1]、正式重建 52049387[0–1]、数据核验 52049388。训练版本与 baseline 版本仍待冻结哈希。
+<!-- task4c-fixed-dataset-1p1-r3-submit-20260918-end -->
+
 <!-- task4c-fixed-dataset-1p1-r3-rules-20260918 -->
 2026-09-18 `mainExp_Task4C_FixedDataset_1.1` r2 pilot 52048031_0/1 FAILED（channel 43s、TBL 66s）：测试覆盖满足但训练覆盖不满足，channel 11 个、TBL 4 个覆盖实例只有 1 个头部中心；根因是`pair_sample`只要求配对中心在 GT 包围盒内，未要求覆盖计数所用的头部夹角条件，配对行落在 GT 内但不在头部区域。用户随即叫停并细化规则：评价点距训练 3h→**1h**、放松阈值 1000→**100** 次、覆盖下限 2（目标 10），并要求把构建规则单独写成规范文档。已取消 52048032[0-1]/52048033，删除 r2 pilot 输出（远端目录其余文件保留）。r3 改动：配对中心加头部夹角检查；每覆盖实例在头区填充前补非放松 GT 头部训练行到目标 10（`allow_short`，下限 2 由覆盖检查保证）；测试 GT 头部行同样目标 10/下限 2；配置 `execution_revision=r3_rules_2026-09-18_evening`。规范文本 `docs/Task4C_fixed_dataset_rules_v1.md`（新），实现记录 `docs/Task4C_fixed_dataset_protocol_1.1.md` 重写，总协议 2b 与交接 3b 改为指向规范文本。本地 8+3+2 项测试通过。**r3 尚未部署**，待用户确认规范文本；训练/baseline 版本仍待冻结哈希。
 <!-- task4c-fixed-dataset-1p1-r3-rules-20260918-end -->

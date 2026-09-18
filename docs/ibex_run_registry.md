@@ -13057,3 +13057,16 @@ r2 科学commit `e45006866516c6a93684c982d702dd8729c110e8`；远端`/ibex/user/z
 
 r2 pilot 输出 `outputs/mainExp_Task4C_FixedDataset_1.1/pilot`（30 MB）已删除；`_r2` 目录其余文件保留。r3（1h / 100 次 / 覆盖下限 2 目标 10 / 配对夹角检查 / GT 头部补样）代码已就绪，未部署。
 <!-- task4c-fixed-dataset-1p1-r3-rules-20260918-registry-end -->
+
+### mainExp_Task4C_FixedDataset_1.1 — r3 提交（2026-09-18 13:37 UTC）
+
+<!-- task4c-fixed-dataset-1p1-r3-submit-20260918-registry -->
+科学commit `d9dc32bff79a963e5f69fc63623e0ccd0144e222`；远端 `/ibex/user/zhanx0o/FMT_Task4C_FixedDataset_1p1_20260918_r3`；输出 `outputs/mainExp_Task4C_FixedDataset_1.1`。
+
+| Job ID | 阶段 | 依赖 | 设备 | 提交时状态 |
+|---|---|---|---|---|
+| 52049385 | verify-inputs | 无 | CPU | 等待 |
+| 52049386_[0-1] | pilot | 52049385 | CPU | 依赖等待 |
+| 52049387_[0-1] | build | 52049386 | CPU | 依赖等待 |
+| 52049388 | audit-data | 52049387 | CPU | 依赖等待 |
+<!-- task4c-fixed-dataset-1p1-r3-submit-20260918-registry-end -->
