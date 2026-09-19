@@ -6,6 +6,8 @@
 
 2026-09-19 同轮用户追加确认：ball query 的 h 使用**整个流场最小相邻格点间距（固定 h）**，不是局部单元最小边长。正式执行修订 `r2_global_h_user_confirmed`，输出 `outputs/Ablation_Task4C_BallQuery_2.2/r2_global_h/`；未提交训练的局部h草案仅保留诊断。
 
+2026-09-19 `Ablation_Task4C_BallQuery_2.2` 已私有部署（科学commit `a5af710d`，`/ibex/user/zhanx0o/FMT_Task4C_BallQuery_2p2_20260919_r2`）。源核验52090742、V100预检52090743已COMPLETED/0:0；四臂单种子训练52090744_0–3已RUNNING，独立复算52090745依赖等待。全局1h内两流场均0邻居，按用户允许扩半径到第k近点，当前全样本最终等于最近6/16个邻居。无新正式F1；不得把预检小拟合F1=1.0当性能。执行记录 `docs/Task4C_ball_query_execution_2.2.md`；已提交，无需重复启动。
+
 <!-- task4c-fixed-dataset-baselines-resubmit-20260918 -->
 2026-09-18 `mainExp_Task4C_FixedDatasetBaselines_1.1` 首批四个 preflight（52058955/52058962/52058967/52058972）4–14 秒 FAILED：启动钩子在家族输出目录建立前就写 `runtime.jsonl`，`FileNotFoundError`；后续作业随依赖取消。修复（commit `a827ad58`：钩子先建目录）部署到新目录 `/ibex/user/zhanx0o/FMT_Task4C_FixedDatasetBaselines_20260918`（远端测试 OK），15:26 UTC 重新提交：conv 52059304–52059308、bilstm 52059309–52059314、pointnet 52059315–52059319、pointnetpp 52059320–52059325。FMT 链不受影响：verify-source 52058941、gpu-check 52058942 已完成，train 52058943[0–11] 排队。
 <!-- task4c-fixed-dataset-baselines-resubmit-20260918-end -->
