@@ -44,6 +44,20 @@ def identity(config):
                 sources={p: sha(p) for p in FILES}, host=socket.gethostname())
 
 
+DRIVER = 'experiments/Task4C_FixedDatasetFMT_2_1.py'
+
+
+def same_code(a, b):
+    '''Same configuration and same frozen sources.
+
+    The git commit is NOT compared: another session commits documentation to this shared
+    repository while the chain runs, which moves HEAD without touching any file listed in
+    FILES.  This driver's own hash is also excluded, because this comparison itself lives in it
+    (added after training index 9 failed on a moved HEAD); every other source must match.
+    '''
+    return a['config_sha256'] == b['config_sha256'] and {k: v for k, v in a['sources'].items() if k != DRIVER} == {k: v for k, v in b['sources'].items() if k != DRIVER}
+
+
 def verify_source(spec, config):
     """Read-only data: every frozen file must match data_audit.json; then build the FPS tables and count rows."""
     source = Path(spec['source_output']); audit = json.loads((source/'data_audit.json').read_text())
@@ -114,7 +128,7 @@ def gpu_check(spec, config):
 
 def train(spec, config, index):
     for filename in ('gpu_check.json', 'source_verification.json'):
-        result = json.loads((Path(spec['output'])/filename).read_text()); assert result['complete'] and result['identity'] == identity(config), filename
+        result = json.loads((Path(spec['output'])/filename).read_text()); assert result['complete'] and same_code(result['identity'], identity(config)), filename
     arm = arm_spec(spec, index); write(Path(arm['output'])/'selection.lock.json', dict(complete=True, selected=arm['candidate'], seed=arm['_active_seed'], identity=identity(config)))
     env = environment(arm['candidate']); FunctionType(frozen.train.__code__, env, argdefs=frozen.train.__defaults__)(arm, config, 0, 'final')
 
@@ -124,7 +138,7 @@ def audit_results(spec, config):
     from sklearn.metrics import f1_score, precision_score, recall_score
     for index in range(len(spec['candidates'])*len(spec['final']['seeds'])):
         arm = arm_spec(spec, index); c = arm['candidate']; seed = arm['_active_seed']; folder = Path(arm['output'])/'final'/c['id']/f'seed{seed}'
-        r = json.loads((folder/'result.json').read_text()); assert r['complete'] and r['identity'] == identity(config) and r['test_loaded'] and r['seed'] == seed
+        r = json.loads((folder/'result.json').read_text()); assert r['complete'] and same_code(r['identity'], identity(config)) and r['test_loaded'] and r['seed'] == seed
         assert r['candidate'] == c and r['parameters'] == c['parameters']; scores = {}
         history = r['history']; assert all(h['samples'] == spec['expected_counts']['train'] for h in history)
         best = max(history, key=lambda h: (h['validation_f1'], h['validation_average_precision'])); assert best['epoch'] == r['selected_epoch']
@@ -154,7 +168,7 @@ def audit_results(spec, config):
                                 per_flow={flow['name']: frozen.metrics(y[pred['flow_index'] == fi], p[pred['flow_index'] == fi]) for fi, flow in enumerate(spec['flows'])},
                                 per_length={str(k): frozen.metrics(y[pred['length_id'] == k], p[pred['length_id'] == k]) for k in np.unique(pred['length_id'])},
                                 per_instance_recall=per_instance)
-        records.append(dict(candidate=c, seed=seed, parameters=r['parameters'], epochs=r['epochs'], selected_epoch=r['selected_epoch'], gpu=r['gpu'],
+        records.append(dict(candidate=c, seed=seed, parameters=r['parameters'], epochs=r['epochs'], selected_epoch=r['selected_epoch'], gpu=r['gpu'], git_commit=r['identity']['git_commit'],
                             training_seconds=r['training_seconds'], preparation_seconds=r['preparation_seconds'], scores=scores, result_sha256=sha(folder/'result.json')))
     summary = {}
     for c in spec['candidates']:
@@ -168,7 +182,8 @@ def audit_results(spec, config):
                                 test_f1_per_length={k: agg(lambda r, k=k: r['scores']['test']['per_length'][k]['f1']) for k in ('0', '1', '2')},
                                 validation_f1=agg(lambda r: r['scores']['validation']['combined']['f1']), training_minutes=agg(lambda r: r['training_seconds']/60))
     assert not list((root/'arms').rglob('*.pt')) and not list((root/'arms').rglob('*.pth'))
-    write(root/'summary.json', dict(complete=True, identity=identity(config), counts=spec['expected_counts'], methods=records, summary=summary, paired_rows_verified=True, no_weight_files=True))
+    write(root/'summary.json', dict(complete=True, identity=identity(config), counts=spec['expected_counts'], methods=records, summary=summary, paired_rows_verified=True, no_weight_files=True,
+                                    commits_seen=sorted({r['git_commit'] for r in records}), code_comparison='config and frozen sources; git commit and this driver excluded (same_code)'))
     print(json.dumps({k: dict(test_f1=v['test_f1']['mean'], std=v['test_f1']['sample_std']) for k, v in summary.items()}), flush=True)
 
 
@@ -177,7 +192,7 @@ def runtime(spec, config, phase, state, code):
         job_id=os.environ.get('SLURM_JOB_ID'), hostname=socket.gethostname(), at_utc=datetime.now(timezone.utc).isoformat()))+'\n')
 
 
-def run_local(spec, config):
+def run_local(spec, config, resume=False):
     """verify-source -> gpu-check -> the arm x seed trainings (``concurrency`` at a time) -> audit-results, on this host."""
     root = Path(spec['output']); logs = root/'logs'; logs.mkdir(parents=True, exist_ok=True)
     def step(phase, extra=(), log=None):
@@ -185,9 +200,13 @@ def run_local(spec, config):
         runtime(spec, config, phase+(''.join(extra)), 'STARTED', None)
         with open(logs/((log or phase)+'.log'), 'a', encoding='utf8') as stream: process = subprocess.Popen(command, stdout=stream, stderr=subprocess.STDOUT)
         return process
-    for phase in ('verify-source', 'gpu-check'):
+    for phase, filename in (('verify-source', 'source_verification.json'), ('gpu-check', 'gpu_check.json')):
+        if resume and (root/filename).exists() and same_code(json.loads((root/filename).read_text())['identity'], identity(config)): continue
         code = step(phase).wait(); runtime(spec, config, phase, 'ENDED', code); assert code == 0, phase
     pending = list(range(len(spec['candidates'])*len(spec['final']['seeds']))); running = {}
+    if resume:   # keep finished results, run only the missing indices
+        done = [i for i in pending if (Path(arm_spec(spec, i)['output'])/'final'/arm_spec(spec, i)['candidate']['id']/f"seed{arm_spec(spec, i)['_active_seed']}"/'result.json').exists()]
+        pending = [i for i in pending if i not in done]; print(json.dumps(dict(resume=True, finished=done, pending=pending)), flush=True)
     while pending or running:
         while pending and len(running) < spec['concurrency']:
             i = pending.pop(0); running[i] = step('train', ['--index', str(i)], log=f'train_{i}')
@@ -204,13 +223,13 @@ def run_local(spec, config):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('phase', choices=['verify-source', 'gpu-check', 'train', 'audit-results', 'run-local', 'runtime'])
-    p.add_argument('--config', default=CONFIG); p.add_argument('--index', type=int, default=0); p.add_argument('--runtime-phase'); p.add_argument('--state'); p.add_argument('--exit-code', type=int)
+    p.add_argument('--config', default=CONFIG); p.add_argument('--index', type=int, default=0); p.add_argument('--runtime-phase'); p.add_argument('--state'); p.add_argument('--exit-code', type=int); p.add_argument('--resume', action='store_true')
     a = p.parse_args(); spec = json.loads(Path(a.config).read_text())
     if a.phase == 'verify-source': verify_source(spec, a.config)
     elif a.phase == 'gpu-check': gpu_check(spec, a.config)
     elif a.phase == 'train': train(spec, a.config, a.index)
     elif a.phase == 'audit-results': audit_results(spec, a.config)
-    elif a.phase == 'run-local': run_local(spec, a.config)
+    elif a.phase == 'run-local': run_local(spec, a.config, a.resume)
     else: runtime(spec, a.config, a.runtime_phase, a.state, a.exit_code)
 
 

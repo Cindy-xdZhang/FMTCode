@@ -13113,3 +13113,26 @@ r4 链：52050941 verify-inputs COMPLETED 24s；52050942_0/1 pilot COMPLETED 2m1
 | pointnet | preflight 52059315 / reuse 52059316 / pilot 52059317 / train 52059318 / summarize 52059319 |
 | pointnetpp | preflight 52059320 / reuse 52059321 / pilot 52059322 / encode 52059323 / train 52059324 / summarize 52059325 |
 <!-- task4c-fixed-dataset-baselines-resubmit-20260918-registry-end -->
+
+<!-- task4c-fixed-dataset-baselines-2p1-registry -->
+## 2026-09-19 mainExp_Task4C_FixedDatasetBaselines_2.1（数据集 v2 上的 Conv3D / BiLSTM / PointNet / PointNet++）
+
+部署目录 `/ibex/user/zhanx0o/FMT_Task4C_FixedDatasetBaselines_2p1_20260919`，git checkout `78b3fe50`（分支 `codex/task4c_v2_baselines`，含 `2e707ea5` 的 v2 数据与 FMT 2.1 代码）；数据 `outputs/mainExp_Task4C_FixedDataset_2.1/`（本地构建后 scp，`data_audit.json` SHA-256 e5aaa4fb… 与逐文件哈希在远端复核一致）。配置 `config/mainExp_Task4C_FixedDatasetBaselines_2.1.json`，启动器 `ibex_bash/task4c_fixed_dataset_baselines_2p1.sh`。提交 2026-09-19 UTC 凌晨；链：export（CPU，array 0-1，导出 FPS16 线束文件）→ 每个家族 preflight → reuse → pilot/encode → train → summarize，afterok 依赖。
+
+| 阶段 / 家族 | 作业 |
+|---|---|
+| export | 52070109_[0-1] |
+| conv | preflight 52070110 / reuse 52070111 / encode 52070112_[0-1] / train 52070113_[0-5%6] / summarize 52070114 |
+| bilstm | preflight 52070115 / reuse 52070116 / pilot 52070117 / train 52070118_[0-2%3] / summarize 52070119 |
+| pointnet | preflight 52070120 / reuse 52070121 / pilot 52070122 / train 52070123_[0-2%3] / summarize 52070124 |
+| pointnetpp | preflight 52070125 / reuse 52070126 / pilot 52070127 / encode 52070128_[0-1] / train 52070129_[0-2%3] / summarize 52070130 |
+首次提交（52070109–52070130）的 export 完成后，四个家族的 reuse 全部 FAILED：代码身份含主机名，export 与 reuse 在不同节点上比对不等；下游作业被依赖取消，输出移至 `outputs/superseded/`。修正提交 `725c100b`（身份不含主机名）后重新提交：
+
+| 阶段 / 家族 | 作业（r2，当前） |
+|---|---|
+| export | 52070215_[0-1] |
+| conv | preflight 52070216 / reuse 52070217 / encode 52070218_[0-1] / train 52070219_[0-5%6] / summarize 52070220 |
+| bilstm | preflight 52070221 / reuse 52070222 / pilot 52070223 / train 52070224_[0-2%3] / summarize 52070225 |
+| pointnet | preflight 52070226 / reuse 52070227 / pilot 52070228 / train 52070229_[0-2%3] / summarize 52070230 |
+| pointnetpp | preflight 52070231 / reuse 52070233 / pilot 52070234 / encode 52070235_[0-1] / train 52070236_[0-2%3] / summarize 52070237 |
+<!-- task4c-fixed-dataset-baselines-2p1-registry-end -->

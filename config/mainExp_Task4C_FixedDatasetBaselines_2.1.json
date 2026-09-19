@@ -1,0 +1,29 @@
+{
+  "version": "mainExp_Task4C_FixedDatasetBaselines_2.1",
+  "execution_revision": "r1",
+  "output": "outputs/mainExp_Task4C_FixedDatasetBaselines_2.1",
+  "base_config": "config/Ablation_Task4C_BottomDensity_1.2.json",
+  "base_config_role": "frozen training rules (batch 128, AdamW 1e-3/1e-4, dropout 0.15, 500 epochs, patience 50, validation F1 selection), encoding definition and Conv3D parameter budget; its data keys are NOT used",
+  "source_version": "mainExp_Task4C_FixedDataset_2.1",
+  "source_output": "outputs/mainExp_Task4C_FixedDataset_2.1",
+  "source_audit_sha256": "e5aaa4fb8a8e01882c461da5916b3bb96883e2787b231b018b512d7e30d3a2a8",
+  "fmt_config": "config/mainExp_Task4C_FixedDatasetFMT_2.1.json",
+  "dataset_policy": "export_fps16_bundles_from_dataset_v2_with_the_FMT_2.1_clusters_and_splits",
+  "flows": [
+    {"name": "channel", "half_lengths": [0.07, 0.10, 0.13], "ds": 0.001},
+    {"name": "tbl", "half_lengths": [3.5, 5.0, 6.5], "ds": 0.025}
+  ],
+  "folds": {"test_fold": 0},
+  "validation": {"fraction": 0.1, "seed": 98401},
+  "neighbors": {"pool": 64, "max_k": 16},
+  "expected_counts": {"train": 826005, "validation": 91779, "test": 245703},
+  "seeds": [96611, 96612, 96613],
+  "voxel_resolutions": [16, 24],
+  "families": {
+    "conv": {"methods": ["conv16", "conv24"], "model_config": null, "model_keys": [], "concurrency": 6, "note": "Conv3D 16^3/24^3, 72,192 parameters; the rotating-center p35 reference of 1.1 is not run (FMT arms are mainExp_Task4C_FixedDatasetFMT_2.1)"},
+    "bilstm": {"methods": ["baseline2"], "model_config": "config/Ablation_Task4C_GeometricBaselines_1.1.json", "model_keys": ["baseline_definitions", "pointnn_encoding_batch_size", "pointnn_internal_dtype", "reference_fmt_parameters", "fixed_feature_normalization"], "concurrency": 3},
+    "pointnet": {"methods": ["pointnet_small"], "model_config": "config/Ablation_Task4C_PointNet_1.1.json", "model_keys": ["pointnet"], "concurrency": 3},
+    "pointnetpp": {"methods": ["pointnetplusplus_ssg_small"], "model_config": "config/Ablation_Task4C_PointNetPlusPlus_1.1.json", "model_keys": ["pointnetplusplus"], "concurrency": 3}
+  },
+  "reporting": "combined test F1/AP, per flow, per half length, per GT instance recall; three-seed mean and sample standard deviation"
+}

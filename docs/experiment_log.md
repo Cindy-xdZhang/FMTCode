@@ -4786,3 +4786,7 @@ r1 中 Channel 实例 10、39 无正类的根因：两实例贴展向 y 边界�
 ## 2026-09-18：固定数据集 v2 r3——规模改为每流场 2,000,000 初始点 / 200,000 样本
 
 用户修正规模：两流场合计初始点 4,000,000、Poisson 降采样后 400,000 样本，各半。r3 重建并核验通过：Channel 保留 189,416（hairpin 28,878），TBL 198,413（hairpin 28,777），共 387,829；每流场按实例五折，折 0 测试（Channel 40,670、TBL 41,231）。`data_audit.json` SHA-256 e5aaa4fb…。数据、规则文档与配置已打包到 OneDrive `flowData3D/Task4C_fixed_dataset_v2/`（及同名 zip）。r1/r2 输出在 `superseded_r1/`、`superseded_r2/`。代码仍未提交。
+
+## 2026-09-20：数据集 v2 上 FMT 2.1 与 baseline 2.1 的首轮结果——未见实例测试折全体崩到 0.20–0.26
+
+按实例五折（折 0 测试）的数据集 v2 上，FMT 四臂三种子测试 F1：p35/h0 FPS6 0.242 ± 0.017、p35/h0 FPS16 0.249 ± 0.005、c156 FPS6 0.263 ± 0.009、c156 FPS16 0.264 ± 0.003（验证 F1 0.79–0.87）；Ibex baseline：BiLSTM 0.240 ± 0.009、Conv3D 16³ 0.196 ± 0.010、Conv3D 24³ 0.208 ± 0.007、PointNet 0.204 ± 0.017（验证 0.93–0.94），PointNet++ 未完。结论：验证（同实例）与测试（未见实例）之间的巨大落差对所有方法都存在，是划分设定的性质而非某个方法的问题；c156 略优、FPS16 略优、短曲线优于长曲线。详见 `docs/Task4C_fixed_dataset_fmt_protocol_2.1.md`、`docs/Task4C_fixed_dataset_baselines_protocol_2.1.md`。同日新增工作台 1.6 第四页“数据集 v2 样本”查看器（`docs/Task4C_dataset_viewer_protocol_2.1.md`）。
