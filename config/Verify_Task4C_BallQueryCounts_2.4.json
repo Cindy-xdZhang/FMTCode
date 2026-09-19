@@ -1,0 +1,14 @@
+{
+  "version": "Verify_Task4C_BallQueryCounts_2.4",
+  "output": "outputs/Verify_Task4C_BallQueryCounts_2.4",
+  "source_config": "config/mainExp_Task4C_FixedDatasetFMT_2.1.json",
+  "grid_evidence": "outputs/Verify_Task4C_BallQueryCounts_2.2/global_min/radius_statistics.json",
+  "h_mode": "minimum_axis_mean_spacing",
+  "fixed_h": {
+    "channel": {"value": 0.003909492, "axis": "z", "axis_index": 2, "dimensions": [256, 192, 256]},
+    "tbl": {"value": 0.117239990, "axis": "y", "axis_index": 1, "dimensions": [276, 251, 224]}
+  },
+  "radii_h": [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 16, 24, 32, 48, 64, 128, 256, 512, 1024],
+  "workers": 4,
+  "definition": "For each axis compute (maximum coordinate - minimum coordinate)/(number of grid points - 1), then take the minimum of these three mean spacings. Use the user-confirmed decimal constants exactly: Channel 0.003909492, TBL 0.117239990. Count other same-flow v2 r3 seeds inside r*h; exclude center, include boundary, no radius expansion or FPS. Filters select centers only."
+}

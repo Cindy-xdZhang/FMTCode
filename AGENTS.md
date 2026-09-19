@@ -1,5 +1,17 @@
 # FMT 项目研究协议
 
+<!-- task4c-ball-query-3h-authorized-20260919 -->
+2026-09-19 用户最新明确授权立即实现、私有同步Ibex并并行测试 **3h起步、不足扩至第k近点、超额完整球内FPS**，取代此前暂停训练状态。新实验 `Ablation_Task4C_BallQuery_2.5` / `Ablation_Task4C_BallQueryBaselines_2.5`：h固定Channel0.003909492、TBL0.117239990，沿用冻结v2 r3；p35/h0、c156、Conv3D16³、BiLSTM、PointNet各跑6/16邻居，共十组，**仅seed96611**。不跑Conv24³、PointNet++或其他种子。协议 `docs/Task4C_ball_query_protocol_2.5.md`；实际提交与预检状态见独立执行记录，不能把已实现当成训练完成。旧1h已取消的任务不恢复，旧1024h不提交。
+<!-- task4c-ball-query-3h-authorized-20260919-end -->
+
+<!-- task4c-ball-query-mean-spacing-h-20260919 -->
+2026-09-19 最新用户确认：**Channel h=0.003909492，TBL h=0.117239990**；各方向平均间距为 `(轴坐标最大值−最小值)/(格点数−1)`，h取三个平均间距最小值后采用上述固定常数。Channel格点256×192×256，TBL276×251×224；精确坐标范围和平均间距已记录于 `docs/Task4C_ball_query_counts_2.4.md`。此定义取代下方2.2全局最小实际间距与2.3指定轴间距。当前仅授权更新 `Verify_Task4C_BallQueryCounts_2.4` 邻居分布网页及文档，不恢复训练；旧1h作业仍已取消，旧1024h实验未提交。所有新实验仍只准单种子。
+<!-- task4c-ball-query-mean-spacing-h-20260919-end -->
+
+<!-- task4c-ball-query-fixed-axis-h-20260919 -->
+2026-09-19 用户最新指定固定 h：**Channel Δy = 0.00613582134；TBL Δz = 0.00723510003**，取代下方全局最小间距定义。已完成 `Verify_Task4C_BallQueryCounts_2.3`：沿用 v2 r3，全部387,829个样本、24档0.25–1024h固定球计数，不扩球、不FPS；Channel62/TBL50个球心逐个直接扫描所有播种点核验全部半径通过。新可视化 `outputs/Verify_Task4C_BallQueryCounts_2.3/viewer/index.html` 双流场并排，协议 `docs/Task4C_ball_query_counts_2.3.md`。新h下 Channel3h平均38.0555，TBL48h平均29.5282；Channel1024h已覆盖全部其他189415个样本。此前用户曾要求旧h的1024h重跑，但尚未提交，随后本条改h并要求先重看分布；当前未提交新F1，不将旧1024h倍数自动移用到新h。旧1h四臂仍已取消；单种子约束继续有效。
+<!-- task4c-ball-query-fixed-axis-h-20260919-end -->
+
 <!-- task4c-ball-query-stopped-20260919 -->
 2026-09-19 用户查看半径分布后明确叫停仍以1h为起点的F1实验。已仅对 `52090744` 四臂训练和 `52090745` 后续复算执行取消；Slurm记为CANCELLED，四训练各运行6分17秒。此条取代下文RUNNING状态。冻结数据、代码、日志及数量可视化保留；**不得自动恢复本轮或擅自改成1024h重跑**。旧方案是1h起步、不足扩至第k近点，在当前数据上等于最近6/16邻居；用户本条没有授权新半径实验。证据 `outputs/Ablation_Task4C_BallQuery_2.2/r2_global_h/remote_evidence/cancellation_sacct.txt`。
 <!-- task4c-ball-query-stopped-20260919-end -->

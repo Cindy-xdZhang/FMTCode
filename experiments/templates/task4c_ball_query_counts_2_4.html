@@ -1,0 +1,80 @@
+<div id="task4c-ball-counts-v24">
+  <h2>Ball query 邻居数量分布 · 平均格点间距</h2>
+  <p class="text-small">各轴平均间距 = 坐标范围 ÷（格点数 − 1）；h 取三个方向平均间距的最小值。</p>
+  <div class="viz-controls">
+    <label class="form-label">查询半径 <select class="form-select" id="bq24-radius"></select></label>
+    <label class="form-label">中心样本集合 <select class="form-select" id="bq24-role"><option value="all">全部样本</option><option value="train">训练</option><option value="validation">验证</option><option value="test">测试折 0</option></select></label>
+    <label class="form-label">中心标签 <select class="form-select" id="bq24-label"><option value="all">全部</option><option value="hairpin">Hairpin</option><option value="non_hairpin">Non-hairpin</option></select></label>
+  </div>
+  <div class="bq-facets">
+    <section aria-label="Channel 邻居分布"><h3>Channel</h3><div class="text-small">固定 h = 0.003909492（z 方向平均间距）</div><div class="text-small" id="bq24-channel-grid"></div><div class="text-small tabular-nums" id="bq24-channel-radius"></div><div class="bq-chart" id="bq24-channel-chart"></div></section>
+    <section aria-label="TBL 邻居分布"><h3>TBL</h3><div class="text-small">固定 h = 0.117239990（y 方向平均间距）</div><div class="text-small" id="bq24-tbl-grid"></div><div class="text-small tabular-nums" id="bq24-tbl-radius"></div><div class="bq-chart" id="bq24-tbl-chart"></div></section>
+  </div>
+  <div id="bq24-detail" class="text-small tabular-nums" aria-live="polite">计数不含中心；固定半径，不扩球、不采样。</div>
+  <div class="table-responsive"><table class="table table-sm tabular-nums"><thead><tr><th>流场</th><th>中心样本数</th><th>最少</th><th>平均</th><th>中位数</th><th>最多</th><th>零邻居</th><th>不足 6 个</th><th>不足 16 个</th></tr></thead><tbody id="bq24-summary"></tbody></table></div>
+</div>
+<style>
+#task4c-ball-counts-v24 .bq-facets {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;}
+#task4c-ball-counts-v24 .bq-chart {min-width:0;position:relative;}
+#task4c-ball-counts-v24 svg {display:block;width:100%;}
+#task4c-ball-counts-v24 svg text {fill:var(--foreground);font-size:12px;}
+#task4c-ball-counts-v24 svg .domain,#task4c-ball-counts-v24 svg .tick line {stroke:var(--border);}
+@media(max-width:740px){#task4c-ball-counts-v24 .bq-facets {grid-template-columns:minmax(0,1fr);}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script>
+(() => {
+ const data=__DATA__,root=document.getElementById('task4c-ball-counts-v24'),q=id=>root.querySelector('#bq24-'+id);
+ const radius=q('radius'),role=q('role'),label=q('label'),names=['channel','tbl'];
+ const fmt=n=>Number(n).toLocaleString(undefined,{maximumFractionDigits:2}),pct=n=>(100*n).toFixed(2)+'%';
+ for(const name of names){
+  const g=data.grids[name],host=q(name+'-grid');host.textContent='网格（x/y/z）：'+g.dimensions.join(' × ');
+  g.bounds.forEach((bounds,i)=>{const line=document.createElement('div');line.textContent=g.axis_order[i]+': ['+bounds.map(n=>Number(n.toFixed(6))).join(', ')+']';host.appendChild(line);});
+ }
+ for(const r of data.radii_h){const option=document.createElement('option');option.value=String(r);option.textContent=r+'h';radius.appendChild(option);}
+ radius.value='1';
+ function restore(saved){const s=saved?.modelContent;if(!s||s.version!==data.version)return;for(const [key,el] of [['radius_h',radius],['role',role],['label',label]]){if([...el.options].some(o=>o.value===String(s[key])))el.value=String(s[key]);}}
+ restore(window.openai?.widgetState);
+ function draw(){
+  const r=Number(radius.value),stats=names.map(name=>data.flows[name].fixed_radius_counts[String(r)][role.value][label.value]);
+  const last=Math.max(...stats.map(s=>s.histogram.findLastIndex(n=>n>0)),0);
+  const indices=Array.from({length:last+1},(_,i)=>i),bins=stats[0].bin_labels.slice(0,last+1);
+  const maxShare=d3.max(stats,s=>d3.max(s.histogram,n=>s.n?n/s.n:0))||1;
+  q('summary').innerHTML=stats.map((s,i)=>'<tr>'+[i?'TBL':'Channel',fmt(s.n),fmt(s.minimum),fmt(s.mean),fmt(s.quantiles.p50),fmt(s.maximum),pct(s.zero/s.n),pct(s.fewer6/s.n),pct(s.fewer16/s.n)].map(v=>'<td>'+v+'</td>').join('')+'</tr>').join('');
+  names.forEach((name,i)=>{
+   const s=stats[i],host=q(name+'-chart'),width=host.clientWidth;if(width<=0)return;
+   const height=300,m={left:72,right:24,top:20,bottom:72};
+   const rows=indices.map(j=>({label:bins[j],n:s.histogram[j],share:s.n?s.histogram[j]/s.n:0}));
+   const x=d3.scaleBand().domain(bins).range([m.left,width-m.right]).padding(.2);
+   const y=d3.scaleLinear().domain([0,Math.min(1,maxShare*1.08)]).range([height-m.bottom,m.top]);
+   q(name+'-radius').textContent=r+'h = '+Number(r*data.grids[name].h).toPrecision(8)+'（原始坐标单位）';
+   const svg=d3.select(host).selectAll('svg').data([null]).join('svg').attr('viewBox',`0 0 ${width} ${height}`).attr('role','img').attr('aria-label',(i?'TBL':'Channel')+' '+r+'h 邻居数分布');
+   svg.selectAll('*').remove();svg.append('title').text((i?'TBL':'Channel')+'：每个区间的中心样本占比');
+   svg.append('rect').attr('data-chart-frame','').attr('x',m.left).attr('y',m.top).attr('width',width-m.left-m.right).attr('height',height-m.top-m.bottom).attr('fill','none').attr('stroke','var(--border)');
+   const axis=svg.append('g').attr('transform',`translate(0,${height-m.bottom})`);
+   let stride=Math.max(1,Math.ceil(rows.length/(width<400?4:6)));
+   function ticks(){
+    axis.call(d3.axisBottom(x).tickValues(bins.filter((_,j)=>j%stride===0)));
+    const edge=svg.node().getBoundingClientRect();
+    axis.selectAll('.tick text').each(function(){const b=this.getBoundingClientRect();if(b.right>edge.right-4)d3.select(this).attr('text-anchor','end');else if(b.left<edge.left+4)d3.select(this).attr('text-anchor','start');});
+   }
+   ticks();
+   for(let attempt=0;attempt<rows.length;attempt++){
+    const labels=axis.selectAll('.tick text').nodes().map(n=>n.getBoundingClientRect());
+    if(labels.every((b,j)=>j===0||labels[j-1].right+4<=b.left))break;
+    stride++;ticks();
+   }
+   svg.append('g').attr('transform',`translate(${m.left},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d3.format('.0%')));
+   svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',(m.left+width-m.right)/2).attr('y',height-16).attr('text-anchor','middle').text('球内其他样本点数量（个）');
+   svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('transform',`translate(17,${(m.top+height-m.bottom)/2}) rotate(-90)`).attr('text-anchor','middle').text('中心样本占比（%）');
+   svg.selectAll('rect.bar').data(rows).join('rect').attr('class','bar').attr('x',d=>x(d.label)).attr('width',x.bandwidth()).attr('y',d=>y(d.share)).attr('height',d=>y(0)-y(d.share)).attr('fill','var(--viz-series-'+(i+1)+')');
+   function detail(event){const bounds=svg.node().getBoundingClientRect(),px=(event.clientX-bounds.left)*width/bounds.width;const j=Math.max(0,Math.min(rows.length-1,Math.floor((px-m.left)/x.step()))),d=rows[j];q('detail').textContent=(i?'TBL':'Channel')+' · '+d.label+' 个邻居：'+fmt(d.n)+' 个中心样本（'+pct(d.share)+'）';}
+   svg.append('rect').attr('data-chart-hit','').attr('x',m.left).attr('y',m.top).attr('width',width-m.left-m.right).attr('height',height-m.top-m.bottom).attr('fill','transparent').on('pointermove',detail).on('click',detail);
+  });
+  q('detail').textContent='计数不含中心；固定半径，不扩球、不采样。';
+ }
+ for(const el of [radius,role,label])el.addEventListener('input',()=>{draw();window.openai?.setWidgetState?.({modelContent:{version:data.version,radius_h:Number(radius.value),role:role.value,label:label.value},privateContent:null})?.catch(()=>{});});
+ window.addEventListener('openai:set_globals',event=>{restore(event.detail?.globals?.widgetState);draw();});
+ const observer=new ResizeObserver(draw);for(const name of names)observer.observe(q(name+'-chart'));draw();
+})();
+</script>

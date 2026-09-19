@@ -1,0 +1,93 @@
+{
+  "version": "Ablation_Task4C_BallQueryBaselines_2.5",
+  "execution_revision": "r1_3h_mean_spacing_single_seed",
+  "output": "outputs/Ablation_Task4C_BallQueryBaselines_2.5/k6",
+  "base_config": "config/Ablation_Task4C_BottomDensity_1.2.json",
+  "base_config_role": "frozen training rules (batch 128, AdamW 1e-3/1e-4, dropout 0.15, 500 epochs, patience 50, validation F1 selection), encoding definition and Conv3D parameter budget; its data keys are NOT used",
+  "source_version": "mainExp_Task4C_FixedDataset_2.1",
+  "source_output": "outputs/mainExp_Task4C_FixedDataset_2.1",
+  "source_audit_sha256": "e5aaa4fb8a8e01882c461da5916b3bb96883e2787b231b018b512d7e30d3a2a8",
+  "fmt_config": "config/Ablation_Task4C_BallQuery_2.5.json",
+  "dataset_policy": "export shared 3h adaptive ball neighborhoods, original center, same curve length and frozen normalization",
+  "flows": [
+    {
+      "name": "channel",
+      "half_lengths": [
+        0.07,
+        0.1,
+        0.13
+      ],
+      "ds": 0.001
+    },
+    {
+      "name": "tbl",
+      "half_lengths": [
+        3.5,
+        5.0,
+        6.5
+      ],
+      "ds": 0.025
+    }
+  ],
+  "folds": {
+    "test_fold": 0
+  },
+  "validation": {
+    "fraction": 0.1,
+    "seed": 98401
+  },
+  "neighbors": {
+    "radius_h": 3.0,
+    "max_k": 16,
+    "h_mode": "minimum_axis_mean_spacing",
+    "rule": "same-flow all seeds; start at 3 * user-confirmed minimum axis mean spacing; expand minimally to kth other seed if insufficient; center-started FPS inside the complete ball only when count > k; exclude center; no labels or folds in selection"
+  },
+  "expected_counts": {
+    "train": 826005,
+    "validation": 91779,
+    "test": 245703
+  },
+  "seeds": [
+    96611
+  ],
+  "voxel_resolutions": [
+    16
+  ],
+  "families": {
+    "conv": {
+      "methods": [
+        "conv16"
+      ],
+      "model_config": null,
+      "model_keys": [],
+      "concurrency": 1,
+      "note": "Independent non-FMT Conv3D16 baseline only"
+    },
+    "bilstm": {
+      "methods": [
+        "baseline2"
+      ],
+      "model_config": "config/Ablation_Task4C_GeometricBaselines_1.1.json",
+      "model_keys": [
+        "baseline_definitions",
+        "pointnn_encoding_batch_size",
+        "pointnn_internal_dtype",
+        "reference_fmt_parameters",
+        "fixed_feature_normalization"
+      ],
+      "concurrency": 1
+    },
+    "pointnet": {
+      "methods": [
+        "pointnet_small"
+      ],
+      "model_config": "config/Ablation_Task4C_PointNet_1.1.json",
+      "model_keys": [
+        "pointnet"
+      ],
+      "concurrency": 1
+    }
+  },
+  "reporting": "single seed only; combined and per-flow F1/AP; validation-only epoch selection",
+  "neighbor_count": 6
+}
