@@ -1,0 +1,626 @@
+{
+  "version": "mainExp_Task4C_FixedDataset_3.2",
+  "rules": "docs/Task4C_fixed_dataset_protocol_3.2.md",
+  "output": "outputs/mainExp_Task4C_FixedDataset_3.2",
+  "physical_config": "config/mainExp_Task4C_GTHeadCoverage_1.1.json",
+  "physical_config_note": "only the frozen flow files, their SHA-256, the lambda2 thresholds and the RK45 tracer settings are read from this file",
+  "input_roots": [
+    "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D",
+    "/ibex/user/zhanx0o/FMT_Task4B_VelocityCurl_4p1_20260906/repo/inputs"
+  ],
+  "flows": [
+    {
+      "name": "channel",
+      "half_lengths": [
+        0.07,
+        0.1,
+        0.13
+      ],
+      "ds": 0.001
+    },
+    {
+      "name": "tbl",
+      "half_lengths": [
+        3.5,
+        5.0,
+        6.5
+      ],
+      "ds": 0.025
+    }
+  ],
+  "sampling": {
+    "pool_per_flow": 20000000,
+    "samples_per_flow": 4000000,
+    "pool_seed": 98301,
+    "poisson_seed": 98302,
+    "pool_chunk": 2000000,
+    "radius_relative_tolerance": 0.0001,
+    "grid_capacity_per_cell": 8,
+    "rule": "Uniform-by-volume within each exact GT class; class-weighted initial pool and quota-constrained global Poisson disk; pilot survival correction targets final positive:negative 2:1; no duplicate points or top-up."
+  },
+  "integration": {
+    "points_per_curve": 32,
+    "minimum_actual_half_arc_fraction": 0.95,
+    "maximum_actual_half_arc_fraction": 1.002,
+    "maximum_error_over_ds": 0.0001,
+    "vtk_internal_propagation_guard_steps": 0.001,
+    "trace_batch_seeds": 4096,
+    "rule": "one bidirectional fixed-step RK45 integration to the longest length; the shorter lengths are the first n_k steps of each half; a half line that left the fluid domain (VTK termination OUT_OF_DOMAIN) only needs [0.25L, 1.25L] of arc, every other half needs [0.95L, 1.002L]; a sample is kept only when all three curves pass",
+    "out_of_domain_min_half_arc_fraction": 0.25,
+    "out_of_domain_max_half_arc_fraction": 1.25
+  },
+  "folds": {
+    "count": 5,
+    "seed": 98303,
+    "test_fold": 0
+  },
+  "pilot": {
+    "pool_per_flow": 200000,
+    "samples_per_flow": 40000
+  },
+  "audit": {
+    "reintegrate_samples": 500,
+    "seed": 98304
+  },
+  "execution_revision": "r1_class_weighted_2_to_1",
+  "reference_dataset": "outputs/mainExp_Task4C_FixedDataset_2.1",
+  "reference_audit_sha256": "e5aaa4fb8a8e01882c461da5916b3bb96883e2787b231b018b512d7e30d3a2a8",
+  "reference_folds": {
+    "channel": {
+      "groups": [
+        {
+          "group": [
+            2,
+            5,
+            18,
+            26,
+            27,
+            32,
+            33,
+            36,
+            42,
+            43,
+            44,
+            48,
+            52,
+            58,
+            61,
+            68,
+            75,
+            77,
+            78,
+            80
+          ],
+          "samples": 40670,
+          "fold": 0
+        },
+        {
+          "group": [
+            0,
+            1,
+            6,
+            13,
+            14,
+            16,
+            23,
+            28,
+            29,
+            30,
+            35,
+            37,
+            46,
+            49,
+            59,
+            64,
+            66,
+            72,
+            74
+          ],
+          "samples": 35109,
+          "fold": 1
+        },
+        {
+          "group": [
+            21,
+            38,
+            51,
+            53,
+            56,
+            62
+          ],
+          "samples": 17422,
+          "fold": 2
+        },
+        {
+          "group": [
+            70
+          ],
+          "samples": 12949,
+          "fold": 3
+        },
+        {
+          "group": [
+            8,
+            15,
+            22
+          ],
+          "samples": 10344,
+          "fold": 4
+        },
+        {
+          "group": [
+            41
+          ],
+          "samples": 8991,
+          "fold": 4
+        },
+        {
+          "group": [
+            31
+          ],
+          "samples": 8179,
+          "fold": 3
+        },
+        {
+          "group": [
+            24,
+            39,
+            76
+          ],
+          "samples": 7815,
+          "fold": 2
+        },
+        {
+          "group": [
+            4,
+            17
+          ],
+          "samples": 7593,
+          "fold": 4
+        },
+        {
+          "group": [
+            20
+          ],
+          "samples": 6080,
+          "fold": 3
+        },
+        {
+          "group": [
+            7,
+            11,
+            55,
+            67
+          ],
+          "samples": 6055,
+          "fold": 2
+        },
+        {
+          "group": [
+            12,
+            34,
+            60,
+            71
+          ],
+          "samples": 5242,
+          "fold": 4
+        },
+        {
+          "group": [
+            40
+          ],
+          "samples": 4378,
+          "fold": 3
+        },
+        {
+          "group": [
+            54
+          ],
+          "samples": 3992,
+          "fold": 2
+        },
+        {
+          "group": [
+            50
+          ],
+          "samples": 3536,
+          "fold": 3
+        },
+        {
+          "group": [
+            3,
+            57
+          ],
+          "samples": 3458,
+          "fold": 4
+        },
+        {
+          "group": [
+            79
+          ],
+          "samples": 2431,
+          "fold": 1
+        },
+        {
+          "group": [
+            10
+          ],
+          "samples": 1880,
+          "fold": 3
+        },
+        {
+          "group": [
+            73
+          ],
+          "samples": 1673,
+          "fold": 2
+        },
+        {
+          "group": [
+            9
+          ],
+          "samples": 1619,
+          "fold": 4
+        }
+      ],
+      "fold_samples": [
+        40670,
+        37540,
+        36957,
+        37002,
+        37247
+      ],
+      "fold_of_instance": {
+        "2": 0,
+        "5": 0,
+        "18": 0,
+        "26": 0,
+        "27": 0,
+        "32": 0,
+        "33": 0,
+        "36": 0,
+        "42": 0,
+        "43": 0,
+        "44": 0,
+        "48": 0,
+        "52": 0,
+        "58": 0,
+        "61": 0,
+        "68": 0,
+        "75": 0,
+        "77": 0,
+        "78": 0,
+        "80": 0,
+        "0": 1,
+        "1": 1,
+        "6": 1,
+        "13": 1,
+        "14": 1,
+        "16": 1,
+        "23": 1,
+        "28": 1,
+        "29": 1,
+        "30": 1,
+        "35": 1,
+        "37": 1,
+        "46": 1,
+        "49": 1,
+        "59": 1,
+        "64": 1,
+        "66": 1,
+        "72": 1,
+        "74": 1,
+        "21": 2,
+        "38": 2,
+        "51": 2,
+        "53": 2,
+        "56": 2,
+        "62": 2,
+        "70": 3,
+        "8": 4,
+        "15": 4,
+        "22": 4,
+        "41": 4,
+        "31": 3,
+        "24": 2,
+        "39": 2,
+        "76": 2,
+        "4": 4,
+        "17": 4,
+        "20": 3,
+        "7": 2,
+        "11": 2,
+        "55": 2,
+        "67": 2,
+        "12": 4,
+        "34": 4,
+        "60": 4,
+        "71": 4,
+        "40": 3,
+        "54": 2,
+        "50": 3,
+        "3": 4,
+        "57": 4,
+        "79": 1,
+        "10": 3,
+        "73": 2,
+        "9": 4
+      },
+      "test_fold": 0
+    },
+    "tbl": {
+      "groups": [
+        {
+          "group": [
+            4,
+            5,
+            6,
+            7,
+            15,
+            17,
+            26,
+            28,
+            38,
+            40,
+            43,
+            50,
+            52,
+            54,
+            57,
+            70
+          ],
+          "samples": 41231,
+          "fold": 0
+        },
+        {
+          "group": [
+            31,
+            58,
+            62,
+            63,
+            71
+          ],
+          "samples": 21532,
+          "fold": 1
+        },
+        {
+          "group": [
+            1,
+            24,
+            29,
+            30,
+            42,
+            53,
+            59
+          ],
+          "samples": 17905,
+          "fold": 2
+        },
+        {
+          "group": [
+            64,
+            68
+          ],
+          "samples": 13263,
+          "fold": 3
+        },
+        {
+          "group": [
+            14,
+            27,
+            72
+          ],
+          "samples": 10633,
+          "fold": 4
+        },
+        {
+          "group": [
+            48,
+            69
+          ],
+          "samples": 9697,
+          "fold": 4
+        },
+        {
+          "group": [
+            19,
+            55
+          ],
+          "samples": 8498,
+          "fold": 3
+        },
+        {
+          "group": [
+            37
+          ],
+          "samples": 8317,
+          "fold": 2
+        },
+        {
+          "group": [
+            25,
+            66
+          ],
+          "samples": 7807,
+          "fold": 4
+        },
+        {
+          "group": [
+            33
+          ],
+          "samples": 7574,
+          "fold": 1
+        },
+        {
+          "group": [
+            11,
+            32,
+            51
+          ],
+          "samples": 6749,
+          "fold": 3
+        },
+        {
+          "group": [
+            61
+          ],
+          "samples": 6579,
+          "fold": 2
+        },
+        {
+          "group": [
+            35
+          ],
+          "samples": 6535,
+          "fold": 4
+        },
+        {
+          "group": [
+            22
+          ],
+          "samples": 5252,
+          "fold": 3
+        },
+        {
+          "group": [
+            65,
+            67
+          ],
+          "samples": 4758,
+          "fold": 1
+        },
+        {
+          "group": [
+            41
+          ],
+          "samples": 4275,
+          "fold": 2
+        },
+        {
+          "group": [
+            56
+          ],
+          "samples": 3843,
+          "fold": 3
+        },
+        {
+          "group": [
+            60
+          ],
+          "samples": 3642,
+          "fold": 1
+        },
+        {
+          "group": [
+            36
+          ],
+          "samples": 3493,
+          "fold": 4
+        },
+        {
+          "group": [
+            47
+          ],
+          "samples": 2153,
+          "fold": 2
+        },
+        {
+          "group": [
+            3,
+            12
+          ],
+          "samples": 1909,
+          "fold": 1
+        },
+        {
+          "group": [
+            21
+          ],
+          "samples": 1486,
+          "fold": 3
+        },
+        {
+          "group": [
+            46
+          ],
+          "samples": 1282,
+          "fold": 4
+        }
+      ],
+      "fold_samples": [
+        41231,
+        39415,
+        39229,
+        39091,
+        39447
+      ],
+      "fold_of_instance": {
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "15": 0,
+        "17": 0,
+        "26": 0,
+        "28": 0,
+        "38": 0,
+        "40": 0,
+        "43": 0,
+        "50": 0,
+        "52": 0,
+        "54": 0,
+        "57": 0,
+        "70": 0,
+        "31": 1,
+        "58": 1,
+        "62": 1,
+        "63": 1,
+        "71": 1,
+        "1": 2,
+        "24": 2,
+        "29": 2,
+        "30": 2,
+        "42": 2,
+        "53": 2,
+        "59": 2,
+        "64": 3,
+        "68": 3,
+        "14": 4,
+        "27": 4,
+        "72": 4,
+        "48": 4,
+        "69": 4,
+        "19": 3,
+        "55": 3,
+        "37": 2,
+        "25": 4,
+        "66": 4,
+        "33": 1,
+        "11": 3,
+        "32": 3,
+        "51": 3,
+        "61": 2,
+        "35": 4,
+        "22": 3,
+        "65": 1,
+        "67": 1,
+        "41": 2,
+        "56": 3,
+        "60": 1,
+        "36": 4,
+        "47": 2,
+        "3": 1,
+        "12": 1,
+        "21": 3,
+        "46": 4
+      },
+      "test_fold": 0
+    }
+  },
+  "balance": {
+    "positive_to_negative_ratio": 2.0,
+    "ratio_relative_tolerance": 0.05,
+    "cleaning_correction": "pilot_survival_per_class",
+    "poisson": "single_global_radius_with_class_quotas"
+  }
+}
