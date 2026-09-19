@@ -1,0 +1,30 @@
+{
+  "version": "Verify_Task4C_BallQuery_3.1",
+  "output": "outputs/Verify_Task4C_BallQuery_3.1",
+  "source_output": "outputs/mainExp_Task4C_FixedDataset_3.1",
+  "source_audit_sha256": "b584fc8e8f42dcc305754e550804eb3f8fb75c254fd76cf7272a9c6623312584",
+  "flows": [
+    {
+      "name": "channel",
+      "h_value": 0.003909492
+    },
+    {
+      "name": "tbl",
+      "h_value": 0.11723999
+    }
+  ],
+  "folds": {
+    "test_fold": 0
+  },
+  "validation": {
+    "fraction": 0.1,
+    "seed": 98401
+  },
+  "chunk": 2048,
+  "rule": "same-flow all seeds; original center excluded; 3h initially; expand minimally to kth other point when insufficient; center-started FPS within complete ball when excess; independent k6/k16; no label/fold filtering",
+  "expected_counts": {
+    "train": 16521207,
+    "validation": 1835691,
+    "test": 4930236
+  }
+}
