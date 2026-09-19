@@ -1,5 +1,7 @@
 # Task4-c ball query 2.2 执行记录
 
+**2026-09-19 用户叫停，训练与复算已取消。** 用户在数量可视化中确认1h无邻居，要求停止仍以1h为起点的F1测试。此前RUNNING → 当前CANCELLED；原因是用户撤销本轮实验，而非训练失败。只取消52090744四臂及52090745，不自动恢复或改成1024h重跑。日志、代码和数据保留。Slurm记录四臂各运行6分17秒，取消时间为其输出中的2026-09-19T14:45:18。
+
 2026-09-19，科学提交 `a5af710d72a74bbbceb8bd5a48db8b26c1f16c74`，执行修订 `r2_global_h_user_confirmed`。用户最终确认 h 使用全流场最小相邻网格间距。早期局部h草案 `e0616ee5` 仅做本地诊断，虽然曾上传部署包，但未执行其部署脚本、未提交训练；本轮训练全部使用固定全局h版本。
 
 远端私有目录 `/ibex/user/zhanx0o/FMT_Task4C_BallQuery_2p2_20260919_r2`。复用 `/ibex/user/zhanx0o/FMT_Task4C_FixedDatasetBaselines_2p1_20260919/outputs/mainExp_Task4C_FixedDataset_2.1`，只读符号链接，无数据重建。输出子目录 `outputs/Ablation_Task4C_BallQuery_2.2/r2_global_h/`。
@@ -8,13 +10,13 @@
 |---|---|---|
 | 源文件/数据/邻居表核验 | 52090742 | COMPLETED，0:0，30秒 |
 | V100 工程预检 | 52090743 | COMPLETED，0:0，46秒 |
-| p35/h0 ball6，seed96611 | 52090744_0 | RUNNING |
-| p35/h0 ball16，seed96611 | 52090744_1 | RUNNING |
-| c156 ball6，seed96611 | 52090744_2 | RUNNING |
-| c156 ball16，seed96611 | 52090744_3 | RUNNING |
-| 预测独立复算 | 52090745 | PENDING，成功依赖四臂训练 |
+| p35/h0 ball6，seed96611 | 52090744_0 | CANCELLED，运行6分17秒 |
+| p35/h0 ball16，seed96611 | 52090744_1 | CANCELLED，运行6分17秒 |
+| c156 ball6，seed96611 | 52090744_2 | CANCELLED，运行6分17秒 |
+| c156 ball16，seed96611 | 52090744_3 | CANCELLED，运行6分17秒 |
+| 预测独立复算 | 52090745 | CANCELLED，未启动 |
 
-以上是检查时的状态，不是自动更新的实时页面。目前没有新正式测试F1。不得把小拟合F1=1.0当正式成绩。无需再提交；下一步读这条作业链和对应输出即可。
+以上为取消后的调度状态；取消证据见 `remote_evidence/cancellation_sacct.txt`。本轮未完成正式结果复算，不得把小拟合F1=1.0或中途验证分数当正式测试成绩。除非用户重新明确要求，不得恢复或重新提交。
 
 ## 核验
 

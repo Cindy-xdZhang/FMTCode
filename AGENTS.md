@@ -1,5 +1,9 @@
 # FMT 项目研究协议
 
+<!-- task4c-ball-query-stopped-20260919 -->
+2026-09-19 用户查看半径分布后明确叫停仍以1h为起点的F1实验。已仅对 `52090744` 四臂训练和 `52090745` 后续复算执行取消；Slurm记为CANCELLED，四训练各运行6分17秒。此条取代下文RUNNING状态。冻结数据、代码、日志及数量可视化保留；**不得自动恢复本轮或擅自改成1024h重跑**。旧方案是1h起步、不足扩至第k近点，在当前数据上等于最近6/16邻居；用户本条没有授权新半径实验。证据 `outputs/Ablation_Task4C_BallQuery_2.2/r2_global_h/remote_evidence/cancellation_sacct.txt`。
+<!-- task4c-ball-query-stopped-20260919-end -->
+
 <!-- task4c-ball-query-single-seed-20260919 -->
 2026-09-19 用户进入紧急开发阶段：**从现在起所有新实验只准单一种子，除非用户另行明确要求多种子。** 不因此追改既有完成结果或擅自终止其他已提交任务。Task4-c 当前数据为 v2 r3（`mainExp_Task4C_FixedDataset_2.1`，科学commit `2e707ea5`，audit SHA-256 `e5aaa4fb8a8e01882c461da5916b3bb96883e2787b231b018b512d7e30d3a2a8`），共387,829个样本点，每点三种长度曲线，无预生成邻居，以实例分五折；用户明确本轮不重建。此前 v1 构建规则仅为历史。新邻居实验 `Ablation_Task4C_BallQuery_2.2`：初始半径1h，不足6/16邻居则扩大，球内超过目标数才FPS；p35/h0与c156均seed96611，四次拟合。协议 `docs/Task4C_ball_query_protocol_2.2.md`，代码/文档审查 `docs/Task4C_v2_review_2026-09-19.md`，实际状态以输出证据为准，不把代码已实现说成训练已完成。
 <!-- task4c-ball-query-single-seed-20260919-end -->
