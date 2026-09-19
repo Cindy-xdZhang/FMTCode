@@ -1,0 +1,138 @@
+{
+  "flows": [
+    {
+      "name": "channel",
+      "half_lengths": [
+        0.07,
+        0.1,
+        0.13
+      ],
+      "grid_source_sha256": "c1e3c18d0e67b6eb33ea41cd49c3a4c55216838a0f4a42f778ef00aaba3d4564",
+      "h_value": 0.003909492
+    },
+    {
+      "name": "tbl",
+      "half_lengths": [
+        3.5,
+        5.0,
+        6.5
+      ],
+      "grid_source_sha256": "cc82db1d3ca4e1964ec19dcd30df5a82c3c5635c16b8e0182f01fa57bf0d65bb",
+      "h_value": 0.11723999
+    }
+  ],
+  "folds": {
+    "test_fold": 0
+  },
+  "neighbors": {
+    "radius_h": 3.0,
+    "max_k": 16,
+    "h_mode": "minimum_axis_mean_spacing",
+    "rule": "same-flow all seeds; start at 3 * user-confirmed minimum axis mean spacing; expand minimally to kth other seed if insufficient; center-started FPS inside the complete ball only when count > k; exclude center; no labels or folds in selection"
+  },
+  "rows": "one row per (sample, half length); neighbour lines use the same half length as the center line",
+  "training": {
+    "batch_size": 128,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "dropout": 0.15,
+    "lr_patience": 15,
+    "threshold": 0.5
+  },
+  "final": {
+    "seeds": [
+      96611
+    ],
+    "epochs": 500,
+    "patience": 50
+  },
+  "fixed_features": "23 center + 72 direction + 23 neighbour mean + 23 numerical max = 141",
+  "version": "mainExp_Task4C_V2NewLabelTraining_1.1",
+  "execution_revision": "r1_four_train_one_test_short_curve_labels",
+  "output": "outputs/mainExp_Task4C_V2NewLabelTraining_1.1",
+  "source_version": "mainExp_Task4C_V2NewLabel_1.1",
+  "source_output": "outputs/v2_newlabel_rule",
+  "source_audit_sha256": "9a983a79107798af4fd9eb86dce2c2e9b5cbc143c12e646dd5bf438ea5f81a95",
+  "neighbor_output": "outputs/Verify_Task4C_V2NewLabelBallQuery_1.1",
+  "expected_counts": {
+    "train": 880530,
+    "test": 290580
+  },
+  "selection": {
+    "role": "test",
+    "criterion": "maximum test F1; average precision breaks ties; earliest exact tie",
+    "threshold": 0.5,
+    "scheduler": "test cross entropy",
+    "test_labels_in_gradients": false,
+    "user_authorized": true
+  },
+  "candidates": [
+    {
+      "id": "p35_h0_ball6",
+      "base_method": "p35_h0",
+      "pool": "p35",
+      "profile": "h0",
+      "architecture": "original",
+      "points": 32,
+      "sampling": "uniform",
+      "augmentation": "none",
+      "parameters": 76738,
+      "neighbors": 6,
+      "neighbor_selection": "ball_query_adaptive_fps"
+    },
+    {
+      "id": "p35_h0_ball16",
+      "base_method": "p35_h0",
+      "pool": "p35",
+      "profile": "h0",
+      "architecture": "original",
+      "points": 32,
+      "sampling": "uniform",
+      "augmentation": "none",
+      "parameters": 76738,
+      "neighbors": 16,
+      "neighbor_selection": "ball_query_adaptive_fps"
+    },
+    {
+      "id": "c156_ball6",
+      "base_method": "c156",
+      "pool": "p35",
+      "profile": "h0",
+      "architecture": "wide_residual",
+      "points": 48,
+      "sampling": "uniform",
+      "augmentation": "none",
+      "parameters": 992386,
+      "neighbors": 6,
+      "neighbor_selection": "ball_query_adaptive_fps"
+    },
+    {
+      "id": "c156_ball16",
+      "base_method": "c156",
+      "pool": "p35",
+      "profile": "h0",
+      "architecture": "wide_residual",
+      "points": 48,
+      "sampling": "uniform",
+      "augmentation": "none",
+      "parameters": 992386,
+      "neighbors": 16,
+      "neighbor_selection": "ball_query_adaptive_fps"
+    },
+    {
+      "id": "conv16_ball6",
+      "base_method": "conv16",
+      "neighbors": 6,
+      "parameters": 72192
+    },
+    {
+      "id": "conv16_ball16",
+      "base_method": "conv16",
+      "neighbors": 16,
+      "parameters": 72192
+    }
+  ],
+  "checkpoint_policy": "best state in memory; best predictions persisted every improvement",
+  "comparison": "p35/h0, c156 and Conv3D16 only; each k6/k16; six fits; seed96611 only",
+  "concurrency": 6
+}
