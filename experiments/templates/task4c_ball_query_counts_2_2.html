@@ -1,0 +1,53 @@
+<div id="task4c-ball-counts">
+  <h2>Ball query 邻居数量分布</h2>
+  <div class="viz-controls">
+    <label class="form-label">流场 <select class="form-select" id="bq-flow"><option value="channel">Channel</option><option value="tbl">TBL</option></select></label>
+    <label class="form-label">样本集合 <select class="form-select" id="bq-role"><option value="all">全部样本</option><option value="train">训练</option><option value="validation">验证</option><option value="test">测试折 0</option></select></label>
+    <label class="form-label">中心标签 <select class="form-select" id="bq-label"><option value="all">全部</option><option value="hairpin">Hairpin</option><option value="non_hairpin">Non-hairpin</option></select></label>
+  </div>
+  <label class="form-label" for="bq-radius">查询半径：<output id="bq-radius-value">1h</output></label>
+  <input class="form-range" id="bq-radius" type="range" min="0" max="10" value="2" step="1">
+  <div id="bq-scale" class="text-small"></div>
+  <div class="table-responsive"><table class="table table-sm tabular-nums"><thead><tr><th>样本数</th><th>最少邻居</th><th>中位数</th><th>最多邻居</th><th>零邻居</th><th>不足 6 个</th><th>不足 16 个</th></tr></thead><tbody id="bq-summary"></tbody></table></div>
+  <div id="bq-chart"></div>
+  <div id="bq-detail" class="text-small" aria-live="polite"></div>
+</div>
+<style>
+#task4c-ball-counts svg text {fill:var(--foreground);font-size:12px;}
+#task4c-ball-counts svg .domain,#task4c-ball-counts svg .tick line {stroke:var(--border);}
+#task4c-ball-counts #bq-chart {position:relative;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script>
+(() => {
+ const data=__DATA__, root=document.getElementById('task4c-ball-counts'), q=id=>root.querySelector('#'+id);
+ const flow=q('bq-flow'),role=q('bq-role'),label=q('bq-label'),radius=q('bq-radius');
+ radius.max=data.radii_h.length-1;radius.value=data.radii_h.indexOf(1);
+ function restore(saved){const s=saved?.modelContent;if(!s)return;for(const [key,el] of [['flow',flow],['role',role],['label',label]]){if([...el.options].some(o=>o.value===s[key]))el.value=s[key];}const i=data.radii_h.indexOf(s.radius_h);if(i>=0)radius.value=i;}
+ restore(window.openai?.widgetState);
+ function draw(){
+   const r=data.radii_h[+radius.value],entry=data.flows[flow.value],stats=entry.fixed_radius_counts[String(r)][role.value][label.value];
+   const percent=n=>(100*n/stats.n).toFixed(2)+'%',fmt=n=>Number(n).toLocaleString(undefined,{maximumFractionDigits:2});
+   q('bq-radius-value').textContent=r+'h';
+   q('bq-scale').textContent=(data.h_mode==='local_min'?'h = 样本所在网格单元的最小边长':'h = 全流场最小相邻格点间距')+'；不计中心，每个邻居在指定长度下提供一条线。';
+   q('bq-summary').innerHTML='<tr>'+[fmt(stats.n),fmt(stats.minimum),fmt(stats.quantiles.p50),fmt(stats.maximum),percent(stats.zero),percent(stats.fewer6),percent(stats.fewer16)].map(v=>'<td>'+v+'</td>').join('')+'</tr>';
+   const host=q('bq-chart'),width=Math.max(300,host.clientWidth),height=310,margin={left:72,right:18,top:20,bottom:62};
+   const rows=stats.histogram.map((n,i)=>({n,label:stats.bin_labels[i]}));
+   const x=d3.scaleBand().domain(rows.map(d=>d.label)).range([margin.left,width-margin.right]).padding(.18);
+   const y=d3.scaleLinear().domain([0,Math.max(1,d3.max(rows,d=>d.n))*1.06]).nice().range([height-margin.bottom,margin.top]);
+   const svg=d3.select(host).selectAll('svg').data([null]).join('svg').attr('viewBox',`0 0 ${width} ${height}`).attr('role','img').attr('aria-label','各邻居数量区间内的样本数');
+   svg.selectAll('*').remove();svg.append('title').text('固定半径邻居数量分布');
+   svg.append('rect').attr('data-chart-frame','').attr('x',margin.left).attr('y',margin.top).attr('width',width-margin.left-margin.right).attr('height',height-margin.top-margin.bottom).attr('fill','none').attr('stroke','var(--border)');
+   const stride=width<480?5:width<800?2:1;
+   svg.append('g').attr('transform',`translate(0,${height-margin.bottom})`).call(d3.axisBottom(x).tickValues(rows.filter((d,i)=>i%stride===0).map(d=>d.label)));
+   svg.append('g').attr('transform',`translate(${margin.left},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d3.format('~s')));
+   svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',(margin.left+width-margin.right)/2).attr('y',height-12).attr('text-anchor','middle').text('球内其他样本点数量（个）');
+   svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('transform',`translate(17,${(margin.top+height-margin.bottom)/2}) rotate(-90)`).attr('text-anchor','middle').text('中心样本数（个）');
+   svg.selectAll('rect.bar').data(rows).join('rect').attr('class','bar').attr('x',d=>x(d.label)).attr('width',x.bandwidth()).attr('y',d=>y(d.n)).attr('height',d=>y(0)-y(d.n)).attr('fill','var(--viz-series-1)').attr('data-tooltip',d=>d.label+' 个邻居：'+fmt(d.n)+' 个样本').on('pointerenter',(_,d)=>{q('bq-detail').textContent=d.label+' 个邻居：'+fmt(d.n)+' 个样本（'+percent(d.n)+'）';});
+   q('bq-detail').textContent='平均 '+fmt(stats.mean)+' 个邻居；范围 '+fmt(stats.minimum)+'–'+fmt(stats.maximum)+'。';
+ }
+ for(const el of [flow,role,label,radius])el.addEventListener('input',()=>{draw();window.openai?.setWidgetState?.({modelContent:{flow:flow.value,role:role.value,label:label.value,radius_h:data.radii_h[+radius.value]},privateContent:null}).catch(()=>{});});
+ window.addEventListener('openai:set_globals',event=>{restore(event.detail?.globals?.widgetState);draw();});
+ new ResizeObserver(draw).observe(q('bq-chart'));draw();
+})();
+</script>

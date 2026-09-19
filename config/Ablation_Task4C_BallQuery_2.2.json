@@ -1,0 +1,125 @@
+{
+  "version": "Ablation_Task4C_BallQuery_2.2",
+  "execution_revision": "r1",
+  "output": "outputs/Ablation_Task4C_BallQuery_2.2",
+  "source_version": "mainExp_Task4C_FixedDataset_2.1",
+  "source_output": "outputs/mainExp_Task4C_FixedDataset_2.1",
+  "source_audit_sha256": "e5aaa4fb8a8e01882c461da5916b3bb96883e2787b231b018b512d7e30d3a2a8",
+  "flows": [
+    {
+      "name": "channel",
+      "half_lengths": [
+        0.07,
+        0.1,
+        0.13
+      ],
+      "h_sha256": "73667353ab348545ae7abb2b4ab9abc891955b484b07c5af42f93447b2f2b47e",
+      "grid_source_sha256": "c1e3c18d0e67b6eb33ea41cd49c3a4c55216838a0f4a42f778ef00aaba3d4564"
+    },
+    {
+      "name": "tbl",
+      "half_lengths": [
+        3.5,
+        5.0,
+        6.5
+      ],
+      "h_sha256": "b1f4b26f9b137cb518631289d3c4bbc19376bd9277029b76a1c8e017773db8f4",
+      "grid_source_sha256": "cc82db1d3ca4e1964ec19dcd30df5a82c3c5635c16b8e0182f01fa57bf0d65bb"
+    }
+  ],
+  "folds": {
+    "test_fold": 0
+  },
+  "validation": {
+    "fraction": 0.1,
+    "seed": 98401,
+    "rule": "10% of the training-fold samples per flow, all three half lengths of a sample together; used only for epoch selection"
+  },
+  "neighbors": {
+    "radius_h": 1.0,
+    "max_k": 16,
+    "h_mode": "local_min",
+    "rule": "same-flow all seeds; start at radius_h * minimum edge of local grid cell; expand minimally to kth other seed if insufficient; FPS inside ball only when count > k; exclude center; geometry only"
+  },
+  "rows": "one row per (sample, half length); neighbour lines use the same half length as the center line",
+  "expected_counts": {
+    "train": 826005,
+    "validation": 91779,
+    "test": 245703
+  },
+  "training": {
+    "batch_size": 128,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "dropout": 0.15,
+    "lr_patience": 15,
+    "threshold": 0.5
+  },
+  "final": {
+    "seeds": [
+      96611
+    ],
+    "epochs": 500,
+    "patience": 50
+  },
+  "concurrency": 4,
+  "device": "Ibex V100; four independent arms, one seed each",
+  "checkpoint_policy": "memory_only_no_weight_files",
+  "candidates": [
+    {
+      "id": "p35_h0_ball6",
+      "base_method": "p35_h0",
+      "pool": "p35",
+      "profile": "h0",
+      "architecture": "original",
+      "points": 32,
+      "sampling": "uniform",
+      "augmentation": "none",
+      "parameters": 76738,
+      "neighbors": 6,
+      "neighbor_selection": "ball_query_adaptive_fps"
+    },
+    {
+      "id": "p35_h0_ball16",
+      "base_method": "p35_h0",
+      "pool": "p35",
+      "profile": "h0",
+      "architecture": "original",
+      "points": 32,
+      "sampling": "uniform",
+      "augmentation": "none",
+      "parameters": 76738,
+      "neighbors": 16,
+      "neighbor_selection": "ball_query_adaptive_fps"
+    },
+    {
+      "id": "c156_ball6",
+      "base_method": "c156",
+      "pool": "p35",
+      "profile": "h0",
+      "architecture": "wide_residual",
+      "points": 48,
+      "sampling": "uniform",
+      "augmentation": "none",
+      "parameters": 992386,
+      "neighbors": 6,
+      "neighbor_selection": "ball_query_adaptive_fps"
+    },
+    {
+      "id": "c156_ball16",
+      "base_method": "c156",
+      "pool": "p35",
+      "profile": "h0",
+      "architecture": "wide_residual",
+      "points": 48,
+      "sampling": "uniform",
+      "augmentation": "none",
+      "parameters": 992386,
+      "neighbors": 16,
+      "neighbor_selection": "ball_query_adaptive_fps"
+    }
+  ],
+  "fixed_features": "23 center + 72 direction + 23 neighbour mean + 23 numerical max = 141",
+  "comparison": "Single-seed paired neighborhood ablation against frozen FPS64-pool baseline; no radius search",
+  "grid_scale_output": "outputs/Verify_Task4C_BallQueryCounts_2.2/local_min"
+}
