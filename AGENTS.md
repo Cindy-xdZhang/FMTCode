@@ -1,5 +1,9 @@
 # FMT 项目研究协议
 
+<!-- task4c-ball-query-3h-submitted-20260919 -->
+2026-09-19 `Ablation_Task4C_BallQuery_2.5` / `Ablation_Task4C_BallQueryBaselines_2.5` 已私有部署到 `/ibex/user/zhanx0o/FMT_Task4C_BallQuery_2p5_20260919`，科学commit `ea1cf5d3`。五模型×6/16邻居共十次正式拟合，仅seed96611；冻结v2 r3和最新h不变，3h起步、不足扩球、超额完整球内FPS。本地/远端14项测试及66份文件哈希通过。源核验52094397、四FMT GPU预检52094398和六基线预检52094418_0–5全部COMPLETED；12:41 UTC四FMT训练52094399_0–3 RUNNING且均至少一轮历史，Conv编码52094419_0/1 RUNNING，余下编码与六基线训练52094420_0–5按资源/依赖等待。BiLSTM/PointNet已解除无关Conv编码依赖；编码并发2，整轮最多十张GPU。预测复算52094400、52094421_0–5已提交。18份启动核验报告identity一致、错误日志为空，**尚无正式测试F1**，不得把GPU小拟合当测试成绩。执行记录 `docs/Task4C_ball_query_execution_2.5.md`，实际状态 `outputs/Ablation_Task4C_BallQuery_2.5/deployment_status.json`。不得重复提交、追加种子或恢复旧1h作业。
+<!-- task4c-ball-query-3h-submitted-20260919-end -->
+
 <!-- task4c-ball-query-3h-authorized-20260919 -->
 2026-09-19 用户最新明确授权立即实现、私有同步Ibex并并行测试 **3h起步、不足扩至第k近点、超额完整球内FPS**，取代此前暂停训练状态。新实验 `Ablation_Task4C_BallQuery_2.5` / `Ablation_Task4C_BallQueryBaselines_2.5`：h固定Channel0.003909492、TBL0.117239990，沿用冻结v2 r3；p35/h0、c156、Conv3D16³、BiLSTM、PointNet各跑6/16邻居，共十组，**仅seed96611**。不跑Conv24³、PointNet++或其他种子。协议 `docs/Task4C_ball_query_protocol_2.5.md`；实际提交与预检状态见独立执行记录，不能把已实现当成训练完成。旧1h已取消的任务不恢复，旧1024h不提交。
 <!-- task4c-ball-query-3h-authorized-20260919-end -->
