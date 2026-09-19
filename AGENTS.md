@@ -4,6 +4,8 @@
 2026-09-19 用户进入紧急开发阶段：**从现在起所有新实验只准单一种子，除非用户另行明确要求多种子。** 不因此追改既有完成结果或擅自终止其他已提交任务。Task4-c 当前数据为 v2 r3（`mainExp_Task4C_FixedDataset_2.1`，科学commit `2e707ea5`，audit SHA-256 `e5aaa4fb8a8e01882c461da5916b3bb96883e2787b231b018b512d7e30d3a2a8`），共387,829个样本点，每点三种长度曲线，无预生成邻居，以实例分五折；用户明确本轮不重建。此前 v1 构建规则仅为历史。新邻居实验 `Ablation_Task4C_BallQuery_2.2`：初始半径1h，不足6/16邻居则扩大，球内超过目标数才FPS；p35/h0与c156均seed96611，四次拟合。协议 `docs/Task4C_ball_query_protocol_2.2.md`，代码/文档审查 `docs/Task4C_v2_review_2026-09-19.md`，实际状态以输出证据为准，不把代码已实现说成训练已完成。
 <!-- task4c-ball-query-single-seed-20260919-end -->
 
+2026-09-19 同轮用户追加确认：ball query 的 h 使用**整个流场最小相邻格点间距（固定 h）**，不是局部单元最小边长。正式执行修订 `r2_global_h_user_confirmed`，输出 `outputs/Ablation_Task4C_BallQuery_2.2/r2_global_h/`；未提交训练的局部h草案仅保留诊断。
+
 <!-- task4c-fixed-dataset-baselines-resubmit-20260918 -->
 2026-09-18 `mainExp_Task4C_FixedDatasetBaselines_1.1` 首批四个 preflight（52058955/52058962/52058967/52058972）4–14 秒 FAILED：启动钩子在家族输出目录建立前就写 `runtime.jsonl`，`FileNotFoundError`；后续作业随依赖取消。修复（commit `a827ad58`：钩子先建目录）部署到新目录 `/ibex/user/zhanx0o/FMT_Task4C_FixedDatasetBaselines_20260918`（远端测试 OK），15:26 UTC 重新提交：conv 52059304–52059308、bilstm 52059309–52059314、pointnet 52059315–52059319、pointnetpp 52059320–52059325。FMT 链不受影响：verify-source 52058941、gpu-check 52058942 已完成，train 52058943[0–11] 排队。
 <!-- task4c-fixed-dataset-baselines-resubmit-20260918-end -->
