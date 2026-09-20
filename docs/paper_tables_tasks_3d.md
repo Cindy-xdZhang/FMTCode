@@ -699,7 +699,7 @@ Source and per-seed evidence: outputs/Ablation_Task4C_FPSAugmentSearch_1.2/indep
 | Conv3D 16³ | 72,192 | 0.935 | 0.196 ± 0.010 | 0.156 / 0.230 |
 | Conv3D 24³ | 72,192 | 0.937 | 0.208 ± 0.007 | 0.172 / 0.239 |
 | PointNet | 76,749 | 0.919 | 0.204 ± 0.017 | 0.178 / 0.225 |
-| PointNet++ | 76,723 | — | 训练中 | — |
+| PointNet++ | 76,723 | 0.920 | 0.211 ± 0.020 | 0.218 / 0.204 |
 
 来源：`outputs/mainExp_Task4C_FixedDatasetFMT_2.1/summary.json`（本机 RTX 3090）、Ibex `outputs/mainExp_Task4C_FixedDatasetBaselines_2.1/*/summary.json`；协议 `docs/Task4C_fixed_dataset_fmt_protocol_2.1.md`、`docs/Task4C_fixed_dataset_baselines_protocol_2.1.md`。验证集为训练折内 10% 样本，只用于选轮。
 <!-- task4c-fixed-dataset-v2-fold0-20260920-end -->

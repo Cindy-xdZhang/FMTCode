@@ -13135,4 +13135,6 @@ r4 链：52050941 verify-inputs COMPLETED 24s；52050942_0/1 pilot COMPLETED 2m1
 | bilstm | preflight 52070221 / reuse 52070222 / pilot 52070223 / train 52070224_[0-2%3] / summarize 52070225 |
 | pointnet | preflight 52070226 / reuse 52070227 / pilot 52070228 / train 52070229_[0-2%3] / summarize 52070230 |
 | pointnetpp | preflight 52070231 / reuse 52070233 / pilot 52070234 / encode 52070235_[0-1] / train 52070236_[0-2%3] / summarize 52070237 |
+
+2026-09-20：r2 链全部 COMPLETED（PointNet++ 训练 1 天 0–3.5 小时/种子）。结果见 `Task4C_fixed_dataset_baselines_protocol_2.1.md`。
 <!-- task4c-fixed-dataset-baselines-2p1-registry-end -->

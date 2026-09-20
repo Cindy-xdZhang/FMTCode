@@ -19,7 +19,7 @@
 
 代码：`experiments/Task4C_FixedDatasetBaselines_2_1.py`（export / reuse / summarize / submit，其余阶段转调 1.1 引擎）、配置 `config/mainExp_Task4C_FixedDatasetBaselines_2.1.json`、启动器 `ibex_bash/task4c_fixed_dataset_baselines_2p1.sh`。
 
-## 结果（2026-09-20，Conv3D / BiLSTM / PointNet 的 summarize 已完成；PointNet++ 三种子仍在训练，每轮约 14 分钟）
+## 结果（2026-09-20，四个家族的 summarize 全部完成；三种子均值 ± 样本标准差，折 0 测试，行级 = 样本×长度）
 
 | 方法 | 参数量 | 测试 F1 | Channel / TBL | 短 / 中 / 长 | 测试平均精度 | 每次训练分钟 |
 |---|---:|---|---|---|---:|---:|
@@ -27,5 +27,6 @@
 | Conv3D 16³ | 72,192 | 0.196 ± 0.010 | 0.156 / 0.230 | 0.231 / 0.197 / 0.157 | 0.347 | 365 |
 | Conv3D 24³ | 72,192 | 0.208 ± 0.007 | 0.172 / 0.239 | 0.243 / 0.215 / 0.163 | 0.365 | 605 |
 | PointNet small | 76,749 | 0.204 ± 0.017 | 0.178 / 0.225 | 0.233 / 0.208 / 0.166 | 0.317 | 569 |
+| PointNet++ SSG small | 76,723 | 0.211 ± 0.020 | 0.218 / 0.204 | 0.262 / 0.201 / 0.165 | 0.334 | 1,534 |
 
-验证 F1 均在 0.93–0.94（同实例样本），测试折（未见实例）0.20–0.24；与 FMT 2.1 的 0.24–0.26 同一水平。证据：远端 `outputs/mainExp_Task4C_FixedDatasetBaselines_2.1/{conv,bilstm,pointnet}/summary.json`。PointNet++ 结果待其 summarize（52070237）完成后补入。
+验证 F1 0.92–0.94（同实例样本），测试折（未见实例）0.20–0.24；与 FMT 2.1 的 0.24–0.26 同一水平。PointNet++ 三个种子各训练 105–111 轮（每轮约 14 分钟，单次约 25.5 小时）。证据：远端 `outputs/mainExp_Task4C_FixedDatasetBaselines_2.1/{conv,bilstm,pointnet,pointnetpp}/summary.json`，本地副本 `outputs/mainExp_Task4C_FixedDatasetBaselines_2.1/*_summary.json`；全部作业 COMPLETED（见 ibex_run_registry.md）。
