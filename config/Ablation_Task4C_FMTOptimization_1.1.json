@@ -1,0 +1,261 @@
+{
+  "source_output": "outputs/v2_newlabel_rule",
+  "source_audit_sha256": "9a983a79107798af4fd9eb86dce2c2e9b5cbc143c12e646dd5bf438ea5f81a95",
+  "neighbor_output": "outputs/Verify_Task4C_V2NewLabelBallQuery_1.1",
+  "flows": [
+    {
+      "name": "channel",
+      "half_lengths": [
+        0.07,
+        0.1,
+        0.13
+      ],
+      "grid_source_sha256": "c1e3c18d0e67b6eb33ea41cd49c3a4c55216838a0f4a42f778ef00aaba3d4564",
+      "h_value": 0.003909492
+    },
+    {
+      "name": "tbl",
+      "half_lengths": [
+        3.5,
+        5.0,
+        6.5
+      ],
+      "grid_source_sha256": "cc82db1d3ca4e1964ec19dcd30df5a82c3c5635c16b8e0182f01fa57bf0d65bb",
+      "h_value": 0.11723999
+    }
+  ],
+  "folds": {
+    "test_fold": 0
+  },
+  "expected_counts": {
+    "train": 880530,
+    "test": 290580
+  },
+  "selection": {
+    "role": "test",
+    "criterion": "maximum test F1; average precision breaks ties; earliest exact tie",
+    "threshold": 0.5,
+    "scheduler": "test cross entropy",
+    "test_labels_in_gradients": false,
+    "user_authorized": true
+  },
+  "training": {
+    "batch_size": 128,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "dropout": 0.15,
+    "lr_patience": 15,
+    "threshold": 0.5
+  },
+  "version": "Ablation_Task4C_FMTOptimization_1.1",
+  "output": "outputs/Ablation_Task4C_FMTOptimization_1.1",
+  "reference_output": "outputs/mainExp_Task4C_V2NewLabelTraining_1.1",
+  "reference_commit": "df3115538307d7588274051017cc5ba48d4d9dd7",
+  "candidates": [
+    {
+      "id": "p35_h0_ball6",
+      "base_method": "p35_h0",
+      "pool": "p35",
+      "profile": "h0",
+      "architecture": "original",
+      "points": 32,
+      "sampling": "uniform",
+      "augmentation": "none",
+      "parameters": 76738,
+      "neighbors": 6,
+      "neighbor_selection": "ball_query_adaptive_fps"
+    },
+    {
+      "id": "p35_h0_ball16",
+      "base_method": "p35_h0",
+      "pool": "p35",
+      "profile": "h0",
+      "architecture": "original",
+      "points": 32,
+      "sampling": "uniform",
+      "augmentation": "none",
+      "parameters": 76738,
+      "neighbors": 16,
+      "neighbor_selection": "ball_query_adaptive_fps"
+    },
+    {
+      "id": "c156_ball6",
+      "base_method": "c156",
+      "pool": "p35",
+      "profile": "h0",
+      "architecture": "wide_residual",
+      "points": 48,
+      "sampling": "uniform",
+      "augmentation": "none",
+      "parameters": 992386,
+      "neighbors": 6,
+      "neighbor_selection": "ball_query_adaptive_fps"
+    },
+    {
+      "id": "c156_ball16",
+      "base_method": "c156",
+      "pool": "p35",
+      "profile": "h0",
+      "architecture": "wide_residual",
+      "points": 48,
+      "sampling": "uniform",
+      "augmentation": "none",
+      "parameters": 992386,
+      "neighbors": 16,
+      "neighbor_selection": "ball_query_adaptive_fps"
+    }
+  ],
+  "seed": 96611,
+  "screen": {
+    "epochs": 12,
+    "patience": null
+  },
+  "final": {
+    "epochs": 100,
+    "patience": 20
+  },
+  "concurrency": 6,
+  "probe_rows": 8192,
+  "selection_rule": "Within each of the four model/neighbor settings, rank maximum full-test F1 then AP in epochs 1-12; stable recipe ID tie break; reuse original result if frozen control wins; otherwise rerun only winner with same seed and full budget. Test-guided search, not independent held-out evaluation.",
+  "reference": {
+    "p35_h0_ball6": {
+      "result_sha256": "d6eb657a75b1092b92a19504ed31bc8339fc4d8374a813bb254273e70d71b548",
+      "audit_sha256": "7f077a8165ccea480e803845ea4708a2eb0d26fc45e2f3bafbafe842bbd78f1d",
+      "features": {
+        "test_features.npy": {
+          "shape": [
+            290580,
+            1,
+            142
+          ],
+          "sha256": "86249434d7fb012a5d975511de2916997df89d89bbae7448aa39800fd2158588"
+        },
+        "train_features.npy": {
+          "shape": [
+            880530,
+            1,
+            142
+          ],
+          "sha256": "5d88e90f4b6d4128cf39322cc2996b2206cab3875d8d5bca37292159a24a46df"
+        }
+      }
+    },
+    "p35_h0_ball16": {
+      "result_sha256": "72487f1949677d791ae4ca28deee526f4c20782f4d5effe39f62714b03c19377",
+      "audit_sha256": "e5ba8f34e729051cbf6dfea113e0a92559ff1aac35666ebeb0683b503c3c43d1",
+      "features": {
+        "test_features.npy": {
+          "shape": [
+            290580,
+            1,
+            142
+          ],
+          "sha256": "ea975e62667f28c11b9030ed9a43272244f5b5c43da05b5afe7e1ce4375df6ec"
+        },
+        "train_features.npy": {
+          "shape": [
+            880530,
+            1,
+            142
+          ],
+          "sha256": "be9c6c600f9c9faf137e71387998ef82a1cfbbb6c521ad97ca4bcb20edc088fa"
+        }
+      }
+    },
+    "c156_ball6": {
+      "result_sha256": "77b8f21c3ed25c47a0c9b40173657d90b31aa56c2dba060937de634d8c8beb1c",
+      "audit_sha256": "03813e1b8b431874006b8fbb275909b4394b32bb91a293f58730f60717459101",
+      "features": {
+        "train_features.npy": {
+          "shape": [
+            880530,
+            1,
+            142
+          ],
+          "sha256": "109576ef0bbf24ce6af7a2df923e3b3179ecde1d70b89ff00fb257e362162d3b"
+        },
+        "test_features.npy": {
+          "shape": [
+            290580,
+            1,
+            142
+          ],
+          "sha256": "7faac0469f05393ca25f57fb09962f68d171b04009714dde20b9225412629e3c"
+        }
+      }
+    },
+    "c156_ball16": {
+      "result_sha256": "c5bbaa5c16b6c92a913176e2b101b5dfd6f9a10ae34bde29a845fbaf87e4b22b",
+      "audit_sha256": "9cb627309fa2f97c2d47afdae5684193bf983a75743cd50fdc30ee339c3ee000",
+      "features": {
+        "test_features.npy": {
+          "shape": [
+            290580,
+            1,
+            142
+          ],
+          "sha256": "d785b9c390ea67014bde4cb550593796d48aef5a4db38dd10aedcc45ee6848fc"
+        },
+        "train_features.npy": {
+          "shape": [
+            880530,
+            1,
+            142
+          ],
+          "sha256": "8ca9b60687e0b419436087e4a96ae6dd13e158e23fa041e81c1737ef8d100813"
+        }
+      }
+    }
+  },
+  "control": {
+    "id": "frozen_lr1e3",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "dropout_override": null,
+    "lr_patience": 15
+  },
+  "recipes": [
+    {
+      "id": "lr3e4",
+      "learning_rate": 0.0003,
+      "weight_decay": 0.0001,
+      "dropout_override": null,
+      "lr_patience": 15
+    },
+    {
+      "id": "lr1e4",
+      "learning_rate": 0.0001,
+      "weight_decay": 0.0001,
+      "dropout_override": null,
+      "lr_patience": 15
+    },
+    {
+      "id": "lr3e5",
+      "learning_rate": 3e-05,
+      "weight_decay": 0.0001,
+      "dropout_override": null,
+      "lr_patience": 15
+    },
+    {
+      "id": "lr1e3_decay2",
+      "learning_rate": 0.001,
+      "weight_decay": 0.0001,
+      "dropout_override": null,
+      "lr_patience": 2
+    },
+    {
+      "id": "lr3e4_wd1e2",
+      "learning_rate": 0.0003,
+      "weight_decay": 0.01,
+      "dropout_override": null,
+      "lr_patience": 15
+    },
+    {
+      "id": "lr3e4_drop35",
+      "learning_rate": 0.0003,
+      "weight_decay": 0.0001,
+      "dropout_override": 0.35,
+      "lr_patience": 15
+    }
+  ]
+}
