@@ -1,0 +1,30 @@
+# Task1 on the fixed-grid Reynolds sweep.  All three flows share one physical
+# family, so ONE feature/PCA choice is selected for the family and then applied
+# to each Reynolds number -- matching the published Task1 protocol.
+experiment: exp_Task1_ReSweep_0.1
+development_cache: outputs/exp_Task1_ReSweep_0.1/development_cache
+confirmation_cache: outputs/exp_Task1_ReSweep_0.1/confirmation_cache
+confirmation_count: 4
+output_dir: outputs/exp_Task1_ReSweep_0.1
+
+datasets: [halfcylinderRe160_eth, halfcylinderRe640_eth, halfcylinderRe6400_eth]
+families:
+  halfcylinderRe160_eth: halfcylinder
+  halfcylinderRe640_eth: halfcylinder
+  halfcylinderRe6400_eth: halfcylinder
+
+splits:
+  selection_train: [0, 1, 2, 3, 4, 5]
+  selection_validation: [6, 7]
+  final_train: [0, 1, 2, 3, 4, 5, 6, 7]
+  cluster_calibration: [8, 9]
+
+fmt_candidates:
+  [fmt_all, fmt_real_all, fmt_real_neighbor, fmt_chirality_all,
+   gram2, gram4, kin2, kin4, gram2+kin2, fmt_real_neighbor+kin2,
+   fmt_all+kin4]
+pca_dims: [null, 2, 8, 16]
+selection_seed: 7068
+final_kmeans_seeds: [7068, 7069, 7070, 7071, 7072]
+selection_kmeans_n_init: 10
+kmeans_n_init: 20

@@ -1,0 +1,41 @@
+# Fixed-grid Reynolds sweep on the ETH-original half-cylinder ensemble.
+# All three files are 640x240x80x151 on an identical domain with identical dt,
+# so one frozen time schedule applies to all of them and Reynolds number is the
+# ONLY variable.  The published table cannot do this: its `halfcylinderRe640`
+# entry came from a T=76 file.
+#
+# NOTE on ids: `halfcylinderRe6400_eth` is byte-identical to the file behind the
+# published `halfcylinderRe6400` row.  It therefore acts as a CALIBRATION POINT:
+# any gap between it and the published row isolates the effect of this run's
+# different time schedule and splits, not of the data.
+experiment: exp_Task1_ReSweep_0.1_confirmation_cache
+seed: 7068
+
+datasets:
+  - {id: halfcylinderRe160_eth,  path: /home/cheny1a/data/flowData3D/halfcylinderRe160.nc,  enabled: true}
+  - {id: halfcylinderRe640_eth,  path: /home/cheny1a/data/flowData3D/halfcylinderRe640.nc,  enabled: true}
+  - {id: halfcylinderRe6400_eth, path: /home/cheny1a/data/flowData3D/halfcylinderRe6400.nc, enabled: true}
+
+sampling:
+  timeslices: 4
+  begin_fraction: 0.20
+  end_fraction: 0.90
+  # Pathline window = 14 frames.  Development spans [31,114); confirmation spans
+  # [114,148).  Disjoint => no pathline-window time leakage.
+  fixed_time_indices_by_dataset:
+    halfcylinderRe160_eth:  [114, 121, 127, 134]
+    halfcylinderRe640_eth:  [114, 121, 127, 134]
+    halfcylinderRe6400_eth: [114, 121, 127, 134]
+  max_spatial_dim: 96
+  seed_grid_shape: [16, 16, 16]
+  boundary_fraction: 0.08
+
+pathlines: {method: RK4, dt_scale: 0.25, integration_steps: 48,
+            sampled_steps: 32, offset_grid_scale: 0.5, chunk_size: 2048}
+encoder: {num_freq: 6, mode: gram, include_chirality: true,
+          neighbor_pool: sort, neighbor_weight: 0.5}
+reference: {definition: standard_global_ivd, percentile: 95.0}
+
+output:
+  cache_dir: outputs/exp_Task1_ReSweep_0.1/confirmation_cache
+  result_dir: outputs/exp_Task1_ReSweep_0.1/confirmation_results

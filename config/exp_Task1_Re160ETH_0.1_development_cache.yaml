@@ -1,0 +1,40 @@
+# Exploratory Task1 run on the ETH-original half-cylinder Re160 NetCDF.
+# NOTE: dataset id is deliberately NOT `cylinder3d`.  The published `cylinder3d`
+# entry used `halfcylinderRe160Resampled.nc` from the collaborator machine; this
+# is the unmodified ETH regular-grid release (640x240x80x151).  Results from this
+# config are a NEW dataset entry and are not comparable to the published tables.
+experiment: exp_Task1_Re160ETH_0.1_development_cache
+seed: 7068
+
+datasets:
+  - id: halfcylinderRe160_eth
+    path: /home/cheny1a/data/flowData3D/halfcylinderRe160.nc
+    enabled: true
+
+sampling:
+  timeslices: 10
+  begin_fraction: 0.20
+  end_fraction: 0.90
+  # T=151, pathline window = 14 frames.  Development windows span [31,114);
+  # confirmation windows span [114,148).  Disjoint => no pathline time leakage.
+  fixed_time_indices_by_dataset:
+    halfcylinderRe160_eth: [31, 39, 46, 54, 62, 69, 77, 85, 92, 100]
+  max_spatial_dim: 96
+  seed_grid_shape: [16, 16, 16]
+  boundary_fraction: 0.08
+
+pathlines:
+  method: RK4
+  dt_scale: 0.25
+  integration_steps: 48
+  sampled_steps: 32
+  offset_grid_scale: 0.5
+  chunk_size: 2048
+
+encoder: {num_freq: 6, mode: gram, include_chirality: true,
+          neighbor_pool: sort, neighbor_weight: 0.5}
+reference: {definition: standard_global_ivd, percentile: 95.0}
+
+output:
+  cache_dir: outputs/exp_Task1_Re160ETH_0.1/development_cache
+  result_dir: outputs/exp_Task1_Re160ETH_0.1/development_results

@@ -1,0 +1,1110 @@
+<title>FMT Vortex Tokenizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Spectral:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+
+<style>
+:root{
+  --paper:#FFFFFF; --panel:#F3F6F5; --panel-2:#EAEFEE;
+  --rule:#D8DEDC; --rule-soft:#E9EDEC;
+  --ink:#111619; --ink-2:#46535A; --ink-3:#7B878E;
+  --accent:#0F5C6B; --accent-soft:#E0EEF0;
+  --pos:#1F6B4A; --pos-soft:#E7F2EC;
+  --neg:#A62F22; --neg-soft:#F8EAE7;
+  --amber:#8C5A08; --amber-soft:#FAF0DD;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --serif:"Spectral",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.deck{height:100vh;height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory;
+  scroll-behavior:smooth;background:var(--paper)}
+.slide{scroll-snap-align:start;min-height:100vh;min-height:100dvh;background:var(--paper);
+  padding:clamp(26px,4vh,46px) clamp(24px,4.5vw,72px) clamp(48px,6vh,68px);
+  display:flex;flex-direction:column}
+.head{width:100%;max-width:1280px;margin-inline:auto;border-bottom:1px solid var(--rule);
+  padding-bottom:clamp(9px,1.4vh,14px)}
+.body{width:100%;max-width:1280px;margin:auto;display:flex;flex-direction:column;
+  gap:clamp(14px,2.6vh,30px);padding-block:clamp(14px,2.8vh,30px)}
+
+.eyebrow{margin:0;font-family:var(--mono);font-size:clamp(.68rem,1.6vh,.8rem);letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent)}
+.eyebrow .dim{color:var(--ink-3)}
+.eyebrow .id{text-transform:none;letter-spacing:.04em;color:var(--ink-3)}
+h2{margin:.22rem 0 0;font-family:var(--serif);font-weight:600;
+  font-size:clamp(1.7rem,4.3vh,2.7rem);line-height:1.12;letter-spacing:-.012em;text-wrap:balance}
+h3{margin:0 0 .45rem;font-family:var(--sans);font-weight:600;
+  font-size:clamp(.72rem,1.65vh,.84rem);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.lede{margin:0;font-family:var(--serif);font-size:clamp(1.1rem,2.7vh,1.45rem);line-height:1.42;
+  color:var(--ink-2);max-width:92ch}
+p{margin:0 0 .55em}
+p:last-child{margin-bottom:0}
+strong{font-weight:600;color:var(--ink)}
+
+/* title */
+.title-slide{justify-content:center}
+.title-block{width:100%;max-width:1280px;margin-inline:auto}
+.title-rule{height:3px;background:var(--accent);width:88px;margin-bottom:26px}
+.title-slide h1{margin:.5rem 0 0;font-family:var(--serif);font-weight:700;
+  font-size:clamp(2.3rem,6.4vh,3.9rem);line-height:1.03;letter-spacing:-.022em;max-width:19ch}
+.title-slide .sub{margin:1rem 0 0;font-family:var(--serif);font-style:italic;
+  font-size:clamp(1.05rem,2.4vh,1.35rem);color:var(--ink-2);max-width:62ch}
+.title-meta{margin-top:clamp(28px,6vh,60px);display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px 44px;
+  border-top:1px solid var(--rule);padding-top:20px;font-family:var(--mono);
+  font-size:clamp(.8rem,1.85vh,.95rem);color:var(--ink-2)}
+.title-meta b{display:block;color:var(--ink-3);font-weight:400;letter-spacing:.11em;
+  text-transform:uppercase;font-size:clamp(.64rem,1.45vh,.75rem);margin-bottom:6px}
+
+/* layout */
+.cols{display:grid;gap:clamp(14px,2.2vw,30px);align-items:start}
+.cols.two{grid-template-columns:1fr 1fr}
+.cols.wide-left{grid-template-columns:1.4fr 1fr}
+.cols.wide-right{grid-template-columns:1fr 1.4fr}
+.cols.three{grid-template-columns:repeat(3,1fr)}
+@media (max-width:880px){.cols.two,.cols.wide-left,.cols.wide-right,.cols.three{grid-template-columns:1fr}}
+
+.panel{background:var(--panel);border:1px solid var(--rule-soft);padding:clamp(12px,1.7vh,17px)}
+.panel.accent{background:var(--accent-soft);border-color:#C7DFE2}
+.panel.warn{background:var(--amber-soft);border-color:#EBD9B4}
+.panel.neg{background:var(--neg-soft);border-color:#EFCFC9}
+.panel.pos{background:var(--pos-soft);border-color:#CBE2D5}
+.panel p,.panel li{font-size:clamp(.95rem,2.25vh,1.14rem);color:var(--ink-2)}
+.panel h3{margin-bottom:.3rem}
+
+ul,ol{margin:0;padding-left:1.05em}
+li{margin-bottom:.42em;font-size:clamp(.97rem,2.35vh,1.18rem);color:var(--ink-2)}
+li:last-child{margin-bottom:0}
+ul.plain{list-style:none;padding-left:0}
+ul.plain li{padding-left:1em;position:relative}
+ul.plain li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:1px;background:var(--accent)}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;width:100%}
+table.data{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;
+  font-size:clamp(.85rem,2.05vh,1.05rem)}
+table.data.dense{font-size:clamp(.72rem,1.6vh,.88rem)}
+table.data th{text-align:right;font-weight:600;font-size:clamp(.66rem,1.5vh,.78rem);letter-spacing:.05em;
+  text-transform:uppercase;color:var(--ink-2);padding:7px 10px;
+  border-bottom:1.5px solid var(--ink);white-space:nowrap}
+table.data th:first-child,table.data td:first-child{text-align:left}
+table.data td{padding:clamp(5px,1.05vh,9px) 10px;border-bottom:1px solid var(--rule-soft);text-align:right;
+  white-space:nowrap;font-family:var(--mono);font-size:.94em;color:var(--ink-2)}
+table.data td:first-child{font-family:var(--sans);color:var(--ink);font-size:1em}
+table.data td.txt{text-align:left;white-space:normal;font-family:var(--sans);color:var(--ink-2)}
+table.data tr:last-child td{border-bottom:none}
+table.data tr.macro td{border-top:1.5px solid var(--ink);border-bottom:none;font-weight:600;
+  color:var(--ink);background:var(--panel)}
+table.data td.pos{color:var(--pos)}
+table.data td.neg{color:var(--neg);font-weight:500}
+table.data td.key{color:var(--ink);font-weight:500}
+table.data td.mute{color:var(--ink-3)}
+caption{caption-side:bottom;text-align:left;font-size:clamp(.76rem,1.7vh,.9rem);color:var(--ink-3);
+  padding-top:7px;font-style:italic}
+
+/* math */
+.eq{font-family:var(--serif);font-size:clamp(1.05rem,2.6vh,1.4rem);line-height:1.7;color:var(--ink);
+  background:var(--panel);border-left:2px solid var(--accent);
+  padding:clamp(9px,1.4vh,14px) clamp(13px,1.8vw,20px);overflow-x:auto}
+.eq i{font-style:italic}
+.eq .fn{font-style:normal}
+.eq .note{display:block;font-family:var(--sans);font-style:normal;font-size:clamp(.82rem,1.9vh,.98rem);
+  color:var(--ink-3);line-height:1.4;margin-top:5px}
+.eqs{display:flex;flex-direction:column;gap:8px}
+code,.mono{font-family:var(--mono);font-size:.86em;color:var(--ink);background:var(--panel-2);padding:1px 5px}
+.panel code{background:rgba(255,255,255,.7)}
+
+/* devices */
+.chip{display:inline-flex;align-items:center;font-family:var(--mono);font-size:clamp(.66rem,1.5vh,.78rem);
+  letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border:1px solid var(--rule);
+  color:var(--ink-2);background:var(--paper)}
+.chip.done{color:var(--pos);border-color:#BFD9CB;background:var(--pos-soft)}
+.chip.run{color:var(--amber);border-color:#E4CFA4;background:var(--amber-soft)}
+.chip.wait{color:var(--ink-3)}
+
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
+  background:var(--rule-soft);border:1px solid var(--rule-soft)}
+.stat{background:var(--paper);padding:13px 15px}
+.stat b{display:block;font-family:var(--mono);font-size:clamp(.64rem,1.45vh,.75rem);letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+.stat .v{font-family:var(--serif);font-size:clamp(1.5rem,3.9vh,2.3rem);line-height:1;font-variant-numeric:tabular-nums}
+.stat .v.pos{color:var(--pos)} .stat .v.neg{color:var(--neg)} .stat .v.dim{color:var(--ink-3)}
+.stat small{display:block;margin-top:5px;font-size:clamp(.76rem,1.7vh,.88rem);color:var(--ink-3);line-height:1.3}
+
+.ladder{display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.rung{display:grid;grid-template-columns:minmax(150px,1fr) minmax(92px,.42fr) 2.4fr;
+  gap:clamp(12px,2vw,26px);padding:clamp(11px,2.1vh,20px) 0;
+  border-bottom:1px solid var(--rule-soft);align-items:baseline}
+.rung .who{font-weight:600;font-size:clamp(1rem,2.4vh,1.2rem)}
+.rung .who span{display:block;font-weight:400;font-size:clamp(.76rem,1.7vh,.88rem);color:var(--ink-3);
+  font-family:var(--mono);margin-top:3px}
+.rung .num{font-family:var(--serif);font-size:clamp(1.25rem,3.2vh,1.9rem);
+  font-variant-numeric:tabular-nums;text-align:right}
+.rung .num.strong{color:var(--pos)} .rung .num.weak{color:var(--amber)}
+.rung .num.mid{color:var(--accent)} .rung .num.bad{color:var(--neg)}
+.rung .num small{display:block;font-family:var(--mono);font-size:.5em;color:var(--ink-3)}
+.rung .what{font-size:clamp(.95rem,2.25vh,1.14rem);color:var(--ink-2)}
+@media (max-width:760px){.rung{grid-template-columns:1fr;gap:4px}.rung .num{text-align:left}}
+
+.flow{display:flex;flex-wrap:wrap;gap:8px;font-family:var(--mono);font-size:clamp(.76rem,1.75vh,.9rem)}
+.flow .node{border:1px solid var(--rule);padding:9px 13px;background:var(--paper);color:var(--ink)}
+.flow .node.fmt{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.flow .arrow{display:flex;align-items:center;color:var(--ink-3)}
+
+.revision{display:grid;grid-template-columns:1fr;border:1px solid var(--rule-soft)}
+.rev{padding:clamp(10px,1.6vh,15px);border-bottom:1px solid var(--rule-soft);
+  display:grid;grid-template-columns:auto 1fr;gap:4px 18px;align-items:baseline}
+.rev:last-child{border-bottom:none}
+.rev.final{background:var(--panel)}
+.rev .ver{font-family:var(--mono);font-size:clamp(.7rem,1.6vh,.82rem);letter-spacing:.05em;color:var(--ink-3);grid-column:1/-1}
+.rev .val{font-family:var(--serif);font-size:clamp(1.3rem,3.2vh,1.85rem);
+  font-variant-numeric:tabular-nums;line-height:1}
+.rev .val.pos{color:var(--pos)} .rev .val.neg{color:var(--neg)}
+.rev p{margin:0;font-size:clamp(.9rem,2.1vh,1.08rem);color:var(--ink-2);line-height:1.38}
+
+.footnote{font-size:clamp(.82rem,1.9vh,.98rem);color:var(--ink-3);line-height:1.4;
+  border-top:1px solid var(--rule-soft);padding-top:9px}
+.footnote code{background:none;padding:0;color:var(--ink-3)}
+
+.rail{position:fixed;top:0;left:0;height:2px;background:var(--accent);width:0;z-index:20;transition:width .18s ease-out}
+.counter{position:fixed;right:clamp(14px,2.4vw,28px);bottom:clamp(12px,2.2vh,22px);
+  font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;color:var(--ink-3);
+  background:var(--paper);border:1px solid var(--rule-soft);padding:4px 10px;z-index:20}
+.counter b{color:var(--ink);font-weight:500}
+.hint{position:fixed;left:clamp(14px,2.4vw,28px);bottom:clamp(12px,2.2vh,22px);
+  font-family:var(--mono);font-size:.68rem;color:var(--ink-3);z-index:20;background:var(--paper);
+  padding:4px 8px;transition:opacity .5s ease}
+.hint.gone{opacity:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.deck{scroll-behavior:auto}.rail{transition:none}}
+@media print{
+  .deck{height:auto;overflow:visible}
+  .slide{min-height:auto;page-break-after:always;justify-content:flex-start}
+  .body{margin-top:clamp(12px,2vh,22px)}
+  .rail,.counter,.hint{display:none}
+}
+</style>
+
+<div class="rail" id="rail"></div>
+<div class="counter"><b id="cur">01</b> / <span id="tot">00</span></div>
+<div class="hint" id="hint">← → to navigate</div>
+
+<div class="deck" id="deck" tabindex="0">
+
+<!-- 1 -->
+<section class="slide title-slide">
+  <div class="title-block">
+  <div class="title-rule"></div>
+  <p class="eyebrow">Research status · 3D pathline geometry · 2026-08-27</p>
+  <h1>A training-free Fourier tokenizer for pathline primitives</h1>
+  <p class="sub">What the frozen evidence supports — and the multiscale extension now running.</p>
+  <div class="title-meta">
+    <div><b>Object</b>pathline cross primitive · 7×32×3</div>
+    <div><b>Label</b>whole-field IVD, 95th percentile</div>
+    <div><b>Corpus</b>10 data entries · 7 physical families</div>
+    <div><b>State</b>Task 1–3 frozen · Task 5 running · Task 4 open</div>
+  </div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Motivation <span class="dim">· why a fixed geometric encoder</span></p>
+    <h2>Pathlines are not unordered point clouds</h2>
+  </div>
+  <div class="body">
+    <div class="cols wide-left">
+      <div>
+        <ul class="plain">
+          <li>Point-cloud KNN discards both structures a pathline has — <strong>temporal order</strong> along a line, <strong>spatial correspondence</strong> across lines.</li>
+          <li>So we fix the unit — a <strong>pathline cross primitive</strong> — and test a Fourier encoder with <strong>no trainable parameters</strong>.</li>
+          <li>Training-free describes the encoder only — KMeans, VAE and classifier are still fitted.</li>
+        </ul>
+      </div>
+      <div class="panel accent">
+        <h3 style="color:var(--accent)">Four questions, four tasks</h3>
+        <ul class="plain">
+          <li>A clusterable vortex representation on its own? <strong>Task 1</strong></li>
+          <li>A better input to the <em>same</em> VAE? <strong>Task 2</strong></li>
+          <li>A better supervised IVD classifier? <strong>Task 3</strong></li>
+          <li>Does it survive varying scale? <strong>Task 5</strong></li>
+        </ul>
+      </div>
+    </div>
+    <p class="footnote">Not whether FMT always wins — how far the gain extends, and where it breaks.</p>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Method <span class="dim">· the primitive</span></p>
+    <h2>One seed, seven pathlines, a fixed tensor</h2>
+  </div>
+  <div class="body">
+    <div class="cols wide-right">
+      <div>
+        <h3>Construction</h3>
+        <p style="font-size:.95rem;color:var(--ink-2)">Centre plus six axis neighbours, RK4, fixed semantic order:</p>
+        <p class="mono" style="font-size:.8rem">center, x+, x−, y+, y−, z+, z−</p>
+        <div class="eq" style="margin-top:10px">[ <i>N</i>, 7, 32, 3 ] &nbsp;→&nbsp; 672 flattened
+          <span class="note">Every line resamples to 32 points, so the input shape is constant. Time is implicit in the sample order.</span>
+        </div>
+        <p class="footnote" style="margin-top:12px">2D uses a 5-line cross; dropping to 5 in 3D would delete a spatial axis.</p>
+      </div>
+      <div>
+        <h3>Frozen fixed-scale configuration · Tasks 1–3</h3>
+        <div class="tbl-wrap">
+          <table class="data">
+            <tbody>
+              <tr><td>Integrator</td><td class="key">RK4</td></tr>
+              <tr><td>Seed grid</td><td class="key">16³</td></tr>
+              <tr><td>Neighbour offset</td><td class="key">0.5 × min grid spacing</td></tr>
+              <tr><td>Step size</td><td class="key">0.25 source-frame interval</td></tr>
+              <tr><td>Integration steps</td><td class="key">48</td></tr>
+              <tr><td>Resampled steps</td><td class="key">32</td></tr>
+              <tr><td>Max resampled spatial dim</td><td class="key">96</td></tr>
+              <tr><td>Sampling window</td><td class="key">skips first 20% / last 10% of time</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel" style="margin-top:14px">
+          <p><strong>Offset, step size and step count</strong> are what Task 5 varies. Everything else stays constant.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Method <span class="dim">· FMT encoder, block 1</span></p>
+    <h2>Rotation-invariant Fourier descriptors per line</h2>
+  </div>
+  <div class="body">
+    <div class="cols two">
+      <div class="eqs">
+        <div class="eq"><i>F</i>[<i>k</i>] = Σ<sub><i>t</i></sub> Δ<i>c</i>(<i>t</i>) <span class="fn">e</span><sup>−2π<span class="fn">i</span><i>kt</i>/<i>L</i></sup>, &nbsp; <i>k</i> = 0 … 5
+          <span class="note">rFFT of the differenced sequence. Differencing removes translation; neighbours are taken relative to the centre first.</span></div>
+        <div class="eq"><i>R</i> ∈ SO(3): &nbsp; Δ<i>c</i> ↦ <i>R</i> Δ<i>c</i> &nbsp;⟹&nbsp; <i>F</i>[<i>k</i>] ↦ <i>R F</i>[<i>k</i>]
+          <span class="note">any Gram quantity of (Re F, Im F) is therefore invariant.</span></div>
+        <div class="eq">‖Re <i>F</i>[<i>k</i>]‖, &nbsp; ‖Im <i>F</i>[<i>k</i>]‖, &nbsp; cos∠(Re <i>F</i>[<i>k</i>], Im <i>F</i>[<i>k</i>])
+          <span class="note">3 scalars per frequency → 18 per line.</span></div>
+        <div class="eq"><i>χ</i>[<i>k</i>] = ⟨Re <i>F</i>[<i>k</i>] × Im <i>F</i>[<i>k</i>], Re <i>F</i>[<i>k</i>+1]⟩ ⁄ (‖·‖‖·‖‖·‖)
+          <span class="note">Normalised triple product — invariant under rotation, sign-flipping under reflection. 5 slots per line.</span></div>
+      </div>
+      <div>
+        <h3>Why chirality is explicit</h3>
+        <p style="font-size:.95rem;color:var(--ink-2)">Handedness separates clockwise from counter-clockwise swirl. An earlier version kept one side of the spectrum, collapsing clockwise features to <strong>~8%</strong> of the counter-clockwise norm. Fixed and regression-tested.</p>
+        <h3 style="margin-top:1.2em">Neighbour aggregation</h3>
+        <ul>
+          <li><strong>Sort-pooled</strong> over the six neighbours — invariant to relabelling.</li>
+          <li>Neighbours weighted <strong>0.5</strong> against the centre.</li>
+          <li>23 per line × 7 lines → <strong>161D</strong>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Method <span class="dim">· FMT encoder, blocks 2–3</span></p>
+    <h2>Deformation and kinematics of the cross itself</h2>
+  </div>
+  <div class="body">
+    <div class="cols two">
+      <div class="eqs">
+        <h3>Time-local Gram block</h3>
+        <div class="eq"><i>G</i>(<i>t</i>) = <i>D</i>(<i>t</i>) <i>D</i>(<i>t</i>)<sup>⊤</sup>, &nbsp; <i>D Q</i><sup>⊤</sup><i>Q D</i><sup>⊤</sup> = <i>G</i>
+          <span class="note">D(t) ∈ ℝ<sup>6×3</sup> holds the neighbour offsets. Unchanged by any <em>time-dependent</em> rigid observer — translation cancels in the offsets, rotation in the product. 21 series, trace-normalised, Fourier encoded.</span></div>
+        <h3 style="margin-top:.5em">Kinematic block</h3>
+        <div class="eq"><i>L</i> = <i>Ḋ D</i><sup>+</sup>, &nbsp; <i>ω</i> = 2 axial(<i>L</i><sub>skew</sub>)
+          <span class="note">Opposite pairs estimate the flow-map differential. A uniform observer spin adds the same skew everywhere, so the per-slice mean subtraction leaves an objective deviation.</span></div>
+        <div class="eq">‖<i>ω</i> − ⟨<i>ω</i>⟩‖, &nbsp; ‖<i>S</i>‖<sub>F</sub>, &nbsp; |∇·<i>u</i>|, &nbsp; <i>Q</i>-like
+          <span class="note">Q-like = ¼‖ω−⟨ω⟩‖² − ½‖S‖²<sub>F</sub>: signed rotation-versus-strain balance.</span></div>
+      </div>
+      <div>
+        <h3>The 268D vector used in Tasks 3 and 5</h3>
+        <div class="tbl-wrap">
+          <table class="data">
+            <thead><tr><th>Block</th><th>Construction</th><th>Dim</th></tr></thead>
+            <tbody>
+              <tr><td>Per-line DFT invariants</td><td>7 × (6 freq × 3 + 5 chirality)</td><td class="key">161</td></tr>
+              <tr><td>Time-local Gram, 2 freq</td><td>21 × (2 real + 1 imag)</td><td class="key">63</td></tr>
+              <tr><td>Kinematics, 6 freq</td><td>4 × (6 real + 5 imag)</td><td class="key">44</td></tr>
+              <tr class="macro"><td>FMT auxiliary vector</td><td></td><td>268</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel accent" style="margin-top:16px">
+          <p><strong>Control by construction.</strong> The baseline is a train-only raw PCA at <strong>exactly 268D</strong> through an identical head — no gain can come from width or the two-stage recipe.</p>
+        </div>
+        <p class="footnote" style="margin-top:12px">The zero imaginary DC coefficient is dropped — hence widths 11 and 3. Tasks 1–2 use family subsets; Tasks 3 and 5 all 268.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Method <span class="dim">· reference label</span></p>
+    <h2>One vortex label for every task</h2>
+  </div>
+  <div class="body">
+    <div class="cols wide-left">
+      <div class="eqs">
+        <div class="eq"><span class="fn">IVD</span>(<i>x</i>, <i>t</i>) = ‖ <i>ω</i>(<i>x</i>, <i>t</i>) − ⟨<i>ω</i>(·, <i>t</i>)⟩<sub>Ω</sub> ‖
+          <span class="note">Vorticity magnitude after removing the volume's mean vorticity at that instant.</span></div>
+        <div class="eq"><span class="fn">vortex</span>(<i>s</i>) = 1 &nbsp;⟺&nbsp; <span class="fn">IVD</span>(<i>s</i>) ≥ <i>P</i><sub>95</sub>(<span class="fn">IVD</span> over the volume)
+          <span class="note">Per slice, over all voxels. No averaging window, no tuned radius.</span></div>
+        <p style="font-size:.95rem;color:var(--ink-2);margin-top:4px">Task 3 copies these labels <strong>bit-for-bit</strong> from the Task 1 / 2 caches, so two IVD implementations cannot drift apart.</p>
+      </div>
+      <div class="panel warn">
+        <h3 style="color:var(--amber)">Superseded label, kept on the record</h3>
+        <p>v3.1 used a local criterion <span class="mono">IVD &gt; 0.9 × mean<sub>11³</sub>(IVD)</span> with a hand-set 11³ box.</p>
+        <p style="margin-top:.5em">The two definitions <strong>flip the headline Task 3 conclusion</strong> (slide 17), so both are reported.</p>
+      </div>
+    </div>
+    <p class="footnote">IVD is a proxy, not ground truth. Every claim below is about agreement with it on held-out slices.</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Programme <span class="dim">· the task ladder</span></p>
+    <h2>Five tasks, deliberately kept apart</h2>
+  </div>
+  <div class="body">
+    <div class="tbl-wrap">
+      <table class="data">
+        <thead><tr><th>Task</th><th>Pipeline</th><th>Core comparison</th><th>Metrics</th><th>State</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1</strong> · unsupervised clustering</td><td>FMT → KMeans(<i>k</i>=2)</td><td>Raw vs FMT</td><td>ARI · NMI · F1</td><td><span class="chip done">frozen 3.3</span></td></tr>
+          <tr><td><strong>2</strong> · representation learning</td><td>input → VAE → KMeans</td><td>Raw+VAE vs FMT+<em>same</em> VAE</td><td>F1 · ARI · NMI</td><td><span class="chip done">frozen 3.3</span></td></tr>
+          <tr><td><strong>3</strong> · supervised IVD identification</td><td>primitive (+268D) → CNN</td><td>Raw · Raw-wide · Raw-PCA · FMT</td><td>AP · F1</td><td><span class="chip done">frozen 3.2</span></td></tr>
+          <tr><td><strong>4</strong> · vortex-type classification</td><td>3D types, multi-class</td><td>without vs with FMT</td><td>macro-F1 · bal. acc.</td><td><span class="chip wait">not started</span></td></tr>
+          <tr><td><strong>5</strong> · multiscale geometry</td><td>variable-scale → same CNN</td><td>transfer · Raw · Raw-PCA · FMT</td><td>AP · F1, per tuple</td><td><span class="chip run">running</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cols two">
+      <div class="panel neg"><p><strong>Task 3 is binary region identification.</strong> Type classification is Task 4 and has no results — these numbers are never type accuracy.</p></div>
+      <div class="panel"><p><strong>Task 2 is directional.</strong> The claim is <span class="mono">FMT+VAE &gt; Raw+VAE</span>. That <span class="mono">FMT+VAE &lt; FMT direct</span> means the VAE loses information, not that it improves FMT.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Programme <span class="dim">· evaluation discipline</span></p>
+    <h2>The rules that make the numbers mean something</h2>
+  </div>
+  <div class="body">
+    <div class="cols three">
+      <div>
+        <h3>Splitting</h3>
+        <ul>
+          <li>Temporal splits only — spatial seeds are never split.</li>
+          <li>Leakage checked on the <strong>integration window</strong> (~14 frames), not the seed time.</li>
+          <li>Normalisation, PCA and KMeans centres fit on train.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Selection</h3>
+        <ul>
+          <li>Confirmation labels never touch features, VAE, checkpoint, threshold or <i>α</i>.</li>
+          <li>Each arm picks its checkpoint by <strong>its own</strong> development AP.</li>
+          <li>No “beat Raw by .02” rule; <i>α</i> fixed at 1.0.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Reporting</h3>
+        <ul>
+          <li>5 training seeds; KMeans reports fixed <span class="mono">random_state</span>, <span class="mono">n_init</span>.</li>
+          <li>A wider Raw or matched Raw residual is mandatory.</li>
+          <li><strong>Both</strong> macros reported; negative runs never deleted.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="panel accent">
+      <p><strong>Honest boundary.</strong> The eight slices took no part in <em>this</em> round's training or selection, but earlier rounds saw them — held-out, not sealed.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Programme <span class="dim">· corpus</span></p>
+    <h2>Ten data entries, seven physical families</h2>
+  </div>
+  <div class="body">
+    <div class="cols wide-left">
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr><th>Family</th><th>Entries</th><th>Character</th></tr></thead>
+          <tbody>
+            <tr><td>Channel</td><td class="mute">channel</td><td class="txt">steady VTK channel pushed forward by a time-dependent Killing observer</td></tr>
+            <tr><td>Half-cylinder</td><td class="mute">cylinder3d · Re640 · Re6400</td><td class="txt">wake at Re 160 / 640 / 6400</td></tr>
+            <tr><td>Tangaroa</td><td class="mute">tangaroa</td><td class="txt">research-vessel hull flow</td></tr>
+            <tr><td>Delta-wing</td><td class="mute">deltaWing_resampled · _LBM</td><td class="txt">resampled and original LBM field</td></tr>
+            <tr><td>F-22</td><td class="mute">f22raptor</td><td class="txt">LBM aircraft, Re 4×10<sup>5</sup> — consistently hard</td></tr>
+            <tr><td>Boeing 747</td><td class="mute">boeing747</td><td class="txt">LBM aircraft wake</td></tr>
+            <tr><td>Smoke buoyancy</td><td class="mute">smokeBuoyancy</td><td class="txt">buoyancy-driven plume</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="panel">
+          <h3>Two averages, both mandatory</h3>
+          <p><strong>Dataset macro</strong> — 10 entries equally; half-cylinders and delta-wings dominate.</p>
+          <p style="margin-top:.4em"><strong>Family macro</strong> — within family, then across 7. The honest one for generalising across physical types.</p>
+        </div>
+        <div class="panel" style="margin-top:12px">
+          <p><strong>Channel is constructed unsteady:</strong> a steady flow seen from a moving observer — the sharpest frame test, and Task 3's largest gain.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Task 1 <span class="dim">·</span> <span class="id">mainExp_Task1_3D_3.3_reference</span></p>
+    <h2>FMT features cluster into vortex and background without training</h2>
+  </div>
+  <div class="body">
+    <div class="flow">
+      <div class="node">primitive [N,7,32,3]</div><div class="arrow">→</div>
+      <div class="node fmt">FMT · training-free</div><div class="arrow">→</div>
+      <div class="node">family PCA</div><div class="arrow">→</div>
+      <div class="node">KMeans k=2</div><div class="arrow">→</div>
+      <div class="node">cluster→class map frozen on validation</div>
+    </div>
+    <div class="cols wide-left">
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr><th>Flow</th><th>FMT F1</th><th>Raw F1</th><th>FMT − Raw</th></tr></thead>
+          <tbody>
+            <tr><td>Channel observer</td><td>.2526</td><td>.0638</td><td class="pos">+.1888</td></tr>
+            <tr><td>Half-cylinder Re160</td><td>.5516</td><td>.3765</td><td class="pos">+.1750</td></tr>
+            <tr><td>Half-cylinder Re640</td><td>.5352</td><td>.3281</td><td class="pos">+.2071</td></tr>
+            <tr><td>Half-cylinder Re6400</td><td>.5256</td><td>.3921</td><td class="pos">+.1335</td></tr>
+            <tr><td>Tangaroa</td><td>.7425</td><td>.5900</td><td class="pos">+.1525</td></tr>
+            <tr><td>Delta-wing resampled</td><td>.7586</td><td>.5673</td><td class="pos">+.1914</td></tr>
+            <tr><td>Delta-wing original LBM</td><td>.7713</td><td>.5308</td><td class="pos">+.2405</td></tr>
+            <tr><td>F-22</td><td>.3141</td><td>.6545</td><td class="neg">−.3404</td></tr>
+            <tr><td>Boeing 747</td><td>.8403</td><td>.4815</td><td class="pos">+.3588</td></tr>
+            <tr><td>Smoke buoyancy</td><td>.7718</td><td>.5550</td><td class="pos">+.2169</td></tr>
+            <tr class="macro"><td>Entry mean</td><td>.6064</td><td>.4540</td><td class="pos">+.1524</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="panel pos"><p><strong>Supported.</strong> A parameter-free encoder plus KMeans separates vortex from background on most 3D flows, beating raw geometry on <strong>9/10</strong> entries.</p></div>
+        <div class="panel neg" style="margin-top:12px"><p><strong>Not supported.</strong> “Every flow improves.” F-22 loses by .3404; Channel's absolute F1 stays low.</p></div>
+        <p class="footnote" style="margin-top:12px">Same eight slices as the Task 2 confirmation, so slide 13's hierarchy uses identical data. Subset and PCA width chosen on development only.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Task 2 <span class="dim">· design</span></p>
+    <h2>The same VAE, twice — the control that decides the question</h2>
+  </div>
+  <div class="body">
+    <p class="lede">Both arms share one frozen VAE per family — same layers, latent dimension, KL weight, learning rate, budget and checkpoint rule. Developed around FMT, then handed unchanged to Raw.</p>
+    <div class="cols wide-left">
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr><th>Family</th><th>FMT subset</th><th>Shared frozen VAE</th></tr></thead>
+          <tbody>
+            <tr><td>Channel</td><td class="mute">fmt_chirality_all</td><td>MLP-256 · latent 16 · lr 3e−4</td></tr>
+            <tr><td>Half-cylinder</td><td class="mute">fmt_all+kin4</td><td>PCA-8 anchored · latent 8</td></tr>
+            <tr><td>Tangaroa</td><td class="mute">fmt_all+kin4</td><td>linear 512 · latent 64 · β 1e−6</td></tr>
+            <tr><td>Delta-wing</td><td class="mute">fmt_real_neighbor</td><td>MLP-256 · latent 16 · lr 3e−4</td></tr>
+            <tr><td>F-22</td><td class="mute">fmt_all+kin4</td><td>MLP-256 · latent 16 · β 1e−6</td></tr>
+            <tr><td>Boeing 747</td><td class="mute">kin2</td><td>linear 512 · latent 64 · β 1e−6</td></tr>
+            <tr><td>Smoke buoyancy</td><td class="mute">fmt_all</td><td>PCA-2 anchored · latent 2</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="panel">
+          <h3>Selection, hardened after a failure</h3>
+          <p>v3.2 selected on <strong>2</strong> seeds and did not reproduce. v3.3 requires the hierarchy on <strong>7</strong>, with a worst-seed margin gate, before any confirmation config is emitted.</p>
+        </div>
+        <div class="panel" style="margin-top:12px">
+          <p><strong>Per-family hyperparameters are allowed</strong> — if selection never reads confirmation and negatives survive. A stronger VAE for Raw alone stays an appendix stress test.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Task 2 <span class="dim">·</span> <span class="id">mainExp_Task2_3D_3.3</span> <span class="dim">· confirmation</span></p>
+    <h2>A very small average advantage, and no per-flow universality</h2>
+  </div>
+  <div class="body">
+    <div class="cols wide-left">
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr><th>Flow</th><th>Raw + VAE</th><th>FMT + same VAE</th><th>Paired gain</th></tr></thead>
+          <tbody>
+            <tr><td>Channel observer</td><td>.2039</td><td>.2502</td><td class="pos">+.0464</td></tr>
+            <tr><td>Half-cylinder Re160</td><td>.5806</td><td>.5474</td><td class="neg">−.0332</td></tr>
+            <tr><td>Half-cylinder Re640</td><td>.4373</td><td>.5348</td><td class="pos">+.0976</td></tr>
+            <tr><td>Half-cylinder Re6400</td><td>.5230</td><td>.5257</td><td class="pos">+.0027</td></tr>
+            <tr><td>Tangaroa</td><td>.7527</td><td>.7500</td><td class="neg">−.0027</td></tr>
+            <tr><td>Delta-wing resampled</td><td>.7259</td><td>.7793</td><td class="pos">+.0535</td></tr>
+            <tr><td>Delta-wing original LBM</td><td>.7566</td><td>.7892</td><td class="pos">+.0326</td></tr>
+            <tr><td>F-22</td><td>.6632</td><td>.5470</td><td class="neg">−.1161</td></tr>
+            <tr><td>Boeing 747</td><td>.8521</td><td>.8469</td><td class="neg">−.0052</td></tr>
+            <tr><td>Smoke buoyancy</td><td>.8244</td><td>.7712</td><td class="neg">−.0532</td></tr>
+            <tr class="macro"><td>Entry mean</td><td>.631958</td><td>.634191</td><td class="pos">+.002233</td></tr>
+          </tbody>
+          <caption>Held-out F1. Eight slices, five fresh seeds (9068–9072), 100 trainings.</caption>
+        </table>
+      </div>
+      <div>
+        <div class="stat-row" style="grid-template-columns:1fr 1fr">
+          <div class="stat"><b>Entries positive</b><div class="v dim">5 / 10</div><small>a coin flip</small></div>
+          <div class="stat"><b>Seeds positive</b><div class="v dim">3 / 5</div><small>not seed-stable</small></div>
+          <div class="stat"><b>Macro gain</b><div class="v pos">+.0022</div><small>two orders below Task 3</small></div>
+          <div class="stat"><b>Largest loss</b><div class="v neg">−.1161</div><small>F-22, again</small></div>
+        </div>
+        <p class="footnote" style="margin-top:14px">Permitted claim: FMT is a marginally better input <em>in the 10-entry macro average</em>. Nothing stronger. The earlier <span class="mono">+.1562</span> from v2.3/2.4 is not the current result.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Task 2 <span class="dim">· hierarchy and revision history</span></p>
+    <h2>What the VAE buys, and what was withdrawn</h2>
+  </div>
+  <div class="body">
+    <div class="cols wide-left">
+      <div>
+        <h3>Three levels, identical slices</h3>
+        <div class="ladder">
+          <div class="rung">
+            <div class="who">FMT + KMeans<span>Task 1 · no VAE</span></div>
+            <div class="num">.606360</div>
+            <div class="what">Training-free features clustered directly.</div>
+          </div>
+          <div class="rung">
+            <div class="who">Raw + VAE<span>Task 2 baseline</span></div>
+            <div class="num mid">.631958</div>
+            <div class="what">The learned encoder is worth <strong>+.0256</strong> — the larger step.</div>
+          </div>
+          <div class="rung">
+            <div class="who">FMT + same VAE<span>Task 2 treatment</span></div>
+            <div class="num weak">.634191</div>
+            <div class="what">Switching its input to FMT is worth <strong>+.0022</strong>.</div>
+          </div>
+        </div>
+        <p class="footnote" style="margin-top:12px">Holds as a 10-entry average only — not per dataset, not per seed.</p>
+      </div>
+      <div>
+        <h3>How the headline number moved</h3>
+        <div class="revision">
+          <div class="rev">
+            <div class="ver">v2.3 + 2.4 · Aug 23–24</div>
+            <div class="val pos">+.1562</div>
+            <p>7/10 positive. Withdrawn — superseded by stricter selection.</p>
+          </div>
+          <div class="rev">
+            <div class="ver">v3.2 · Aug 25 · failed</div>
+            <div class="val neg">−.00452</div>
+            <p>Hierarchy failed — FMT+VAE below Raw+VAE. Selection used 2 seeds. Kept, not overwritten.</p>
+          </div>
+          <div class="rev final">
+            <div class="ver">v3.3 · Aug 25–26 · current</div>
+            <div class="val pos">+.00223</div>
+            <p>7-seed gate, then fresh-seed confirmation. Holds — barely.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Task 3 <span class="dim">· design</span></p>
+    <h2>Four arms, and one control that is hard to beat</h2>
+  </div>
+  <div class="body">
+    <div class="cols two">
+      <div>
+        <h3>The arms</h3>
+        <div class="tbl-wrap">
+          <table class="data">
+            <thead><tr><th>Arm</th><th>What it isolates</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Raw</strong></td><td class="txt">the geometry backbone alone</td></tr>
+              <tr><td><strong>Raw-wide</strong></td><td class="txt">more parameters — rules out capacity</td></tr>
+              <tr><td><strong>Raw-PCA residual</strong></td><td class="txt">frozen Raw + 268D PCA head — rules out the two-stage recipe</td></tr>
+              <tr><td><strong>Raw + FMT residual</strong></td><td class="txt">frozen Raw + 268D FMT head — the treatment</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:.95rem;color:var(--ink-2);margin-top:.8em">The last two match in structure, width and trainable parameters. Only the content of the 268 numbers differs.</p>
+      </div>
+      <div>
+        <h3>Selection, frozen before confirmation</h3>
+        <ul>
+          <li>Each method picks its epoch — and its F1 threshold — by <strong>its own</strong> development AP.</li>
+          <li><i>α</i> = 1.0 everywhere, no grid search.</li>
+          <li>The Raw reference is frozen per family from development AP — <strong>Raw-PCA residual</strong> in all seven, the strongest control.</li>
+          <li>AdamW, lr 1e−3, wd 1e−4, ≤100 epochs, patience 20, same weighted BCE.</li>
+        </ul>
+        <div class="panel neg" style="margin-top:14px">
+          <p><strong>What was removed.</strong> The pre-3.1 rule required beating Raw's validation F1 by .02 first — no confirmation label read, but the desired conclusion sat inside the selection rule.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Task 3 <span class="dim">·</span> <span class="id">mainExp_Task3_3D_3.1</span> <span class="dim">· local IVD label</span></p>
+    <h2>Debiased, the gain over the strong control disappeared</h2>
+  </div>
+  <div class="body">
+    <div class="tbl-wrap">
+      <table class="data dense">
+        <thead><tr><th>Data entry</th><th>Raw-PCA F1</th><th>Raw+FMT F1</th><th>F1 gain</th><th>Raw-PCA AP</th><th>Raw+FMT AP</th><th>AP gain</th></tr></thead>
+        <tbody>
+          <tr><td>Boeing 747</td><td>.6808±.0014</td><td>.7301±.0043</td><td class="pos">+.0494</td><td>.7050±.0033</td><td>.8101±.0040</td><td class="pos">+.1051</td></tr>
+          <tr><td>Channel observer</td><td>.8294±.0041</td><td>.8652±.0038</td><td class="pos">+.0358</td><td>.9224±.0028</td><td>.9443±.0013</td><td class="pos">+.0219</td></tr>
+          <tr><td>Half-cylinder Re160</td><td>.7669±.0062</td><td>.7313±.0071</td><td class="neg">−.0356</td><td>.8205±.0169</td><td>.7853±.0178</td><td class="neg">−.0352</td></tr>
+          <tr><td>Delta-wing original LBM</td><td>.7056±.0026</td><td>.7416±.0009</td><td class="pos">+.0360</td><td>.6767±.0025</td><td>.7701±.0015</td><td class="pos">+.0934</td></tr>
+          <tr><td>Delta-wing resampled</td><td>.7049±.0011</td><td>.7409±.0014</td><td class="pos">+.0359</td><td>.6710±.0025</td><td>.7636±.0015</td><td class="pos">+.0926</td></tr>
+          <tr><td>F-22</td><td>.7146±.0091</td><td>.6634±.0151</td><td class="neg">−.0511</td><td>.7809±.0145</td><td>.7020±.0201</td><td class="neg">−.0789</td></tr>
+          <tr><td>Half-cylinder Re640</td><td>.8200±.0063</td><td>.7771±.0060</td><td class="neg">−.0430</td><td>.8944±.0060</td><td>.8537±.0087</td><td class="neg">−.0408</td></tr>
+          <tr><td>Half-cylinder Re6400</td><td>.7741±.0102</td><td>.7603±.0041</td><td class="neg">−.0137</td><td>.8589±.0093</td><td>.8355±.0065</td><td class="neg">−.0234</td></tr>
+          <tr><td>Smoke buoyancy</td><td>.7113±.0050</td><td>.6900±.0060</td><td class="neg">−.0212</td><td>.7712±.0032</td><td>.7557±.0040</td><td class="neg">−.0156</td></tr>
+          <tr><td>Tangaroa</td><td>.9346±.0020</td><td>.9332±.0015</td><td class="neg">−.0014</td><td>.9823±.0012</td><td>.9799±.0015</td><td class="neg">−.0025</td></tr>
+          <tr class="macro"><td>Entry mean</td><td></td><td></td><td class="neg">−.0009</td><td></td><td></td><td class="pos">+.0117</td></tr>
+        </tbody>
+        <caption>Seeds 30–34, eight previously unevaluated start times. Mean ± standard deviation over 5 seeds.</caption>
+      </table>
+    </div>
+    <div class="cols two">
+      <div class="panel pos"><p><strong>Still supported.</strong> Against plain Raw, FMT wins <strong>10/10</strong> on F1 and AP — <span class="mono">+.0701</span> / <span class="mono">+.1176</span>. Also 10/10 against Raw-wide.</p></div>
+      <div class="panel neg"><p><strong>Not supported.</strong> Against the matched Raw-PCA residual, FMT wins <strong>4/10</strong> entries, <strong>3/7</strong> families.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Task 3 <span class="dim">·</span> <span class="id">mainExp_Task3_3D_3.2_global_ivd</span> <span class="dim">· current main table</span></p>
+    <h2>With the unified label, the gain over the strong control returns</h2>
+  </div>
+  <div class="body">
+    <p class="lede">Everything as v3.1 except the labels, which become whole-field IVD p95. Seeds 40–44, 8 held-out slices per entry.</p>
+    <div class="tbl-wrap">
+      <table class="data dense">
+        <thead><tr><th>Data entry</th><th>Raw F1</th><th>Raw-PCA F1</th><th>Raw+FMT F1</th><th>F1 gain</th><th>Raw AP</th><th>Raw-PCA AP</th><th>Raw+FMT AP</th><th>AP gain</th></tr></thead>
+        <tbody>
+          <tr><td>Boeing 747</td><td class="mute">.8322</td><td>.8744</td><td class="key">.9038</td><td class="pos">+.0294</td><td class="mute">.9082</td><td>.9397</td><td class="key">.9682</td><td class="pos">+.0285</td></tr>
+          <tr><td>Channel observer</td><td class="mute">.1241</td><td>.5618</td><td class="key">.7974</td><td class="pos">+.2356</td><td class="mute">.1036</td><td>.6727</td><td class="key">.8746</td><td class="pos">+.2019</td></tr>
+          <tr><td>Half-cylinder Re160</td><td class="mute">.6358</td><td>.6877</td><td class="key">.7670</td><td class="pos">+.0793</td><td class="mute">.6779</td><td>.7574</td><td class="key">.8595</td><td class="pos">+.1020</td></tr>
+          <tr><td>Delta-wing original LBM</td><td class="mute">.8406</td><td>.8722</td><td class="key">.9203</td><td class="pos">+.0481</td><td class="mute">.9309</td><td>.9487</td><td class="key">.9754</td><td class="pos">+.0267</td></tr>
+          <tr><td>Delta-wing resampled</td><td class="mute">.8435</td><td>.9020</td><td class="key">.9335</td><td class="pos">+.0315</td><td class="mute">.9306</td><td>.9635</td><td class="key">.9816</td><td class="pos">+.0181</td></tr>
+          <tr><td>F-22</td><td class="mute">.8460</td><td>.9172</td><td class="key">.8903</td><td class="neg">−.0269</td><td class="mute">.9083</td><td>.9533</td><td class="key">.9404</td><td class="neg">−.0129</td></tr>
+          <tr><td>Half-cylinder Re640</td><td class="mute">.6908</td><td>.7549</td><td class="key">.7577</td><td class="pos">+.0028</td><td class="mute">.7598</td><td>.8470</td><td class="key">.8421</td><td class="neg">−.0049</td></tr>
+          <tr><td>Half-cylinder Re6400</td><td class="mute">.5668</td><td>.6714</td><td class="key">.7079</td><td class="pos">+.0364</td><td class="mute">.5960</td><td>.7553</td><td class="key">.7770</td><td class="pos">+.0218</td></tr>
+          <tr><td>Smoke buoyancy</td><td class="mute">.7631</td><td>.7915</td><td class="key">.8239</td><td class="pos">+.0324</td><td class="mute">.8449</td><td>.8825</td><td class="key">.9124</td><td class="pos">+.0300</td></tr>
+          <tr><td>Tangaroa</td><td class="mute">.7442</td><td>.7850</td><td class="key">.8187</td><td class="pos">+.0337</td><td class="mute">.7840</td><td>.8545</td><td class="key">.8884</td><td class="pos">+.0339</td></tr>
+          <tr class="macro"><td>Dataset macro</td><td>.6887</td><td>.7818</td><td>.8320</td><td class="pos">+.0502</td><td>.7444</td><td>.8575</td><td>.9020</td><td class="pos">+.0445</td></tr>
+          <tr class="macro"><td>Family macro</td><td>.6832</td><td>.7888</td><td>.8436</td><td class="pos">+.0548</td><td>.7368</td><td>.8636</td><td>.9127</td><td class="pos">+.0490</td></tr>
+        </tbody>
+        <caption>Gains are Raw+FMT residual minus the structure-matched Raw-PCA residual.</caption>
+      </table>
+    </div>
+    <p class="footnote">F1 positive on 9/10 entries and 6/7 families; AP on 8/10 and 6/7. Paired bootstrap 95% intervals exclude zero on all eight clearly positive entries. Re640 straddles zero; F-22 is negative on 5/5 seeds.</p>
+  </div>
+</section>
+
+<!-- 17 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Task 3 <span class="dim">· label sensitivity</span></p>
+    <h2>Same models, two label definitions, opposite headlines</h2>
+  </div>
+  <div class="body">
+    <p class="lede">The most important caveat in the current evidence: architecture, budget, split, pathlines, FMT and PCA are identical across these two columns.</p>
+    <div class="cols wide-left">
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr><th>FMT − Raw-PCA residual</th><th>v3.1 · local <span class="mono">.9·mean<sub>11³</sub></span></th><th>v3.2 · whole-field <span class="mono">P<sub>95</sub></span></th></tr></thead>
+          <tbody>
+            <tr><td>Entries with positive F1</td><td class="neg">4 / 10</td><td class="pos">9 / 10</td></tr>
+            <tr><td>Families with positive F1</td><td class="neg">3 / 7</td><td class="pos">6 / 7</td></tr>
+            <tr><td>Entry-mean F1 gain</td><td class="neg">−.0009</td><td class="pos">+.0502</td></tr>
+            <tr><td>Entry-mean AP gain</td><td>+.0117</td><td class="pos">+.0445</td></tr>
+            <tr><td>Family-macro F1 gain</td><td>+.0024</td><td class="pos">+.0548</td></tr>
+            <tr><td>Family-macro AP gain</td><td>+.0129</td><td class="pos">+.0490</td></tr>
+            <tr><td>Status</td><td class="mute">historical control</td><td class="key">current main table</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="panel">
+          <h3>Why the unified label is the main table</h3>
+          <p>The local criterion carries a hand-set 11³ box, never frozen against physical length scales, and differs from the Tasks 1–2 label. The percentile has no free parameter.</p>
+        </div>
+        <div class="panel warn" style="margin-top:12px">
+          <h3 style="color:var(--amber)">How it must be written up</h3>
+          <p>Both rounds together, with the reason for the change. The label definition is part of the claim, not a preprocessing detail.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 18 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Synthesis <span class="dim">· evidence strength</span></p>
+    <h2>Three findings, three very different strengths</h2>
+  </div>
+  <div class="body">
+    <div class="ladder">
+      <div class="rung">
+        <div class="who">Task 3 · supervised<span>v3.2 · 10 × 5 seeds × 8 slices</span></div>
+        <div class="num strong">+.0502<small>F1 macro</small></div>
+        <div class="what"><strong>Strongest.</strong> Beats a structure-, dimension- and parameter-matched control on 9/10 entries, 6/7 families; bootstrap excludes zero on the eight clear ones. Conditional on the label.</div>
+      </div>
+      <div class="rung">
+        <div class="who">Task 1 · unsupervised<span>v3.3 · direct clustering</span></div>
+        <div class="num mid">+.1524<small>mean F1 vs Raw</small></div>
+        <div class="what"><strong>Solid but narrower.</strong> 9/10 entries — but against raw geometry, not a tuned baseline. Usefulness, not superiority.</div>
+      </div>
+      <div class="rung">
+        <div class="who">Task 2 · VAE input<span>v3.3 · same frozen VAE</span></div>
+        <div class="num weak">+.0022<small>F1 macro</small></div>
+        <div class="what"><strong>Weak.</strong> Positive only on average — 5/10 entries, 3/5 seeds. Report as a macro statement, per-entry table beside it.</div>
+      </div>
+    </div>
+    <div class="panel accent">
+      <p><strong>One sentence for the paper.</strong> With the unified label, FMT beats a structure-matched raw expansion by <span class="mono">+.0502 / +.0445</span> dataset-macro F1/AP, and direct FMT clustering beats raw on 9/10 entries; the VAE advantage is real only on average. F-22 is a counterexample in all three.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 19 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Synthesis <span class="dim">· counterexamples</span></p>
+    <h2>Where FMT loses, and what is still unexplained</h2>
+  </div>
+  <div class="body">
+    <div class="cols wide-left">
+      <div class="tbl-wrap">
+        <table class="data">
+          <thead><tr><th>Case</th><th>Task 1</th><th>Task 2</th><th>Task 3 · F1</th><th>Reading</th></tr></thead>
+          <tbody>
+            <tr><td><strong>F-22</strong></td><td class="neg">−.3404</td><td class="neg">−.1161</td><td class="neg">−.0269</td><td class="txt">negative everywhere; 5/5 seeds in Task 3</td></tr>
+            <tr><td>Half-cylinder Re640</td><td class="pos">+.2071</td><td class="pos">+.0976</td><td class="mute">+.0028</td><td class="txt">interval straddles zero, AP −.0049 — a tie</td></tr>
+            <tr><td>Smoke buoyancy</td><td class="pos">+.2169</td><td class="neg">−.0532</td><td class="pos">+.0324</td><td class="txt">VAE arm loses, both direct arms win</td></tr>
+            <tr><td>Half-cylinder Re160</td><td class="pos">+.1750</td><td class="neg">−.0332</td><td class="pos">+.0793</td><td class="txt">same pattern, smaller</td></tr>
+            <tr><td>Boeing 747</td><td class="pos">+.3588</td><td class="neg">−.0052</td><td class="pos">+.0294</td><td class="txt">Task 2 loss within noise</td></tr>
+            <tr><td>Channel observer</td><td class="pos">+.1888</td><td class="pos">+.0464</td><td class="pos">+.2356</td><td class="txt">largest supervised gain, lowest absolute Task 1 score</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="panel neg">
+          <h3 style="color:var(--neg)">F-22 has no frozen diagnosis</h3>
+          <p>Candidates — primitive scale against shock and boundary-layer structure, integration horizon, family FMT subset — all untested.</p>
+        </div>
+        <div class="panel" style="margin-top:11px">
+          <p><strong>Rule.</strong> Diagnose on development slices only; touching the confirmation slices forces new ones.</p>
+        </div>
+        <div class="panel" style="margin-top:11px">
+          <p><strong>Pattern.</strong> Where the VAE arm loses but direct FMT wins, reconstruction is discarding the discriminative structure — MSE is a poor proxy here.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 20 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Task 5 <span class="dim">·</span> <span class="id">mainExp_Task5_3D_1.1</span> <span class="dim">· in flight</span></p>
+    <h2>Does any of this survive when the primitive's scale changes?</h2>
+  </div>
+  <div class="body">
+    <p class="lede">Fixed-scale results assume one spacing and one horizon. Task 5 varies both per primitive — input shape, label, architecture and selection rules exactly as in v3.2.</p>
+    <div class="cols two">
+      <div>
+        <h3>What varies</h3>
+        <ul>
+          <li><strong>Neighbour offset</strong> — in minimum grid spacings.</li>
+          <li><strong>RK4 step size</strong> — a fraction of the source-frame interval.</li>
+          <li><strong>Integration steps</strong> — horizon = step size × steps.</li>
+        </ul>
+        <div class="eq" style="margin-top:12px">variable (offset, d<i>t</i>, <i>n</i>) → RK4 → resample → [ <i>N</i>, 7, 32, 3 ]
+          <span class="note">Every tuple resamples to 32 points, so one network consumes all scales — the comparison is about geometry, not tensor shape.</span></div>
+      </div>
+      <div>
+        <h3>What stays frozen from Task 3</h3>
+        <div class="tbl-wrap">
+          <table class="data">
+            <tbody>
+              <tr><td>Label</td><td class="key">whole-field IVD ≥ P<sub>95</sub></td></tr>
+              <tr><td>Classifier + budget</td><td class="key">identical to v3.2</td></tr>
+              <tr><td>FMT representation</td><td class="key">268D</td></tr>
+              <tr><td>Strong control</td><td class="key">268D Raw-PCA residual</td></tr>
+              <tr><td>Residual α</td><td class="key">1.0</td></tr>
+              <tr><td>Checkpoint rule</td><td class="key">own development AP</td></tr>
+              <tr><td>Training seeds</td><td class="key">40–44, paired with Task 3</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="footnote" style="margin-top:12px">Shared seeds make the two comparable as paired runs. Seven lines are kept — a 5-line cross would confound scale with dimensionality.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 21 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Task 5 <span class="dim">· scale split</span></p>
+    <h2>Scale tuples are split like time slices — disjointly</h2>
+  </div>
+  <div class="body">
+    <div class="tbl-wrap">
+      <table class="data">
+        <thead><tr><th>Split</th><th>Offset × min grid</th><th>Step size</th><th>Steps</th><th>Tuples</th><th>Horizon (frames)</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Train</strong></td><td>0.25 · 0.50 · 1.00</td><td>0.125 · 0.250</td><td>32 · 40 · 48 · 64</td><td class="key">18</td><td>4 – 12</td></tr>
+          <tr><td><strong>Validation</strong></td><td>0.375 · 0.750</td><td>0.20 · 0.30</td><td>40 · 50</td><td class="key">6</td><td>8 – 12</td></tr>
+          <tr><td><strong>Confirmation</strong></td><td>0.33 · 0.67 · <span class="neg" style="color:var(--neg)">1.25</span></td><td>0.15 · 0.20 · 0.30</td><td>40 · 45</td><td class="key">9</td><td>6 · 9 · 12</td></tr>
+        </tbody>
+        <caption>No tuple appears in two splits. Offsets 0.33 and 0.67 interpolate; 1.25 lies outside the training range — genuine spatial extrapolation, reported separately.</caption>
+      </table>
+    </div>
+    <div class="cols two">
+      <div class="panel">
+        <h3>Assignment cannot smuggle in the label</h3>
+        <p>Seeds are shuffled with a fixed seed, then balanced across tuples — counts differ by at most one. Large scales cannot concentrate in vortex regions, small scales in background.</p>
+      </div>
+      <div class="panel">
+        <h3>Time is split too</h3>
+        <p>4 training and 2 validation slices; confirmation uses 4 later ones. With a 12-frame look-ahead the windows do not overlap.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 22 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Task 5 <span class="dim">· pre-registered comparison</span></p>
+    <h2>Five arms on nine unseen scale combinations</h2>
+  </div>
+  <div class="body">
+    <div class="tbl-wrap">
+      <table class="data">
+        <thead><tr><th>Arm</th><th>Trained on</th><th>Question it answers</th></tr></thead>
+        <tbody>
+          <tr><td>Fixed-scale Raw-PCA residual, transferred</td><td class="mute">Task 3 fixed scale</td><td class="txt">how far does a single-scale raw model fall when the scale moves?</td></tr>
+          <tr><td>Fixed-scale Raw+FMT residual, transferred</td><td class="mute">Task 3 fixed scale</td><td class="txt">is FMT's advantage inherently more transferable?</td></tr>
+          <tr><td>Variable-scale Raw &amp; Raw-wide</td><td class="mute">Task 5 train tuples</td><td class="txt">can the backbone learn cross-scale primitives at all?</td></tr>
+          <tr><td>Variable-scale Raw-PCA residual</td><td class="mute">Task 5 train tuples</td><td class="txt">the structure-matched control, again</td></tr>
+          <tr><td>Variable-scale Raw + FMT residual</td><td class="mute">Task 5 train tuples</td><td class="txt">does FMT still help once scale varies?</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cols two">
+      <div class="panel">
+        <h3>Required outputs</h3>
+        <p>F1 and AP overall, plus <strong>per flow, family and confirmation tuple</strong>. The per-tuple table is mandatory — an average can hide a failure at one end of the range, most plausibly the 1.25 extrapolation.</p>
+      </div>
+      <div class="panel warn">
+        <h3 style="color:var(--amber)">Status <span class="chip run" style="margin-left:6px">running</span></h3>
+        <p>Raw and Raw-wide baselines are training; 20 residual shards (10 flows × {FMT, Raw-PCA} × 5 seeds), integrity merge and frozen confirmation follow.</p>
+        <p style="margin-top:.5em"><strong>No conclusion before the confirmation output exists</strong> — not even from training curves. This deck reports the protocol only.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 23 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Task 4 <span class="dim">· not started</span></p>
+    <h2>What must be frozen before vortex-type classification begins</h2>
+  </div>
+  <div class="body">
+    <div class="cols wide-left">
+      <div>
+        <p class="lede" style="margin-bottom:1em">Does FMT improve multi-class vortex-type classification — streamwise, spanwise, hairpin? No result exists.</p>
+        <h3>Preconditions</h3>
+        <ul>
+          <li><strong>Label provenance</strong> per dataset — IVD labels cannot be reused.</li>
+          <li><strong>Background handling, frozen first</strong> — three classes inside a segmented region, or non-vortex as a fourth. Never mixed in one table.</li>
+          <li><strong>Cross-dataset name mapping</strong> — type vocabularies differ by source.</li>
+          <li><strong>Balanced metrics</strong> — class counts, macro-F1, per-class F1, confusion matrix.</li>
+          <li><strong>Localisation error reported separately</strong> from type error.</li>
+        </ul>
+      </div>
+      <div class="panel neg">
+        <h3 style="color:var(--neg)">The error to avoid</h3>
+        <p>Task 3's binary results are never streamwise / spanwise / hairpin accuracy. They measure agreement with a scalar threshold, which carries no type information.</p>
+        <p style="margin-top:.5em">The most likely misreading of this result set — hence the boundary sits in the protocol, not in convention.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 24 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Outlook <span class="dim">· open work, in priority order</span></p>
+    <h2>What happens next</h2>
+  </div>
+  <div class="body">
+    <div class="ladder">
+      <div class="rung">
+        <div class="who">1 · Finish Task 5<span>in flight</span></div>
+        <div class="num mid">—</div>
+        <div class="what">Finish the frozen confirmation. Report per flow, family and tuple — interpolation apart from the 1.25 extrapolation.</div>
+      </div>
+      <div class="rung">
+        <div class="who">2 · Realign the written record<span>documentation debt</span></div>
+        <div class="num mid">—</div>
+        <div class="what">README and the paper table still cite v3.1 and the v2.3/2.4 gain. Repoint to v3.3 / v3.3 / v3.2, history preserved.</div>
+      </div>
+      <div class="rung">
+        <div class="who">3 · Decide about Task 2<span>weakest evidence</span></div>
+        <div class="num weak">+.0022</div>
+        <div class="what">Pre-register a fresh confirmation, or explain the F-22 / Smoke / Re160 failures. More tuning on the existing slices is not independent.</div>
+      </div>
+      <div class="rung">
+        <div class="who">4 · Diagnose F-22<span>development slices only</span></div>
+        <div class="num bad">−.0269</div>
+        <div class="what">Search scale, step size, steps and FMT block on development; confirm on new slices. Task 5's per-tuple output may already answer it.</div>
+      </div>
+      <div class="rung">
+        <div class="who">5 · Open Task 4<span>after freezing labels</span></div>
+        <div class="num mid">—</div>
+        <div class="what">Freeze label sources, background protocol and class mapping first.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 25 -->
+<section class="slide">
+  <div class="head">
+    <p class="eyebrow">Appendix <span class="dim">· provenance</span></p>
+    <h2>Where each number comes from</h2>
+  </div>
+  <div class="body">
+    <div class="tbl-wrap">
+      <table class="data">
+        <thead><tr><th>Slides</th><th>Experiment version</th><th>Machine table</th><th>Scale of run</th></tr></thead>
+        <tbody>
+          <tr><td>10</td><td class="mute">mainExp_Task1_3D_3.3_reference</td><td class="txt">paper_table.csv</td><td class="txt">10 entries × 8 held-out slices</td></tr>
+          <tr><td>11–13</td><td class="mute">mainExp_Task2_3D_3.3</td><td class="txt">paper_table.csv · hierarchy.json</td><td class="txt">7 families × 2 arms × 5 seeds</td></tr>
+          <tr><td>13</td><td class="mute">mainExp_Task2_3D_3.2 · failed, retained</td><td class="txt">summary.json</td><td class="txt">10 entries × 2 arms × 5 seeds</td></tr>
+          <tr><td>15, 17</td><td class="mute">mainExp_Task3_3D_3.1</td><td class="txt">final_confirmation/ paper_table · per_slice · audit</td><td class="txt">10 × 5 seeds × 8 slices</td></tr>
+          <tr><td>16–19</td><td class="mute">mainExp_Task3_3D_3.2_global_ivd</td><td class="txt">final_confirmation/ paper_table · per_run · per_slice</td><td class="txt">10 × 5 seeds × 8 slices</td></tr>
+          <tr><td>20–22</td><td class="mute">mainExp_Task5_3D_1.1</td><td class="txt">protocol and config only — no results yet</td><td class="txt">10 flows × 5 seeds × 9 unseen tuples (planned)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cols two">
+      <div class="panel">
+        <h3>Entry points</h3>
+        <ul style="font-family:var(--mono);font-size:.76rem">
+          <li>Run_Task1_3D_Main.py · Run_Task2_3D_Main.py</li>
+          <li>Evaluate_Task3_MainTable.py</li>
+          <li>Build_Task5_Multiscale_Cache.py → Evaluate_Task5_Multiscale.py</li>
+          <li>FMT_Utils/ DFT_FMT_3D · FMT_3D_pipeline · PathlineClassifier_3D · MultiscalePathline_3D</li>
+        </ul>
+      </div>
+      <div class="panel accent">
+        <h3 style="color:var(--accent)">Standing rules</h3>
+        <p>Method conclusions live in the experiment log only. Every claim carries an experiment ID, config, commit, per-run CSV and device record. Negative runs are never deleted.</p>
+      </div>
+    </div>
+    <p class="footnote">Figures use fixed held-out ordinal 4 (Task 2 seed 9068, Task 3 seed 40), chosen before rendering. A single slice may disagree with the multi-seed table; none was reselected.</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+  var deck = document.getElementById('deck');
+  var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+  var rail = document.getElementById('rail');
+  var cur = document.getElementById('cur');
+  var hint = document.getElementById('hint');
+  document.getElementById('tot').textContent = String(slides.length).padStart(2,'0');
+
+  function index(){
+    var best = 0, min = Infinity, top = deck.scrollTop;
+    for (var i=0;i<slides.length;i++){
+      var d = Math.abs(slides[i].offsetTop - top);
+      if (d < min){ min = d; best = i; }
+    }
+    return best;
+  }
+  function paint(){
+    var i = index();
+    cur.textContent = String(i+1).padStart(2,'0');
+    rail.style.width = (i/(slides.length-1)*100) + '%';
+  }
+  function go(i){
+    i = Math.max(0, Math.min(slides.length-1, i));
+    deck.scrollTo({top: slides[i].offsetTop, behavior: 'smooth'});
+  }
+  deck.addEventListener('scroll', function(){
+    window.requestAnimationFrame(paint);
+    hint.classList.add('gone');
+  }, {passive:true});
+  document.addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === ' '){ e.preventDefault(); go(index()+1); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp'){ e.preventDefault(); go(index()-1); }
+    else if (k === 'Home'){ e.preventDefault(); go(0); }
+    else if (k === 'End'){ e.preventDefault(); go(slides.length-1); }
+  });
+  deck.focus(); paint();
+  setTimeout(function(){ hint.classList.add('gone'); }, 6000);
+})();
+</script>

@@ -1,0 +1,206 @@
+{
+  "input_root": "/home/cheny1a/data/1/flowData3D/flowData3D",
+  "flows": [
+    {
+      "name": "channel",
+      "flow": "channel_flow/channel.vtk",
+      "gt": "channel_flow/channel_GTs.vtk",
+      "lambda2_threshold": -13.395,
+      "flow_sha256": "c1e3c18d0e67b6eb33ea41cd49c3a4c55216838a0f4a42f778ef00aaba3d4564",
+      "gt_sha256": "b9fdd93a1d2861781f824f28c80e46e06ebd3e5dcb58f0529010d7514e8fac09"
+    },
+    {
+      "name": "tbl",
+      "flow": "tbl_flow/tbl.vtk",
+      "gt": "tbl_flow/tbl_GTs.vtk",
+      "lambda2_threshold": -0.0272,
+      "flow_sha256": "cc82db1d3ca4e1964ec19dcd30df5a82c3c5635c16b8e0182f01fa57bf0d65bb",
+      "gt_sha256": "4fcd5efcfe13e10765095afec377b104d72c7092a646d39531f9bfbfc05c419e"
+    }
+  ],
+  "labels": {
+    "positive_minimum_single_instance_fraction": 0.5,
+    "negative": "no_head_cell_center_in_GT",
+    "ambiguous_partial_overlap": "exclude",
+    "source": "whole_head_center_GT_membership_including_instance_zero_not_paper_human_bundle_labels"
+  },
+  "bundles": {
+    "minimum_head_cells": 10,
+    "minimum_valid_lines": 10,
+    "points_per_line": 32,
+    "maximum_lines": 27,
+    "integration_domain": "full_native_vorticity_in_disjoint_partition_lambda2_and_oyf_for_seeds_only"
+  },
+  "sampling": {
+    "seed": 96601,
+    "per_flow_counts": {
+      "train": 13500,
+      "validation": 1500,
+      "test": 5000
+    },
+    "minimum_class_count": 16,
+    "maximum_center_rounds": 500,
+    "trace_batch_primitives": 64,
+    "neighbor_grid_scales": [
+      0.25,
+      0.5,
+      1.0
+    ],
+    "selection": "head_cycling_within_prespecified_local_spatial_cell_blocks"
+  },
+  "local_split": {
+    "blocks_per_head": 5,
+    "block_roles": [
+      "train",
+      "train",
+      "train",
+      "validation",
+      "test"
+    ],
+    "block_axis": "first_principal_axis_of_whole_head_cell_centers",
+    "evaluation_min_distance_to_any_train_over_local_grid_scale": 1.0,
+    "evaluation_max_distance_to_same_head_train_over_local_grid_scale": 4.0,
+    "test_min_distance_to_validation_over_local_grid_scale": 0.5,
+    "shared_heads_instances_and_native_support": true,
+    "scale_tuples_identical_across_splits": true
+  },
+  "training": {
+    "seeds": [
+      96611,
+      96612,
+      96613
+    ],
+    "batch_size": 128,
+    "epochs": 500,
+    "patience": 50,
+    "learning_rate": 0.001,
+    "lr_patience": 15,
+    "selection": "validation_fixed_0.5_F1_then_average_precision",
+    "sampling": "all_training_rows_once_per_epoch_without_replacement",
+    "weight_decay": 0.0001,
+    "dropout": 0.15,
+    "threshold": 0.5,
+    "minimum_learning_rate": 1e-06,
+    "scheduler": "validation_loss_plateau_factor_0.5"
+  },
+  "version": "Ablation_Task4C_BottomDensity_1.2",
+  "user_version": "task4-c-bottom-density-1.2",
+  "execution_revision": "fivefold_training_1.2",
+  "output": "outputs/exp_Task4C_BottomDensity_1.2_local",
+  "reference_config": "config/exp_Task4C_LocalRebuild_1.0.json",
+  "integration": {
+    "channel": [
+      {
+        "ds": 0.001,
+        "maxiteration": 80
+      },
+      {
+        "ds": 0.002,
+        "maxiteration": 50
+      },
+      {
+        "ds": 0.004,
+        "maxiteration": 30
+      }
+    ],
+    "tbl": [
+      {
+        "ds": 0.025,
+        "maxiteration": 160
+      },
+      {
+        "ds": 0.05,
+        "maxiteration": 100
+      },
+      {
+        "ds": 0.04,
+        "maxiteration": 150
+      }
+    ],
+    "step_units": "physical_length",
+    "rk45_step_policy": "initial_minimum_maximum_equal_ds",
+    "vtk_maximum_number_of_steps": "maxiteration_with_output_capped_at_maxiteration_segments",
+    "maximum_propagation": "ds_times_maxiteration_per_direction",
+    "vtk_internal_propagation_guard_steps": 0.001,
+    "minimum_actual_half_arc_fraction": 0.95,
+    "maximum_actual_half_arc_fraction": 1.002,
+    "maximum_error_over_ds": 0.0001
+  },
+  "encoding": {
+    "batch_size": 32,
+    "device": "Tesla V100",
+    "voxel_dtype": "float16",
+    "voxel_subdivisions": 4,
+    "voxel_resolutions": [
+      16,
+      24
+    ],
+    "sparse_cache": true,
+    "fmt_definition": {
+      "id": "n0_k06",
+      "geometry": "max_radius",
+      "features": "zscore",
+      "recipe": "n0",
+      "frequencies": 6,
+      "feature_dimensions": 141
+    }
+  },
+  "model_parameters": {
+    "p35": 76738,
+    "conv3d": 72192,
+    "conv_head_width": 70,
+    "conv_ratio_to_p35": 0.9407594672782715,
+    "pool_implementation": "same_adaptive_mean_and_nonoverlapping_max_bins_with_deterministic_backward"
+  },
+  "methods": [
+    "p35",
+    "conv16",
+    "conv24"
+  ],
+  "expected_counts": {
+    "train": 193000,
+    "validation": 3000,
+    "test": 10000,
+    "total": 206000
+  },
+  "whole_instance_holdout_count": 0,
+  "checkpoint_policy": "memory_only_no_weight_files",
+  "source_output": "outputs/exp_Task4C_BottomDensity_1.1_local",
+  "source_scientific_commit": "a98341cfd2c8c5d931a5380db0af604494ec7166",
+  "density": {
+    "split": "train",
+    "additional_bundles_per_existing_training_instance": 100,
+    "pilot_bundles_per_instance": 3,
+    "center_number_start": 1000000,
+    "maximum_center_attempts_per_instance": 20000,
+    "bottom_cell_fraction": 0.5,
+    "scope": "original_positive_head_training_cells_for_each_existing_training_instance",
+    "negative_samples": "unchanged_original_rows",
+    "validation_test": "byte_identical_original_files",
+    "geometry_and_seed_prefix": "byte_equal_original_array_values",
+    "expected_original_training_instances": {
+      "channel": 62,
+      "tbl": 54
+    },
+    "bottom_bias": "even_center_round_uses_original_full_pool_odd_round_uses_lower_half"
+  },
+  "source_config": "config/exp_Task4C_BottomDensity_1.1_local.json",
+  "source_config_sha256": "d4610597a4ee6675244a2b0d60cc11abc081f0e37eedda3c308bfee6f0be19c9",
+  "expansion": {
+    "factor": 5,
+    "new_centers_per_source_bundle": 4,
+    "source_rows_per_flow": {
+      "channel": 19700,
+      "tbl": 18900
+    },
+    "new_center_number_start": 2000000,
+    "maximum_attempts_per_new_bundle": 20000,
+    "integration_batch_templates": 256,
+    "selection": "same_source_head_class_scale_and_full_or_lower_cell_pool",
+    "pilot": "one_template_per_head_scale_cell_pool",
+    "source_geometry_prefix": "unchanged",
+    "evaluation_files": "byte_identical",
+    "trainable_architecture_and_training": "unchanged"
+  },
+  "_local_note": "Local stage 1.2 (five-fold expansion) on the local 1.1 cache. Only path and provenance fields are repointed; expansion factor, centres per bundle, rules and expected counts are unchanged."
+}

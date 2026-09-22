@@ -1,0 +1,106 @@
+{
+  "version": "mainExp_Task4C_PhysicalLength_4.14",
+  "base_config": "config/mainExp_Task4C_Multiscale_4.1.json",
+  "base_config_sha256": "0c06c0530dcda7da82573a562e26c4932fb3331476347f7d3ba7aa6d8cc5cb99",
+  "output": "outputs/exp_Task4C_RelaxedHead_1.0",
+  "expected_training_samples": 27000,
+  "integration": {
+    "channel": [
+      {
+        "ds": 0.001,
+        "maxiteration": 80
+      },
+      {
+        "ds": 0.002,
+        "maxiteration": 50
+      },
+      {
+        "ds": 0.004,
+        "maxiteration": 30
+      }
+    ],
+    "tbl": [
+      {
+        "ds": 0.025,
+        "maxiteration": 160
+      },
+      {
+        "ds": 0.05,
+        "maxiteration": 100
+      },
+      {
+        "ds": 0.04,
+        "maxiteration": 150
+      }
+    ],
+    "step_units": "physical_length",
+    "rk45_step_policy": "initial_minimum_maximum_equal_ds",
+    "vtk_maximum_number_of_steps": "maxiteration_with_output_capped_at_maxiteration_segments",
+    "maximum_propagation": "ds_times_maxiteration_per_direction",
+    "vtk_internal_propagation_guard_steps": 0.001,
+    "minimum_actual_half_arc_fraction": 0.95,
+    "maximum_actual_half_arc_fraction": 1.002,
+    "maximum_error_over_ds": 0.0001
+  },
+  "sampling": {
+    "seed": 96601,
+    "per_flow_counts": {
+      "train": 13500,
+      "validation": 1500,
+      "test": 5000
+    },
+    "minimum_class_count": 16,
+    "maximum_center_rounds": 500,
+    "trace_batch_primitives": 64,
+    "neighbor_grid_scales": [
+      0.25,
+      0.5,
+      1.0
+    ],
+    "selection": "head_cycling_within_prespecified_local_spatial_cell_blocks"
+  },
+  "local_split": {
+    "blocks_per_head": 5,
+    "block_roles": [
+      "train",
+      "train",
+      "train",
+      "validation",
+      "test"
+    ],
+    "block_axis": "first_principal_axis_of_whole_head_cell_centers",
+    "evaluation_min_distance_to_any_train_over_local_grid_scale": 1.0,
+    "evaluation_max_distance_to_same_head_train_over_local_grid_scale": 4.0,
+    "test_min_distance_to_validation_over_local_grid_scale": 0.5,
+    "shared_heads_instances_and_native_support": true,
+    "scale_tuples_identical_across_splits": true
+  },
+  "methods": [
+    "fmt_mlp"
+  ],
+  "candidates": [
+    {
+      "name": "regularized",
+      "dropout": 0.15,
+      "weight_decay": 0.0001
+    }
+  ],
+  "training": {
+    "seeds": [
+      96721,
+      96722
+    ],
+    "batch_size": 128,
+    "epochs": 200,
+    "patience": 50,
+    "learning_rate": 0.001,
+    "lr_patience": 15,
+    "selection": "validation_fixed_0.5_F1_then_average_precision",
+    "sampling": "all_training_rows_once_per_epoch_without_replacement"
+  },
+  "checkpoint_policy": "memory_only_no_weight_files",
+  "old_benchmark_artifacts": "not_loaded_or_modified",
+  "input_root": "/home/cheny1a/data/1/flowData3D/flowData3D",
+  "_local_rebuild_note": "Local rebuild of the 4.14 bundle cache from raw VTK, because the frozen Ablation_Task4C_BottomDensity_1.2 cache lives on Ibex and is not reachable here. The four source VTK SHA256 hashes were verified against the frozen config before building. Sampling seed 96601 and all rules are unchanged, so validation (1500/flow) and test (5000/flow) should reproduce the frozen evaluation sets, which the 1.1 and 1.2 expansions preserved byte-for-byte. TRAIN is 13500/flow = 27000 here, against 193000 in the frozen 1.2 cache, so any number from this rebuild is comparable to the 4.14-era baselines, NOT to c156 0.920390.",
+  "_note": "FMT+MLP control on the relaxed cache. Same 27,000 bundles, labels and splits in both; only which lattice lines survived differs, so this isolates the effect of the relaxed neighbour head rule on the frozen FMT encoder."
+}

@@ -1,0 +1,116 @@
+# Screen of four changes, one dataset (Re6400) x two seeds (7069, 7070 -- both
+# failed in 1.2, so there is a direct paired comparison):
+#   1. batch 256 -> 1024 with steps 6000 -> 1500 (same total presentations)
+#   2. the decoder reconstructs the augmented views too (recon_augmented)
+#   3. VAE trains AND selects its checkpoint on ordinals 0-7 (was 0-5 / 6-7),
+#      widening temporal coverage from frames 31-82 to 31-113
+#   4. reconstruction is validated on held-out ordinals 8-9, before and after
+#      the decoder fine-tune
+# Re6400 chosen because it is a flow where the method currently FAILS
+# (1.3 NEW-rule .4126 against FMT .5340), so there is room to see an effect.
+experiment: exp_Task1_OctVAE_3D_1.4_widebatch
+group: oh
+device: cuda
+sampled_steps: 32
+splits:
+  vae_train:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  vae_validation:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  recon_validation:
+  - 8
+  - 9
+  kmeans_train:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  cluster_calibration:
+  - 8
+  - 9
+train_seeds:
+- 7069
+- 7070
+kmeans_seeds:
+- 7068
+- 7069
+- 7070
+- 7071
+- 7072
+kmeans_n_init: 20
+encode_batch_size: 4096
+readouts:
+- plain
+- gmean
+- gmax
+- gmeanmax
+model:
+  z_inv_dim: 16
+  z_eq_dim: 12
+  dec_hidden: 128
+  dec_layers: 4
+  w0: 30.0
+  w0_first: 30.0
+training:
+  steps: 1500
+  batch_size: 1024
+  lr: 0.0005
+  encoder_lr_scale: 0.1
+  weight_decay: 0.0001
+  beta: 0.0001
+  lambda_contrast: 15.0
+  zinv_var_weight: 5.0
+  zinv_cov_weight: 0.2
+  zinv_target_std: 0.5
+  clip_sigma: 5.0
+  recon_channel_balance: true
+  eval_every: 25
+  selection_warmup: 50
+  selection_subsample: 8192
+  kmeans_n_init: 10
+  decoder_finetune_steps: 1000
+  decoder_finetune_lr: 0.0005
+  recon_augmented: true
+datasets:
+- id: halfcylinderRe6400_eth
+  family: halfcylinder
+  label: Half-cylinder Re6400
+  development_cache: outputs/exp_Task1_ReSweep_0.1/development_cache/halfcylinderRe6400_eth
+  confirmation_cache: outputs/exp_Task1_ReSweep_0.1/confirmation_cache/halfcylinderRe6400_eth
+  published:
+    fmt_f1: 0.5331
+    raw_f1: 0.419
+    gain: 0.1142
+    ari: 0.4748
+    nmi: 0.2836
+  prior_run:
+    fmt_f1: 0.535068
+    raw_f1: 0.359715
+    ari: 0.472474
+  baselines:
+  - name: raw
+    feature: raw
+    pca_dim: 2
+  - name: fmt
+    feature: fmt_all+kin4
+    pca_dim: null
+output:
+  result_dir: outputs/exp_Task1_OctVAE_3D_1.4_widebatch

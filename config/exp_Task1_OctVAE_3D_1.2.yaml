@@ -1,0 +1,173 @@
+# Multi-seed run of the octahedral SIREN-VAE, gated on the single-seed result in
+# outputs/exp_Task1_OctVAE_3D_1.2_gate (4/4 datasets above FMT, macro +.1170).
+# Two corrections relative to 1.1, both required:
+#  1. the latent is clustered L2-normalised and NOT standardised.  Standardising
+#     it collapses k-means onto a degenerate split (99.99% predicted positive,
+#     F1 .13) that more restarts cannot escape.  Scored both ways: method
+#     `octvae` vs `octvae_scaled`.
+#  2. budget = the 2D method's own budget in STEPS (6000, warmup 200, eval 50).
+#     1.1 used 28000 steps with warmup 2800, placing the whole selectable range
+#     after the quality peak, which falls between steps ~750 and ~3750 here.
+experiment: exp_Task1_OctVAE_3D_1.2
+group: oh
+device: cuda
+sampled_steps: 32
+splits:
+  vae_train:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  vae_validation:
+  - 6
+  - 7
+  kmeans_train:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  cluster_calibration:
+  - 8
+  - 9
+train_seeds:
+- 7068
+- 7069
+- 7070
+- 7071
+- 7072
+kmeans_seeds:
+- 7068
+- 7069
+- 7070
+- 7071
+- 7072
+kmeans_n_init: 20
+encode_batch_size: 4096
+readouts:
+- plain
+- gmean
+- gmax
+- gmeanmax
+model:
+  z_inv_dim: 16
+  z_eq_dim: 12
+  dec_hidden: 128
+  dec_layers: 4
+  w0: 30.0
+  w0_first: 30.0
+training:
+  steps: 6000
+  batch_size: 256
+  lr: 0.0005
+  encoder_lr_scale: 0.1
+  weight_decay: 0.0001
+  beta: 0.0001
+  lambda_contrast: 15.0
+  zinv_var_weight: 5.0
+  zinv_cov_weight: 0.2
+  zinv_target_std: 0.5
+  clip_sigma: 5.0
+  recon_channel_balance: true
+  eval_every: 50
+  selection_warmup: 200
+  selection_subsample: 8192
+  kmeans_n_init: 10
+  decoder_finetune_steps: 4000
+  decoder_finetune_lr: 0.0005
+datasets:
+- id: halfcylinderRe160_eth
+  family: halfcylinder
+  label: Half-cylinder Re160
+  development_cache: outputs/exp_Task1_ReSweep_0.1/development_cache/halfcylinderRe160_eth
+  confirmation_cache: outputs/exp_Task1_ReSweep_0.1/confirmation_cache/halfcylinderRe160_eth
+  published:
+    fmt_f1: 0.5958
+    raw_f1: 0.3834
+    gain: 0.2125
+    ari: 0.482
+    nmi: 0.3182
+  prior_run:
+    fmt_f1: 0.522489
+    raw_f1: 0.218807
+    ari: 0.395565
+  baselines:
+  - name: raw
+    feature: raw
+    pca_dim: 2
+  - name: fmt
+    feature: fmt_all+kin4
+    pca_dim: null
+- id: halfcylinderRe640_eth
+  family: halfcylinder
+  label: Half-cylinder Re640
+  development_cache: outputs/exp_Task1_ReSweep_0.1/development_cache/halfcylinderRe640_eth
+  confirmation_cache: outputs/exp_Task1_ReSweep_0.1/confirmation_cache/halfcylinderRe640_eth
+  published:
+    fmt_f1: 0.5687
+    raw_f1: 0.3356
+    gain: 0.2331
+    ari: 0.4631
+    nmi: 0.3149
+  prior_run:
+    fmt_f1: 0.517673
+    raw_f1: 0.339586
+    ari: 0.451426
+  baselines:
+  - name: raw
+    feature: raw
+    pca_dim: 2
+  - name: fmt
+    feature: fmt_all+kin4
+    pca_dim: null
+- id: halfcylinderRe6400_eth
+  family: halfcylinder
+  label: Half-cylinder Re6400
+  development_cache: outputs/exp_Task1_ReSweep_0.1/development_cache/halfcylinderRe6400_eth
+  confirmation_cache: outputs/exp_Task1_ReSweep_0.1/confirmation_cache/halfcylinderRe6400_eth
+  published:
+    fmt_f1: 0.5331
+    raw_f1: 0.419
+    gain: 0.1142
+    ari: 0.4748
+    nmi: 0.2836
+  prior_run:
+    fmt_f1: 0.535068
+    raw_f1: 0.359715
+    ari: 0.472474
+  baselines:
+  - name: raw
+    feature: raw
+    pca_dim: 2
+  - name: fmt
+    feature: fmt_all+kin4
+    pca_dim: null
+- id: tangaroa_eth
+  family: tangaroa
+  label: Tangaroa
+  development_cache: outputs/exp_Task1_Tangaroa_0.1/development_cache/tangaroa_eth
+  confirmation_cache: outputs/exp_Task1_Tangaroa_0.1/confirmation_cache/tangaroa_eth
+  published:
+    fmt_f1: 0.745
+    raw_f1: 0.5453
+    gain: 0.1996
+    ari: 0.7024
+    nmi: 0.5049
+  prior_run:
+    fmt_f1: 0.726076
+    raw_f1: 0.57517
+    ari: 0.678924
+  baselines:
+  - name: raw
+    feature: raw
+    pca_dim: 8
+  - name: fmt
+    feature: fmt_all
+    pca_dim: null
+output:
+  result_dir: outputs/exp_Task1_OctVAE_3D_1.2

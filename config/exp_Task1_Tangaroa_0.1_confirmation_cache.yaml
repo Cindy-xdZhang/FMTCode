@@ -1,0 +1,32 @@
+# Task1 on the ETH Tangaroa release (300x180x120x201).
+# This file matches the published `tangaroa` entry (T=201, unmarked filename), so
+# like halfcylinderRe6400 it acts as a CALIBRATION POINT: any gap against the
+# published row isolates this run's time schedule and splits, not the data.
+experiment: exp_Task1_Tangaroa_0.1_confirmation_cache
+seed: 7068
+
+datasets:
+  - {id: tangaroa_eth, path: /home/cheny1a/data/flowData3D/tangaroa.nc, enabled: true}
+
+sampling:
+  timeslices: 4
+  begin_fraction: 0.20
+  end_fraction: 0.90
+  # T=201, pathline window = 14 frames.  Usable range under the 20%/90% rule and
+  # 13 frames of look-ahead is [41,179].  Development windows span [41,154);
+  # confirmation windows span [154,193).  Disjoint => no pathline time leakage.
+  fixed_time_indices_by_dataset:
+    tangaroa_eth: [154, 162, 171, 179]
+  max_spatial_dim: 96
+  seed_grid_shape: [16, 16, 16]
+  boundary_fraction: 0.08
+
+pathlines: {method: RK4, dt_scale: 0.25, integration_steps: 48,
+            sampled_steps: 32, offset_grid_scale: 0.5, chunk_size: 2048}
+encoder: {num_freq: 6, mode: gram, include_chirality: true,
+          neighbor_pool: sort, neighbor_weight: 0.5}
+reference: {definition: standard_global_ivd, percentile: 95.0}
+
+output:
+  cache_dir: outputs/exp_Task1_Tangaroa_0.1/confirmation_cache
+  result_dir: outputs/exp_Task1_Tangaroa_0.1/confirmation_results
