@@ -1,0 +1,11 @@
+{
+  "version": "Other_Task6_DatasetInspector_1.7",
+  "base_dataset": "outputs/mainExp_Task6_CorelineDataset_2.7/base",
+  "base_frozen_sha256": "39cfeb19837e5b71bde74de2462bc5328dd2cabbaa82d116e6174e950e7c5974",
+  "manual_workspace": "outputs/mainExp_Task6_CorelineDataset_2.7",
+  "minimum_length_h": 16,
+  "manual_merge": "nearest endpoints, straight bridge, retain first selected stable ID; no automatic 4h rejection",
+  "sample_label": "physical distance to all current continuous core segments strictly below h",
+  "publish": "explicit apply of all pending frames into a complete immutable local dataset revision",
+  "frame_count": 69
+}

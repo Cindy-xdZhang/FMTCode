@@ -1,0 +1,58 @@
+{
+  "version": "mainExp_Task6_IcosaBundles_1.1",
+  "dataset_root": "C:\\Users\\xingdi\\OneDrive - KAUST\\WorkingInProcess\\FLowVisAssets\\flowData3D\\Task6_CorelineDataset_2.7_share",
+  "output_root": "C:\\Users\\xingdi\\OneDrive - KAUST\\WorkingInProcess\\FLowVisAssets\\flowData3D\\Task6_CorelineDataset_2.7_share\\preintegrated\\icosa_bundles_1.1",
+  "geometry": "icosahedron_face_centers",
+  "geometry_user_confirmed": true,
+  "centers_per_frame": 10000,
+  "neighbors": 20,
+  "seed": 96611,
+  "candidate": {
+    "field": "original_velocity_v_ivd",
+    "comparison": ">",
+    "threshold_fraction_of_maximum": 0.8,
+    "center_only": true,
+    "per_flow_fraction": {
+      "SquareCylinder": 0.95
+    },
+    "per_flow_trim_xyz": {
+      "SquareCylinder": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          2
+        ]
+      ]
+    }
+  },
+  "integration": {
+    "method": "Dormand-Prince 5(4)",
+    "normalized_velocity": true,
+    "half_length": 0.25,
+    "max_attempts_per_direction": 20000,
+    "stored_points": 65,
+    "refinement_levels": [
+      8,
+      16,
+      32
+    ],
+    "saved_level": 16,
+    "tolerances_h": [
+      1e-07,
+      1e-08,
+      1e-09
+    ],
+    "maximum_difference_h": 0.05,
+    "minimum_total_length_h": 1.0
+  },
+  "workers": 4,
+  "threads_per_worker": 2,
+  "chunk_centers": 64
+}

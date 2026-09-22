@@ -1,0 +1,17 @@
+{
+  "upstream": {
+    "ReferenceFrame3d.cpp": "e786d3bb34ae8cf7bfcd421e392cf0d264051487b848808d5392fb9811649f93",
+    "Discrete3DFlowField.cpp": "c07810cea462cf28627d1483899a0ffa158b5a0fd56db88c8adb8681395ee754",
+    "coreline3D.cpp": "aff1856ef7fd0b7fb1abd32ba4d46f13e865b9bc7916d7c83909649ebbc628c4",
+    "ObjectAdapter3DFlowPart2.cpp": "2870a90e96d3f1af607c99e7b204fc0fecb161fd0062264f5b5ecb78c1e797cc"
+  },
+  "original_body_sha256": "f6ba0380c2179112495d8956204e306fea46afe74511e754a707b76054c3faea",
+  "changes": [
+    "Execute only middle input timestep; retain original SAT and direct branches",
+    "Grid-node adapter replaced by trilinear/time interpolation matching Discrete3DFlowField"
+  ],
+  "generated": {
+    "original_compute.inc": "78f19955c1110f17e41135ce86afa3d0c23d395849a60193c9aebe6511efa83c",
+    "reference.cpp": "1a8ed5b1ce4e86f4317892f0c1e13afebc083dbdfbb31948e5008cf6fd12715b"
+  }
+}
