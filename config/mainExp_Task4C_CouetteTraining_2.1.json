@@ -1,0 +1,90 @@
+{
+  "source_output": "/ibex/user/zhanx0o/FMT_Task4C_V2NewLabel_1p1_20260920/outputs/v2_newlabel_rule",
+  "source_audit_sha256": "9a983a79107798af4fd9eb86dce2c2e9b5cbc143c12e646dd5bf438ea5f81a95",
+  "neighbor_output": "/ibex/user/zhanx0o/FMT_Task4C_V2NewLabelTraining_1p1_20260920/outputs/Verify_Task4C_V2NewLabelBallQuery_1.1",
+  "training_config": "config/mainExp_Task4C_V2NewLabelTraining_1.1.json",
+  "seed": 96611,
+  "epochs": 50,
+  "batch_size": 128,
+  "learning_rate": 0.001,
+  "weight_decay": 0.0001,
+  "clip": 5,
+  "threshold": 0.5,
+  "baseline_output": "/ibex/user/zhanx0o/FMT_Task4C_LongHeadLeg_1p1_20260921/outputs/Verify_Task4C_LongHeadLegTraining_1.1",
+  "baseline_audit_sha256": "6824e9427055d849bbd61c00e69e8d9abdb80087f38195ecad55396e1c1c1137",
+  "baseline_prepared_sha256": "3af75f55bf0a9babee73fcad7d8eb111090eee641aa518799632671080fd6edb",
+  "augmentation": {
+    "sigma": 0.1,
+    "maximum": 0.25,
+    "rule": "interior central tangent times clipped Gaussian times minimum adjacent segment length; endpoints fixed",
+    "train_only": true
+  },
+  "version": "mainExp_Task4C_CouetteTraining_2.1",
+  "output": "outputs/mainExp_Task4C_CouetteTraining_2.1",
+  "dataset_output": "outputs/mainExp_Task4C_CouetteDataset_2.1",
+  "protocol_confirmed": true,
+  "fmt_augmentation": true,
+  "fmt_dropout": 0.35,
+  "initial_parameter_sha256": {
+    "fmt": "dbd9fb2a1546dea2aa27a1dad07621f6929a5bfaaf53f5cd70828d27e80b743f",
+    "conv8": "2d3559dd6d51e5dd2b2ec89eea7c2e8cbb005e7eb9b6824d18d31e39154c2ccb"
+  },
+  "dataset_audit_sha256": "6ade347de505c8cf3371e7a330743100e1cf2d7e9da5e9ad19dfd5576d4cb4a4",
+  "rotation_output": "/ibex/user/zhanx0o/FMT_Task4C_Rotation50_1p1_20260921/outputs/Verify_Task4C_Rotation50_1.1",
+  "rotation_prepared_sha256": "de5b7244b3122a6ee44b991511e2f2eea3ed68abd94adf536460cba3bdbd752e",
+  "candidate_output": "/ibex/user/zhanx0o/FMT_Task4C_OldCandidateQuick_1p1_20260920/outputs/Verify_Task4C_OldCandidateQuick_1.1",
+  "candidate_sha256": {
+    "channel": "bbfa99d82b5c1acd0dbbeb24ca15308cd60223aed7825aa7d579f17341f560ce",
+    "tbl": "10ba2067cad298027d1f73a2eb8bbec58c447e641be3bf6c833be889c6412942"
+  },
+  "feature_cache": "/ibex/user/zhanx0o/FMT_Task4C_V2NewLabelTraining_1p1_20260920/outputs/mainExp_Task4C_V2NewLabelTraining_1.1/runs/p35_h0_ball6/seed96611",
+  "feature_cache_sha256": {
+    "train": "5d88e90f4b6d4128cf39322cc2996b2206cab3875d8d5bca37292159a24a46df",
+    "test": "86249434d7fb012a5d975511de2916997df89d89bbae7448aa39800fd2158588"
+  },
+  "physical_config": "config/mainExp_Task4C_GTHeadCoverage_1.1.json",
+  "input_roots": [
+    "C:/Users/xingdi/OneDrive - KAUST/WorkingInProcess/FLowVisAssets/flowData3D",
+    "/ibex/user/zhanx0o/FMT_Task4B_VelocityCurl_4p1_20260906/repo/inputs"
+  ],
+  "flows": [
+    {
+      "name": "channel",
+      "half_lengths": [
+        0.07,
+        0.1,
+        0.13
+      ],
+      "ds": 0.001
+    },
+    {
+      "name": "tbl",
+      "half_lengths": [
+        3.5,
+        5.0,
+        6.5
+      ],
+      "ds": 0.025
+    }
+  ],
+  "integration": {
+    "points_per_curve": 32,
+    "minimum_actual_half_arc_fraction": 0.95,
+    "maximum_actual_half_arc_fraction": 1.002,
+    "maximum_error_over_ds": 0.0001,
+    "vtk_internal_propagation_guard_steps": 0.001,
+    "trace_batch_seeds": 4096,
+    "rule": "one bidirectional fixed-step RK45 integration to the longest length; the shorter lengths are the first n_k steps of each half; a half line that left the fluid domain (VTK termination OUT_OF_DOMAIN) only needs [0.25L, 1.25L] of arc, every other half needs [0.95L, 1.002L]; a sample is kept only when all three curves pass",
+    "out_of_domain_min_half_arc_fraction": 0.25,
+    "out_of_domain_max_half_arc_fraction": 1.25
+  },
+  "old_training_output": "/ibex/user/zhanx0o/FMT_Task4C_StrictCandidateTraining_1p1_20260921/outputs/Verify_Task4C_StrictCandidateTraining_1.1",
+  "old_prepared_sha256": "d8f4d939c732dfbe2233bcb845adce6cf6cf2157000ae00fe914aeab2325c9c3",
+  "active_folds": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "unchanged_fold4": "Reuse frozen two-flow results; no Couette group exists in fold4"
+}

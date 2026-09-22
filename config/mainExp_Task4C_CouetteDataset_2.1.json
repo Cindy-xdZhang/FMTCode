@@ -1,0 +1,55 @@
+{
+  "version": "mainExp_Task4C_CouetteDataset_2.1",
+  "lambda2_threshold": -0.00125,
+  "ds": 0.0002,
+  "half_lengths": [
+    0.007,
+    0.01,
+    0.013
+  ],
+  "sampling": {
+    "pool_per_flow": 2000000,
+    "samples_per_flow": 200000,
+    "pool_seed": 98303,
+    "poisson_seed": 98302,
+    "pool_chunk": 200000
+  },
+  "folds": {
+    "count": 5,
+    "seed": 98303,
+    "test_fold": 0
+  },
+  "execution": {
+    "batch_size": 4096
+  },
+  "candidate": "all eight lambda2 vertices below threshold AND mean of eight stored oyf vertices > 0; actual seed also passes pointwise lambda2 and oyf",
+  "labeling": "shortest32 GT hits >=17 AND longest merged original integration points contain at least one GT head and one GT leg; head omega_y>0 and acute angle(velocity,curl)>45deg; no label vote",
+  "balance": "inherit shortest-curve proposal quota near positive:negative=1:2 before latest LongHeadLeg relabeling; if positives are insufficient use 98% of available positive proposals and report the limitation; no duplication",
+  "existing_dataset": {
+    "channel": {
+      "path": "/ibex/user/zhanx0o/FMT_Task4C_LongHeadLeg_1p1_20260921/outputs/v2_newlabel_rule_longheadleg_1.1/physical/channel",
+      "dataset_audit_sha256": "071f82e356696e55176fe4c4a3ca6d852ecc0c2cd639c2f9aba633498004fccf",
+      "training_indices": "/ibex/user/zhanx0o/FMT_Task4C_StrictCandidateTraining_1p1_20260921/outputs/Verify_Task4C_StrictCandidateTraining_1.1",
+      "access": "read_only_reference"
+    },
+    "tbl": {
+      "path": "/ibex/user/zhanx0o/FMT_Task4C_LongHeadLeg_1p1_20260921/outputs/v2_newlabel_rule_longheadleg_1.1/physical/tbl",
+      "dataset_audit_sha256": "071f82e356696e55176fe4c4a3ca6d852ecc0c2cd639c2f9aba633498004fccf",
+      "training_indices": "/ibex/user/zhanx0o/FMT_Task4C_StrictCandidateTraining_1p1_20260921/outputs/Verify_Task4C_StrictCandidateTraining_1.1",
+      "access": "read_only_reference"
+    }
+  },
+  "integration_mode": "raw_curl_fixed_RK4",
+  "updates": [
+    35,
+    50,
+    65
+  ],
+  "parameter_intervals": [
+    0.007,
+    0.01,
+    0.013
+  ],
+  "validity": "Each direction completes all requested updates, or boundary/RK-stage exit after at least ceil(0.25*requested) updates; physical arc resampling to 32 points. No physical arc threshold.",
+  "protocol_confirmed": true
+}
