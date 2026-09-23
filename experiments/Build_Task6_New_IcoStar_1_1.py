@@ -105,7 +105,8 @@ def ball(rng, n, low, high):
     return d * r[:, None]
 
 
-def draw_seeds(frame, tree, dense, ivd, rng, count, pos_frac, hard_frac, hard_max, margin):
+def draw_seeds(frame, tree, dense, ivd, rng, count, pos_frac, hard_frac, hard_max, margin,
+               pos_scale=1.0):
     """Stratified centres, all far enough from the boundary to carry every neighbour."""
     lo = frame.bounds[:, 0] + margin
     hi = frame.bounds[:, 1] - margin
@@ -143,13 +144,15 @@ def draw_seeds(frame, tree, dense, ivd, rng, count, pos_frac, hard_frac, hard_ma
                 s = cells[rng.integers(0, len(cells), n)]
             else:
                 a = anchors[rng.integers(0, len(anchors), n)]
-                inner, outer = (0.0, frame.h * 0.999) if kind == "pos" else (frame.h, frame.h * hard_max)
+                inner, outer = ((0.0, frame.h * pos_scale * 0.999) if kind == "pos"
+                               else (frame.h * pos_scale, frame.h * hard_max))
                 s = a + ball(rng, n, inner, outer)
             s = s[np.all((s >= lo) & (s <= hi), axis=1)]
             if not len(s):
                 continue
             d, _ = tree.query(s, workers=-1)
-            s = s[d < frame.h] if kind == "pos" else s[d >= frame.h]
+            limit = frame.h * pos_scale
+            s = s[d < limit] if kind == "pos" else s[d >= limit]
             if not len(s):
                 continue
             s = s[:need]
@@ -182,7 +185,8 @@ def build_frame(frame, key, rng, args, offsets, reuse=None):
         kept_mask = inside
     else:
         centres, kinds = draw_seeds(frame, tree, dense, ivd, rng, args.count,
-                                    args.pos_frac, args.hard_frac, args.hard_max, margin)
+                                    args.pos_frac, args.hard_frac, args.hard_max, margin,
+                                    args.positive_scale)
     if len(centres) == 0:
         return None
 
@@ -203,7 +207,7 @@ def build_frame(frame, key, rng, args, offsets, reuse=None):
     # Sampling above may use the KD-tree approximation, but the stored label and
     # distance are the exact point-to-segment values the official rule specifies.
     dist = segment_distance(centres, cores)
-    labels = (dist < frame.h).astype(np.int64)
+    labels = (dist < frame.h * args.positive_scale).astype(np.int64)
     return dict(curves=curves.astype(np.float32), centres=centres.astype(np.float32),
                 labels=labels, dist=(dist / frame.h).astype(np.float32),
                 kind=kinds.astype(np.int8), key=key, h=float(frame.h),
@@ -224,6 +228,13 @@ def main():
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--shard", type=int, default=0)
     p.add_argument("--shards", type=int, default=1)
+    p.add_argument("--split-file", default="",
+                   help="JSON with train/test frame-key lists; defaults to the package split. "
+                        "Use for a temporal split (early frames train, late frames test).")
+    p.add_argument("--positive-scale", type=float, default=1.0,
+                   help="positive iff distance to the continuous coreline < scale*h. The official "
+                        "rule is scale=1; smaller values make the positive class tighter and rarer. "
+                        "The on-tube seeding radius follows the same scale so positives stay trainable.")
     p.add_argument("--radii", default="1,2,4,8",
                    help="neighbour shell radii in units of h")
     p.add_argument("--official-centres", default="",
@@ -238,13 +249,16 @@ def main():
     Dataset = _load_api(root)
     args.radii_tuple = tuple(float(x) for x in args.radii.split(","))
     ds = Dataset(str(root))
+    split = ds.split
+    if args.split_file:
+        split = json.loads(Path(args.split_file).read_text())
     radii = tuple(float(x) for x in args.radii.split(","))
     verts = icosahedron_vertices()
     offsets = np.concatenate([np.zeros((1, 3))] + [verts * r for r in radii], axis=0)
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    plan = [(role, k) for role in ("train", "test") for k in ds.split[role]]
+    plan = [(role, k) for role in ("train", "test") for k in split[role]]
     plan = [x for i, x in enumerate(plan) if i % args.shards == args.shard]
 
     for role, key in plan:
@@ -284,16 +298,18 @@ def main():
             continue
         np.savez(dest, curves=rec["curves"], centres=rec["centres"], labels=rec["labels"],
                  dist=rec["dist"], kind=rec["kind"], role=role, key=key, h=rec["h"],
-                 radii=np.array(radii), offsets=offsets, total_length=args.total_length)
+                 radii=np.array(radii), offsets=offsets, total_length=args.total_length,
+                 positive_scale=args.positive_scale)
         print(f"[ok] {key:28s} role={role:5s} n={len(rec['labels']):5d} "
               f"pos={rec['labels'].mean():.4f} valid={rec['valid_fraction']:.3f} "
               f"{time.time()-t0:5.1f}s", flush=True)
 
-    meta = dict(radii=list(radii), lines=len(offsets), points=args.points,
+    meta = dict(radii=list(radii), positive_scale=args.positive_scale,
+                split_file=args.split_file or "package default", lines=len(offsets), points=args.points,
                 total_length=args.total_length, count=args.count,
                 pos_frac=args.pos_frac, hard_frac=args.hard_frac, hard_max=args.hard_max,
                 geometry="icosahedron_vertices",
-                label_rule="centre distance to continuous coreline segments < h")
+                label_rule=f"centre distance to continuous coreline segments < {args.positive_scale}*h")
     (out / "meta.json").write_text(json.dumps(meta, indent=2))
 
 

@@ -823,3 +823,71 @@ Weights: `outputs/weights_Task6_NewStar/tl025_seed{11,23,37}.pt`.
    ≈0.954 on the more complete benchmark.
 2. **Seeds.** Five conclusions here reversed on re-measurement. Effects below ≈0.005 need more than
    three seeds; this document marks which are solid and which are not.
+
+## 19. Dataset variants: temporal split and tighter positive rules
+
+Two variants of the *data definition*, both on the 1 h-margin cache with the recommended
+single 1 h shell, lr 1e-3, 3 seeds.
+
+### 19.1 Temporal split
+
+The package split **interleaves frames in time** — `cylinder3d` trains on frames 75-142 and tests
+on 81-136, so a test frame is usually bracketed by training frames a few timesteps away. That
+leaks temporal information. `outputs/temporal_split.json` instead gives each scene its *earliest*
+frames for training and its *latest* for test, preserving the per-scene 77 / 24 counts:
+
+| scene | train (early) | test (late) |
+|---|---|---|
+| SquareCylinder | 7 … 86 (13) | 87, 94, 95 |
+| cylinder3d | 75 … 127 (18) | 134, 135, 136, 141, 142 |
+| deltaWing_resampled | 9 … 127 (18) | 144, 145, 146, 160, 161 |
+| halfcylinderRe320 | 75 … 127 (18) | 128, 134, 135, 136, 142 |
+| halfcylinderRe640 | 1 … 45 (10) | 47, 52, 60, 61, 67 |
+| tornado3d | — | 0 *(single frame, test-only either way)* |
+
+`max(train index) < min(test index)` holds in every scene, so there is no temporal overlap.
+
+| split | macro-F1 (3 seeds) |
+|---|---:|
+| package default (interleaved) | 0.9549 ± 0.0018 |
+| **temporal (early → late)** | **0.9395 ± 0.0019** |
+
+The temporal split costs **-0.0154**. That difference is the value of the leakage in
+the package split, and it means **every number elsewhere in this document is inflated by roughly
+0.015** relative to a leak-free protocol. The temporal split still clears 0.94, so it is the more
+honest default and is used for all subsequent rounds.
+
+Per-scene on the temporal split (best seed):
+
+| scene | F1 |
+|---|---:|
+| SquareCylinder | 0.9398 |
+| cylinder3d | 0.9466 |
+| deltaWing_resampled | 0.9707 |
+| halfcylinderRe320 | 0.9239 |
+| halfcylinderRe640 | 0.9177 |
+| tornado3d *(test-only scene)* | 0.9809 |
+
+### 19.2 Tighter positive rules
+
+The official rule is `d < h`. `--positive-scale` tightens it to `d < scale·h`. The on-tube seeding
+radius follows the same scale, otherwise the positive rate would collapse (uniform-in-ball sampling
+puts only 0.8 % of a 1 h ball inside 0.2 h) and the task would become degenerate rather than harder.
+Class balance therefore stays near 0.24 at every scale.
+
+| positive rule | macro-F1 (3 seeds) | test positives |
+|---|---:|---:|
+| `d < 1.0 h` (official) | 0.9395 ± 0.0019 | 0.2421 |
+| `d < 0.5 h` | 0.9538 ± 0.0028 | 0.2415 |
+| `d < 0.2 h` | 0.9593 ± 0.0003 | 0.2412 |
+
+**These are different tasks, not a better model.** A `d < 0.2 h` classifier and a `d < 1.0 h`
+classifier answer different questions, so the F1 values are not directly comparable and the upward
+trend must not be read as an improvement.
+
+The likely mechanism is that a tighter threshold yields a **purer positive class**: a centre within
+0.2 h sits essentially on the coreline and its star carries the coreline's own swirling geometry,
+whereas the 1 h rule lumps that together with points a full cell away whose stars look much more like
+negatives. Tighter is a cleaner concept, not a finer discrimination.
+
+Only the `d < 1.0 h` column is comparable with the rest of this document.

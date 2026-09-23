@@ -21,6 +21,8 @@ to follow to reproduce results.**
 | Training cost | ~85 s per run on one A100-40GB |
 | Auxiliary losses | **none** — no SSL, no decoder reconstruction |
 
+Dataset variants (temporal split, tighter positive rules) are in §11.
+
 The recommended configuration is a **single icosahedral shell at radius 1 h**. It needs only a
 1 h boundary margin, which keeps 98.6 % of the coreline available for positive sampling. Larger
 shells score higher on their own benchmark but force a larger margin that discards up to a fifth
@@ -55,6 +57,31 @@ Official package, unmodified:
 Scenes: `cylinder3d`, `halfcylinderRe320`, `halfcylinderRe640`, `deltaWing_resampled`,
 `SquareCylinder`, `tornado3d`. **`tornado3d` is test-only** — it has no training frame, so it
 measures transfer to an unseen scene.
+
+### The official package is read-only
+
+**Nothing in the dataset folder was modified by this work.** No `.npy`, `.npz`, `.vtp` or `.json`
+file under `Task6_CorelineDataset_2.7_share` was written, moved or deleted; the only side effect
+of running the code is Python creating `__pycache__/` directories when `task6_fields.py` and
+`task6_bundles.py` are imported, which are safe to delete.
+
+Everything this work uses is **derived data**, written to a separate directory
+(`/home/cheny1a/data/task6_icostar_*`) and regenerated entirely from the official package by the
+command in §4. Nothing needs to be shipped alongside the dataset — the derived caches can be
+deleted and rebuilt at any time. The only artefact worth keeping is
+`docs/assets/temporal_split.json` (§11.1), and even that is reproducible from the snippet there.
+
+Every read goes through the official API: `Dataset`, `Frame.velocity`, `Frame.corelines()` and
+`Frame.integrate(...)` from `task6_fields.py`, plus `core_points.npy` / `core_offsets.npy` /
+`ivd.npy` read directly. Streamlines are produced only by the official
+`frame.integrate(...)` — no independent integrator is used anywhere.
+
+> **Note on `python task6_fields.py verify`.** This currently fails on a pre-existing packaging
+> gap: `provenance/manual_history_before_field_editor.zip` is listed in `dataset.json`'s
+> `files_sha256` but is absent from the distribution. The file was already missing before this
+> work started (everything under `provenance/` is dated 22 Sep) and is unrelated to the frame
+> data, corelines or splits. All per-frame source hashes still match — the preintegrated bundle
+> reader checks them on every access and raises otherwise.
 
 Verify the package before starting:
 
@@ -279,7 +306,93 @@ Trainer:
 | `--scenes` | train and test on a single scene |
 | `--save-weights` | archive encoder, head and normalisation stats |
 
-## 11. Known caveats
+## 11. Dataset variants
+
+Sections 4–6 build the dataset with the **package split** and the **official `d < h` positive
+rule**. Two variants of the data definition are supported; both are build-time choices.
+
+### 11.1 Split — package default vs temporal
+
+The package split interleaves frames in time: `cylinder3d` trains on frames 75-142 and tests on
+81-136, so most test frames are bracketed by training frames only a few timesteps away. A
+temporal split removes that leakage by giving each scene its earliest frames for training and its
+latest for test, keeping the per-scene 77 / 24 counts.
+
+```bash
+# generate the temporal split once (writes outputs/temporal_split.json)
+python - <<'EOS'
+import sys, json, collections
+R='<dataset root>'; sys.path.insert(0, R)
+from task6_fields import Dataset
+ds = Dataset(R)
+by = collections.defaultdict(list); counts = collections.defaultdict(lambda: [0, 0])
+for i, role in enumerate(('train', 'test')):
+    for k in ds.split[role]:
+        s = k.split(':')[0]; by[s].append(int(k.split(':')[1])); counts[s][i] += 1
+train, test = [], []
+for s in sorted(by):
+    idx = sorted(by[s]); ntr, nte = counts[s]
+    train += [f"{s}:{i}" for i in idx[:ntr]]
+    test  += [f"{s}:{i}" for i in idx[len(idx) - nte:]]
+json.dump({'train': train, 'test': test, 'unused': [],
+           'dataset_sha256': json.load(open(R + '/default_split.json'))['dataset_sha256']},
+          open('outputs/temporal_split.json', 'w'), indent=1)
+EOS
+
+# then build with it
+python experiments/Build_Task6_New_IcoStar_1_1.py \
+    --out $OUT --radii 0.25,0.5,1 --count 3000 \
+    --split-file outputs/temporal_split.json \
+    --threads 8 --shards 8 --shard $I
+```
+
+| split | macro-F1 (3 seeds) | note |
+|---|---:|---|
+| package default (interleaved) | 0.9549 ± 0.0018 | comparable with §6 |
+| **temporal (early → late)** | **0.9395 ± 0.0019** | leak-free; **recommended for new work** |
+
+The temporal split costs **-0.0154**, which measures the temporal leakage in the package
+split. Every number in §6 uses the package split and is inflated by roughly that amount. The
+temporal split still clears 0.94, so prefer it unless you need to compare against §6 directly.
+
+### 11.2 Positive rule — `d < scale·h`
+
+`--positive-scale` tightens the positive threshold. The on-tube seeding radius follows the same
+scale, so the class balance stays near 0.24 instead of collapsing.
+
+```bash
+python experiments/Build_Task6_New_IcoStar_1_1.py \
+    --out $OUT --radii 0.25,0.5,1 --count 3000 \
+    --split-file outputs/temporal_split.json --positive-scale 0.5 \
+    --threads 8 --shards 8 --shard $I
+```
+
+On the temporal split, single 1 h shell, lr 1e-3, 3 seeds:
+
+| positive rule | macro-F1 |
+|---|---:|
+| `d < 1.0 h` (official) | 0.9395 ± 0.0019 |
+| `d < 0.5 h` | 0.9538 ± 0.0028 |
+| `d < 0.2 h` | 0.9593 ± 0.0003 |
+
+**Do not read the upward trend as an improvement.** Each scale defines a *different task*, so the
+F1 values are not comparable. A tighter threshold gives a purer positive class — a centre within
+0.2 h sits essentially on the coreline — rather than a finer discrimination. Use
+`--positive-scale 1.0` for any comparison against published numbers or against §6.
+
+### 11.3 Choosing a setup
+
+| goal | split | positive rule |
+|---|---|---|
+| compare against §6 / earlier results | package default | `1.0` |
+| **new work, leak-free evaluation** | **temporal** | **`1.0`** |
+| reproduce the official positive set exactly | package default + `--official-centres` | `1.0` |
+| study a tighter coreline definition | temporal | `0.5` or `0.2` |
+
+The cache records `positive_scale` and `split_file` in `meta.json`, and each frame file stores
+`positive_scale`, so a cache always identifies which variant it is.
+
+## 12. Known caveats
 
 1. **Seeding is stratified, not the official protocol.** The official `IVD > 0.8 × max` centre
    rule gives zero positives in `SquareCylinder`, `cylinder3d` and `halfcylinderRe320`
