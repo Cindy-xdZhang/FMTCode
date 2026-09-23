@@ -5,13 +5,22 @@ two tasks in this repo. This document is a map: what was built, where it lives,
 how the setup differs from the original repo, and what is measured vs still open.
 The detailed results are in two companion documents.
 
+> **To reproduce Task 6, follow
+> [`Task6_Reproduction_Guide.md`](Task6_Reproduction_Guide.md).** It has the environment, the
+> dataset build, every hyper-parameter and the expected numbers. This document is the method
+> overview; the guide is the runbook.
+
 | | detail document |
 |---|---|
+| **Task 6 — how to run and reproduce** | **[`Task6_Reproduction_Guide.md`](Task6_Reproduction_Guide.md)** |
 | **Task 1** — unsupervised vortex clustering | [`3d_kmeans_ico.md`](3d_kmeans_ico.md) |
-| **Task 6** — supervised coreline classification | [`exp_Task6_IcoVAE.md`](exp_Task6_IcoVAE.md) |
+| **Task 6** — supervised coreline classification | [`exp_Task6_NewData_IcoStar.md`](exp_Task6_NewData_IcoStar.md) |
+| Task 6, previous data snapshot (superseded) | [`exp_Task6_IcoVAE.md`](exp_Task6_IcoVAE.md) |
 | 2D original this ports from | [`2d_kmeans_d8.md`](2d_kmeans_d8.md) |
 
-Everything here is in **new files**; no pre-existing repo file was modified.
+All code described here is in **new files**; no pre-existing repo source file was
+modified. This document and its companions are the only edited files, and they were
+authored as part of this work.
 
 ---
 
@@ -69,10 +78,14 @@ construction as the first-order concern.
 ### Task 6 (supervised)
 | file | what |
 |---|---|
-| `experiments/Build_Task6_ExactStar_1_1.py` | **traced** stars (use this) |
-| `experiments/Build_Task6_MultiShell_1_1.py` | multi-shell traced stars |
-| `experiments/Build_Task6_Ico_Cache_1_1.py` | borrowed-neighbour stars — **superseded, see §4.2** |
-| `experiments/Run_Task6_IcoVAE_1_1.py` | supervised training, SSL auxiliaries, warmup/cosine, per-scene mode |
+| `experiments/Build_Task6_New_IcoStar_1_1.py` | **current builder** — stratified centres, 12 vertices at 1/2/4/8 h, official `task6_fields` API |
+| `experiments/Run_Task6_NewStar_IcoVAE_1_1.py` | **current trainer** — shell slicing, SSL/decoder objectives, two-stage pretraining, label-fraction |
+| `experiments/Run_Task6_NewStar_Conv3D_1_1.py` | Conv3D voxel baseline, width-configurable for capacity matching |
+| `experiments/Analyze_Task6_NewStar_Distance_1_1.py` | accuracy resolved against distance-to-coreline and seeding stratum |
+| `experiments/Build_Task6_ExactStar_1_1.py` | previous-snapshot builder — **superseded**, that data no longer exists |
+| `experiments/Build_Task6_MultiShell_1_1.py` | previous-snapshot multi-shell builder — superseded |
+| `experiments/Build_Task6_Ico_Cache_1_1.py` | borrowed-neighbour stars — **withdrawn, see §4.2** |
+| `experiments/Run_Task6_IcoVAE_1_1.py` | previous-snapshot trainer |
 
 ---
 
@@ -154,88 +167,138 @@ icosahedral star is not testing the method.**
 
 ---
 
-## 5. Task 6 — what is usable, and why only one scene
+## 5. Task 6 — the 2.7 dataset, and why the shipped bundles were not used
 
-Tracing neighbours needs the velocity field. Each candidate was verified by
-interpolating it along the stored streamlines and measuring the cosine against
-the tangent (true match ≈ 1.0, unrelated field ≈ 0.0):
+The previous snapshot is gone; only `Task6_CorelineDataset_2.7_share` remains, so
+every number in `exp_Task6_IcoVAE.md` refers to data that no longer exists. The
+provenance hunt described in earlier versions of this section is **obsolete** — the
+new package ships the velocity field for all six scenes directly, which was listed
+here as "the single highest-value thing to add". It is done.
 
-| scene | best candidate | median cos | usable |
-|---|---|---|---|
-| **deltaWing_resampled** | `deltaWing_mag0_3reesampled` | **0.9985** | **yes** |
-| cylinder3d | `halfcylinderRe160` | 0.8653 | no |
-| halfcylinderRe640 | `halfcylinderRe640` | 0.8657 | no |
-| halfcylinderRe320 | `halfcylinderRe6400` | 0.7662 | no |
+**101 frames, 6 scenes, 77 train / 24 test.** `tornado3d` appears only in test, so it
+measures transfer to a scene with no training data at all.
 
-`halfcylinderRe160Resampled` and `halfcylinderRe640resampled` were also tested
-with correct **time-value** lookup and reach only 0.863 / 0.862 — right
-simulation family, wrong variant. `SquareCylinder` and `tornado3d` ship no
-`sample_streamlines.npy` at all, and `tornado3d` was the split's only genuinely
-held-out scene.
+The package also ships `preintegrated/icosa_bundles_1.1` (11 GB, 1.01 M centres, 20
+face-centre neighbours at 1 h). **It is not usable for a pooled all-scene
+classifier**: its `IVD > 0.8 x max` centre rule yields *zero* positives in three of
+six scenes (SquareCylinder, cylinder3d, halfcylinderRe320 — 620 000 centres, no
+positives) and 82.7 % positives in halfcylinderRe640. The high-IVD region is not
+co-located with the corelines. The README explicitly frees collaborators to re-seed
+while fixing the label rule, so we re-seed and keep the label rule exactly (`d < h`
+to the continuous coreline, corelines densified to `h/10` first).
 
-**If you have the true fields for the other scenes, that is the single highest-value
-thing to add** — it would take Task 6 from one scene to four and restore the
-cross-scene generalisation the split was designed to measure.
+Stratified seeding — 25 % on-tube, 35 % hard shell `h..8h`, 40 % from the old IVD
+region — gives every scene a 0.22-0.27 positive rate.
 
-### Result (deltaWing, 200k train / 100k test, 7.8% positive)
+### Result (all 6 scenes, 217 342 train / 68 495 test stars)
 
-| arm (5 seeds) | pos F1 | macro F1 | AP |
-|---|---|---|---|
-| **reconstruction auxiliary** | **0.8014 ± 0.0026** | 0.8924 | 0.7941 |
-| contrastive + reconstruction | 0.8001 ± 0.0058 | 0.8918 | 0.7729 |
-| supervised only | 0.7888 ± 0.0053 | 0.8856 | **0.8113** |
-| contrastive only | 0.7868 ± 0.0042 | 0.8844 | 0.8110 |
+| model | params | macro F1 (3 seeds) |
+|---|---:|---:|
+| **IcoVAE, 4-shell star (1/2/4/8 h)** | 629 297 | **0.9651 ± 0.0006** |
+| Conv3D splat, best anywhere (1 h) | 2 163 777 | 0.9332 |
+| Conv3D splat, capacity-matched (1 h) | 608 929 | 0.9267 |
+| Conv3D splat, frozen repo baseline (1 h) | 84 361 | 0.8961 |
 
-Reconstruction: **+0.0126, p = 0.003**. Contrastive: **−0.0020, p = 0.52**.
+**+0.035 at matched capacity, +0.032 against Conv3D at 3.4x the parameters**, and
+Conv3D gains only +0.002 over its last 1.5x capacity step — the gap is
+representational, not a capacity artefact.
 
-**The contrastive term — which is the whole method on Task 1 — does nothing
-here.** Plausibly because invariance to `I_h` deliberately discards orientation,
-and orientation is what distinguishes a coreline-aligned star from a passing one;
-whereas reconstruction forces the latent to keep geometry the label does not
-supply.
+Two shells beat any single shell; accuracy falls monotonically for single shells past
+2 h, so a wide shell only helps *alongside* a narrow one.
 
-**Caveat worth carrying:** AP *disagrees* with F1 — the supervised arm has the
-best average precision (0.8113) and the worst F1. Reconstruction improves
-calibration near the 0.5 threshold rather than the ranking. If the downstream use
-ranks candidates, the gain may not transfer.
+**Pooling beats per-scene specialisation in four of five scenes**, and `tornado3d` —
+with no training frame at all — is the best-scoring scene at **0.9895**. The model
+learned a transferable coreline signature, not scene appearance.
+
+### The SSL question, answered across label regimes
+
+The previous snapshot's conclusion ("reconstruction helps, contrastive does nothing")
+turns out to be regime-specific rather than general:
+
+| labels | what helps |
+|---|---|
+| 217 342 (100 %) | nothing; continuous SO(3) *hurts*, −0.0027 at p = 0.013 |
+| 10 867 (5 %) | nothing, ±0.003 |
+| 2 173 (1 %) | contrastive + decoder, +0.021 |
+| 435 (0.2 %) | decoder +0.047; contrastive **−0.064**; weak contrastive (w 0.1) + decoder **+0.060** |
+
+* The contrastive collapse at 435 labels is **not** a weight artefact — it hurts at
+  every weight alone, and is only useful alongside the decoder.
+* **Optimal weights do not transfer across regimes**: the decoder wants w = 10 under
+  scarcity, but w = 10 is the worst arm at full supervision (−0.0127). A sweep run only
+  at 100 % labels recommends the wrong setting for the regime that matters.
+* **Joint training beats two-stage pretraining** for every objective at both label
+  fractions, and every frozen linear probe sits at or below the majority-class floor
+  (0.4306) — the pretext tasks do not yield a linearly separable representation.
+
+So on Task 6 the group action is a **regulariser under label scarcity**, not a
+representation-learning objective. The headline accuracy comes from the supervised
+head on the icosahedral star geometry.
+
+### Where the errors are
+
+Accuracy 0.9741 overall, but the `[1, 2)h` band — immediately outside the positive
+threshold — sits at **0.8227**, and the innermost 2 h (29 % of the data) produces
+**81 % of every mistake**. Past 4 h the classifier is at 0.995+. The residual error is
+boundary ambiguity at grid resolution, not failure to detect corelines.
 
 ---
 
 ## 6. What is tested, and what is open
 
 ### Tested
-| | Task 1 | Task 6 |
+| | Task 1 | Task 6 (2.7 data) |
 |---|---|---|
-| views: discrete `I_h` / continuous SO(3) / both | ✓ | ✓ |
-| reconstruction on/off, weight sweep | ✓ | ✓ (peak at λ=30; 100+ collapses) |
-| VICReg variance floor | ✓ (interacts with everything) | ✓ (flat) |
-| learning rate | ✓ (5e-4 interior optimum) | ✓ (warmup **essential** at 1e-3: without it, divergence) |
-| warmup / cosine | — | ✓ (warmup +0.63, cosine +0.011) |
-| latent size, batch, head type, weight decay | ✓ | ✓ — **all flat** |
+| views: discrete `I_h` / `I` / continuous SO(3) / mixed | ✓ | ✓ |
+| reconstruction on/off, weight sweep | ✓ | ✓ (optimum **inverts** with label count) |
+| VICReg variance floor | ✓ (interacts with everything) | ✓ (harmful, −0.002 to −0.003) |
+| learning rate | ✓ (5e-4 interior optimum) | ✓ (1e-3; 1e-4 clearly worse) |
+| warmup / cosine | — | ✓ (**+0.005** over constant — larger than any objective effect) |
+| latent size, batch, head type, weight decay | ✓ | partially |
 | clusterer & read-out rules (7 × 4 × 5) | ✓ | n/a |
-| neighbour radius | n/a (traced at fixed offset) | ✓ **peak at 8–9h** |
-| per-scene vs joint models | n/a | ✓ |
+| neighbour radius / multi-shell | n/a | ✓ (1 / 2 / 4 / 8 h and combinations; two shells beat one) |
+| per-scene vs joint models | n/a | ✓ (**joint wins 4 of 5 scenes**) |
+| capacity-matched Conv3D baseline | — | ✓ (6-point ladder, 84 k → 2.16 M) |
+| label-scarcity sweep (0.2 % → 100 %) | — | ✓ (**the decisive experiment for SSL**) |
+| two-stage pretraining + linear probe | — | ✓ (loses to joint everywhere) |
+| training length | ✓ | ✓ (4 k suffices; 24 k overfits after ~17 k) |
+| error vs distance-to-coreline | — | ✓ |
 
-### Running / queued
-* **Round E** — 3× training data (60k seeds/frame), streamline arclength 0.25 / 1.0 vs 0.5, 129 samples vs 65.
-* **Round F** — **multi-shell stars**: centre + 12 at *two* radii (4+8h, 2+8h, 6+10h, three-shell 4+8+12h). Still exactly icosahedrally symmetric — the group permutes both shells by the same permutation, verified to `1.33e-15`. `apply_group_shells` and a configurable line count are implemented and tested.
+Task 6 totals ~200 runs across eight chained rounds; artefacts in
+`outputs/exp_Task6_NewStar/*.json` (each holds the full F1-vs-step curve and a
+per-scene breakdown) and weights in `outputs/weights_Task6_NewStar/`.
 
 ### Open / suggested next
-1. **Get the remaining Task 6 fields** (§5) — highest value by far.
-2. **Seeds.** Most Task 1 single-factor cells are one seed, and two conclusions
-   in this study reversed on re-measurement. Task 6's headline is 5 seeds/arm.
-3. **Exact continuous SO(3) views.** The current `random_so3` rotates vectors
-   exactly but assigns channels by *nearest vertex*; below ~29.5° that leaves
-   channels unchanged while vectors rotate, which is not a valid star. A graph
-   formulation carrying each arm's direction as a node feature would fix it.
-4. **Task 1 radius.** Task 6 found radius worth ±0.14; Task 1 uses a single fixed
+1. **Seeds.** Most Task 1 single-factor cells are one seed. On Task 6 three
+   single-seed rankings reversed once seeded (round-A geometry, round-B objective,
+   the two-stage sign flip), so treat any unseeded ordering as provisional.
+2. **Arc length on Task 6** — running. Every Task 6 result fixes
+   `total_length 0.5` (≈40 h); caches at 0.25 / 1.0 / 2.0 reuse the same centres via
+   `--centres-from`, so the comparison is exactly controlled.
+3. **Points per streamline** is fixed at 65 on Task 6; 129 is untested.
+4. **Exact continuous SO(3) views — now measured.** `random_so3` assigns channels by nearest
+   vertex, and over 200,000 rotations that map is **not bijective in 31 % of draws**
+   (two channels claim one vertex, so a neighbour is duplicated and another dropped).
+   A corrected view (`so3snap`, snap to the nearest group element) is implemented and
+   verified bijective — but at n = 8 it changes accuracy by -0.0002 (p = 0.69), i.e. **not
+   at all**. The defect is real geometrically and costless downstream. `so3snap` is
+   still the better default: it has the lowest seed variance of any arm
+   (0.0004 vs 0.0015). See `experiments/Analyze_SO3_ChannelMap_1_1.py`.
+
+5. **Task 1 radius.** Task 6 found radius worth ±0.03; Task 1 uses a single fixed
    offset (`0.5 × min grid spacing`) and has never swept it.
-5. **AP-vs-F1 divergence on Task 6** (§5) — worth resolving before the
-   reconstruction gain is relied on.
+6. **Task 1 under the Task 6 lens.** Task 1 is evaluated only in the fully
+   unsupervised regime. The Task 6 label-scarcity sweep shows the contrastive term's
+   value depends sharply on how much supervision is present — worth checking whether
+   Task 1's conclusions are similarly regime-bound.
 
 ---
 
 ## 7. Reproducing
+
+For Task 6 use [`Task6_Reproduction_Guide.md`](Task6_Reproduction_Guide.md) instead of the
+snippet below — it is the maintained runbook, uses the recommended 1 h-margin configuration,
+and lists every hyper-parameter with its justification.
 
 ```bash
 # Task 1 — cache (no split), then one run per dataset
@@ -246,15 +309,32 @@ python experiments/Run_Task1_IcoVAE_1_1.py --dataset halfcylinderRe160_eth \
   --save-latents outputs/exp_Task1_IcoVAE_latents
 python experiments/Analyze_Task1_IcoVAE_Clusterer_1_1.py --clusterers kmeans,gmm_tied
 
-# Task 6 — traced stars at the best radius, then the winning recipe
-python experiments/Build_Task6_ExactStar_1_1.py --radius-scale 8 --count 20000
-python experiments/Run_Task6_IcoVAE_1_1.py --cache outputs/exp_Task6_Exact_r8 \
-  --schedule cosine --warmup-steps 2000 --lr 1e-3 --lambda-recon 30 --lambda-ssl 0
+# Task 6 (2.7 data) — build the star cache, ~13 min wall clock over 8 shards
+for I in 0 1 2 3 4 5 6 7; do
+  python experiments/Build_Task6_New_IcoStar_1_1.py \
+    --out /home/cheny1a/data/task6_icostar_1_1 --count 3000 --threads 8 --shards 8 --shard $I &
+done; wait
+
+# Task 6 — the best recipe (0.9651 ± 0.0006 macro F1, 3 seeds)
+python experiments/Run_Task6_NewStar_IcoVAE_1_1.py --shells 1,2,4,8 --lr 1e-3 \
+  --schedule cosine --warmup-steps 400 --class-weight --seed 11 --label best \
+  --save-weights outputs/weights_Task6_NewStar/best_seed11.pt
+
+# Task 6 — capacity-matched Conv3D baseline, and the error breakdown
+python experiments/Run_Task6_NewStar_Conv3D_1_1.py --shells 1 --arch wide \
+  --channels 32,64,128 --hidden 320 --label conv3d_609k
+python experiments/Analyze_Task6_NewStar_Distance_1_1.py \
+  --weights outputs/weights_Task6_NewStar/best_seed11.pt
 
 python tests/test_icosahedral_group_3d.py     # 7 checks, all should pass
 ```
 
-Environment: `conda activate pyflowvis` (torch 2.12 / cu126, sklearn 1.8,
-netCDF4, numba, typeguard — the last three were installed for this work).
-Data: `/home/cheny1a/data/flowData3D/`, Task 6 under
-`Task6_CorelineDataset_2.7_share/`.
+Environment: `conda activate pyflowvis` (torch 2.12 / cu126, sklearn 1.8, netCDF4,
+numba, typeguard — the last three were installed for this work).
+Data: `/home/cheny1a/data/flowData3D/Task6_CorelineDataset_2.7_share/`; the derived
+star cache is ~11 GB at `/home/cheny1a/data/task6_icostar_1_1/`.
+
+**Reproducibility caveat.** The first Task 6 star cache was built with a per-frame
+seed derived from Python's `hash()`, which is salted per process, so that particular
+build cannot be regenerated centre-for-centre. The builder now uses `hashlib.sha256`
+and is stable; `--centres-from` reuses an existing cache's centres exactly.

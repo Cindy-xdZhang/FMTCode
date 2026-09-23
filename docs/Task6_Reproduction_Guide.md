@@ -1,0 +1,295 @@
+# Task 6 — reproduction guide (IcoVAE coreline classification)
+
+How to rebuild the dataset, train the model, and reproduce the reported numbers on
+`Task6_CorelineDataset_2.7_share`. Written for someone who has the official code repo.
+
+Background, the full experiment record and every negative result are in
+[`exp_Task6_NewData_IcoStar.md`](exp_Task6_NewData_IcoStar.md); the method overview across
+Task 1 and Task 6 is in [`IcoVAE_handover.md`](IcoVAE_handover.md). **This document is the one
+to follow to reproduce results.**
+
+---
+
+## 1. Headline
+
+| | |
+|---|---|
+| Task | per-point vortex coreline classification, 6 scenes, 77 train / 24 test frames |
+| Model | icosahedral SIREN-VAE encoder + MLP head, 587,501 parameters |
+| **Result** | **macro-F1 0.9549 ± 0.0018** (3 seeds) |
+| Coreline coverage | **98.6 %** (1 h boundary margin) |
+| Training cost | ~85 s per run on one A100-40GB |
+| Auxiliary losses | **none** — no SSL, no decoder reconstruction |
+
+The recommended configuration is a **single icosahedral shell at radius 1 h**. It needs only a
+1 h boundary margin, which keeps 98.6 % of the coreline available for positive sampling. Larger
+shells score higher on their own benchmark but force a larger margin that discards up to a fifth
+of the coreline — see §7.
+
+---
+
+## 2. Environment
+
+```
+python 3.11.16
+torch  2.12.0+cu126      (CUDA 12.6, one GPU is enough)
+numpy  1.26.4
+scipy  1.17.1
+numba  0.67.0            (required by the official integrator)
+```
+
+`conda activate pyflowvis` in this setup. One A100-40GB; the recommended configuration holds all
+data on the GPU and peaks near 12 GB. For larger caches add `--data-device cpu`.
+
+## 3. Data
+
+Official package, unmodified:
+
+```
+/home/cheny1a/data/flowData3D/Task6_CorelineDataset_2.7_share
+    task6_fields.py      Dataset / Frame / frame.integrate(...)
+    dataset.json         101 frames
+    default_split.json   77 train / 24 test / 0 unused
+```
+
+Scenes: `cylinder3d`, `halfcylinderRe320`, `halfcylinderRe640`, `deltaWing_resampled`,
+`SquareCylinder`, `tornado3d`. **`tornado3d` is test-only** — it has no training frame, so it
+measures transfer to an unseen scene.
+
+Verify the package before starting:
+
+```bash
+cd /home/cheny1a/data/flowData3D/Task6_CorelineDataset_2.7_share
+python task6_fields.py verify
+```
+
+### Label rule
+
+A centre is positive **iff its distance to the continuous coreline segments is strictly less
+than `h`**, where `h = min(grid spacing)`. Distance is to the *continuous polyline*, not to its
+sampled vertices. This is the official rule, and the implementation here reproduces the official
+`labels.npy` **exactly — 1 010 000 / 1 010 000 centres, 0 mismatches** across all 101 frames.
+Nearest-vertex distance achieves only 99.8653 % and an `h/10` densification 99.9982 %, so exact
+point-to-segment distance is used (`segment_distance` in the builder).
+
+## 4. Build the star cache
+
+```bash
+cd /home/cheny1a/git/FMTCode
+OUT=/home/cheny1a/data/task6_icostar_r0250510
+for I in 0 1 2 3 4 5 6 7; do
+  python experiments/Build_Task6_New_IcoStar_1_1.py \
+      --out $OUT --radii 0.25,0.5,1 --count 3000 \
+      --threads 8 --shards 8 --shard $I &
+done; wait
+```
+
+~25 min wall clock over 8 shards, **8.0 GB** on disk, 101 frames. The cache stores radii
+0.25 / 0.5 / 1 h; the recommended run slices the 1 h shell out of it with `--shells 1`, so one
+build covers every configuration in §6.
+
+Each frame file holds `curves [n, 1+12k, 65, 3] float32`, `centres`, `labels`, `dist` (distance
+to coreline in units of h), `kind` (0 positive / 1 hard / 2 far), `role`, `key`, `h`, `radii`,
+`offsets`, `total_length`.
+
+### What the builder does
+
+* **Geometry.** Centre streamline plus 12 neighbours at the vertices of a regular icosahedron,
+  one fixed global orientation, at each requested radius. The fixed orientation is what makes
+  the `I_h` action an exact channel permutation (120 elements; verified in
+  `tests/test_icosahedral_group_3d.py`).
+* **Integration.** The official `frame.integrate(...)`: bidirectional arc length
+  `--total-length` (default 0.5 ≈ 40 h), resampled to 65 points. A star is kept only if **all**
+  of its lines pass the returned `valid` mask, as the dataset README requires.
+* **Seeding.** Centres are stratified so every scene carries positives — 25 % on the coreline
+  tube (`d < h`), 35 % in a hard shell (`h ≤ d ≤ 8h`), 40 % from the old `IVD > mean` region.
+  This departs deliberately from the official `IVD > 0.8 × max` rule, which yields zero
+  positives in three of six scenes (§11).
+* **Margin.** Centres stay `max(radii) × h × 1.05` clear of the boundary so no neighbour seed is
+  ever clipped. With `--radii 0.25,0.5,1` that margin is 1 h.
+
+## 5. Train
+
+```bash
+python experiments/Run_Task6_NewStar_IcoVAE_1_1.py \
+    --cache /home/cheny1a/data/task6_icostar_r0250510 \
+    --shells 1 \
+    --lr 1e-3 --schedule cosine --warmup-steps 400 \
+    --class-weight --steps 4000 --batch 512 \
+    --seed 11 --label repro_seed11 \
+    --save-weights outputs/weights_Task6/repro_seed11.pt
+```
+
+Repeat with `--seed 23` and `--seed 37` and average. Each run writes
+`outputs/exp_Task6_NewStar/<label>.json` with the full F1-vs-step curve and a per-scene
+breakdown at every eval step.
+
+### Every hyper-parameter
+
+| flag | value | why |
+|---|---|---|
+| `--shells` | `1` | single 1 h shell; see §6 |
+| `--lr` | `1e-3` | 1e-4 is clearly worse (−0.014); 2e-3 no better |
+| `--schedule` | `cosine` | **+0.005 over constant** — larger than any objective effect |
+| `--warmup-steps` | `400` | needed at 1e-3; constant LR without warmup can diverge |
+| `--steps` | `4000` | 12 000 adds nothing; 24 000 overfits after ≈17 000 |
+| `--batch` | `512` | default |
+| `--class-weight` | on | best arm at full supervision |
+| `--z-inv` / `--z-eq` | `16` / `12` | split latent; flat in sweeps |
+| `--head` | `mlp` | linear is ≈0.003 worse |
+| `--clip-sigma` | `5.0` | default |
+| `--encoder` | `conv` | conv + transformer; `pure` transformer is no better |
+| `--lambda-ssl` | **0** | contrastive costs −0.0012 at full supervision |
+| `--lambda-recon` | **0** | decoder costs −0.0011; at weight 10, −0.0127 |
+| `--zinv-var-weight` | **0** | VICReg term costs −0.0018 |
+| `--total-length` | 0.5 *(build time)* | plateau 0.125–0.5; 2.0 costs 0.019 |
+| `--points` | 65 *(build time)* | 129 changes nothing (p = 0.78) |
+
+**The auxiliary losses are off deliberately** — they are measured to be slightly harmful at full
+supervision. Turn them on only when labels are scarce (§8).
+
+## 6. Expected numbers
+
+Shell configurations on the 1 h-margin cache (98.6 % coverage), lr 1e-3, 3 seeds unless noted:
+
+| shells | macro-F1 | note |
+|---|---:|---|
+| **1** | **0.9549 ± 0.0018** | **recommended** |
+| 0.25,0.5,1 | 0.9513 ± 0.0011 | all three shells |
+| 0.5 | 0.9512 ± 0.0005 |  |
+| 0.25,1 | 0.9491 ± 0.0010 |  |
+| 0.5,1 | 0.9485 ± 0.0004 |  |
+| 0.25 | 0.9484 ± 0.0008 |  |
+| 0.25,0.5 | 0.9464 ± 0.0006 |  |
+
+Learning rate, verified on the three-shell configuration (3 seeds each):
+
+| lr | macro-F1 |
+|---:|---:|
+| 5e-04 | 0.9507 ± 0.0022 |
+| **1e-03** | **0.9513 ± 0.0011** |
+| 2e-03 | 0.9461 ± 0.0004 |
+
+**Adding shells hurts here.** A single 1 h shell (0.9549) beats all three (0.9513).
+Closely spaced shells are largely redundant and only add channels. Widely separated shells *do*
+help — 1 h + 8 h beat any single shell in earlier sweeps — but those require an 8 h margin, which
+is exactly what §7 rules out.
+
+Per-scene F1 of the recommended configuration:
+
+| scene | F1 | note |
+|---|---:|---|
+| SquareCylinder | 0.9774 |  |
+| cylinder3d | 0.9538 |  |
+| deltaWing_resampled | 0.9823 |  |
+| halfcylinderRe320 | 0.9492 |  |
+| halfcylinderRe640 | 0.9243 |  |
+| tornado3d | 0.9862 | **test-only — no training frame, so this is transfer to an unseen scene** |
+
+Dataset sizes for this configuration: **224,938 train / 70,396 test stars**,
+test positive rate 0.2412.
+
+### Baseline
+
+```bash
+python experiments/Run_Task6_NewStar_Conv3D_1_1.py \
+    --cache /home/cheny1a/data/task6_icostar_r0250510 --shells 1 \
+    --arch wide --channels 32,64,128 --hidden 320 --label conv3d_609k
+```
+
+A capacity-matched Conv3D voxel-splat baseline (608 929 parameters), reusing the repo's frozen
+`bundle_voxels` and `Conv3DClassifier`. On the 8 h cache it reaches 0.9267 against IcoVAE's
+0.9649 on identical data — **+0.038 for IcoVAE at matched capacity** — and it saturates near
+0.933 even at 2.16 M parameters, so the gap is representational rather than a capacity artefact.
+
+## 7. Why a 1 h margin
+
+Centres must sit `max(radii) × h × 1.05` clear of the boundary so every neighbour seed stays in
+the domain. Positive centres are perturbed coreline points, so **any coreline inside that margin
+contributes no positives at all**. Measured by `experiments/Analyze_Task6_MarginLoss_1_1.py`:
+
+| margin | coreline reachable | worst scene (`halfcylinderRe640`) |
+|---:|---:|---:|
+| **1 h** | **98.59 %** | **93.41 %** |
+| 2 h | 96.44 % | 77.84 % |
+| 4 h | 91.35 % | 53.47 % |
+| 8 h | 79.21 % | 12.47 % |
+
+`halfcylinderRe640`'s grid is 160×60×20, so its z axis spans only **19.9 h**; an 8 h margin
+removes 16.8 h of it, confining centres to a 3.1 h slab.
+
+A 1/2/4/8 h star scores higher (0.9662) — but on a benchmark missing a fifth of the coreline.
+Evaluated **on the same spatial region**, the wide star's advantage is **+0.0022, p = 0.106 —
+not significant**; roughly 79 % of the apparent gap is test-set difficulty, not model quality.
+A 1 h margin is therefore the right default: near-complete coverage at no statistically
+detectable cost.
+
+## 8. If labels are scarce
+
+Auxiliary objectives are harmful at full supervision but help sharply below ≈5 % labels, and
+which one helps depends on the regime:
+
+| labels | recommended flags | gain |
+|---:|---|---:|
+| 224,938 (100 %) | none | — |
+| ≈11 000 (5 %) | none | ±0.003 |
+| ≈2 200 (1 %) | `--lambda-ssl 1.0 --lambda-recon 1.0` | +0.021 |
+| ≈440 (0.2 %) | `--lambda-ssl 0.1 --lambda-recon 1.0` | **+0.060** |
+
+Use `--label-fraction` to subsample the labelled pool; SSL and reconstruction still see every
+star. The contrastive term **alone** costs −0.064 at 0.2 % labels — it is only useful alongside
+the decoder. Two-stage pretraining (`--pretrain-steps`) loses to joint training in every setting
+tested, and every frozen linear probe sits at the majority-class floor.
+
+## 9. Code map
+
+| file | role |
+|---|---|
+| `experiments/Build_Task6_New_IcoStar_1_1.py` | dataset builder (stratified seeding, exact labels) |
+| `experiments/Run_Task6_NewStar_IcoVAE_1_1.py` | training / evaluation |
+| `experiments/Run_Task6_NewStar_Conv3D_1_1.py` | Conv3D voxel baseline, width-configurable |
+| `experiments/Analyze_Task6_MarginLoss_1_1.py` | coreline coverage vs margin |
+| `experiments/Analyze_Task6_NewStar_Distance_1_1.py` | accuracy vs distance-to-coreline |
+| `experiments/Analyze_SO3_ChannelMap_1_1.py` | continuous-SO(3) view diagnostic |
+| `FMT_Utils/IcoVAE_3D.py` | encoder, decoder, objective terms *(pre-existing)* |
+| `FMT_Utils/IcosahedralGroup_3D.py` | 12 vertices, 120 group elements, permutations *(pre-existing)* |
+| `tests/test_icosahedral_group_3d.py` | 7 group checks; all should pass |
+
+## 10. Other useful options
+
+Builder:
+
+| flag | purpose |
+|---|---|
+| `--radii` | shell radii in units of h; also sets the boundary margin |
+| `--total-length` | streamline arc length (build time) |
+| `--points` | samples per streamline (default 65) |
+| `--centres-from` | reuse another cache's centres, for controlled comparisons |
+| `--official-centres` | take centres from `preintegrated/icosa_bundles_1.1`, reproducing the official positive set exactly |
+| `--count` | centres proposed per frame before the validity filter |
+| `--pos-frac` / `--hard-frac` / `--hard-max` | seeding strata |
+
+Trainer:
+
+| flag | purpose |
+|---|---|
+| `--restrict-to` | evaluate only on centres common to several caches |
+| `--min-margin` | keep centres this many h from the boundary, to compare caches on one region |
+| `--data-device cpu` | stream batches for caches too large for GPU memory |
+| `--scenes` | train and test on a single scene |
+| `--save-weights` | archive encoder, head and normalisation stats |
+
+## 11. Known caveats
+
+1. **Seeding is stratified, not the official protocol.** The official `IVD > 0.8 × max` centre
+   rule gives zero positives in `SquareCylinder`, `cylinder3d` and `halfcylinderRe320`
+   (620 000 centres, no positives) and 82.7 % positives in `halfcylinderRe640`, so it cannot
+   train a pooled classifier. The dataset README explicitly permits re-seeding while fixing the
+   label rule. To reproduce the official positive set exactly, use `--official-centres`.
+2. **The label rule is exact; an earlier `h/10` approximation was not.** Caches built before the
+   `segment_distance` fix have ≈0.002 % of labels wrong, all at the threshold.
+3. **The first 8 h cache is not bit-reproducible** — its per-frame seed came from Python's salted
+   `hash()`. The builder now uses `hashlib.sha256`.
+4. **Effects below ≈0.005 need more than three seeds.** Five conclusions in the companion
+   document reversed on re-measurement at higher seed counts; treat any single-seed ordering as
+   provisional.
