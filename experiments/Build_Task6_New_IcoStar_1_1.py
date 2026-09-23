@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import os
 import json
 import sys
 import time
@@ -216,7 +217,10 @@ def build_frame(frame, key, rng, args, offsets, reuse=None):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--root", default="/home/cheny1a/data/flowData3D/Task6_CorelineDataset_2.7_share")
+    p.add_argument("--root",
+                   default=os.environ.get("TASK6_ROOT",
+                       "/home/cheny1a/data/flowData3D/Task6_CorelineDataset_2.7_share"),
+                   help="dataset package root; set TASK6_ROOT to override the default")
     p.add_argument("--out", required=True)
     p.add_argument("--count", type=int, default=3000)
     p.add_argument("--points", type=int, default=65)

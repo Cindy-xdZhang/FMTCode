@@ -45,17 +45,28 @@ def main():
     ckpt = torch.load(args.weights, map_location="cpu", weights_only=False)
     a = ckpt["args"]
     shells = tuple(float(x) for x in a["shells"].split(","))
-    idx = [0]
-    for s in shells:
-        b = 1 + NEIGHBOUR_COUNT * RADII.index(s)
-        idx.extend(range(b, b + NEIGHBOUR_COUNT))
-    idx = np.asarray(idx)
+    # Radii come from the cache, not from a module constant: a cache built with
+    # --radii 0.25,0.5,1 puts shell 1 in a different block than a 1,2,4,8 cache,
+    # and using the wrong block silently feeds the model the wrong neighbours.
+    idx = None
+
+    def shell_index(available):
+        out = [0]
+        for s in shells:
+            where = np.flatnonzero(np.isclose(available, s))
+            if not len(where):
+                raise ValueError(f"cache has radii {list(available)}, asked for shell {s}")
+            b = 1 + NEIGHBOUR_COUNT * int(where[0])
+            out.extend(range(b, b + NEIGHBOUR_COUNT))
+        return np.asarray(out)
 
     curves, labels, dist, kind, scene = [], [], [], [], []
     for path in sorted(Path(args.cache).glob("*.npz")):
         with np.load(path, allow_pickle=False) as d:
             if str(d["role"]) != "test":
                 continue
+            if idx is None:
+                idx = shell_index(d["radii"])
             curves.append(d["curves"][:, idx]); labels.append(d["labels"])
             dist.append(d["dist"]); kind.append(d["kind"])
             scene.extend([str(d["key"]).split(":")[0]] * len(d["labels"]))

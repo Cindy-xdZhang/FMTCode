@@ -30,7 +30,28 @@ of the coreline — see §7.
 
 ---
 
-## 2. Environment
+## 2. Reproduce in one command
+
+```bash
+bash experiments/reproduce_task6.sh /path/to/Task6_CorelineDataset_2.7_share
+```
+
+This checks the dataset revision, builds the cache, **verifies it**, trains three seeds and
+prints the result against the reference. It fails loudly rather than training on a cache that
+would not reproduce. Roughly 30 minutes end to end on one A100.
+
+If you prefer to run the steps by hand, follow §5–§8 — but run the §6 verification either way.
+
+### What this does NOT use
+
+**No `preintegrated/` directory is read at any point** — not `icosa_bundles_1.1`, not
+`icosa__p96`, not `icosa_bundles_max80_1.1`. Every streamline is produced by the official
+`frame.integrate(...)` in `task6_fields.py` from the raw velocity fields. Training on the
+shipped preintegrated curves instead is the single most likely cause of a large shortfall,
+because those bundles use the official `IVD > 0.8 x max` centre rule (§13) and a different
+neighbour geometry (20 face centres at 1 h, not 12 vertices).
+
+## 3. Environment
 
 ```
 python 3.11.16
@@ -43,7 +64,7 @@ numba  0.67.0            (required by the official integrator)
 `conda activate pyflowvis` in this setup. One A100-40GB; the recommended configuration holds all
 data on the GPU and peaks near 12 GB. For larger caches add `--data-device cpu`.
 
-## 3. Data
+## 4. Data
 
 Official package, unmodified:
 
@@ -69,7 +90,7 @@ Everything this work uses is **derived data**, written to a separate directory
 (`/home/cheny1a/data/task6_icostar_*`) and regenerated entirely from the official package by the
 command in §4. Nothing needs to be shipped alongside the dataset — the derived caches can be
 deleted and rebuilt at any time. The only artefact worth keeping is
-`docs/assets/temporal_split.json` (§11.1), and even that is reproducible from the snippet there.
+`docs/assets/temporal_split.json` (§13.1), and even that is reproducible from the snippet there.
 
 Every read goes through the official API: `Dataset`, `Frame.velocity`, `Frame.corelines()` and
 `Frame.integrate(...)` from `task6_fields.py`, plus `core_points.npy` / `core_offsets.npy` /
@@ -99,21 +120,26 @@ sampled vertices. This is the official rule, and the implementation here reprodu
 Nearest-vertex distance achieves only 99.8653 % and an `h/10` densification 99.9982 %, so exact
 point-to-segment distance is used (`segment_distance` in the builder).
 
-## 4. Build the star cache
+## 5. Build the star cache
 
 ```bash
-cd /home/cheny1a/git/FMTCode
-OUT=/home/cheny1a/data/task6_icostar_r0250510
+cd <this repo>
+ROOT=/path/to/Task6_CorelineDataset_2.7_share     # <-- your dataset package
+OUT=$HOME/data/task6_icostar_r0250510             # <-- where the cache goes
 for I in 0 1 2 3 4 5 6 7; do
   python experiments/Build_Task6_New_IcoStar_1_1.py \
-      --out $OUT --radii 0.25,0.5,1 --count 3000 \
+      --root $ROOT --out $OUT --radii 0.25,0.5,1 --count 3000 \
       --threads 8 --shards 8 --shard $I &
 done; wait
 ```
 
+`--root` is required on any machine other than the one these numbers were measured on;
+without it the builder falls back to a hard-coded path. `TASK6_ROOT` works as an environment
+variable alternative.
+
 ~25 min wall clock over 8 shards, **8.0 GB** on disk, 101 frames. The cache stores radii
 0.25 / 0.5 / 1 h; the recommended run slices the 1 h shell out of it with `--shells 1`, so one
-build covers every configuration in §6.
+build covers every configuration in §8.
 
 Each frame file holds `curves [n, 1+12k, 65, 3] float32`, `centres`, `labels`, `dist` (distance
 to coreline in units of h), `kind` (0 positive / 1 hard / 2 far), `role`, `key`, `h`, `radii`,
@@ -135,7 +161,32 @@ to coreline in units of h), `kind` (0 positive / 1 hard / 2 far), `role`, `key`,
 * **Margin.** Centres stay `max(radii) × h × 1.05` clear of the boundary so no neighbour seed is
   ever clipped. With `--radii 0.25,0.5,1` that margin is 1 h.
 
-## 5. Train
+## 6. Verify the cache before training
+
+```bash
+python experiments/Check_Task6_Cache_1_1.py $OUT
+```
+
+It must end with `CACHE MATCHES THE GUIDE`. The expected values are:
+
+| property | expected |
+|---|---|
+| frames | 101 (77 train / 24 test) |
+| radii | `[0.25, 0.5, 1.0]` → 1 h boundary margin |
+| lines per sample | 37 (centre + 12 x 3 shells) |
+| points per line | 65 |
+| total_length | 0.5 |
+| positive_scale | 1.0 |
+| split | package default (interleaved) |
+| overall positive rate | 0.20 – 0.30 (reference: 0.2392) |
+| scenes with zero positives | none |
+
+**If any scene reports zero positives, stop.** That means the centres came from the official
+`IVD > 0.8 x max` rule, which contains no positive examples at all in `SquareCylinder`,
+`cylinder3d` and `halfcylinderRe320`. Training proceeds without error and produces a
+plausible-looking pooled score while three of six scenes sit at the majority-class floor.
+
+## 7. Train
 
 ```bash
 python experiments/Run_Task6_NewStar_IcoVAE_1_1.py \
@@ -175,7 +226,7 @@ breakdown at every eval step.
 **The auxiliary losses are off deliberately** — they are measured to be slightly harmful at full
 supervision. Turn them on only when labels are scarce (§8).
 
-## 6. Expected numbers
+## 8. Expected numbers
 
 Shell configurations on the 1 h-margin cache (98.6 % coverage), lr 1e-3, 3 seeds unless noted:
 
@@ -229,7 +280,7 @@ A capacity-matched Conv3D voxel-splat baseline (608 929 parameters), reusing the
 0.9649 on identical data — **+0.038 for IcoVAE at matched capacity** — and it saturates near
 0.933 even at 2.16 M parameters, so the gap is representational rather than a capacity artefact.
 
-## 7. Why a 1 h margin
+## 9. Why a 1 h margin
 
 Centres must sit `max(radii) × h × 1.05` clear of the boundary so every neighbour seed stays in
 the domain. Positive centres are perturbed coreline points, so **any coreline inside that margin
@@ -251,7 +302,7 @@ not significant**; roughly 79 % of the apparent gap is test-set difficulty, not 
 A 1 h margin is therefore the right default: near-complete coverage at no statistically
 detectable cost.
 
-## 8. If labels are scarce
+## 10. If labels are scarce
 
 Auxiliary objectives are harmful at full supervision but help sharply below ≈5 % labels, and
 which one helps depends on the regime:
@@ -268,10 +319,12 @@ star. The contrastive term **alone** costs −0.064 at 0.2 % labels — it is on
 the decoder. Two-stage pretraining (`--pretrain-steps`) loses to joint training in every setting
 tested, and every frozen linear probe sits at the majority-class floor.
 
-## 9. Code map
+## 11. Code map
 
 | file | role |
 |---|---|
+| `experiments/reproduce_task6.sh` | **end-to-end reproduction: build, verify, train 3 seeds** |
+| `experiments/Check_Task6_Cache_1_1.py` | **cache verifier — run before training** |
 | `experiments/Build_Task6_New_IcoStar_1_1.py` | dataset builder (stratified seeding, exact labels) |
 | `experiments/Run_Task6_NewStar_IcoVAE_1_1.py` | training / evaluation |
 | `experiments/Run_Task6_NewStar_Conv3D_1_1.py` | Conv3D voxel baseline, width-configurable |
@@ -282,7 +335,7 @@ tested, and every frozen linear probe sits at the majority-class floor.
 | `FMT_Utils/IcosahedralGroup_3D.py` | 12 vertices, 120 group elements, permutations *(pre-existing)* |
 | `tests/test_icosahedral_group_3d.py` | 7 group checks; all should pass |
 
-## 10. Other useful options
+## 12. Other useful options
 
 Builder:
 
@@ -306,7 +359,7 @@ Trainer:
 | `--scenes` | train and test on a single scene |
 | `--save-weights` | archive encoder, head and normalisation stats |
 
-## 11. Dataset variants
+## 13. Dataset variants
 
 Sections 4–6 build the dataset with the **package split** and the **official `d < h` positive
 rule**. Two variants of the data definition are supported; both are build-time choices.
@@ -378,13 +431,13 @@ On the temporal split, single 1 h shell, lr 1e-3, 3 seeds:
 **Do not read the upward trend as an improvement.** Each scale defines a *different task*, so the
 F1 values are not comparable. A tighter threshold gives a purer positive class — a centre within
 0.2 h sits essentially on the coreline — rather than a finer discrimination. Use
-`--positive-scale 1.0` for any comparison against published numbers or against §6.
+`--positive-scale 1.0` for any comparison against published numbers or against §8.
 
 ### 11.3 Choosing a setup
 
 | goal | split | positive rule |
 |---|---|---|
-| compare against §6 / earlier results | package default | `1.0` |
+| compare against §8 / earlier results | package default | `1.0` |
 | **new work, leak-free evaluation** | **temporal** | **`1.0`** |
 | reproduce the official positive set exactly | package default + `--official-centres` | `1.0` |
 | study a tighter coreline definition | temporal | `0.5` or `0.2` |
@@ -392,7 +445,40 @@ F1 values are not comparable. A tighter threshold gives a purer positive class �
 The cache records `positive_scale` and `split_file` in `meta.json`, and each frame file stores
 `positive_scale`, so a cache always identifies which variant it is.
 
-## 12. Known caveats
+## 14. Troubleshooting: my number does not match
+
+The recipe in §4–§6 was re-run from the committed code against a freshly verified cache and
+reproduced **0.9538** against the reference 0.9549 ± 0.0018. If you get something materially
+different, the cause is almost always *which stars you trained on*, not the training code.
+Run `python experiments/Check_Task6_Cache_1_1.py <cache>` first — it detects most of these.
+
+| what you observe | likely cause | fix |
+|---|---|---|
+| **≈0.95** | correct | — |
+| **≈0.92 pooled, but 3 scenes near 0.50** | centres came from the official `IVD > 0.8 × max` rule (`--official-centres`, or training on a shipped `preintegrated/` bundle). `SquareCylinder`, `cylinder3d`, `halfcylinderRe320` contain **no positives at all**, so they sit at the majority-class floor while the pooled score still looks high | rebuild without `--official-centres` (§5) |
+| **≈0.62 if you average per scene** | same cause as above, aggregated differently | as above |
+| **≈0.94** | temporal split instead of the package split | drop `--split-file`, or compare against §13.1 instead |
+| **≈0.95 but not exactly** | different seed, or a dataset revision with re-annotated corelines | check the `dataset.json` sha printed by the reproduction script |
+| **≈0.948** | trained on the 0.25 h shell rather than 1 h | pass `--shells 1`, and confirm the cache's radii with the checker |
+| **much lower, e.g. ≈0.80** | trained on shipped preintegrated curves (21 lines, 20 face centres at 1 h) instead of building the cache; or far fewer stars per frame; or a mismatched `--shells` / cache pairing | rebuild with §4 and verify with §6 |
+| build fails or silently uses the wrong data | `--root` not passed; the builder falls back to a hard-coded path | pass `--root`, or set `TASK6_ROOT` |
+
+### Sanity values to check against
+
+After §4 the cache should report (from `Check_Task6_Cache_1_1.py`):
+
+```
+  frames         101   (train 77 / test 24)
+  radii          [0.25, 0.5, 1.0]   -> boundary margin 1.0 h
+  lines/sample   37   points/line 65
+  TOTAL          295,334 stars    70,633 positives   rate 0.2392
+```
+
+And a training run with `--shells 1` should report **224,938 train / 70,396 test stars**,
+test positive rate **0.2412**, and **587,501** parameters. If those three numbers match and the
+F1 still does not, the difference is in the dataset revision, not the pipeline.
+
+## 15. Known caveats
 
 1. **Seeding is stratified, not the official protocol.** The official `IVD > 0.8 × max` centre
    rule gives zero positives in `SquareCylinder`, `cylinder3d` and `halfcylinderRe320`

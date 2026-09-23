@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import sys
 import time
 from pathlib import Path
@@ -28,7 +29,8 @@ from FMT_Utils.IcosahedralGroup_3D import (  # noqa: E402
     NEIGHBOUR_COUNT, VECTOR_DIM, apply_group_shells, group_tensors, icosahedron_vertices)
 
 RADII = (1.0, 2.0, 4.0, 8.0)
-TASK6_ROOT = "/home/cheny1a/data/flowData3D/Task6_CorelineDataset_2.7_share"
+TASK6_ROOT = os.environ.get(
+    "TASK6_ROOT", "/home/cheny1a/data/flowData3D/Task6_CorelineDataset_2.7_share")
 _BOUNDS = {}
 
 
@@ -204,6 +206,23 @@ def predict(model, head, sig, stats, clip, batch=4096):
     return torch.cat(out).numpy()
 
 
+class Projection(nn.Module):
+    """Contrastive projection head.
+
+    Applying the contrastive loss straight to ``z_inv`` forces the classifier's
+    own feature space to be group-invariant, which can erase discriminative
+    structure. Projecting first lets the encoder stay discriminative while the
+    *projected* space carries the invariance -- the standard SimCLR arrangement.
+    """
+
+    def __init__(self, z_dim, out_dim, hidden=256):
+        super().__init__()
+        self.net = nn.Sequential(nn.Linear(z_dim, hidden), nn.GELU(), nn.Linear(hidden, out_dim))
+
+    def forward(self, z):
+        return self.net(z)
+
+
 class Head(nn.Module):
     def __init__(self, z, hidden=128, dropout=0.15, kind="mlp"):
         super().__init__()
@@ -245,6 +264,19 @@ def main():
     p.add_argument("--lambda-ssl", type=float, default=0.0)
     p.add_argument("--lambda-recon", type=float, default=0.0)
     p.add_argument("--zinv-var-weight", type=float, default=0.0)
+    p.add_argument("--proj-dim", type=int, default=0,
+                   help="project z_inv to this width before the contrastive loss (0 = apply it "
+                        "directly to z_inv, as in earlier rounds)")
+    p.add_argument("--aux-decay", action="store_true",
+                   help="anneal the auxiliary weights to zero on the same cosine as the LR, so "
+                        "they shape early training and leave the final fit unbiased")
+    p.add_argument("--transductive", action="store_true",
+                   help="let the SSL / reconstruction terms draw from the TEST stars too (and, "
+                        "under --holdout-scene, from the held-out scene's train-role frames). "
+                        "Labels are never used for those rows, only their geometry -- the standard "
+                        "transductive / unsupervised-domain-adaptation setting.")
+    p.add_argument("--holdout-scene", default="",
+                   help="train on every other scene and test only on this one (leave-one-scene-out)")
     p.add_argument("--encoder", default="conv", choices=["conv", "pure"])
     p.add_argument("--schedule", default="constant", choices=["constant", "cosine"])
     p.add_argument("--warmup-steps", type=int, default=0)
@@ -269,8 +301,17 @@ def main():
     torch.manual_seed(args.seed); np.random.seed(args.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    tr_c, tr_y, _, _ = load(args.cache, "train", shells, scenes, args.restrict_to, args.min_margin)
-    te_c, te_y, te_d, te_s = load(args.cache, "test", shells, scenes, args.restrict_to, args.min_margin)
+    train_scenes, test_scenes = scenes, scenes
+    if args.holdout_scene:
+        # Leave-one-scene-out: never see the held-out flow during training. This is a
+        # domain-generalisation setting, where an invariance prior has the most to offer.
+        every = sorted({p.name.rsplit("_", 1)[0] for p in Path(args.cache).glob("*.npz")})
+        train_scenes = tuple(s for s in every if s != args.holdout_scene)
+        test_scenes = (args.holdout_scene,)
+        if args.holdout_scene not in every:
+            raise ValueError(f"unknown scene {args.holdout_scene!r}; have {every}")
+    tr_c, tr_y, _, _ = load(args.cache, "train", shells, train_scenes, args.restrict_to, args.min_margin)
+    te_c, te_y, te_d, te_s = load(args.cache, "test", shells, test_scenes, args.restrict_to, args.min_margin)
     store = device if args.data_device == "cuda" else "cpu"
     tr_sig = torch.from_numpy(build_signal_ico(tr_c)).to(store)
     te_sig = torch.from_numpy(build_signal_ico(te_c)).to(store)
@@ -279,14 +320,32 @@ def main():
     chan_w = channel_balance_weights_ico(
         apply_norm_stats_ico(tr_sig[:4096].to(device), stats, args.clip_sigma))
 
+    # Auxiliary pool. The head only ever sees `labelled` rows of tr_sig; the SSL and
+    # reconstruction terms may additionally see unlabelled target-domain geometry.
+    aux_sig = tr_sig
+    aux_note = "train only"
+    if args.transductive:
+        pools = [tr_sig, te_sig]
+        if args.holdout_scene:
+            extra_c, _, _, _ = load(args.cache, "train", shells, (args.holdout_scene,),
+                                    args.restrict_to, args.min_margin)
+            pools.append(torch.from_numpy(build_signal_ico(extra_c)).to(store))
+            del extra_c
+        aux_sig = torch.cat(pools, dim=0)
+        aux_note = f"train + unlabelled target ({len(aux_sig) - len(tr_sig):,} extra rows)"
+    print(f"  aux pool: {len(aux_sig):,} rows ({aux_note}); labelled rows: {len(tr_y):,}", flush=True)
+
     lines = tr_sig.shape[1]
     model = IcosahedralSirenVAE3D(steps=tr_sig.shape[2], z_inv_dim=args.z_inv,
                                   z_eq_dim=args.z_eq, encoder_kind=args.encoder,
                                   lines=lines).to(device)
     head = Head(args.z_inv, kind=args.head).to(device)
+    proj = Projection(args.z_inv, args.proj_dim).to(device) if args.proj_dim > 0 else None
     matrices, permutation = group_tensors("ih" if args.aug != "i" else "i", device=device)
 
     params = list(model.parameters()) + list(head.parameters())
+    if proj is not None:
+        params += list(proj.parameters())
     opt = torch.optim.AdamW(params, lr=args.lr, weight_decay=args.weight_decay)
 
     def lr_factor(step):
@@ -323,24 +382,26 @@ def main():
         # Stage 1: no labels at all -- SSL and/or reconstruction over every training star.
         pre = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
         for step in range(args.pretrain_steps):
-            j = torch.randint(0, len(tr_sig), (args.batch,), device=device, generator=gen)
-            raw = tr_sig[j.to(tr_sig.device)].to(device)
+            j = torch.randint(0, len(aux_sig), (args.batch,), device=device, generator=gen)
+            raw = aux_sig[j.to(aux_sig.device)].to(device)
             x = apply_norm_stats_ico(raw, stats, args.clip_sigma)
             loss = x.new_zeros(())
             if args.lambda_ssl > 0 or args.zinv_var_weight > 0:
                 v = views_of(raw, stats, args.clip_sigma, matrices, permutation, args.aug, gen)
                 zs = [model.encode(a)[0][:, :model.z_inv_dim] for a in v]
+            if proj is not None:
+                zs = [proj(z) for z in zs]
                 loss = loss + args.lambda_ssl * multi_view_contrastive_loss(zs)
                 if args.zinv_var_weight > 0:
                     var, cov = zinv_variance_covariance(zs)
-                    loss = loss + args.zinv_var_weight * (var + cov)
+                    loss = loss + args.zinv_var_weight * aux_w * (var + cov)
             if args.lambda_recon > 0:
                 mu, logvar = model.encode(x)
                 z = mu + torch.randn_like(mu) * (0.5 * logvar).exp()
                 rl, _, _, _ = vae_ico_loss(model.decode(z), x, mu, logvar, mu.new_zeros(()),
                                            lambda_recon=1.0, lambda_contrast=0.0,
                                            channel_weights=chan_w)
-                loss = loss + args.lambda_recon * rl
+                loss = loss + args.lambda_recon * aux_w * rl
             if not loss.requires_grad:
                 raise ValueError("--pretrain-steps needs --lambda-ssl or --lambda-recon")
             pre.zero_grad(set_to_none=True); loss.backward()
@@ -355,8 +416,9 @@ def main():
             sched = torch.optim.lr_scheduler.LambdaLR(opt, lr_factor)
     for step in range(args.steps):
         i = labelled[torch.randint(0, len(labelled), (args.batch,), device=device, generator=gen)]
-        j = torch.randint(0, len(tr_sig), (args.batch,), device=device, generator=gen)
+        j = torch.randint(0, len(aux_sig), (args.batch,), device=device, generator=gen)
         raw = tr_sig[i.to(tr_sig.device)].to(device)
+        aux_w = lr_factor(step) if args.aux_decay else 1.0
         x = apply_norm_stats_ico(raw, stats, args.clip_sigma)
         mu, logvar = model.encode(x)
         logits = head(mu[:, :model.z_inv_dim])
@@ -364,22 +426,32 @@ def main():
         parts = {"ce": float(loss)}
 
         if args.lambda_ssl > 0 or args.zinv_var_weight > 0:
-            v = views_of(tr_sig[j.to(tr_sig.device)].to(device), stats, args.clip_sigma,
+            v = views_of(aux_sig[j.to(aux_sig.device)].to(device), stats, args.clip_sigma,
                          matrices, permutation, args.aug, gen)
             zs = [model.encode(a)[0][:, :model.z_inv_dim] for a in v]
+            if proj is not None:
+                zs = [proj(z) for z in zs]
             con = multi_view_contrastive_loss(zs)
-            loss = loss + args.lambda_ssl * con
+            loss = loss + args.lambda_ssl * aux_w * con
             parts["ssl"] = float(con)
             if args.zinv_var_weight > 0:
                 var, cov = zinv_variance_covariance(zs)
-                loss = loss + args.zinv_var_weight * (var + cov)
+                loss = loss + args.zinv_var_weight * aux_w * (var + cov)
         if args.lambda_recon > 0:
-            z = mu + torch.randn_like(mu) * (0.5 * logvar).exp()
+            # Reconstruction is label-free, so under --transductive it should see the
+            # unlabelled pool too rather than only the labelled batch.
+            if args.transductive:
+                xr = apply_norm_stats_ico(aux_sig[j.to(aux_sig.device)].to(device),
+                                          stats, args.clip_sigma)
+                mur, logvarr = model.encode(xr)
+            else:
+                xr, mur, logvarr = x, mu, logvar
+            z = mur + torch.randn_like(mur) * (0.5 * logvarr).exp()
             rec = model.decode(z)
-            rl, _, _, _ = vae_ico_loss(rec, x, mu, logvar, mu.new_zeros(()),
+            rl, _, _, _ = vae_ico_loss(rec, xr, mur, logvarr, mur.new_zeros(()),
                                        lambda_recon=1.0, lambda_contrast=0.0,
                                        channel_weights=chan_w)
-            loss = loss + args.lambda_recon * rl
+            loss = loss + args.lambda_recon * aux_w * rl
             parts["recon"] = float(rl)
 
         opt.zero_grad(set_to_none=True); loss.backward()
@@ -402,7 +474,9 @@ def main():
                   f"lr {sched.get_last_lr()[0]:.2e}", flush=True)
 
     out = Path(args.output); out.mkdir(parents=True, exist_ok=True)
-    rec = dict(label=args.label, labelled_n=int(len(labelled)), args=vars(args), shells=list(shells), lines=lines,
+    rec = dict(label=args.label, labelled_n=int(len(labelled)),
+               train_scenes=list(train_scenes), test_scenes=list(test_scenes),
+               aux_pool_n=int(len(aux_sig)), transductive=bool(args.transductive), args=vars(args), shells=list(shells), lines=lines,
                train_n=int(len(tr_y)), test_n=int(len(te_y)),
                train_pos=float(tr_y.mean()), test_pos=float(te_y.mean()),
                final_f1=curve[-1]["f1"], best=best, curve=curve,
