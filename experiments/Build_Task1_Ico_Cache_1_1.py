@@ -27,12 +27,13 @@ from FMT_Utils.FMT_3D_pipeline import compute_ivd_reference_3d, generate_seeding
 from FMT_Utils.IcosahedralPrimitives_3D import integrate_icosahedral_primitives_3d
 from FMT_Utils.NetCDF_window_3D import load_netcdf_window_3d
 
+DEFAULT_DATA_ROOT = "/home/cheny1a/data/flowData3D"
 DATASETS = {
-    "halfcylinderRe160_eth": "/home/cheny1a/data/flowData3D/halfcylinderRe160.nc",
-    "halfcylinderRe640_eth": "/home/cheny1a/data/flowData3D/halfcylinderRe640.nc",
-    "halfcylinderRe6400_eth": "/home/cheny1a/data/flowData3D/halfcylinderRe6400.nc",
-    "tangaroa_eth": "/home/cheny1a/data/flowData3D/tangaroa.nc",
-    "deltawing_eth": "/home/cheny1a/data/flowData3D/deltaWing_mag0_3reesampled.nc",
+    "halfcylinderRe160_eth": "halfcylinderRe160.nc",
+    "halfcylinderRe640_eth": "halfcylinderRe640.nc",
+    "halfcylinderRe6400_eth": "halfcylinderRe6400.nc",
+    "tangaroa_eth": "tangaroa.nc",
+    "deltawing_eth": "deltaWing_mag0_3reesampled.nc",
 }
 # The union of what the split study called development and confirmation: with no
 # split there is no reason to leave a third of the data unused.
@@ -98,6 +99,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--datasets", default="halfcylinderRe160_eth,halfcylinderRe640_eth,halfcylinderRe6400_eth")
     parser.add_argument("--output", default="outputs/exp_Task1_IcoVAE_cache")
+    parser.add_argument("--data-root", default=DEFAULT_DATA_ROOT,
+                        help="directory holding the .nc files named in DATASETS")
     parser.add_argument("--limit", type=int, default=0, help="first N ordinals only (smoke test)")
     arguments = parser.parse_args()
 
@@ -111,7 +114,7 @@ def main():
             if target.exists():
                 print(f"  {name} ordinal {ordinal}: cached", flush=True)
                 continue
-            meta = build_slice(DATASETS[name], ordinal, ordinal, target)
+            meta = build_slice(Path(arguments.data_root) / DATASETS[name], ordinal, ordinal, target)
             print(f"  {name} ordinal {ordinal:4d}: {meta['valid_primitives']:5d}/"
                   f"{meta['total_primitives']} valid, positives "
                   f"{meta['ivd_positive_fraction']:.4f}, {meta['elapsed_seconds']:.1f}s",
