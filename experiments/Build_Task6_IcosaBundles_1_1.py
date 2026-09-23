@@ -156,8 +156,40 @@ def build_one(config,record):
     spacing=np.array([(a[-1]-a[0])/(len(a)-1) for a in axes]);ids=np.linspace(0,count-1,16).astype(int)
     seeds=np.ascontiguousarray((centers[ids,None]+h*d).reshape(-1,3))
     strict,_,termination=integrate_samples_adaptive(field,seeds,lower,spacing,.25,h/64,h*1e-10,65)
-    difference=float(np.linalg.norm(strict-arrays['curves'][ids].reshape(-1,65,3),axis=-1).max())
-    if (termination>=3).any() or difference>h/20: raise RuntimeError('Independent h/64 saved-bundle check failed')
+    errors=np.linalg.norm(strict-arrays['curves'][ids].reshape(-1,65,3),axis=-1).max(1).reshape(len(ids),k)
+    failed=(~np.isfinite(strict).all((1,2)).reshape(len(ids),k) | (errors>h/20) |
+            (termination.reshape(len(ids),k,2)>=3).any(-1)).any(-1)
+    # Reject the entire sample when the independent check fails, just as for
+    # earlier refinement levels. Never relax tolerances or patch one neighbor.
+    for slot in np.flatnonzero(failed):
+        sample_index=int(ids[slot]); replacement=None
+        for attempt in range(128):
+            proposals=sampler.draw(config['chunk_centers'])
+            result=integrate_filtered(field,proposals,axes,h,d,state['validation_order'])
+            state['integrated_proposals']+=len(proposals)
+            for candidate_index in np.flatnonzero(result['valid']):
+                proposed=proposals[candidate_index]
+                if np.any(np.all(arrays['centers']==proposed,axis=1)):continue
+                check_seeds=np.ascontiguousarray(proposed[None]+h*d)
+                checked,_,reasons=integrate_samples_adaptive(field,check_seeds,lower,spacing,.25,h/64,h*1e-10,65)
+                checked_error=np.linalg.norm(checked-result['curves'][candidate_index],axis=-1).max(1)
+                if (not np.isfinite(checked).all() or (reasons>=3).any() or
+                        not np.isfinite(checked_error).all() or checked_error.max()>h/20):continue
+                replacement=(candidate_index,checked_error);break
+            if replacement is not None:break
+        if replacement is None:raise RuntimeError('Independent-check replacement budget exhausted; preserve partial output')
+        candidate_index,checked_error=replacement
+        for name,key in [('curves','curves'),('half_lengths','half_lengths'),('termination','termination'),('refinement_errors','errors')]:
+            arrays[name][sample_index]=result[key][candidate_index]
+        arrays['centers'][sample_index]=proposals[candidate_index]
+        for a in arrays.values():a.flush()
+        state.setdefault('independent_check_replacements',[]).append(dict(sample_index=sample_index,
+            rejected_max_error=float(errors[slot].max()),replacement_max_error=float(checked_error.max())))
+        errors[slot]=checked_error
+        state.update(rng_state=sampler.rng.bit_generator.state,candidate_proposals=sampler.proposed,
+                     candidate_accepted=sampler.candidate_accepted,compute_seconds=previous_compute+time.monotonic()-clock)
+        atomic(progress_path,state)
+    difference=float(errors.max())
     current=next(r for r in read(root/'dataset.json')['frames'] if r['key']==record['key'])
     labels,core_sha=core_labels(root,current,centers);np.save(dest/'labels.npy',labels)
     metadata=dict(key=record['key'],count=count,streamlines_per_sample=k,points_per_streamline=65,
@@ -168,7 +200,8 @@ def build_one(config,record):
                   candidate_applies_to_center_only=True,all_neighbor_seeds_inside_domain=True,
                   geometry=config['geometry'],integration=config['integration'],source_files=state['source_files'],
                   numerical_rejections=state['integrated_proposals']-count,independent_max_error=difference,
-                  independent_centers=ids.tolist(),unit_offsets=d.tolist(),compute_seconds=state['compute_seconds'])
+                  independent_centers=ids.tolist(),independent_check_replacements=state.get('independent_check_replacements',[]),
+                  unit_offsets=d.tolist(),compute_seconds=state['compute_seconds'])
     atomic(dest/'metadata.json',metadata)
     files={n+'.npy':sha(dest/(n+'.npy')) for n in [*shapes,'labels']};files['metadata.json']=sha(dest/'metadata.json')
     atomic(dest/'complete.json',dict(passed=True,key=record['key'],fingerprint=signature,files=files))
